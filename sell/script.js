@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const whatsappBtn = document.getElementById('whatsapp-btn');
     
     // --- Business Contact Information (Change these to your actual contacts) ---
-    const businessEmail = 'submissions@kabaleonlineshop.com'; 
+    const businessEmail = 'shopkabale@gmail.com'; 
     const businessWhatsAppNumber = '256784655792'; // Your business WhatsApp number (e.g., for Kabale)
 
     // --- 1. Handle Submission via Email ---
