@@ -1,0 +1,270 @@
+/* style.css */
+
+/* --- Google Font Import --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* --- Global Styles & Variables --- */
+:root {
+    --primary-green: #38761d; /* Rich green for hills */
+    --accent-orange: #f47521;  /* Warm sunset orange */
+    --dark-text: #333333;
+    --light-gray-bg: #f4f4f4;
+    --white: #ffffff;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--white);
+    color: var(--dark-text);
+    line-height: 1.6;
+}
+
+/* --- Header --- */
+header {
+    background-color: var(--white);
+    padding: 1rem 5%;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* --- Hero Section --- */
+.hero {
+    /* !! IMPORTANT: Replace with a high-quality photo of Kabale's hills !! */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1549472599-2224790f9e28?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    color: var(--white);
+    text-align: center;
+    padding: 100px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* --- General Section & Card Styling --- */
+.info-section, .category-section {
+    padding: 60px 5%;
+    text-align: center;
+}
+
+.info-section {
+    background-color: var(--light-gray-bg);
+}
+
+/* Alternate white background for better flow */
+#why-us {
+    background-color: var(--white);
+}
+
+h2 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: var(--primary-green);
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-orange);
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--dark-text);
+}
+
+.info-cards, .action-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.card, .action-card {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    flex: 1;
+    min-width: 280px;
+    max-width: 380px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover, .action-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card i {
+    font-size: 3rem;
+    color: var(--primary-green);
+    margin-bottom: 20px;
+}
+
+/* --- Action Section & Buttons --- */
+.nav-button {
+    display: inline-block;
+    background-color: var(--accent-orange);
+    color: var(--white);
+    padding: 12px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    border: none;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.nav-button:hover {
+    background-color: #d8641c; /* Darker orange */
+    transform: scale(1.05);
+}
+
+.start-Browse {
+    margin-top: 40px;
+    font-size: 1.1rem;
+}
+
+.start-Browse a {
+    color: var(--primary-green);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent-orange);
+    transition: color 0.3s ease;
+}
+
+.start-Browse a:hover {
+    color: var(--accent-orange);
+}
+
+/* --- Category Section --- */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.category-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    display: block;
+    text-decoration: none;
+    transition: transform 0.4s ease;
+}
+
+.category-card:hover {
+    transform: scale(1.05);
+}
+
+.category-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.category-card:hover img {
+    transform: scale(1.1);
+}
+
+.category-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.1));
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    opacity: 1; /* Always visible for better usability */
+    transition: background-color 0.3s ease;
+}
+
+.category-overlay h3 {
+    color: var(--white);
+    font-size: 1.8rem;
+    margin: 0 0 20px 0;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+
+/* --- Footer --- */
+footer {
+    background-color: var(--dark-text);
+    color: var(--light-gray-bg);
+    text-align: center;
+    padding: 25px 5%;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+    }
+    
+    h2 {
+        font-size: 2rem;
+    }
+
+    .info-cards, .action-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card, .action-card {
+        width: 100%;
+        max-width: 450px;
+    }
+}
