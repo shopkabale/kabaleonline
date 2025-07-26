@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Your Products - KABALE ONLINE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="https://kabaleonlineshop.com">KABALE ONLINE</a></div>
+        <nav>
+            <a href="https://shop.kabaleonlineshop.com" class="nav-button">🛒 Back to Shop</a>
+        </nav>
+    </header>
+
+    <main class="form-container">
+        <h2>List Your Product With Us</h2>
+        <p>Fill out the form below. We will review your submission and contact you to feature it on our shop.</p>
+        
+        <form id="sellForm">
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" name="productName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">Your WhatsApp Phone Number</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., 0700000000" required>
+            </div>
+
+            <div class="form-group">
+                <label for="condition">Condition</label>
+                <select id="condition" name="condition" required>
+                    <option value="New">New</option>
+                    <option value="Used - Like New">Used - Like New</option>
+                    <option value="Used - Good">Used - Good</option>
+                    <option value="Used - Fair">Used - Fair</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="productInfo">Other Information (Price, description, location, etc.)</label>
+                <textarea id="productInfo" name="productInfo" rows="5" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="productImage">Product Image</label>
+                <input type="file" id="productImage" name="productImage" accept="image/*">
+                <small>You will need to manually attach the image in the email or WhatsApp chat after submitting.</small>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="submit-btn email">Submit via Email</button>
+                <button type="button" id="whatsapp-btn" class="submit-btn whatsapp">Submit via WhatsApp</button>
+            </div>
+        </form>
+
+        <div class="notice-box">
+            <h3>Important Notice (N.B.)</h3>
+            <p>If your product is sold to someone else (not through our website), please inform us immediately via WhatsApp so we can remove the listing. This helps us keep the shop up-to-date for all customers. Thank you for your cooperation!</p>
+        </div>
+    </main>
+
+    <footer>&copy; 2025 KABALE ONLINE</footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

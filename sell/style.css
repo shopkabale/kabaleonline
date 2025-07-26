@@ -1,0 +1,259 @@
+/* --- Google Font Import --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* --- General & Body Styles --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f7f6; /* Soft, light grey background */
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- Header & Navigation --- */
+header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo a {
+    text-decoration: none;
+    color: #2c3e50; /* Dark, professional blue-grey */
+    font-size: 1.7rem;
+    font-weight: 700;
+    transition: color 0.3s ease;
+}
+
+.logo a:hover {
+    color: #3498db;
+}
+
+.nav-button {
+    text-decoration: none;
+    background-color: #3498db; /* Vibrant blue */
+    color: #ffffff;
+    padding: 0.6rem 1.4rem;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.nav-button:hover {
+    background-color: #2980b9; /* Darker blue for hover */
+    transform: translateY(-2px);
+}
+
+/* --- Main Content & Form Container --- */
+main.form-container {
+    width: 100%;
+    max-width: 700px;
+    margin: 3rem auto; /* More vertical space */
+    padding: 2.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    flex-grow: 1; /* Pushes footer down on short pages */
+}
+
+main.form-container h2 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+main.form-container > p {
+    text-align: center;
+    color: #7f8c8d; /* Soft grey for the subtitle */
+    margin-bottom: 2.5rem;
+}
+
+/* --- Form Styling --- */
+#sellForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Space between form groups */
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #34495e; /* Softer dark color */
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+input[type="text"],
+input[type="tel"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.9rem;
+    border: 1px solid #bdc3c7; /* Light grey border */
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focus state for inputs */
+input[type="text"]:focus,
+input[type="tel"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3498db; /* Blue focus color */
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
+
+textarea {
+    resize: vertical; /* Allow vertical resizing only */
+    min-height: 120px;
+}
+
+/* File Input */
+input[type="file"] {
+    border: 2px dashed #bdc3c7;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+input[type="file"]:hover {
+    background-color: #e9ecef;
+    border-color: #3498db;
+}
+
+.form-group small {
+    margin-top: 0.5rem;
+    color: #95a5a6; /* Muted grey */
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* --- Submit Button --- */
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #27ae60; /* Professional green */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    margin-top: 1rem;
+}
+
+.submit-btn:hover {
+    background: #229954;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+/* --- Notice Box --- */
+.notice-box {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background-color: #fffbe6; /* Light yellow for notices */
+    border-left: 5px solid #f1c40f; /* Stronger yellow border */
+    border-radius: 0 5px 5px 0;
+}
+
+.notice-box h3 {
+    color: #c0392b; /* A professional, soft red for the heading */
+    margin-bottom: 0.5rem;
+}
+
+.notice-box p {
+    text-align: left; /* Override centered paragraph style */
+    color: #555;
+    margin-bottom: 0;
+    line-height: 1.7;
+}
+
+/* --- Footer --- */
+footer {
+    background-color: #2c3e50; /* Matches header logo color for consistency */
+    color: #ecf0f1; /* Light grey, easy on the eyes */
+    text-align: center;
+    padding: 1.5rem 5%;
+    width: 100%;
+}
+
+/* --- Responsive Design for Mobile Devices --- */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+
+    main.form-container {
+        margin: 1.5rem 1rem;
+        padding: 1.5rem;
+    }
+
+    main.form-container h2 {
+        font-size: 1.8rem;
+    }
+}
+
+
+/* --- Button Group & New Button Styles --- */
+.button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem; /* Space between buttons */
+    margin-top: 1rem;
+}
+
+.submit-btn {
+    flex-grow: 1; /* Makes both buttons share the space equally */
+    margin-top: 0; /* Remove margin-top as it's now on the group */
+}
+
+/* Style for the original Email button */
+.submit-btn.email {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+}
+
+.submit-btn.email:hover {
+    background: linear-gradient(45deg, #27ae60, #229954);
+}
+
+/* Style for the new WhatsApp button */
+.submit-btn.whatsapp {
+    background: #25D366; /* Official WhatsApp green */
+}
+
+.submit-btn.whatsapp:hover {
+    background: #1DA851; /* Darker WhatsApp green */
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+/* Make buttons stack on small screens */
+@media (max-width: 600px) {
+    .button-group {
+        flex-direction: column;
+    }
+}
+
