@@ -30,6 +30,23 @@ header { /* Same header style */
     font-size: 1.5rem;
     font-weight: bold;
 }
+.sell {
+    color: white;
+    background-color: brown;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+.footer-li {
+    color: black;
+    background-color: gray;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
 
 nav a.nav-button.sell-button { /* Same button styles */
     color: white;
