@@ -1,85 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop All Products - KABALE ONLINE</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KABALE ONLINE - Shop</title>
+  <link rel="stylesheet" href="style.css"/>
     <script src="script.js" defer></script>
 </head>
 <body>
-    <header>
-      <center>  <div class="logo"><a href="https://kabaleonline.netlify.app">KABALE ONLINE</a></div></center>
-        <nav>
-          <h4>shopping page</h4> 
-        </nav>
-    </header>
 
-    <div class="shop-intro">
-        <h2>Our Products</h2>
-        <p>Find what you need. Order directly via WhatsApp for fast, personal service.</p>
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="Search products...">
-            <select id="categoryFilter">
-                <option value="all">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="clothing">Clothing</option>
-               
-                <option value="home">Home & Kitchen</option>
-                <option value="accessories">Accessories</option>
-            </select>
-        </div>
+  <header>
+    <div class="logo"><a href="#">KABALE ONLINE</a></div>
+    <h4>Shopping Page</h4>
+  </header>
+
+  <div class="shop-intro">
+    <h2>Our Products</h2>
+    <p>Find what you need. Order directly via WhatsApp for fast, personal service.</p>
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Search products..."/>
+      <select id="categoryFilter">
+        <option value="all">All Categories</option>
+        <option value="electronics">Electronics</option>
+        <option value="clothing">Clothing</option>
+        <option value="home">Home & Kitchen</option>
+        <option value="accessories">Accessories</option>
+      </select>
+    </div>
+  </div>
+
+  <main class="product-grid">
+    <div class="product" data-category="electronics" data-name="Awesome Gadget">
+    <center>  <img src="../images/gadget.webp" alt="Awesome Gadget"/></center>
+      <h3>Awesome Gadget</h3>
+      <p class="price">UGX 20,000</p>
+      <p><strong>Seller:</strong> Kabale Online</p>
+        <span class="verified">✔ Verified Seller</span>
+      <a href="https://wa.me/256784655792?text=Hello%20kabaleonline%2C%20I%20want%20to%20order%20the%20Awesome%20Gadget" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
+      
     </div>
 
-    <main class="product-grid">
-        <div class="product" data-category="electronics" data-name="Awesome Gadget">
-         <center> <img src="../images/gadget.webp" alt="Awesome Gadget"></center>
-            <h3>Awesome Gadget</h3>
-            <p class="price">UGX 20,000</p>
-            <a href="https://wa.me/256784655792?text=Hello!%20I'm%20interested%20in%20the%20Awesome%20Gadget." class="whatsapp-link">Order via WhatsApp</a>
-        </div>
-        <div class="product" data-category="clothing" data-name="Stylish T-Shirt">
-        <center>  <img src="../images/shirt.webp" alt="Stylish T-Shirt"></center>
-            <h3>Stylish T-Shirt</h3>
-            <p class="price">UGX 35,000</p>
-            <a href="https://wa.me/256784655792?text=Hello!%20I'm%20interested%20in%20the%20Stylish%20T-Shirt." class="whatsapp-link">Order via WhatsApp</a>
-        </div>
-        
-         <div class="product" data-category="home" data-name="Flying Pan">
-        <center>  <img src="../images/pans.webp" alt="Flying pan "></center>
-            <h3>Flying Pan</h3>
-            <p class="price">UGX 30,000</p>
-            <a href="https://wa.me/256784655792?text=Hello!%20I'm%20interested%20in%20the%20Flying%20Pan." class="whatsapp-link">Order via WhatsApp</a>
-        </div>
-         <div class="product" data-category="accessories" data-name="chain">
-        <center>  <img src="../images/chain.webp" alt="Chain"></center>
-            <h3>Chain</h3>
-            <p class="price">UGX 9,000</p>
-            <a href="https://wa.me/256784655792?text=Hello!%20I'm%20interested%20in%20the%20chain." class="whatsapp-link">Order via WhatsApp</a>
-        </div>
-        
-        </main>
-    
-    <section id="electronics" class="category-anchor"></section>
-    <section id="clothing" class="category-anchor"></section>
-    <section id="home" class="category-anchor"></section>
-    <section id="accessories" class="category-anchor"></section>
- <nav><center>
-         <p>
-             Do you have a product to sell? <br>  Get your product on this website in 3 steps .
-         </center>
-           <li class="footer-li">  <ol>- Tap the button below </ol>
-            <ol>- Fill in details </ol>
-             <ol>- Choose the submission method you wish to use and tap send </ol>
-         </li>
-       </p>
-      <center>   <a class="sell" href="../sell/index.html" >Sell Your Product </a></center>
-        </nav>
-  <a href="https://wa.me/256740373021?text=Hello!%20I%20have%20a%20question%20about%20your%20products." class="floating-whatsapp" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-  </a>
+    <div class="product" data-category="clothing" data-name="Stylish T-Shirt">
+     <center> <img src="../images/shirt.webp" alt="Stylish T-Shirt"/></center>
+      <h3>Stylish T-Shirt</h3>
+      <p class="price">UGX 35,000</p>
+      <p><strong>Seller:</strong> Kabale Online</p>
+        <span class="verified">✔ Verified Seller</span>
+      <a href="https://wa.me/256784655792?text=Hi%20ka baleonline%20I'm%20interested%20in%20your%20Stylish%20T-Shirt" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
+    </div>
 
-    <footer>&copy; 2025 KABALE ONLINE</footer>
+    <div class="product" data-category="home" data-name="Flying Pan">
+     <center> <img src="../images/pans.webp" alt="Flying Pan"/></center>
+      <h3>Flying Pan</h3>
+      <p class="price">UGX 30,000</p>
+      <p><strong>Seller:</strong> Kabale Online</p>
+        <span class="verified">✔ Verified Seller</span>
+      <a href="https://wa.me/256784655792?text=Hi%20kabaleonline%20I%20want%20to%20order%20the%20Flying%20Pan" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
+    </div>
+
+    <div class="product" data-category="accessories" data-name="Chain">
+     <center> <img src="../images/chain.webp" alt="Chain"/></center>
+      <h3>Chain</h3>
+      <p class="price">UGX 9,000</p>
+      <p><strong>Seller:</strong> Kabale Online</p>
+        <span class="verified">✔ Verified Seller</span>
+      <a href="https://wa.me/256784655792?text=Hello%20kabaleonline%2C%20I'm%20interested%20in%20the%20chain" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
+    
+    </div>
+  </main>
+
+  <nav>
+    <center>
+      <p>Do you have a product to sell? <br> Get your product on this website in 3 steps.</p>
+      <li class="footer-li">
+        <ol>- Tap the button below</ol>
+        <ol>- Fill in details</ol>
+        <ol>- Submit & get listed fast</ol>
+      </li>
+      <a class="sell" href="../sell/index.html" target="_blank">Sell Your Product</a>
+    </center>
+  </nav>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> Kabale Online lists products from multiple vendors. We do not directly sell these items. Please contact the seller via WhatsApp for delivery or quality concerns.
+  </div>
+
+  <footer>
+    &copy; 2025 KABALE ONLINE
+    
+  <a href="terms.html" style="color: white; text-decoration: underline; margin-left: 20px;">Terms and Conditions</a>
+  
+  </footer>
+
 </body>
 </html>
