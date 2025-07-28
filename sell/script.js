@@ -2,69 +2,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const sellForm = document.getElementById('sellForm');
     const whatsappBtn = document.getElementById('whatsapp-btn');
     
-    // --- Business Contact Information (Change these to your actual contacts) ---
-    const businessEmail = 'shopkabale@gmail.com'; 
-    const businessWhatsAppNumber = '256784655792'; // Your business WhatsApp number (e.g., for Kabale)
+    // Your business WhatsApp number (include country code, no + or spaces)
+    const businessWhatsAppNumber = '256740373021'; // IMPORTANT: Replace with your actual number
 
-    // --- 1. Handle Submission via Email ---
-    sellForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevents the form from submitting the default way
+    // Your business Email address
+    const businessEmail = 'shopkabale@gmail.com'; // IMPORTANT: Replace with your email
 
-        const formData = new FormData(sellForm);
-        const productName = formData.get('productName');
-        const phoneNumber = formData.get('phoneNumber');
-        const condition = formData.get('condition');
-        const productInfo = formData.get('productInfo');
+    const generateMessage = () => {
+        // Helper function to get form values safely
+        const getValue = (id) => document.getElementById(id)?.value.trim() || 'N/A';
+        const getFileName = () => {
+            const fileInput = document.getElementById('productImage');
+            return fileInput.files.length > 0 ? fileInput.files[0].name : 'No image attached';
+        };
 
-        const subject = `New Product Listing: ${productName}`;
-        const body = `Hello Kabale Online,
+        const formData = {
+            productName: getValue('productName'),
+            category: getValue('category'),
+            condition: getValue('condition'),
+            price: `UGX ${getValue('price')}`,
+            description: getValue('productInfo'),
+            image: getFileName(),
+            sellerPhone: getValue('phoneNumber'),
+        };
 
-Please find my product submission below:
+        // Construct the message
+        return `*New Product Submission - KABALE ONLINE*
 
-Product Name: ${productName}
-My WhatsApp Number: ${phoneNumber}
-Condition: ${condition}
---------------------------
-Other Information (Price, Description, Location, etc.):
-${productInfo}
---------------------------
+*Product Name:* ${formData.productName}
+*Category:* ${formData.category}
+*Condition:* ${formData.condition}
+*Price:* ${formData.price}
 
-Thank you!
+*Description & Location:*
+${formData.description}
 
+*Seller's WhatsApp:* ${formData.sellerPhone}
+
+---
+*Image Attached:* ${formData.image}
+(Please send the image in the chat after this message)
 `;
+    };
+    
+    // --- Handle WhatsApp Submission ---
+    whatsappBtn.addEventListener('click', () => {
+        if (!sellForm.checkValidity()) {
+            sellForm.reportValidity();
+            return;
+        }
 
-        const mailtoLink = `mailto:${businessEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.location.href = mailtoLink;
+        const message = generateMessage();
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
+        
+        window.open(whatsappUrl, '_blank');
     });
 
-    // --- 2. Handle Submission via WhatsApp ---
-    if (whatsappBtn) {
-        whatsappBtn.addEventListener('click', function() {
-            // First, check if the form is valid
-            if (!sellForm.checkValidity()) {
-                sellForm.reportValidity(); // This will show the browser's default validation messages
-                return;
-            }
+    // --- Handle Email Submission ---
+    sellForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent default form submission
+        
+        const messageBody = generateMessage().replace(/\*/g, ''); // Remove markdown for email
+        const subject = `Product Submission: ${document.getElementById('productName').value}`;
+        
+        const encodedSubject = encodeURIComponent(subject);
+        const encodedBody = encodeURIComponent(messageBody + "\n\nNote: The product image is attached to this email.");
 
-            const formData = new FormData(sellForm);
-            const productName = formData.get('productName');
-            const phoneNumber = formData.get('phoneNumber');
-            const condition = formData.get('condition');
-            const productInfo = formData.get('productInfo');
+        // This creates a mailto link. The user must manually attach the image.
+        const mailtoLink = `mailto:${businessEmail}?subject=${encodedSubject}&body=${encodedBody}`;
 
-            // Construct the message for WhatsApp (using markdown for bold)
-            const message = `*New Product Listing Submission*
-
-*Product Name:* ${productName}
-*My WhatsApp Number:* ${phoneNumber}
-*Condition:* ${condition}
-*Other Info:* ${productInfo}
-
-(I will send the product image in the next message).`;
-
-            // Create the WhatsApp URL and open it in a new tab
-            const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        });
-    }
+        // For a true file submission, you'd need a server backend.
+        // This is the best approach for a client-side only solution.
+        alert("Your email client will now open. Please remember to attach your product image before sending.");
+        window.location.href = mailtoLink;
+    });
 });
