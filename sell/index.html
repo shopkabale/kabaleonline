@@ -5,64 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sell Your Products - KABALE ONLINE</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
-      <center>  <div class="logo"><a href="https://kabaleonline.netlify.app/">KABALE ONLINE</a></div> </center>
+        <div class="logo"><a href="https://kabaleonlineshop.com">KABALE <strong>ONLINE</strong></a></div>
         <nav>
-           <a href="../shop/index.html" class="nav-button">🛒 Back to Shop</a>
-        </nav>  
+            <a href="../shop/index.html" class="nav-button">🛒 Back to Shop</a>
         </nav>
     </header>
 
-    <main class="form-container">
-        <h2>List Your Product With Us</h2>
-        <p>Fill out the form below. We will review your submission and contact you to feature it on our shop.</p>
-        
-        <form id="sellForm">
-            <div class="form-group">
-                <label for="productName">Product Name</label>
-                <input type="text" id="productName" name="productName" required>
+    <main class="container">
+        <div class="form-wrapper">
+            <h2>List Your Product With Us 📝</h2>
+            <p>Fill out the form below. We will review your submission and feature it on our shop.</p>
+            
+            <form id="sellForm">
+                <div class="form-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" id="productName" name="productName" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option value="" disabled selected>Select a category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion & Apparel</option>
+                            <option value="Home Goods">Home Goods</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="condition">Condition</label>
+                        <select id="condition" name="condition" required>
+                            <option value="New">New</option>
+                            <option value="Used - Like New">Used - Like New</option>
+                            <option value="Used - Good">Used - Good</option>
+                            <option value="Used - Fair">Used - Fair</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price (UGX)</label>
+                    <input type="number" id="price" name="price" placeholder="e.g., 50000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productInfo">Description & Location</label>
+                    <textarea id="productInfo" name="productInfo" rows="4" placeholder="Include a brief description and your location within Kabale." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="productImage">Product Image</label>
+                    <input type="file" id="productImage" name="productImage" accept="image/*" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">Your WhatsApp Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., 0700000000" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="submit-btn email">📧 Submit via Email</button>
+                    <button type="button" id="whatsapp-btn" class="submit-btn whatsapp">💬 Submit via WhatsApp</button>
+                </div>
+            </form>
+
+            <div class="notice-box">
+                <h3>📌 Important Notice</h3>
+                <p>If your product is sold elsewhere, please inform us immediately via WhatsApp so we can remove the listing. This helps us keep the shop up-to-date. Thank you!</p>
             </div>
-
-            <div class="form-group">
-                <label for="phoneNumber">Your WhatsApp Phone Number</label>
-                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., 0700000000" required>
-            </div>
-
-            <div class="form-group">
-                <label for="condition">Condition</label>
-                <select id="condition" name="condition" required>
-                    <option value="New">New</option>
-                    <option value="Used - Like New">Used - Like New</option>
-                    <option value="Used - Good">Used - Good</option>
-                    <option value="Used - Fair">Used - Fair</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="productInfo">Other Information (Price, description, location, etc.)</label>
-                <textarea id="productInfo" name="productInfo" rows="5" required></textarea>
-            </div>
-
-           
-
-            <div class="button-group">
-                <button type="submit" class="submit-btn email">Submit via Email</button>
-                <button type="button" id="whatsapp-btn" class="submit-btn whatsapp">Submit via WhatsApp</button>
-            </div>
-        </form>
-
-        <div class="notice-box">
-            <h3>Important Notice (N.B.)</h3>
-            <p>If your product is sold to someone else (not through our website), please inform us immediately via WhatsApp so we can remove the listing. This helps us keep the shop up-to-date for all customers. Thank you for your cooperation!</p>
         </div>
     </main>
-  <a href="https://wa.me/256740373021?text=Hello!%20I%20have%20a%20question%20about%20your%20products." class="floating-whatsapp" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-  </a>
 
-    <footer>&copy; 2025 KABALE ONLINE</footer>
+    <footer>
+        <p>&copy; 2025 KABALE ONLINE</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
