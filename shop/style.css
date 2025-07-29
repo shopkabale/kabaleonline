@@ -16,23 +16,9 @@ body {
   line-height: 1.6;
 }
 
-header {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 1.5rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
+/* Header */ .main-header { background-color: #3498db; padding: 1rem; color: white; text-align: center; font-size: 1.8rem; font-weight: bold; }
 
-.logo a {
-  color: white;
-  text-decoration: none;
-  font-size: 1.8rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
+.logo span { color: #f1c40f; }
 
 h4 {
   font-weight: 500;
