@@ -1,29 +1,31 @@
-// PASTE YOUR FIREBASE CONFIG OBJECT FROM STEP 1.6 HERE
-const firebaseConfig = {
-    apiKey: "AIza...",
-    authDomain: "your-project-id.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project-id.appspot.com",
-    messagingSenderId: "...",
-    appId: "..."
-};
+// PASTE YOUR SUPABASE URL AND ANON KEY FROM STEP 1.3 HERE
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const productGrid = document.getElementById('product-grid');
 
-// Listen for real-time updates from the "products" collection
-db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-    productGrid.innerHTML = ''; // Clear the grid before adding new items
-    if (snapshot.empty) {
-        productGrid.innerHTML = '<p>No products available right now. Be the first to sell something!</p>';
+// Function to fetch and display products
+async function fetchProducts() {
+    const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching products:', error);
+        productGrid.innerHTML = '<p>Could not load products. Please try again later.</p>';
         return;
     }
-    snapshot.forEach(doc => {
-        const product = doc.data();
-        
+
+    productGrid.innerHTML = ''; // Clear the grid
+    if (products.length === 0) {
+        productGrid.innerHTML = '<p>No products available right now. Be the first to sell!</p>';
+        return;
+    }
+
+    products.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
@@ -33,13 +35,21 @@ db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
                 <p>${product.description}</p>
             </div>
-            <a href="https://wa.me/${product.whatsapp}?text=Hi, I saw your product '${encodeURIComponent(product.name)}' on Kabale Online and I am interested." target="_blank" class="whatsapp-btn">
+            <a href="https://wa.me/${product.whatsapp}?text=Hi, I saw your product '${encodeURIComponent(product.name)}' on Kabale Online." target="_blank" class="whatsapp-btn">
                 Order on WhatsApp
             </a>
         `;
         productGrid.appendChild(card);
     });
-}, (error) => {
-    console.error("Error fetching products: ", error);
-    productGrid.innerHTML = "<p>Could not load products. Please check your internet connection or try again later.</p>";
-});
+}
+
+// Listen for real-time changes to the products table
+supabase.channel('public:products')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
+    console.log('Change received!', payload);
+    fetchProducts(); // Re-fetch products when a change occurs
+  })
+  .subscribe();
+
+// Initial fetch of products when the page loads
+fetchProducts();
