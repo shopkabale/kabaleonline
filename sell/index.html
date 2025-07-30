@@ -1,94 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sell Your Products - KABALE ONLINE</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Product - Kabale Online</title>
 </head>
 <body>
-    <header>
-        <div class="logo"><a href="https://kabaleonlineshop.com">KABALE <strong>ONLINE</strong></a></div>
-        <nav>
-            <a href="../shop/index.html" class="nav-button">🛒 Back to Shop</a>
-        </nav>
-    </header>
+  <h2>List Your Product</h2>
 
-    <main class="container">
-        <div class="form-wrapper">
-            <h2>List Your Product With Us 📝</h2>
-            <p>Fill out the form below. We will review your submission and feature it on our shop.</p>
-            
-            <form id="sellForm">
-                <div class="form-group">
-                    <label for="productName">Product Name</label>
-                    <input type="text" id="productName" name="productName" required>
-                </div>
+  <form onsubmit="submitProduct(event)">
+    <label>Product Name:</label><br>
+    <input type="text" id="productName" required><br><br>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" name="category" required>
-                            <option value="" disabled selected>Select a category</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Fashion">Fashion & Apparel</option>
-                            <option value="Home Goods">Home Goods</option>
-                            <option value="Furniture">Furniture</option>
-                            <option value="Agriculture">Agriculture</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="condition">Condition</label>
-                        <select id="condition" name="condition" required>
-                            <option value="New">New</option>
-                            <option value="Used - Like New">Used - Like New</option>
-                            <option value="Used - Good">Used - Good</option>
-                            <option value="Used - Fair">Used - Fair</option>
-                        </select>
-                    </div>
-                </div>
+    <label>WhatsApp Number:</label><br>
+    <input type="tel" id="phoneNumber" required><br><br>
 
-                <div class="form-group">
-                    <label for="price">Price (UGX)</label>
-                    <input type="number" id="price" name="price" placeholder="e.g., 50000" required>
-                </div>
+    <label>Condition:</label><br>
+    <select id="condition" required>
+      <option value="New">New</option>
+      <option value="Used - Like New">Used - Like New</option>
+      <option value="Used - Good">Used - Good</option>
+      <option value="Used - Fair">Used - Fair</option>
+    </select><br><br>
 
-                <div class="form-group">
-                    <label for="productInfo">Description & Location</label>
-                    <textarea id="productInfo" name="productInfo" rows="4" placeholder="Include a brief description and your location within Kabale." required></textarea>
-                </div>
+    <label>Other Info (Price, Description, Location):</label><br>
+    <textarea id="productInfo" required></textarea><br><br>
 
-                <div class="form-group">
-                    <label for="productImage">Product Image</label>
-                    <input type="file" id="productImage" name="productImage" accept="image/*" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="phoneNumber">Your WhatsApp Phone Number</label>
-                    <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., 0700000000" required>
-                </div>
+    <button type="submit">Submit Product</button>
+  </form>
 
-                <div class="button-group">
-                    <button type="submit" class="submit-btn email">📧 Submit via Email</button>
-                    <button type="button" id="whatsapp-btn" class="submit-btn whatsapp">💬 Submit via WhatsApp</button>
-                </div>
-            </form>
+  <script type="module">
+    // Firebase SDKs
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-            <div class="notice-box">
-                <h3>📌 Important Notice</h3>
-                <p>If your product is sold elsewhere, please inform us immediately via WhatsApp so we can remove the listing. This helps us keep the shop up-to-date. Thank you!</p>
-            </div>
-        </div>
-    </main>
+    // Your Firebase Config (replace with yours)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    <footer>
-        <p>&copy; 2025 KABALE ONLINE</p>
-    </footer>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    <script src="script.js"></script>
+    window.submitProduct = async (event) => {
+      event.preventDefault();
+
+      const data = {
+        productName: document.getElementById('productName').value,
+        phoneNumber: document.getElementById('phoneNumber').value,
+        condition: document.getElementById('condition').value,
+        productInfo: document.getElementById('productInfo').value,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, 'products'), data);
+        alert('Product submitted! ✅');
+        event.target.reset();
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    };
+  </script>
 </body>
 </html>
