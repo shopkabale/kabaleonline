@@ -1,115 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KABALE ONLINE - Shop</title>
-  <link rel="stylesheet" href="style.css"/>
-    <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop All Products - Kabale Online</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Kabale Online</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/shop/" class="active">Shop</a></li>
+                <li><a href="/sell/">Sell</a></li>
+            </ul>
+        </nav>
+    </header>
 
-  <header class="main-header">
-    <div class="logo">KABALE <span>ONLINE</span></div>
-  </header>
+    <main class="container">
+        <h1>Available Products</h1>
+        <p>Click "Order on WhatsApp" to talk directly to the seller. All transactions are handled between you and the seller.</p>
+        <div id="product-grid">
+            <p>Loading products from sellers in Kabale...</p>
+        </div>
+    </main>
 
-  <div class="shop-intro">
-    <h2>Our Products</h2>
-    <p>Find what you need. Order directly via WhatsApp for fast, personal service.</p>
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search products..."/>
-      <select id="categoryFilter">
-        <option value="all">All Categories</option>
-        <option value="electronics">Electronics</option>
-        <option value="clothing">Clothing</option>
-        <option value="home">Home & Kitchen</option>
-        <option value="accessories">Accessories</option>
-  <option value="shoes">Shoes</option>
-        <option value="furniture">Furniture</option>
-      </select>
-    </div>
-  </div>
+    <footer>
+        <p>&copy; 2025 Kabale Online.</p>
+    </footer>
 
-  <main class="product-grid">
-    <div class="product" data-category="electronics" data-name="Awesome Gadget">
-    <center>  <img src="../images/gadget.webp" alt="Awesome Gadget"/></center>
-      <h3>Awesome Gadget</h3>
-      <p class="price">UGX 20,000</p>
-      <p><strong>Seller:</strong> Kabale Online</p>
-        <span class="verified">✔ Verified Seller</span>
-      <a href="https://wa.me/256784655792?text=Hello%20kabaleonline%2C%20I%20want%20to%20order%20the%20Awesome%20Gadget" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
-      
-    </div>
-
-    <div class="product" data-category="clothing" data-name="Stylish T-Shirt">
-     <center> <img src="../images/shirt.webp" alt="Stylish T-Shirt"/></center>
-      <h3>Stylish T-Shirt</h3>
-      <p class="price">UGX 35,000</p>
-      <p><strong>Seller:</strong> Kabale Online</p>
-        <span class="verified">✔ Verified Seller</span>
-      <a href="https://wa.me/256784655792?text=Hi%20ka baleonline%20I'm%20interested%20in%20your%20Stylish%20T-Shirt" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
-    </div>
-
-    <div class="product" data-category="home" data-name="Flying Pan">
-     <center> <img src="../images/pans.webp" alt="Flying Pan"/></center>
-      <h3>Flying Pan</h3>
-      <p class="price">UGX 30,000</p>
-      <p><strong>Seller:</strong> Kabale Online</p>
-        <span class="verified">✔ Verified Seller</span>
-      <a href="https://wa.me/256784655792?text=Hi%20kabaleonline%20I%20want%20to%20order%20the%20Flying%20Pan" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
-    </div>
-
-    <div class="product" data-category="accessories" data-name="Chain">
-     <center> <img src="../images/chain.webp" alt="Chain"/></center>
-      <h3>Chain</h3>
-      <p class="price">UGX 9,000</p>
-      <p><strong>Seller:</strong> Kabale Online</p>
-        <span class="verified">✔ Verified Seller</span>
-      <a href="https://wa.me/256784655792?text=Hello%20kabaleonline%2C%20I'm%20interested%20in%20the%20chain" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
-    
-    </div>
-<div class="product" data-category="furniture" data-name="Glass Table">
-     <center> <img src="../images/furniture.webp" alt="Chain"/></center>
-      <h3>Glass Table</h3>
-      <p class="price">UGX 100,000</p>
-      <p><strong>Seller:</strong> Kabale Online</p>
-        <span class="verified">✔ Verified Seller</span>
-      <a href="https://wa.me/256784655792?text=Hello%20kabaleonline%2C%20I'm%20interested%20in%20Glass%20Table" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
-    
-    </div>
-      <div class="product" data-category="shoes" data-name="Jordan Shoes">
-     <center> <img src="../images/shoe.webp" alt="Chain"/></center>
-      <h3>Jordan Shoes</h3>
-      <p class="price">UGX 70,000</p>
-      <p><strong>Seller:</strong> Kabale Online</p>
-        <span class="verified">✔ Verified Seller</span>
-      <a href="https://wa.me/256784655792?text=Hello%20kabaleonline%2C%20I'm%20interested%20in%20Jordan%20shoes" class="whatsapp-link" target="_blank">Order via WhatsApp</a>
-    
-    </div>
-  </main>
-
-  <nav>
-    <center>
-      <p>Do you have a product to sell? <br> Get your product on this website in 3 steps.</p>
-      <li class="footer-li">
-        <ol>- Tap the button below</ol>
-        <ol>- Fill in details</ol>
-        <ol>- Submit & get listed fast</ol>
-      </li>
-      <a class="sell" href="../sell/index.html" target="_blank">Sell Your Product</a>
-    </center>
-  </nav>
-
-  <div class="disclaimer">
-    <strong>Disclaimer:</strong> Kabale Online lists products from multiple vendors. We do not directly sell these items. Please contact the seller via WhatsApp for delivery or quality concerns.
-  </div>
-
-  <footer>
-    &copy; 2025 KABALE ONLINE
-    
-  <a href="terms.html" style="color: white; text-decoration: underline; margin-left: 20px;">Terms and Conditions</a>
-  
-  </footer>
-
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
