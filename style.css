@@ -1,50 +1,119 @@
-/* Global Styles */ body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; line-height: 1.6; }
-
-a { text-decoration: none; color: inherit; }
-
-h1, h2, h3 { color: #2c3e50; }
-
-/* Header */ .main-header { background-color: #3498db; padding: 1rem; color: white; text-align: center; font-size: 1.8rem; font-weight: bold; }
-
-.logo span { color: #f1c40f; }
-
-/* Hero Section */ .hero { background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('images/hero-bg.jpg') no-repeat center center/cover; color: white; text-align: center; padding: 4rem 1rem; }
-
-.cta-button { background-color: #25d366; color: white; padding: 0.75rem 1.5rem; border-radius: 5px; font-size: 1rem; margin-top: 1rem; display: inline-block; }
-
-/* Category Section */ .category-section { padding: 2rem; background-color: white; }
-
-.category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }
-
-.category-card { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
-
-.category-card:hover { transform: scale(1.03); }
-
-.category-card img { width: 100%; height: 150px; object-fit: cover; }
-
-.category-overlay { position: absolute; bottom: 0; background: rgba(0,0,0,0.5); width: 100%; text-align: center; color: white; padding: 0.5rem; }
-
-/* Info Sections */ .info-section { padding: 2rem; background-color: #ecf0f1; }
-
-.action-cards, .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
-
-.action-card, .card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
-.nav-button { display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background-color: #3498db; color: white; border-radius: 5px; font-weight: bold; }
-
-.sell-button { background-color: #2ecc71; }
-
-/* Floating WhatsApp Icon */ .floating-whatsapp { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; font-size: 24px; padding: 15px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.3s ease; }
-
-.floating-whatsapp:hover { transform: scale(1.1); }
-
-/* Footer */ footer { text-align: center; background-color: #2c3e50; color: white; padding: 1rem; font-size: 0.9rem; }
-
-@media (max-width: 600px) { .hero h1 { font-size: 1.5rem; }
-
-.cta-button {
-    font-size: 0.9rem;
+/* General Styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
 }
-
+.container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 2rem;
 }
-
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+nav .logo {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #5a4fcf;
+    text-decoration: none;
+}
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+}
+nav a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+}
+nav a.active, nav a:hover {
+    color: #5a4fcf;
+}
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 2rem;
+    background-color: #e2e2e2;
+}
+/* Shop Page - Product Grid */
+#product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+.product-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+.product-card .card-content {
+    padding: 1rem;
+    flex-grow: 1;
+}
+.product-card h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+.product-card .price {
+    font-weight: bold;
+    color: #008000;
+    margin-bottom: 0.5rem;
+}
+.whatsapp-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #25D366;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: auto;
+}
+.whatsapp-btn:hover {
+    background-color: #1DAE54;
+}
+/* Sell Page - Auth & Form Styles */
+.hidden { display: none; }
+#auth-container, #sell-form {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+#auth-container h2 { text-align: center; margin-top: 0; }
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.form-group small { display: block; margin-top: 0.5rem; color: #666; }
+#auth-container .auth-toggle { text-align: center; margin-top: 1rem; cursor: pointer; color: #5a4fcf; }
+#auth-container .error-message { color: red; text-align: center; margin-top: 1rem; }
+#user-info { text-align: center; margin-bottom: 2rem; padding: 1rem; background-color: #eef; border-radius: 8px; }
+#logout-btn { background-color: #dc3545; padding: 0.5rem 1rem; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 1rem; }
+#sell-form button, #auth-container button { width: 100%; padding: 1rem; background-color: #5a4fcf; color: white; border: none; border-radius: 4px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+#sell-form button:hover, #auth-container button:hover { background-color: #4a3fbf; }
