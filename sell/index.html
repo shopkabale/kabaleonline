@@ -1,79 +1,67 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Submit Product - Kabale Online</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell an Item - Kabale Online</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>List Your Product</h2>  <form onsubmit="submitProduct(event)">
-    <label>Product Name:</label>
-    <input type="text" id="productName" required><label>WhatsApp Number:</label>
-<input type="tel" id="phoneNumber" required>
+    <header>
+        <nav>
+            <a href="/" class="logo">Kabale Online</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/shop/">Shop</a></li>
+                <li><a href="/sell/" class="active">Sell</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="container">
+        <div id="auth-container">
+            <div id="login-view">
+                <h2>Login to Sell Your Item</h2>
+                <form id="login-form">
+                    <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
+                    <div class="form-group"><label for="login-password">Password</label><input type="password" id="login-password" required></div>
+                    <button type="submit">Login</button>
+                </form>
+                <p class="auth-toggle" onclick="toggleViews()">Don't have an account? Sign Up</p>
+            </div>
+            <div id="signup-view" class="hidden">
+                <h2>Create an Account to Sell</h2>
+                <form id="signup-form">
+                    <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
+                    <div class="form-group"><label for="signup-password">Password</label><input type="password" id="signup-password" required minlength="6"></div>
+                    <button type="submit">Sign Up</button>
+                </form>
+                <p class="auth-toggle" onclick="toggleViews()">Already have an account? Login</p>
+            </div>
+            <p id="auth-error" class="error-message"></p>
+        </div>
 
-<label>Condition:</label>
-<select id="condition" required>
-  <option value="New">New</option>
-  <option value="Used - Like New">Used - Like New</option>
-  <option value="Used - Good">Used - Good</option>
-  <option value="Used - Fair">Used - Fair</option>
-</select>
+        <div id="sell-container" class="hidden">
+            <div id="user-info">Logged in as <strong id="user-email"></strong><button id="logout-btn">Logout</button></div>
+            <h1>Sell Your Item</h1>
+            <p>Fill out the form below. Your item will appear on the Shop page immediately.</p>
+            <form id="sell-form">
+                 <div class="form-group"><label for="product-name">Product Name</label><input type="text" id="product-name" required></div>
+                <div class="form-group"><label for="product-description">Description</label><textarea id="product-description" rows="4" required></textarea></div>
+                <div class="form-group"><label for="product-price">Price (UGX)</label><input type="number" id="product-price" required></div>
+                <div class="form-group">
+                    <label for="whatsapp-number">Your WhatsApp Number</label>
+                    <input type="tel" id="whatsapp-number" placeholder="e.g., 2567..." required>
+                    <small><b>Important:</b> Buyers will use this number. Please include the country code (256).</small>
+                </div>
+                 <div class="form-group"><label for="product-image">Product Image</label><input type="file" id="product-image" accept="image/*" required></div>
+                <button type="submit" id="submit-btn">Submit Item</button>
+                <p id="feedback-message"></p>
+            </form>
+        </div>
+    </main>
+    <footer><p>&copy; 2025 Kabale Online.</p></footer>
 
-<label>Other Info (Price, Description, Location):</label>
-<textarea id="productInfo" required></textarea>
-
-<label>Upload Product Image:</label>
-<input type="file" id="productImage" accept="image/*" required>
-
-<button type="submit">Submit Product</button>
-
-  </form>  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBUPD_17eYWVMK4f19OsM4zl1JOncZC4cI",
-      authDomain: "kabaleonline.firebaseapp.com",
-      projectId: "kabaleonline",
-      storageBucket: "kabaleonline.firebasestorage.app",
-      messagingSenderId: "299550675515",
-      appId: "1:299550675515:web:c7e7b3ce6c64a1a03f421e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    window.submitProduct = async (event) => {
-      event.preventDefault();
-
-      const file = document.getElementById('productImage').files[0];
-      if (!file) {
-        alert("Please upload an image.");
-        return;
-      }
-
-      const imageRef = ref(storage, 'productImages/' + file.name);
-      await uploadBytes(imageRef, file);
-      const imageUrl = await getDownloadURL(imageRef);
-
-      const data = {
-        productName: document.getElementById('productName').value,
-        phoneNumber: document.getElementById('phoneNumber').value,
-        condition: document.getElementById('condition').value,
-        productInfo: document.getElementById('productInfo').value,
-        imageUrl: imageUrl,
-        createdAt: new Date().toISOString()
-      };
-
-      try {
-        await addDoc(collection(db, 'products'), data);
-        alert('Product submitted! ✅');
-        event.target.reset();
-      } catch (error) {
-        alert('Error: ' + error.message);
-      }
-    };
-  </script></body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
 </html>
