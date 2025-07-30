@@ -1,60 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Submit Product - Kabale Online</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>List Your Product</h2>
+  <h2>List Your Product</h2>  <form onsubmit="submitProduct(event)">
+    <label>Product Name:</label>
+    <input type="text" id="productName" required><label>WhatsApp Number:</label>
+<input type="tel" id="phoneNumber" required>
 
-  <form onsubmit="submitProduct(event)">
-    <label>Product Name:</label><br>
-    <input type="text" id="productName" required><br><br>
+<label>Condition:</label>
+<select id="condition" required>
+  <option value="New">New</option>
+  <option value="Used - Like New">Used - Like New</option>
+  <option value="Used - Good">Used - Good</option>
+  <option value="Used - Fair">Used - Fair</option>
+</select>
 
-    <label>WhatsApp Number:</label><br>
-    <input type="tel" id="phoneNumber" required><br><br>
+<label>Other Info (Price, Description, Location):</label>
+<textarea id="productInfo" required></textarea>
 
-    <label>Condition:</label><br>
-    <select id="condition" required>
-      <option value="New">New</option>
-      <option value="Used - Like New">Used - Like New</option>
-      <option value="Used - Good">Used - Good</option>
-      <option value="Used - Fair">Used - Fair</option>
-    </select><br><br>
+<label>Upload Product Image:</label>
+<input type="file" id="productImage" accept="image/*" required>
 
-    <label>Other Info (Price, Description, Location):</label><br>
-    <textarea id="productInfo" required></textarea><br><br>
+<button type="submit">Submit Product</button>
 
-    <button type="submit">Submit Product</button>
-  </form>
-
-  <script type="module">
-    // Firebase SDKs
+  </form>  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
-    // Your Firebase Config (replace with yours)
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MSG_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyBUPD_17eYWVMK4f19OsM4zl1JOncZC4cI",
+      authDomain: "kabaleonline.firebaseapp.com",
+      projectId: "kabaleonline",
+      storageBucket: "kabaleonline.firebasestorage.app",
+      messagingSenderId: "299550675515",
+      appId: "1:299550675515:web:c7e7b3ce6c64a1a03f421e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     window.submitProduct = async (event) => {
       event.preventDefault();
+
+      const file = document.getElementById('productImage').files[0];
+      if (!file) {
+        alert("Please upload an image.");
+        return;
+      }
+
+      const imageRef = ref(storage, 'productImages/' + file.name);
+      await uploadBytes(imageRef, file);
+      const imageUrl = await getDownloadURL(imageRef);
 
       const data = {
         productName: document.getElementById('productName').value,
         phoneNumber: document.getElementById('phoneNumber').value,
         condition: document.getElementById('condition').value,
         productInfo: document.getElementById('productInfo').value,
+        imageUrl: imageUrl,
         createdAt: new Date().toISOString()
       };
 
@@ -66,6 +75,5 @@
         alert('Error: ' + error.message);
       }
     };
-  </script>
-</body>
+  </script></body>
 </html>
