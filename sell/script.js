@@ -1,5 +1,5 @@
 // PASTE YOUR SUPABASE URL AND ANON KEY FROM STEP 1.3 HERE
-const SUPABASE_URL = 'https://cefajxqufyxdjxtdolib.supabase.co';
+const SUPABASE_URL ='https://cefajxqufyxdjxtdolib.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZmFqeHF1Znl4ZGp4dGRvbGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4ODA1MjYsImV4cCI6MjA2OTQ1NjUyNn0.osP7p2SWj1ZM4V4XmYnN0Y1Q_ZSvNlmnRAa0Iiaj6Yo';
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
