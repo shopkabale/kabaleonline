@@ -1,207 +1,49 @@
-/* --- Global Styles & Variables --- */
-:root {
-    --primary-color: #2c3e50; /* Deep Blue */
-    --secondary-color: #3498db; /* Bright Blue */
-    --accent-color: #e67e22; /* Orange */
-    --whatsapp-color: #25D366;
-    --background-color: #ecf0f1; /* Light Gray */
-    --surface-color: #ffffff; /* White */
-    --text-color: #34495e; /* Dark Gray */
-    --border-color: #bdc3c7;
-    --font-family: 'Poppins', sans-serif;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: var(--font-family);
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f9;
+  padding: 2rem;
+  max-width: 600px;
+  margin: auto;
 }
 
-.container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+h2 {
+  text-align: center;
+  color: #2c3e50;
 }
 
-/* --- Header & Footer --- */
-header {
-    background-color: var(--surface-color);
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+form {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-header .logo a {
-    text-decoration: none;
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    font-weight: 700;
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.25rem;
 }
 
-header .logo strong {
-    font-weight: 400;
-    color: var(--secondary-color);
+input, textarea, select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
 }
 
-.nav-button {
-    background-color: var(--secondary-color);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
+button {
+  background-color: #3498db;
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
 }
 
-.nav-button:hover {
-    background-color: #2980b9; /* Darker Blue */
-}
-
-footer {
-    text-align: center;
-    padding: 1.5rem;
-    margin-top: 2rem;
-    color: #7f8c8d;
-}
-
-/* --- Form Styles --- */
-.form-wrapper {
-    background-color: var(--surface-color);
-    padding: 2.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.form-wrapper h2 {
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-    text-align: center;
-}
-
-.form-wrapper p {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #7f8c8d;
-}
-
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.form-group input[type="text"],
-.form-group input[type="tel"],
-.form-group input[type="number"],
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
-    font-size: 1rem;
-    font-family: var(--font-family);
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-}
-
-.form-group input[type="file"] {
-    padding: 0.5rem;
-    border: 1px dashed var(--border-color);
-    cursor: pointer;
-}
-
-.form-row {
-    display: flex;
-    gap: 1rem;
-}
-
-.form-row .form-group {
-    width: 100%;
-}
-
-textarea {
-    resize: vertical;
-}
-
-.button-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 0.9rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: opacity 0.3s ease, transform 0.2s ease;
-}
-
-.submit-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-}
-
-.submit-btn.email {
-    background-color: var(--accent-color);
-}
-
-.submit-btn.whatsapp {
-    background-color: var(--whatsapp-color);
-}
-
-/* --- Notice Box --- */
-.notice-box {
-    margin-top: 2.5rem;
-    padding: 1.5rem;
-    background-color: #f8f9fa;
-    border-left: 5px solid var(--secondary-color);
-    border-radius: 5px;
-}
-
-.notice-box h3 {
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-/* --- Responsive Design --- */
-@media (max-width: 600px) {
-    .form-row, .button-group {
-        flex-direction: column;
-    }
-    
-    .form-wrapper {
-        padding: 1.5rem;
-    }
-
-    header {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-    }
+button:hover {
+  background-color: #2980b9;
 }
