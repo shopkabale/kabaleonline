@@ -5,6 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sellForm = document.getElementById('sell-item-form');
 
+    // Create a div to hold the thank you message
+    const thankYouMessage = document.createElement('div');
+    thankYouMessage.id = 'thank-you-message';
+    thankYouMessage.style.marginTop = '1rem';
+    thankYouMessage.style.color = 'green';
+    thankYouMessage.style.fontWeight = 'bold';
+    sellForm.parentNode.insertBefore(thankYouMessage, sellForm.nextSibling); // Insert after the form
+
     sellForm.addEventListener('submit', (event) => {
         // Prevent the form from submitting the traditional way
         event.preventDefault();
@@ -21,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const formattedPrice = new Intl.NumberFormat('en-US').format(productPrice);
 
         // Construct the message for WhatsApp
-        // Using asterisks for bold and other formatting that WhatsApp recognizes
         const message = `
 *New Item Submission for Kabale Online*
 
@@ -45,5 +52,11 @@ ${productDescription || 'No description provided.'}
 
         // Open the URL in a new tab
         window.open(whatsappURL, '_blank');
+
+        // Show thank you message on the page
+        thankYouMessage.textContent = '✅ Thank you! Your product information has been sent via WhatsApp.';
+
+        // Clear the form
+        sellForm.reset();
     });
 });
