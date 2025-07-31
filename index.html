@@ -3,47 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kabale Online - Buy & Sell Locally in Western Uganda</title>
+    <title>Kabale Online - Your Local Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/" class="logo">Kabale Online</a>
-            <ul>
-                <li><a href="/" class="active">Home</a></li>
-                <li><a href="/shop/">Shop</a></li>
-                <li><a href="/sell/">Sell</a></li>
-            </ul>
-        </nav>
+
+    <header class="site-header">
+        <div class="header-content">
+            <h1 class="site-title">Kabale Online</h1>
+            <nav class="main-nav">
+                <a href="index.html" class="active">Home</a>
+                <a href="shop/index.html">Shop</a>
+                <a href="sell/index.html">Sell</a>
+            </nav>
+        </div>
     </header>
 
-    <main class="container">
-        <section class="hero">
-            <h1>Welcome to Kabale Online 🛍️</h1>
-            <p>The simplest way to buy and sell goods right here in Kabale and the Western Region.</p>
+    <main>
+        <section class="hero-section">
+            <div class="container">
+                <h2>Your Local Marketplace in Kabale</h2>
+                <p>Connecting buyers and sellers right here in our community. Buy and sell almost anything, safely and easily.</p>
+                <div class="hero-buttons">
+                    <a href="shop/index.html" class="btn btn-primary">Shop Now</a>
+                    <a href="sell/index.html" class="btn btn-secondary">Sell Your Items</a>
+                </div>
+            </div>
         </section>
 
-        <section>
-            <h2>Why a Simple Site?</h2>
-            <p>
-                We built Kabale Online to be fast, easy to use, and accessible for everyone. By connecting buyers and sellers directly through WhatsApp, we eliminate complex systems and fees. This means a more personal, faster, and community-focused shopping experience.
-            </p>
+        <section class="container section">
+            <h3 class="section-title">Browse by Category</h3>
+            <div class="category-grid">
+                <a href="shop/index.html?category=electronics" class="category-card">
+                    <h4>Electronics</h4>
+                    <p>Phones, Laptops, TVs</p>
+                </a>
+                <a href="shop/index.html?category=fashion" class="category-card">
+                    <h4>Fashion</h4>
+                    <p>Clothing, Shoes, Bags</p>
+                </a>
+                <a href="shop/index.html?category=home" class="category-card">
+                    <h4>Home & Garden</h4>
+                    <p>Furniture, Kitchenware</p>
+                </a>
+                <a href="shop/index.html?category=vehicles" class="category-card">
+                    <h4>Vehicles</h4>
+                    <p>Cars, Boda Bodas</p>
+                </a>
+            </div>
         </section>
 
-        <section>
-            <h2>Benefits of Shopping With Us</h2>
-            <ul>
-                <li><strong>Direct Communication:</strong> Chat directly with the seller on WhatsApp to ask questions, negotiate, and arrange pickup or delivery.</li>
-                <li><strong>Support Local:</strong> Every purchase supports a local entrepreneur or neighbour in our Kabale community.</li>
-                <li><strong>Fast & Lightweight:</strong> Our site loads quickly, even on slower mobile networks common in the region.</li>
-                <li><strong>No Hidden Fees:</strong> The price you see is the price you discuss with the seller. We don't take a commission.</li>
-            </ul>
+        <section class="container section">
+            <h3 class="section-title">About Kabale Online</h3>
+            <p>We are a community-focused platform created to make local trade simpler and more accessible for everyone in Kabale. Our mission is to provide a central place where you can find great deals from your neighbours or turn your unused items into cash.</p>
+            <div class="disclaimer-box">
+                <h4>How It Works</h4>
+                <p><strong>Important:</strong> Kabale Online is a marketplace to connect people. <strong>We do not own any of the products displayed on the site.</strong> All transactions are handled directly between the buyer and the seller.</p>
+                <ol>
+                    <li><strong>Browse:</strong> Look through listings or search for what you need.</li>
+                    <li><strong>Contact:</strong> Use the details on the listing to contact the seller directly.</li>
+                    <li><strong>Transact:</strong> Meet the seller in a safe, public place to inspect the item and make your purchase.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="bg-light section">
+            <div class="container">
+                <h3 class="section-title">Why We Keep Our Site Simple</h3>
+                <p>We believe in a fast and straightforward experience. Here’s why we built a simple, static website:</p>
+                <ul>
+                    <li><strong>Loads Quickly:</strong> Our pages load fast, even on slower internet connections, saving you time.</li>
+                    <li><strong>Saves Your Data:</strong> A simple site uses less mobile data, which means you can browse for longer without worry.</li>
+                    <li><strong>Easy to Use:</strong> No complicated features. Just a clean, simple way to find what you're looking for.</li>
+                    <li><strong>Focus on What Matters:</strong> Our simplicity allows us to focus on our main goal: connecting you with sellers in our community.</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section class="cta-section">
+            <div class="container">
+                <h2>Have Something to Sell?</h2>
+                <p>It's free to list your items. Turn your clutter into cash and reach hundreds of local buyers today!</p>
+                <a href="sell/index.html" class="btn-cta">Start Selling Now</a>
+            </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 Kabale Online. Connecting our community.</p>
+        <div class="container">
+            <p>&copy; 2025 Kabale Online. All Rights Reserved. A Community Marketplace.</p>
+             <a href="../shop/terms.html" class="footer-link">Terms of Service</a>
+        </div>
     </footer>
+
 </body>
 </html>
