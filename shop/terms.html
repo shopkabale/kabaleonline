@@ -3,94 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms and Conditions - Kabale online</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Terms and Conditions - Kabale Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* Add a little extra spacing for the terms content */
-        .terms-content {
-            background-color: var(--card-bg);
-            padding: 2rem 3rem;
-            margin: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-            text-align: left;
+        /* --- General Setup & Variables --- */
+        :root {
+            --primary-color: #00838f;
+            --secondary-color: #004d40;
+            --accent-color: #f7b731;
+            --bg-main: #f4f7f6;
+            --bg-card: #ffffff;
+            --text-dark: #333;
+            --text-light: #6c757d;
+            --border-color: #e0e0e0;
+            --safe-color: #28a745;
+            --trust-color: #007bff;
+            --prohibited-color: #dc3545;
         }
-        .terms-content h2 {
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-main);
+            line-height: 1.7;
+        }
+
+        /* --- Header --- */
+        .site-header {
+            background-color: var(--bg-card);
+            padding: 1rem 5%;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .site-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--secondary-color);
+        }
+        .main-nav a {
             color: var(--primary-color);
-            border-bottom: 2px solid var(--hover-bg);
-            padding-bottom: 0.5rem;
-            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-left: 1.5rem;
+            text-decoration: none;
+            transition: color 0.2s;
         }
-        .terms-content h3 {
-             color: var(--secondary-color);
+        .main-nav a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
         }
-        .terms-content ul {
-            padding-left: 20px;
+
+        /* --- Main Layout & Page Header --- */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
         }
-        .terms-content li {
+        .page-header {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        .page-header h1 {
+            font-size: 2.8rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        .page-header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        /* --- Terms Card Styling --- */
+        .terms-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+        }
+        .intro-text {
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        .terms-section {
+            margin-bottom: 2.5rem;
+        }
+        .terms-section h2 {
+            font-size: 1.6rem;
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--bg-main);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .terms-section h2 .icon {
+            margin-right: 0.75rem;
+            font-size: 1.4rem;
+        }
+
+        /* --- Custom Lists with Icons --- */
+        .icon-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .icon-list li {
+            padding-left: 2rem;
+            position: relative;
             margin-bottom: 0.75rem;
+        }
+        .icon-list li::before {
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        /* Safe List (Green Check) */
+        .icon-list.safe li::before {
+            content: '✓';
+            color: var(--safe-color);
+        }
+        /* Trust List (Blue Check) */
+        .icon-list.trust li::before {
+            content: '✓';
+            color: var(--trust-color);
+        }
+        /* Prohibited List (Red Cross) */
+        .icon-list.prohibited li::before {
+            content: '✗';
+            color: var(--prohibited-color);
+        }
+
+        /* --- Special Badges & Boxes --- */
+        .verified-badge {
+            background-color: var(--safe-color);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .disclaimer-box {
+            background-color: #fff9e6; /* Light yellow */
+            border-left: 5px solid var(--accent-color);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .disclaimer-box p {
+            margin-bottom: 1rem;
+        }
+        .disclaimer-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- Footer --- */
+        .site-footer {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+        .footer-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .terms-card {
+                padding: 1.5rem;
+            }
+            .page-header h1 {
+                font-size: 2.2rem;
+            }
+            .header-content {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">
-            <a href="index.html"> Kabale online </a> </div>
-        <h4>Your Trusted Peer-to-Peer Platform</h4>
+    <header class="site-header">
+        <div class="header-content">
+            <h1 class="site-title">Kabale Online</h1>
+            <nav class="main-nav">
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="sell.html">Sell</a>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <div class="shop-intro">
+    <main class="main-container">
+        <div class="page-header">
             <h1>Terms and Conditions</h1>
-            <p>Last Updated: July 28, 2025</p>
+            <p>Your guide to safe and fair trading. Last Updated: July 31, 2025</p>
         </div>
 
-        <div class="terms-content">
-            <p>Welcome to Kabale online! We connect  buyers and sellers around kabale community. To ensure a safe and trustworthy environment, all users must adhere to the following terms, especially our Buyer Protection Policy.</p>
+        <div class="terms-card">
+            <p class="intro-text">Welcome to Kabale Online! Our mission is to connect buyers and sellers within the Kabale community. To ensure a safe, trustworthy, and fair environment for everyone, you must agree to and follow these terms.</p>
 
-            <h2>1. Buyer Protection Policy</h2>
-            <p>Our goal is to prevent fraud and scams. We have implemented the following measures to protect you:</p>
-            
-            <h3>1.1 Verified Sellers</h3>
-            <p>Sellers marked with a <span class="verified">Verified</span> badge have undergone an identity verification process with us. While this significantly reduces risk, we still advise caution with all transactions.</p>
+            <section class="terms-section">
+                <h2><span class="icon">🛡️</span> For Buyers: How to Stay Safe</h2>
+                <p>Your safety is our top priority. We've created these guidelines to protect you from scams and ensure a positive experience.</p>
+                <ul class="icon-list safe">
+                    <li><strong>Meet in Public:</strong> Always arrange to meet sellers in a well-lit, public place.</li>
+                    <li><strong>Inspect Before Paying:</strong> Thoroughly check the item to ensure it matches the seller's description *before* any money changes hands.</li>
+                    <li><strong>No Prepayments:</strong> Never send advance payments, especially through mobile money. Pay only when you have the item.</li>
+                    <li><strong>Trust Your Gut:</strong> If a deal feels too good to be true or a seller is pressuring you, it's okay to walk away.</li>
+                </ul>
+            </section>
 
-            <h3>1.2 Safe Transaction Guidelines</h3>
-            <p>To protect yourself from theft or scams, we strongly recommend following these steps:</p>
-            <ul>
-                <li><strong>Meet in Public:</strong> Always arrange to meet the seller in a safe, public place or any open place .</li>
-                <li><strong>Inspect Before You Pay:</strong> Thoroughly inspect the item to ensure it matches the description and is in the expected condition before handing over any money.</li>
-                <li><strong>No Prepayments:</strong> Do not pay for an item before you have received and inspected it. Be wary of sellers who demand advance payments or deposits via mobile money or bank transfer.</li>
-                <li><strong>Bring a Friend:</strong> If possible, take a friend with you to the meeting.</li>
-            </ul>
+            <section class="terms-section">
+                <h2><span class="icon">🤝</span> For Sellers: How to Build Trust</h2>
+                <p>Honesty and clear communication are key to successful sales. As a seller, you agree to the following:</p>
+                <ul class="icon-list trust">
+                    <li><strong>Describe Accurately:</strong> Provide truthful, detailed descriptions of your items, including any flaws or defects.</li>
+                    <li><strong>Use Real Photos:</strong> Post clear, recent photos of the actual item you are selling.</li>
+                    <li><strong>Communicate Fairly:</strong> Respond to potential buyers promptly and politely. Do not pressure them into making a purchase.</li>
+                    <li><strong>Sell Legitimate Items:</strong> You must have the legal right to sell every item you list.</li>
+                </ul>
+                 <p>Sellers with a <span class="verified-badge">Verified</span> badge have completed an identity check with us, increasing buyer confidence.</p>
+            </section>
 
-            <h3>1.3 Dispute Resolution</h3>
-            <p>If an item is significantly not as described or if you suspect fraudulent activity:</p>
-            <ol>
-                <li>First, attempt to resolve the issue directly with the seller.</li>
-                <li>If you cannot reach a resolution, contact us within 48 hours of the transaction through our official support channel.</li>
-                <li>Provide all evidence, including screenshots of your chat, photos of the item, and the seller's profile details.</li>
-                <li> NB : Please remember its your responsibility to ensure that your safety is at maximum. </li>
-            </ol>
+            <section class="terms-section">
+                <h2><span class="icon">🚫</span> Prohibited Conduct</h2>
+                <p>Any activity that compromises the safety or integrity of our community is strictly forbidden. This includes:</p>
+                 <ul class="icon-list prohibited">
+                    <li><strong>Selling Stolen Goods:</strong> This is a criminal offense and will be reported to the authorities.</li>
+                    <li><strong>Listing Counterfeit Products:</strong> All items must be genuine.</li>
+                    <li><strong>Scam Listings:</strong> Posting non-existent items to collect prepayments is fraud.</li>
+                     <li><strong>Harassment:</strong> Abusive or threatening language towards any user will result in an immediate ban.</li>
+                </ul>
+            </section>
 
-            <h2>2. Prohibited Items and Conduct</h2>
-            <p>To protect all users, the sale of the following is strictly forbidden:</p>
-            <ul>
-                <li><strong>Stolen Goods:</strong> Listing or selling any item you do not have the legal right to own is illegal and will result in an immediate ban and report to authorities.</li>
-                <li><strong>Counterfeit Products:</strong> Selling fake or knock-off items advertised as genuine is considered fraud.</li>
-                <li><strong>Illegal Items or Services:</strong> Any items that are illegal to possess or sell are prohibited.</li>
-                <li><strong>Scam Listings:</strong> Posting listings for non-existent items with the intent to collect prepayments is strictly forbidden.</li>
-            </ul>
-            <p>Violating these rules will lead to immediate legal action .</p>
-
-            <h2>3. Disclaimer</h2>
-            <p>Kabale online acts as a venue to connect buyers and sellers. We do not take possession of items, handle payments, or act as a party in any transaction. While we provide guidelines and will enforce our policies by banning fraudulent users, we are not liable for any loss, theft, or damages that occur during a transaction. Your safety is your responsibility.</p>
+            <section class="terms-section">
+                <h2><span class="icon">⚠️</span> Our Role & Important Disclaimer</h2>
+                <div class="disclaimer-box">
+                    <p><strong>Kabale Online is a connector, not a participant.</strong> We provide the platform for buyers and sellers to find each other. We do not handle payments, take possession of items, or verify the quality of goods.</p>
+                    <p>While we will enforce our policies by removing fraudulent users, <strong>your safety and the outcome of your transactions are your own responsibility.</strong> We are not liable for any loss, damage, or disputes that may occur.</p>
+                </div>
+            </section>
         </div>
     </main>
 
-    <footer>
+    <footer class="site-footer">
         <p>&copy; 2025 Kabale Online. All Rights Reserved.</p>
-        <a href="index.html" style="color: white; text-decoration: underline;">Back to Shop</a>
+        <a href="index.html" class="footer-link"> Back to shop </a>
     </footer>
 
 </body>
