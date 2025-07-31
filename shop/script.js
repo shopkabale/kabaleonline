@@ -1,55 +1,71 @@
-// PASTE YOUR SUPABASE URL AND ANON KEY FROM STEP 1.3 HERE
-const SUPABASE_URL = 'https://cefajxqufyxdjxtdolib.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZmFqeHF1Znl4ZGp4dGRvbGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4ODA1MjYsImV4cCI6MjA2OTQ1NjUyNn0.osP7p2SWj1ZM4V4XmYnN0Y1Q_ZSvNlmnRAa0Iiaj6Yo';
+// Wait for the DOM to be fully loaded before running the script  
+document.addEventListener('DOMContentLoaded', () => {  
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // --- Element Selectors ---  
+    const searchInput = document.getElementById('search-input');  
+    const searchForm = document.getElementById('search-form');  
+    const categoryButtons = document.querySelectorAll('.category-btn');  
+    const productCards = document.querySelectorAll('.product-card');  
 
-const productGrid = document.getElementById('product-grid');
+    // --- Search Functionality ---  
+    const filterProductsBySearch = () => {  
+        const searchTerm = searchInput.value.toLowerCase();  
 
-// Function to fetch and display products
-async function fetchProducts() {
-    const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+        productCards.forEach(card => {  
+            const productName = card.querySelector('h3').textContent.toLowerCase();  
+            const shouldShow = productName.includes(searchTerm);  
+            card.style.display = shouldShow ? 'flex' : 'none';  
+        });  
+    };  
 
-    if (error) {
-        console.error('Error fetching products:', error);
-        productGrid.innerHTML = '<p>Could not load products. Please try again later.</p>';
-        return;
-    }
+    searchForm.addEventListener('submit', (e) => {  
+        e.preventDefault();  
+        filterProductsBySearch();  
+    });  
 
-    productGrid.innerHTML = ''; // Clear the grid
-    if (products.length === 0) {
-        productGrid.innerHTML = '<p>No products available right now. Be the first to sell!</p>';
-        return;
-    }
+    searchInput.addEventListener('keyup', filterProductsBySearch);  
 
-    products.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <img src="${product.imageUrl}" alt="${product.name}">
-            <div class="card-content">
-                <h3>${product.name}</h3>
-                <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
-                <p>${product.description}</p>
-            </div>
-            <a href="https://wa.me/${product.whatsapp}?text=Hi, I saw your product '${encodeURIComponent(product.name)}' on Kabale Online." target="_blank" class="whatsapp-btn">
-                Order on WhatsApp
-            </a>
-        `;
-        productGrid.appendChild(card);
+    // --- Category Filtering Functionality ---  
+    categoryButtons.forEach(button => {  
+        button.addEventListener('click', () => {  
+            const selectedCategory = button.textContent.toLowerCase().replace(' & ', '-').split(' ')[0];  
+
+            categoryButtons.forEach(btn => btn.classList.remove('active'));  
+            button.classList.add('active');  
+
+            productCards.forEach(card => {  
+                const cardCategory = card.dataset.category.toLowerCase();  
+
+                if (selectedCategory === 'all' || cardCategory === selectedCategory) {  
+                    card.style.display = 'flex';  
+                } else {  
+                    card.style.display = 'none';  
+                }  
+            });  
+        });  
+    });  
+
+    // --- WhatsApp Contact Functionality ---  
+    const contactButtons = document.querySelectorAll('.btn-contact');
+
+    contactButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const productCard = button.closest('.product-card');
+            const productName = productCard.querySelector('h3').textContent;
+            const productPrice = productCard.querySelector('.product-price').textContent;
+            const seller = productCard.querySelector('.product-description').textContent.replace('Seller: ', '');
+
+            const message = `Hello, I'm interested in the item "${productName}" priced at ${productPrice}. Is it still available?\n\nSeller: ${seller}\n\n- From Kabale Online`;
+            const encodedMessage = encodeURIComponent(message);
+
+            // Replace with your WhatsApp number (no plus sign, just country code and number)
+          //  const whatsappNumber = '256784655792'; // ← Replace with your number
+          const whatsappNumber = productCard.getAttribute('data-phone');
+
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+        });
     });
-}
 
-// Listen for real-time changes to the products table
-supabase.channel('public:products')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
-    console.log('Change received!', payload);
-    fetchProducts(); // Re-fetch products when a change occurs
-  })
-  .subscribe();
-
-// Initial fetch of products when the page loads
-fetchProducts();
+});
