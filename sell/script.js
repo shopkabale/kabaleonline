@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Replace this with your actual WhatsApp number, including the country code without '+' or '00'.
-    const businessWhatsAppNumber = '256784655792'; // Example for Uganda: 256xxxxxxxxx
+    const businessWhatsAppNumber = '256784655792';
 
     const sellForm = document.getElementById('sell-item-form');
 
@@ -11,13 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     thankYouMessage.style.marginTop = '1rem';
     thankYouMessage.style.color = 'green';
     thankYouMessage.style.fontWeight = 'bold';
-    sellForm.parentNode.insertBefore(thankYouMessage, sellForm.nextSibling); // Insert after the form
+    sellForm.parentNode.insertBefore(thankYouMessage, sellForm.nextSibling); // Place it right after the form
 
     sellForm.addEventListener('submit', (event) => {
-        // Prevent the form from submitting the traditional way
         event.preventDefault();
 
-        // Get values from the form fields
+        // Get values
         const productName = document.getElementById('product-name').value;
         const productPrice = document.getElementById('product-price').value;
         const productQuality = document.getElementById('product-quality').value;
@@ -25,10 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const productDescription = document.getElementById('product-description').value;
         const sellerName = document.getElementById('seller-name').value;
 
-        // Format the price with commas for readability
         const formattedPrice = new Intl.NumberFormat('en-US').format(productPrice);
 
-        // Construct the message for WhatsApp
         const message = `
 *New Item Submission for Kabale Online*
 
@@ -43,20 +39,15 @@ ${productDescription || 'No description provided.'}
 ---
 *Seller Name:* ${sellerName}
         `;
-        
-        // Encode the message for use in a URL
-        const encodedMessage = encodeURIComponent(message.trim());
 
-        // Create the WhatsApp URL
+        const encodedMessage = encodeURIComponent(message.trim());
         const whatsappURL = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
 
-        // Open the URL in a new tab
-        window.open(whatsappURL, '_blank');
-
-        // Show thank you message on the page
+        // ✅ Show thank you message and clear form BEFORE opening WhatsApp
         thankYouMessage.textContent = '✅ Thank you! Your product information has been sent via WhatsApp.';
-
-        // Clear the form
         sellForm.reset();
+
+        // ✅ Now open WhatsApp
+        window.open(whatsappURL, '_blank');
     });
 });
