@@ -25,6 +25,8 @@ sellForm.addEventListener('submit', async (event) => {
     const productDescription = document.getElementById('product-description').value;
     const sellerName = document.getElementById('seller-name').value;
     const sellerPhone = document.getElementById('seller-phone').value;
+    // --- NEW LINE TO GET THE CATEGORY ---
+    const productCategory = document.getElementById('product-category').value;
     
     // Prepare data for Airtable
     const dataToSend = {
@@ -34,7 +36,9 @@ sellForm.addEventListener('submit', async (event) => {
             'Description': productDescription,
             'SellerName': sellerName,
             'SellerPhone': sellerPhone,
-            'Status': 'Pending Approval' // Automatically set status
+            'Status': 'Pending Approval', // Automatically set status
+            // --- NEW LINE TO SEND THE CATEGORY ---
+            'Category': productCategory
         }
     };
 
