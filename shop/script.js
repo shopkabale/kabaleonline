@@ -47,6 +47,13 @@ async function fetchAndDisplayProducts() {
                 whatsappNumber = '256' + whatsappNumber.substring(1);
             }
 
+            // --- THIS IS THE NEW PART ---
+            const productName = fields.Name || 'this item';
+            const message = `Hello, I'm interested in your ${productName} listed on Kabale Online.`;
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+            // --- END OF NEW PART ---
+
             const productCard = document.createElement('article');
             productCard.className = 'product-card';
             productCard.innerHTML = `
@@ -54,7 +61,7 @@ async function fetchAndDisplayProducts() {
                 <h3>${fields.Name || 'No Name'}</h3>
                 <p class="product-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
                 <p class="product-description">Seller: ${fields.SellerName || 'N/A'}</p>
-                <a href="https://wa.me/${whatsappNumber}" class="btn-contact" target="_blank">Contact Seller</a>
+                <a href="${whatsappUrl}" class="btn-contact" target="_blank">Contact Seller</a>
             `;
             productGrid.appendChild(productCard);
         });
