@@ -22,9 +22,25 @@
         </div>
     </header>
 
+    <section class="category-section">
+        <div class="category-scroller" id="category-scroller">
+            <button class="category-btn active" data-category="All">All Categories</button>
+            <button class="category-btn" data-category="Electronics">Electronics</button>
+            <button class="category-btn" data-category="Fashion">Fashion</button>
+            <button class="category-btn" data-category="Home">Home</button>
+            <button class="category-btn" data-category="Vehicles">Vehicles</button>
+            <button class="category-btn" data-category="Property">Property</button>
+            <button class="category-btn" data-category="Other">Other</button>
+        </div>
+    </section>
+
     <main class="container">
         <header class="products-header">
             <h2>Our Products</h2>
+            <form class="search-form" id="search-form">
+                <input type="search" id="search-input" placeholder="Search products by name...">
+                <button type="submit">Search</button>
+            </form>
         </header>
 
         <section class="product-grid" id="product-grid">
@@ -33,7 +49,6 @@
 
         <section class="cta-section">
             <h2>Have Something to Sell?</h2>
-            <p>Reach hundreds of buyers across Uganda. It's fast, easy, and free.</p>
             <a href="../sell/index.html" class="btn-cta">Start Selling</a>
         </section>
     </main>
