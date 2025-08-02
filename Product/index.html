@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - Kabale Online</title>
-    <link rel="stylesheet" href="../style.css"> </head>
+    <link rel="stylesheet" href="../style.css"> <style>
+        /* Add some basic styles for the image gallery */
+        .gallery-thumbnails { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .gallery-thumbnails img { width: 80px; height: 80px; object-fit: cover; cursor: pointer; border: 2px solid transparent; }
+        .gallery-thumbnails img.active { border-color: #007bff; }
+        .product-detail-main-image { max-height: 400px; width: 100%; object-fit: contain; }
+    </style>
+</head>
 <body>
 
     <header class="site-header">
