@@ -1,10 +1,9 @@
 // -------------------------------------------------------------------
 //  1. PASTE YOUR AIRTABLE CREDENTIALS HERE
 // -------------------------------------------------------------------
-const AIRTABLE_PAT = 'patzDYgydGNXIeZI5.0eb7d58cd9de9dc8f6f224a8723aef57282ca03695d136347dfce34563fe8ecb'; // Starts with 'pat...'
-const AIRTABLE_BASE_ID = 'app6fysZN2R6mvvXY'; // Starts with 'app...'
+const AIRTABLE_PAT = 'patzDYgydGNXIeZI5.0eb7d58cd9de9dc8f6f224a8723aef57282ca03695d136347dfce34563fe8ecb';
+const AIRTABLE_BASE_ID = 'app6fysZN2R6mvvXY';
 const AIRTABLE_TABLE_NAME = 'Products';
-
 
 // -------------------------------------------------------------------
 //  2. DO NOT EDIT BELOW THIS LINE
@@ -19,54 +18,62 @@ sellForm.addEventListener('submit', async (event) => {
     submitButton.textContent = 'Submitting...';
     statusMessage.style.display = 'none';
 
-    // Get form data
-    const productName = document.getElementById('product-name').value;
-    const productPrice = parseInt(document.getElementById('product-price').value, 10);
-    const productDescription = document.getElementById('product-description').value;
-    const sellerName = document.getElementById('seller-name').value;
-    const sellerPhone = document.getElementById('seller-phone').value;
-    // --- NEW LINE TO GET THE CATEGORY ---
-    const productCategory = document.getElementById('product-category').value;
-    
-    // Prepare data for Airtable
+    // Generate a simple, random key for management
+    const managementKey = Math.random().toString(36).substring(2, 15);
+
     const dataToSend = {
         fields: {
-            'Name': productName,
-            'Price': productPrice,
-            'Description': productDescription,
-            'SellerName': sellerName,
-            'SellerPhone': sellerPhone,
-            'Status': 'Pending Approval', // Automatically set status
-            // --- NEW LINE TO SEND THE CATEGORY ---
-            'Category': productCategory
+            'Name': document.getElementById('product-name').value,
+            'Category': document.getElementById('product-category').value,
+            'Price': parseInt(document.getElementById('product-price').value, 10),
+            'Description': document.getElementById('product-description').value,
+            'SellerName': document.getElementById('seller-name').value,
+            'SellerPhone': document.getElementById('seller-phone').value,
+            'Status': 'Pending Approval',
+            'ManagementKey': managementKey // Store the secret key
         }
     };
 
-    // Send data to Airtable API
     try {
         const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${AIRTABLE_PAT}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
         });
 
         if (response.ok) {
-            statusMessage.textContent = 'Success! Your item has been submitted for approval. An admin will contact you soon for photos.';
+            const newRecord = await response.json();
+            const recordId = newRecord.id;
+            
+            // Construct the management URL
+            const managementUrl = `${window.location.origin}/manage/?id=${recordId}&key=${managementKey}`;
+
+            // Display success message and the secret link
+            statusMessage.innerHTML = `
+                <p><strong>Success! Your item has been submitted.</strong></p>
+                <p>An admin will contact you for photos.</p>
+                <hr>
+                <p><strong>IMPORTANT:</strong> Copy and save this private link to manage your item later:</p>
+                <input type="text" value="${managementUrl}" readonly id="management-link-input" style="width: 100%; padding: 5px;">
+                <button type="button" id="copy-link-btn" style="margin-top: 5px;">Copy Link</button>
+            `;
             statusMessage.className = 'success';
-            sellForm.reset(); // Clear the form
+            sellForm.reset();
+
+            // Add event listener for the new copy button
+            document.getElementById('copy-link-btn').addEventListener('click', () => {
+                const linkInput = document.getElementById('management-link-input');
+                linkInput.select();
+                document.execCommand('copy');
+                alert('Link copied to clipboard!');
+            });
+
         } else {
-            const error = await response.json();
-            console.error('Airtable Error:', error);
-            statusMessage.textContent = 'Error submitting item. Please try again.';
-            statusMessage.className = 'error';
+            throw new Error('Failed to submit item.');
         }
 
     } catch (error) {
-        console.error('Network Error:', error);
-        statusMessage.textContent = 'Network error. Please check your connection and try again.';
+        statusMessage.textContent = 'Error submitting item. Please try again.';
         statusMessage.className = 'error';
     } finally {
         statusMessage.style.display = 'block';
