@@ -38,26 +38,23 @@ function displayProducts(productsToDisplay) {
         }
 
         const imageUrl = fields.Image && fields.Image.length > 0 ? fields.Image[0].url : placeholderImage;
-        let whatsappNumber = fields.SellerPhone || '';
-        if (whatsappNumber.startsWith('0')) {
-            whatsappNumber = '256' + whatsappNumber.substring(1);
-        }
         
-        const productName = fields.Name || 'this item';
-        const message = `Hello, I'm interested in your ${productName} listed on Kabale Online.`;
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+        // The entire card is now a link to the product detail page
+        const productCardLink = document.createElement('a');
+        productCardLink.className = 'product-card-link'; // You can use this class for styling if you want
+        productCardLink.href = `../product/?id=${record.id}`; // The magic link to the detail page!
 
-        const productCard = document.createElement('article');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <img src="${imageUrl}" alt="${fields.Name}">
-            <h3>${fields.Name}</h3>
-            <p class="product-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
-            <p class="product-description">Seller: ${fields.SellerName || 'N/A'}</p>
-            <a href="${whatsappUrl}" class="btn-contact" target="_blank">Contact Seller</a>
+        // The HTML for the card itself. Notice the "Contact Seller" button is removed
+        // because users will now click the card to see details and contact info.
+        productCardLink.innerHTML = `
+            <article class="product-card">
+                <img src="${imageUrl}" alt="${fields.Name}">
+                <h3>${fields.Name}</h3>
+                <p class="product-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
+                <p class="product-description">Seller: ${fields.SellerName || 'N/A'}</p>
+            </article>
         `;
-        productGrid.appendChild(productCard);
+        productGrid.appendChild(productCardLink);
     });
 }
 
