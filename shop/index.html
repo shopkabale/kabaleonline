@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kabale Online - Shop</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -43,32 +40,28 @@
             </form>
 
             <div class="filter-group" style="margin-top: 15px;">
-                <label for="location-filter">Filter by Location:</label>
-                <select id="location-filter">
-                    <option value="All">All Locations</option>
-                    <option value="Town Center">Town Center</option>
-                    <option value="Mwanjari">Mwanjari</option>
-                    <option value="Kigongi">Kigongi</option>
-                    <option value="Butobere">Butobere</option>
-                    <option value="Kyanamira">Kyanamira</option>
-                    <option value="Upper Bugongi">Upper Bugongi</option>
-                    <option value="Rwamukundi">Rwamukundi</option>
-                    <option value="Kyitumba">Kyitumba</option>
-                    <option value="Kekuubo">Kekuubo</option>
-                    <option value="Other place">Other place</option>
+                <label for="district-filter">Filter by District:</label>
+                <select id="district-filter">
+                    <option value="All">All Districts</option>
+                    <option value="Kabale">Kabale</option>
+                    <option value="Kisoro">Kisoro</option>
+                    <option value="Rukungiri">Rukungiri</option>
+                    <option value="Kanungu">Kanungu</option>
+                    <option value="Rubanda">Rubanda</option>
+                    <option value="Rukiga">Rukiga</option>
                 </select>
             </div>
-            </header>
+        </header>
 
         <section class="product-grid" id="product-grid">
             <p>Loading products from Kabale...</p>
         </section>
-<section class="pagination-controls" id="pagination-controls" style="text-align: center; margin: 30px 0;">
-    <button id="prev-btn" disabled>&larr; Previous</button>
-    <span id="page-indicator" style="margin: 0 15px;">Page 1</span>
-    <button id="next-btn">Next &rarr;</button>
-</section>
 
+        <section class="pagination-controls" id="pagination-controls" style="text-align: center; margin: 30px 0;">
+            <button id="prev-btn" disabled>&larr; Previous</button>
+            <span id="page-indicator" style="margin: 0 15px;">Page 1</span>
+            <button id="next-btn">Next &rarr;</button>
+        </section>
 
         <section class="cta-section">
             <h2>Have Something to Sell?</h2>
@@ -82,6 +75,5 @@
     </footer>
 
     <script src="script.js"></script>
-
 </body>
 </html>
