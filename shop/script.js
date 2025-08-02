@@ -67,7 +67,8 @@ function displayProducts(productsToDisplay) {
 async function fetchAllProducts() {
     productGrid.innerHTML = '<p>Loading products from Kabale...</p>';
     try {
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?filterByFormula={Status}='Approved'`;
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?filterByFormula=AND({Status}!='Pending Approval', {Status}!='Sold')`;
+
         const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` }
         });
