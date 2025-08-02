@@ -18,19 +18,20 @@ sellForm.addEventListener('submit', async (event) => {
     submitButton.textContent = 'Submitting...';
     statusMessage.style.display = 'none';
 
-    // Generate a simple, random key for management
     const managementKey = Math.random().toString(36).substring(2, 15);
 
     const dataToSend = {
         fields: {
             'Name': document.getElementById('product-name').value,
             'Category': document.getElementById('product-category').value,
+            'District': document.getElementById('product-district').value,
+            'Neighborhood': document.getElementById('product-neighborhood').value,
             'Price': parseInt(document.getElementById('product-price').value, 10),
             'Description': document.getElementById('product-description').value,
             'SellerName': document.getElementById('seller-name').value,
             'SellerPhone': document.getElementById('seller-phone').value,
             'Status': 'Pending Approval',
-            'ManagementKey': managementKey // Store the secret key
+            'ManagementKey': managementKey
         }
     };
 
@@ -44,11 +45,8 @@ sellForm.addEventListener('submit', async (event) => {
         if (response.ok) {
             const newRecord = await response.json();
             const recordId = newRecord.id;
-            
-            // Construct the management URL
             const managementUrl = `${window.location.origin}/manage/?id=${recordId}&key=${managementKey}`;
 
-            // Display success message and the secret link
             statusMessage.innerHTML = `
                 <p><strong>Success! Your item has been submitted.</strong></p>
                 <p>An admin will contact you for photos.</p>
@@ -60,7 +58,6 @@ sellForm.addEventListener('submit', async (event) => {
             statusMessage.className = 'success';
             sellForm.reset();
 
-            // Add event listener for the new copy button
             document.getElementById('copy-link-btn').addEventListener('click', () => {
                 const linkInput = document.getElementById('management-link-input');
                 linkInput.select();
