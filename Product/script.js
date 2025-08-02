@@ -47,6 +47,8 @@ async function fetchProductDetails() {
                         ${thumbnailsHTML}
                     </div>
                 </div>
+<p><strong>Location:</strong> ${fields.Location || 'Not specified'}</p>
+
                 <div class="product-detail-info">
                     <h1>${fields.Name}</h1>
                     <p class="product-detail-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
