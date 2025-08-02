@@ -1,8 +1,8 @@
 // -------------------------------------------------------------------
 //  1. PASTE YOUR AIRTABLE CREDENTIALS HERE
 // -------------------------------------------------------------------
-const AIRTABLE_PAT = 'pat_YOUR_PERSONAL_ACCESS_TOKEN';
-const AIRTABLE_BASE_ID = 'app_YOUR_BASE_ID';
+const AIRTABLE_PAT = 'patzDYgydGNXIeZI5.0eb7d58cd9de9dc8f6f224a8723aef57282ca03695d136347dfce34563fe8ecb';
+const AIRTABLE_BASE_ID = 'app6fysZN2R6mvvXY';
 const AIRTABLE_TABLE_NAME = 'Products';
 
 // -------------------------------------------------------------------
