@@ -28,61 +28,8 @@
         <div class="form-container">
             <header class="form-header">
                 <h2>Sell Your Item</h2>
-                
+                <p>Fill out the details below. An admin will contact you for photos and to approve your listing.</p>
             </header>
-<style>
-    /* CSS for the instruction box */
-    #seller-instructions-container {
-        background-color: #eef7ff; /* A light, friendly blue background */
-        border: 1px solid #bce0ff;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 30px;
-        font-family: 'Lato', sans-serif; /* Uses the same font as your site */
-    }
-
-    #instructions-heading {
-        color: #004085; /* A darker blue for the heading */
-        margin-top: 0;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #bce0ff;
-        padding-bottom: 10px;
-    }
-
-    #selling-steps-list {
-        list-style-type: decimal; /* Use numbers 1, 2, 3... */
-        padding-left: 20px;
-        line-height: 1.6;
-    }
-
-    /* Special styling for the most important step */
-    #secret-link-step {
-        background-color: #fff3cd; /* A light yellow to draw attention */
-        border: 1px dashed #ffc107;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 5px;
-        font-weight: bold; /* Make the whole step feel important */
-    }
-
-    #secret-link-step strong {
-        color: #856404; /* A darker text color for the emphasized part */
-        text-transform: uppercase;
-    }
-</style>
-
-<div id="seller-instructions-container">
-    <h2 id="instructions-heading">How to Sell Your Item (3 Simple Steps)</h2>
-    <ol id="selling-steps-list">
-        <li>Fill out the form below with your item's details.</li>
-        <li>An admin will contact you on WhatsApp to get photos of your item for approval.</li>
-        <li id="secret-link-step">
-            After you submit, you will be given a unique, secret link. <strong>You MUST copy and save this link!</strong> It is the only way you can mark your item as "Sold" or delete it later.
-        </li>
-    </ol>
-</div>
-
-
 
             <form id="sell-item-form">
                 <div class="form-group">
@@ -101,21 +48,23 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
-<div class="form-group">
-    <label for="product-location">Location in Kabale</label>
-    <select id="product-location" name="product-location" required>
-        <option value="Town Centre">Town Centre</option>
-        <option value="Mwanjari">Mwanjari</option>
-        <option value="Kigongi">Kigongi</option>
-        <option value="Butobere">Butobere</option>
-        <option value="Kyanamira">Kyanamira</option>
-        <option value="Upper Bugongi">Upper Bugongi</option>
-<option value="Rwamukundi">Rwamukundi</option>
-<option value="Kyitumba">Kyitumba</option>
-<option value="Kekuubo">Kekuubo</option>
-<option value="Other Place">Other Place</option>
-    </select>
-</div>
+
+                <div class="form-group">
+                    <label for="product-district">District</label>
+                    <select id="product-district" name="product-district" required>
+                        <option value="Kabale">Kabale</option>
+                        <option value="Kisoro">Kisoro</option>
+                        <option value="Rukungiri">Rukungiri</option>
+                        <option value="Kanungu">Kanungu</option>
+                        <option value="Rubanda">Rubanda</option>
+                        <option value="Rukiga">Rukiga</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-neighborhood">Neighborhood / Town</label>
+                    <input type="text" id="product-neighborhood" name="product-neighborhood" placeholder="e.g., Mwanjari, Town Centre" required>
+                </div>
 
                 <div class="form-group">
                     <label for="product-price">Price (UGX)</label>
@@ -149,5 +98,6 @@
          <a href="../shop/terms.html" class="footer-link">Terms of Service</a>
     </footer>
 
-    <script src="script.js"></script> </body>
+    <script src="script.js"></script>
+</body>
 </html>
