@@ -9,65 +9,49 @@ const AIRTABLE_TABLE_NAME = 'Products';
 //  2. DO NOT EDIT BELOW THIS LINE
 // -------------------------------------------------------------------
 
-// --- DOM ELEMENTS ---
 const productGrid = document.getElementById('product-grid');
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
 const categoryScroller = document.getElementById('category-scroller');
-const locationFilter = document.getElementById('location-filter');
+const districtFilter = document.getElementById('district-filter');
 const prevBtn = document.getElementById('prev-btn');
 const nextBtn = document.getElementById('next-btn');
 const pageIndicator = document.getElementById('page-indicator');
 const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 
-// --- STATE MANAGEMENT ---
 const PAGE_SIZE = 12;
-let pageOffsets = [null]; // History of page offsets, page 1 has a null offset
-let currentPage = 0;    // Index of the current page in the pageOffsets array
-let currentFilters = {  // Object to hold the current state of all filters
+let pageOffsets = [null];
+let currentPage = 0;
+let currentFilters = {
     category: 'All',
-    location: 'All',
+    district: 'All',
     searchTerm: ''
 };
 
-/**
- * Builds the Airtable filterByFormula string based on current filters
- */
 function buildFilterFormula() {
-    let formulas = ["{Status}='Approved'"]; // Base formula
+    let formulas = ["{Status}='Approved'"]; 
 
     if (currentFilters.category !== 'All') {
         formulas.push(`{Category}='${currentFilters.category}'`);
     }
-    if (currentFilters.location !== 'All') {
-        formulas.push(`{Location}='${currentFilters.location}'`);
+    if (currentFilters.district !== 'All') {
+        formulas.push(`{District}='${currentFilters.district}'`);
     }
     if (currentFilters.searchTerm) {
-        // Airtable's SEARCH function is case-insensitive
         formulas.push(`SEARCH('${currentFilters.searchTerm.toLowerCase()}', LOWER({Name}))`);
     }
 
-    if (formulas.length === 1) {
-        return formulas[0]; // Only the status filter
-    } else {
-        return `AND(${formulas.join(', ')})`; // Combine all filters with AND
-    }
+    return formulas.length === 1 ? formulas[0] : `AND(${formulas.join(', ')})`;
 }
 
-/**
- * Fetches products for a specific page using an offset and current filters
- */
 async function fetchProductsForPage(offset) {
-    productGrid.innerHTML = '<p>Loading products from Kabale...</p>';
+    productGrid.innerHTML = '<p>Loading products...</p>';
     nextBtn.disabled = true;
     prevBtn.disabled = true;
 
     const filterFormula = buildFilterFormula();
     let url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?pageSize=${PAGE_SIZE}&filterByFormula=${encodeURIComponent(filterFormula)}`;
-    
-    if (offset) {
-        url += `&offset=${offset}`;
-    }
+    if (offset) url += `&offset=${offset}`;
 
     try {
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` } });
@@ -76,12 +60,9 @@ async function fetchProductsForPage(offset) {
         const data = await response.json();
         displayProducts(data.records);
 
-        // Update pagination state
         if (data.offset) {
             nextBtn.disabled = false;
-            if (currentPage === pageOffsets.length - 1) {
-                pageOffsets.push(data.offset);
-            }
+            if (currentPage === pageOffsets.length - 1) pageOffsets.push(data.offset);
         } else {
             nextBtn.disabled = true;
         }
@@ -95,13 +76,10 @@ async function fetchProductsForPage(offset) {
     }
 }
 
-/**
- * Renders a list of products to the grid
- */
 function displayProducts(records) {
     productGrid.innerHTML = '';
     if (records.length === 0) {
-        productGrid.innerHTML = '<p>No products match your search or filter. Try again!</p>';
+        productGrid.innerHTML = '<p>No products match your filter. Try again!</p>';
         return;
     }
     records.forEach(record => {
@@ -123,10 +101,7 @@ function displayProducts(records) {
     });
 }
 
-// --- EVENT LISTENERS ---
-
 function handleFilterChange() {
-    // When any filter changes, we reset pagination and fetch from page 1
     currentPage = 0;
     pageOffsets = [null];
     fetchProductsForPage(null);
@@ -147,8 +122,8 @@ categoryScroller.addEventListener('click', (event) => {
     }
 });
 
-locationFilter.addEventListener('change', () => {
-    currentFilters.location = locationFilter.value;
+districtFilter.addEventListener('change', () => {
+    currentFilters.district = districtFilter.value;
     handleFilterChange();
 });
 
@@ -164,5 +139,4 @@ prevBtn.addEventListener('click', () => {
     }
 });
 
-// --- INITIAL PAGE LOAD ---
 fetchProductsForPage(null);
