@@ -82,6 +82,22 @@ async function fetchAllProducts() {
 }
 
 // --- Event Listeners for Filtering and Searching ---
+// Add this with your other event listeners in shop.js
+const locationFilter = document.getElementById('location-filter');
+
+locationFilter.addEventListener('change', () => {
+    const selectedLocation = locationFilter.value;
+
+    if (selectedLocation === 'All') {
+        displayProducts(allProducts);
+    } else {
+        const filteredProducts = allProducts.filter(record => {
+            return record.fields.Location && record.fields.Location === selectedLocation;
+        });
+        displayProducts(filteredProducts);
+    }
+});
+
 
 // 1. Search functionality
 searchForm.addEventListener('submit', (event) => {
