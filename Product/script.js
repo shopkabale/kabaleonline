@@ -29,14 +29,12 @@ async function fetchProductDetails() {
         
         document.title = `${fields.Name} - Kabale Online`;
 
-        // --- NEW IMAGE GALLERY LOGIC ---
         const images = fields.Image && fields.Image.length > 0 ? fields.Image : [{ url: placeholderImage }];
         let thumbnailsHTML = '';
         images.forEach((image, index) => {
             thumbnailsHTML += `<img src="${image.url}" alt="Thumbnail ${index + 1}" class="${index === 0 ? 'active' : ''}" data-index="${index}">`;
         });
-        // --- END OF NEW LOGIC ---
-
+        
         const whatsappUrl = createWhatsAppLink(fields.SellerPhone, fields.Name);
 
         productDetailContainer.innerHTML = `
@@ -47,23 +45,22 @@ async function fetchProductDetails() {
                         ${thumbnailsHTML}
                     </div>
                 </div>
-<p><strong>Location:</strong> ${fields.Location || 'Not specified'}</p>
-
                 <div class="product-detail-info">
                     <h1>${fields.Name}</h1>
                     <p class="product-detail-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
                     <h3>Description</h3>
                     <p>${fields.Description ? fields.Description.replace(/\n/g, '<br>') : 'No description available.'}</p>
                     <hr>
-                    <h3>Seller Information</h3>
-                    <p><strong>Seller:</strong> ${fields.SellerName}</p>
-                    <p><strong>Category:</strong> ${fields.Category}</p>
+                    <h3>Item Information</h3>
+                    <p><strong>Seller:</strong> ${fields.SellerName || 'N/A'}</p>
+                    <p><strong>Category:</strong> ${fields.Category || 'N/A'}</p>
+                    <p><strong>District:</strong> ${fields.District || 'N/A'}</p>
+                    <p><strong>Neighborhood:</strong> ${fields.Neighborhood || 'N/A'}</p>
                     <a href="${whatsappUrl}" class="btn-cta" target="_blank">Contact Seller on WhatsApp</a>
                 </div>
             </div>
         `;
         
-        // Add event listeners to thumbnails after they are in the DOM
         setupThumbnailListeners(images);
 
     } catch (error) {
@@ -78,11 +75,8 @@ function setupThumbnailListeners(images) {
 
     thumbnailContainer.addEventListener('click', (event) => {
         if (event.target.tagName === 'IMG') {
-            // Set main image source
             const imageIndex = event.target.dataset.index;
             mainImage.src = images[imageIndex].url;
-
-            // Update active class
             document.querySelectorAll('#thumbnail-container img').forEach(img => img.classList.remove('active'));
             event.target.classList.add('active');
         }
