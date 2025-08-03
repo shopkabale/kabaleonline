@@ -30,6 +30,86 @@
     </main>
     
     <footer>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+    /* CSS for the Contact Us section */
+    #contact-us-section {
+        font-family: 'Lato', sans-serif;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e7e7e7;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    #contact-us-section h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .contact-buttons-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap; /* Allows buttons to stack on small screens */
+    }
+
+    /* General styles for both buttons */
+    .contact-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .contact-btn:hover {
+        transform: translateY(-2px); /* Lifts the button slightly on hover */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Specific style for the WhatsApp button */
+    .whatsapp-btn {
+        background-color: #25D366; /* Official WhatsApp green */
+    }
+
+    /* Specific style for the Email button */
+    .email-btn {
+        background-color: #5865F2; /* A nice, modern blue */
+    }
+
+    /* Style for the icons inside the buttons */
+    .contact-btn i {
+        margin-right: 10px;
+        font-size: 20px;
+    }
+</style>
+
+<section id="contact-us-section">
+    <h2>Get in Touch</h2>
+    <div class="contact-buttons-container">
+        <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
+            <i class="fa-brands fa-whatsapp"></i>
+            Chat on WhatsApp
+        </a>
+
+        <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
+            <i class="fa-solid fa-envelope"></i>
+            Send an Email
+        </a>
+    </div>
+</section>
+
+
         <p>&copy; 2025 Kabale Online. All Rights Reserved.</p>
          <a href="../shop/terms.html" class="footer-link">Terms of Service</a>
     </footer>
