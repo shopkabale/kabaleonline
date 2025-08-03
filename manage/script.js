@@ -1,38 +1,24 @@
-// -------------------------------------------------------------------
-//  1. PASTE YOUR AIRTABLE CREDENTIALS HERE
-// -------------------------------------------------------------------
-const AIRTABLE_PAT = 'patzDYgydGNXIeZI5.0eb7d58cd9de9dc8f6f224a8723aef57282ca03695d136347dfce34563fe8ecb';
-const AIRTABLE_BASE_ID = 'app6fysZN2R6mvvXY';
-const AIRTABLE_TABLE_NAME = 'Products';
+// NOTE: Airtable credentials are now removed from this file.
 
-// -------------------------------------------------------------------
-//  2. DO NOT EDIT BELOW THIS LINE
-// -------------------------------------------------------------------
 const container = document.getElementById('management-container');
+const params = new URLSearchParams(window.location.search);
+const recordId = params.get('id');
+const managementKey = params.get('key');
 
-async function verifyAndManage() {
-    const params = new URLSearchParams(window.location.search);
-    const recordId = params.get('id');
-    const managementKey = params.get('key');
-
+async function verifyAndShowManager() {
     if (!recordId || !managementKey) {
         container.innerHTML = '<h2>Error</h2><p>Invalid management link. Please check the URL and try again.</p>';
         return;
     }
 
     try {
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${recordId}`;
-        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` } });
-        if (!response.ok) throw new Error('Record not found.');
+        const url = `/.netlify/functions/manage-product?id=${recordId}&key=${managementKey}`;
+        const response = await fetch(url, { method: 'GET' });
 
+        if (!response.ok) throw new Error('Could not verify item.');
+        
         const record = await response.json();
         
-        // SECURITY CHECK: Compare the key from the URL with the key stored in Airtable
-        if (record.fields.ManagementKey !== managementKey) {
-            throw new Error('Authorization failed.');
-        }
-
-        // If keys match, show the management options
         container.innerHTML = `
             <h2>Manage Your Item</h2>
             <h3>${record.fields.Name}</h3>
@@ -44,8 +30,8 @@ async function verifyAndManage() {
             <div id="action-status" style="margin-top: 15px;"></div>
         `;
 
-        document.getElementById('sold-btn').addEventListener('click', () => updateStatus(recordId, 'Sold'));
-        document.getElementById('delete-btn').addEventListener('click', () => deleteItem(recordId));
+        document.getElementById('sold-btn').addEventListener('click', () => updateStatus('Sold'));
+        document.getElementById('delete-btn').addEventListener('click', () => deleteItem());
 
     } catch (error) {
         container.innerHTML = `<h2>Error</h2><p>Could not verify your item. The link may be incorrect or the item may have already been deleted.</p>`;
@@ -53,17 +39,14 @@ async function verifyAndManage() {
     }
 }
 
-async function updateStatus(recordId, newStatus) {
+async function updateStatus(newStatus) {
     const actionStatus = document.getElementById('action-status');
     actionStatus.textContent = 'Updating...';
     
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${recordId}`;
-    const data = { fields: { 'Status': newStatus } };
-
+    const url = `/.netlify/functions/manage-product?id=${recordId}&key=${managementKey}`;
     const response = await fetch(url, {
-        method: 'PATCH', // PATCH is used for updating records
-        headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
     });
 
     if (response.ok) {
@@ -73,7 +56,7 @@ async function updateStatus(recordId, newStatus) {
     }
 }
 
-async function deleteItem(recordId) {
+async function deleteItem() {
     if (!confirm('Are you sure you want to permanently delete this item? This cannot be undone.')) {
         return;
     }
@@ -81,11 +64,8 @@ async function deleteItem(recordId) {
     const actionStatus = document.getElementById('action-status');
     actionStatus.textContent = 'Deleting...';
 
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${recordId}`;
-    const response = await fetch(url, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` }
-    });
+    const url = `/.netlify/functions/manage-product?id=${recordId}&key=${managementKey}`;
+    const response = await fetch(url, { method: 'DELETE' });
 
     if (response.ok) {
         container.innerHTML = '<h2>Success!</h2><p>Your item has been permanently deleted.</p>';
@@ -95,4 +75,4 @@ async function deleteItem(recordId) {
 }
 
 // Run the main function when the page loads
-verifyAndManage();
+verifyAndShowManager();
