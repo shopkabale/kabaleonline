@@ -1,14 +1,6 @@
-// -------------------------------------------------------------------
-//  1. PASTE YOUR AIRTABLE CREDENTIALS HERE
-// -------------------------------------------------------------------
-const AIRTABLE_PAT = 'patzDYgydGNXIeZI5.0eb7d58cd9de9dc8f6f224a8723aef57282ca03695d136347dfce34563fe8ecb';
-const AIRTABLE_BASE_ID = 'app6fysZN2R6mvvXY';
-const AIRTABLE_TABLE_NAME = 'Products';
+// NOTE: Your Airtable credentials are no longer needed in this file.
 
-// -------------------------------------------------------------------
-//  2. DO NOT EDIT BELOW THIS LINE
-// -------------------------------------------------------------------
-
+// --- DOM ELEMENTS ---
 const productGrid = document.getElementById('product-grid');
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
@@ -19,6 +11,7 @@ const nextBtn = document.getElementById('next-btn');
 const pageIndicator = document.getElementById('page-indicator');
 const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 
+// --- STATE MANAGEMENT ---
 const PAGE_SIZE = 20;
 let pageOffsets = [null];
 let currentPage = 0;
@@ -29,18 +22,10 @@ let currentFilters = {
 };
 
 function buildFilterFormula() {
-    let formulas = ["{Status}='Approved'"]; 
-
-    if (currentFilters.category !== 'All') {
-        formulas.push(`{Category}='${currentFilters.category}'`);
-    }
-    if (currentFilters.district !== 'All') {
-        formulas.push(`{District}='${currentFilters.district}'`);
-    }
-    if (currentFilters.searchTerm) {
-        formulas.push(`SEARCH('${currentFilters.searchTerm.toLowerCase()}', LOWER({Name}))`);
-    }
-
+    let formulas = ["{Status}='Approved'"];
+    if (currentFilters.category !== 'All') formulas.push(`{Category}='${currentFilters.category}'`);
+    if (currentFilters.district !== 'All') formulas.push(`{District}='${currentFilters.district}'`);
+    if (currentFilters.searchTerm) formulas.push(`SEARCH('${currentFilters.searchTerm.toLowerCase()}', LOWER({Name}))`);
     return formulas.length === 1 ? formulas[0] : `AND(${formulas.join(', ')})`;
 }
 
@@ -50,12 +35,21 @@ async function fetchProductsForPage(offset) {
     prevBtn.disabled = true;
 
     const filterFormula = buildFilterFormula();
-    let url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?pageSize=${PAGE_SIZE}&filterByFormula=${encodeURIComponent(filterFormula)}`;
-    if (offset) url += `&offset=${offset}`;
+    
+    const queryParams = new URLSearchParams({
+        pageSize: PAGE_SIZE,
+        filterByFormula: filterFormula
+    });
+    if (offset) {
+        queryParams.set('offset', offset);
+    }
+    
+    // This now calls your own backend caching function
+    const url = `/.netlify/functions/get-products?${queryParams.toString()}`;
 
     try {
-        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` } });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         
         const data = await response.json();
         displayProducts(data.records);
@@ -72,13 +66,13 @@ async function fetchProductsForPage(offset) {
 
     } catch (error) {
         console.error('Error fetching products:', error);
-        productGrid.innerHTML = '<p>Sorry, we could not load the products.</p>';
+        productGrid.innerHTML = '<p>Sorry, we could not load the products. Please check your connection and try again.</p>';
     }
 }
 
 function displayProducts(records) {
     productGrid.innerHTML = '';
-    if (records.length === 0) {
+    if (!records || records.length === 0) {
         productGrid.innerHTML = '<p>No products match your filter. Try again!</p>';
         return;
     }
@@ -107,6 +101,7 @@ function handleFilterChange() {
     fetchProductsForPage(null);
 }
 
+// --- EVENT LISTENERS ---
 searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
     currentFilters.searchTerm = searchInput.value;
@@ -139,4 +134,5 @@ prevBtn.addEventListener('click', () => {
     }
 });
 
+// --- INITIAL PAGE LOAD ---
 fetchProductsForPage(null);
