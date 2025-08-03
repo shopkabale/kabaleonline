@@ -1,15 +1,7 @@
-// -------------------------------------------------------------------
-//  1. PASTE YOUR AIRTABLE CREDENTIALS HERE
-// -------------------------------------------------------------------
-const AIRTABLE_PAT = 'patzDYgydGNXIeZI5.0eb7d58cd9de9dc8f6f224a8723aef57282ca03695d136347dfce34563fe8ecb';
-const AIRTABLE_BASE_ID = 'app6fysZN2R6mvvXY';
-const AIRTABLE_TABLE_NAME = 'Products';
+// NOTE: Airtable credentials are now removed from this file, making it secure.
 
-// -------------------------------------------------------------------
-//  2. DO NOT EDIT BELOW THIS LINE
-// -------------------------------------------------------------------
 const productDetailContainer = document.getElementById('product-detail-container');
-const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
+const placeholderImage = 'https.i.imgur.com/WJ9S92O.png';
 
 async function fetchProductDetails() {
     const productId = new URLSearchParams(window.location.search).get('id');
@@ -20,8 +12,9 @@ async function fetchProductDetails() {
     }
 
     try {
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${productId}`;
-        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` } });
+        // This now calls our new, secure caching function
+        const url = `/.netlify/functions/get-product-detail?id=${productId}`;
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Product not found.');
         
         const product = await response.json();
