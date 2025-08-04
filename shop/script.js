@@ -12,7 +12,7 @@ const pageIndicator = document.getElementById('page-indicator');
 const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 
 // --- STATE MANAGEMENT ---
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 16;
 let pageOffsets = [null];
 let currentPage = 0;
 let currentFilters = {
