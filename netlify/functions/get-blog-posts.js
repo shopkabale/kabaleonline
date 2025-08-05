@@ -5,7 +5,8 @@ const cache = {
   posts: null,
   timestamp: 0,
 };
-const CACHE_DURATION_MS = 10 * 60 * 1000; // 10-minute cache for the blog
+const CACHE_DURATION_MS = 16 * 60 * 60 * 1000; // 10-hour cache for the blog
+
 
 exports.handler = async (event) => {
   const { slug } = event.queryStringParameters;
