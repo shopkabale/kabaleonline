@@ -1,3 +1,5 @@
+// NOTE: Airtable credentials should be removed from this file as it's now secure.
+
 const postContainer = document.getElementById('post-content-container');
 
 async function fetchSinglePost() {
@@ -20,7 +22,8 @@ async function fetchSinglePost() {
         const postDate = new Date(PublishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         
         // Use the 'marked' library to convert Markdown text to HTML
-        const postHTML = marked.parse(Content);
+        // This line is the key part that needs the library to be loaded.
+        const postHTML = marked.parse(Content || ''); // Added || '' as a safeguard
 
         postContainer.innerHTML = `
             <article class="blog-post-full">
@@ -35,18 +38,27 @@ async function fetchSinglePost() {
                 <p>Hundreds of great deals on second-hand items are waiting for you right now.</p>
                 <a href="/shop/" class="btn-cta">Browse All Products</a>
             </section>
-            `;
+        `;
 
     } catch (error) {
+        console.error(error); // Log the actual error to the console for debugging
         postContainer.innerHTML = `<p>Sorry, we could not find that post.</p>`;
     }
 }
 
-// We need to make sure the marked library is loaded before we call the function
-if (typeof marked === 'undefined') {
-    // If it's not loaded, wait for the window to load completely.
-    window.addEventListener('load', fetchSinglePost);
-} else {
-    // If it's already loaded, run the function immediately.
-    fetchSinglePost();
+
+// --- THIS IS THE NEW, IMPORTANT PART ---
+// This code checks if the 'marked' library is ready before calling our function.
+// This solves the timing issue.
+function initialize() {
+    if (typeof marked !== 'undefined') {
+        // If 'marked' is already loaded, run our function.
+        fetchSinglePost();
+    } else {
+        // If not, wait a very short time and check again.
+        setTimeout(initialize, 50);
+    }
 }
+
+// Start the process
+initialize();
