@@ -46,19 +46,24 @@ body {
     color: var(--secondary-color);
 }
 
+/* === SELL BUTTON FIX === */
 .nav-btn-sell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background-color: var(--accent-color);
-    color: var(--secondary-color);
+    color: var(--secondary-color); /* Dark text on yellow for contrast */
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
     text-decoration: none;
     font-size: 1rem;
     font-weight: 700;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap; /* Prevents text from wrapping */
 }
 
 .nav-btn-sell:hover {
-    background-color: #e0a800;
+    background-color: #eab12c;
     color: var(--secondary-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -70,6 +75,7 @@ body {
     color: var(--text-light);
     text-align: center;
     padding: 4rem 1rem;
+    transition: all 0.5s ease; /* Smooth transition for hiding/showing */
 }
 
 .hero-content {
@@ -127,7 +133,7 @@ body {
     font-size: 1.1rem;
     color: #6c757d;
     max-width: 600px;
-    margin: 0 auto 2rem auto;
+    margin: -0.5rem auto 2rem auto;
 }
 
 /* --- Category Buttons --- */
@@ -266,7 +272,14 @@ body {
     padding: 4rem 1rem;
     text-align: center;
     border-top: 1px solid var(--border-color);
+    transition: all 0.5s ease; /* Smooth transition for hiding/showing */
 }
+
+/* === NEW HELPER CLASS === */
+.section-hidden {
+    display: none;
+}
+
 
 .trust-steps {
     display: flex;
@@ -322,7 +335,7 @@ body {
     transition: background-color 0.2s;
 }
 
-.btn-cta:hover { background-color: #e0a800; }
+.btn-cta:hover { background-color: #eab12c; }
 
 footer {
     text-align: center;
