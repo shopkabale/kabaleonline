@@ -11,49 +11,35 @@ const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 
 // --- STATE MANAGEMENT ---
 const PAGE_SIZE = 16;
-let pageOffsets = [null]; // Stores the 'offset' for each page to enable pagination
+let pageOffsets = [null];
 let currentPage = 0;
 let currentFilters = {
     category: 'All',
     district: 'All',
     searchTerm: ''
 };
-// A flag to know if we are showing "Featured" items or user-filtered items
 let isShowingFeatured = true; 
 
 // --- FUNCTIONS ---
 
-/**
- * Builds the Airtable filter formula based on current state.
- * @param {boolean} isInitialLoad - If true, it fetches only featured items.
- * @returns {string} The Airtable filter formula.
- */
 function buildFilterFormula(isInitialLoad = false) {
     let formulas = ["{Status}='Approved'"];
     
-    // On the very first page load, we only show featured items.
     if (isInitialLoad) {
         formulas.push("{IsFeatured}=1");
         return `AND(${formulas.join(', ')})`;
     }
     
-    // For all subsequent fetches (searches, category clicks, etc.), use the user's filters.
     if (currentFilters.category !== 'All') formulas.push(`{Category}='${currentFilters.category}'`);
-    if (currentFilters.district !== 'All') formulas.push(`{District}='${currentFilters.district}'`);
+    if (currentFilters.district !== 'all') formulas.push(`{District}='${currentFilters.district}'`);
     if (currentFilters.searchTerm) {
-        // Airtable search is case-insensitive, but we lowercase for safety
-        const searchTerm = currentFilters.searchTerm.replace(/'/g, "\\'"); // Sanitize single quotes
+        const searchTerm = currentFilters.searchTerm.replace(/'/g, "\\'");
         formulas.push(`SEARCH('${searchTerm.toLowerCase()}', LOWER({Name}))`);
     }
     
     return formulas.length === 1 ? formulas[0] : `AND(${formulas.join(', ')})`;
 }
 
-/**
- * Fetches products from our Netlify function based on the current page and filters.
- * @param {string} filterFormula - The Airtable formula to filter by.
- * @param {string|null} offset - The offset for pagination, if any.
- */
 async function fetchProducts(filterFormula, offset) {
     productGrid.innerHTML = '<p>Loading products...</p>';
     nextBtn.disabled = true;
@@ -63,10 +49,7 @@ async function fetchProducts(filterFormula, offset) {
         pageSize: PAGE_SIZE,
         filterByFormula: filterFormula
     });
-
-    if (offset) {
-        queryParams.set('offset', offset);
-    }
+    if (offset) queryParams.set('offset', offset);
     
     const url = `/.netlify/functions/get-products?${queryParams.toString()}`;
 
@@ -77,39 +60,29 @@ async function fetchProducts(filterFormula, offset) {
         const data = await response.json();
         displayProducts(data.records);
 
-        // Manage pagination state
         if (data.offset) {
             nextBtn.disabled = false;
-            // Only add the new offset if we are moving forward
-            if (currentPage === pageOffsets.length - 1) {
-                pageOffsets.push(data.offset);
-            }
+            if (currentPage === pageOffsets.length - 1) pageOffsets.push(data.offset);
         } else {
             nextBtn.disabled = true;
         }
 
         prevBtn.disabled = (currentPage === 0);
         pageIndicator.textContent = `Page ${currentPage + 1}`;
-
     } catch (error) {
         console.error('Error fetching products:', error);
         productGrid.innerHTML = '<p>Sorry, we could not load the products. Please check your connection and try again.</p>';
     }
 }
 
-/**
- * Renders the product cards to the grid.
- * @param {Array} records - An array of product records from Airtable.
- */
 function displayProducts(records) {
     productGrid.innerHTML = '';
     if (!records || records.length === 0) {
-        let message = isShowingFeatured ? 
-            'No featured products found. Showing all products instead...' : 
-            'No products match your filter. Try a different search!';
+        let message = isShowingFeatured 
+            ? 'No featured products found. Showing all products instead...' 
+            : 'No products match your filter. Try a different search!';
         productGrid.innerHTML = `<p>${message}</p>`;
         
-        // If the initial "Featured" search returns nothing, fall back to showing all products.
         if (isShowingFeatured) {
             isShowingFeatured = false;
             handleFilterChange();
@@ -135,11 +108,8 @@ function displayProducts(records) {
     });
 }
 
-/**
- * A central function to handle any change in filters. Resets pagination and fetches new data.
- */
 function handleFilterChange() {
-    isShowingFeatured = false; // Any filter change means we are no longer showing just "featured"
+    isShowingFeatured = false;
     currentPage = 0;
     pageOffsets = [null];
     const formula = buildFilterFormula();
@@ -151,6 +121,15 @@ searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
     currentFilters.searchTerm = searchInput.value;
     handleFilterChange();
+});
+
+// ** NEW **: Add this listener to reset products when the search bar is cleared
+searchInput.addEventListener('input', (event) => {
+    // If user clears the search box (e.g., by backspace or clicking 'x')
+    if (event.target.value === '') {
+        currentFilters.searchTerm = '';
+        handleFilterChange();
+    }
 });
 
 categoryScroller.addEventListener('click', (event) => {
@@ -182,5 +161,4 @@ prevBtn.addEventListener('click', () => {
 });
 
 // --- INITIAL PAGE LOAD ---
-// On first load, we fetch only the "Featured" products.
 fetchProducts(buildFilterFormula(true), null);
