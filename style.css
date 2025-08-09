@@ -4,7 +4,7 @@
     --secondary-color: #004d40; /* Very Dark Teal for Title */
     --accent-color: #f7b731; /* Yellow accent */
     --bg-light: #f8f9fa;
-    --text-dark: #333;
+    --bg-dark: #004c5a; /* Dark Teal for CTA */
     --text-light: #ffffff;
     --border-color: #dee2e6;
 }
@@ -17,35 +17,17 @@
 
 body {
     font-family: 'Lato', sans-serif;
-    color: var(--text-dark);
-    background-color: #fff;
-    line-height: 1.6;
+    color: #333;
+    background-color: var(--bg-light);
+    line-height: 1.5;
 }
 
-.container {
-    width: 90%;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-/* --- Typography & Links --- */
-h1, h2, h3, h4 {
-    color: var(--secondary-color);
-    line-height: 1.2;
-}
-
-a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-/* --- Header --- */
+/* --- Site Header --- */
 .site-header {
     background-color: #fff;
     padding: 1rem 5%;
     border-bottom: 1px solid var(--border-color);
 }
-
 
 .header-content {
     display: flex;
@@ -56,12 +38,14 @@ a {
 }
 
 .site-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 900;
+    color: var(--secondary-color);
 }
 
 .main-nav a {
     color: var(--primary-color);
+    text-decoration: none;
     font-size: 1.1rem;
     font-weight: 700;
     margin-left: 1.5rem;
@@ -74,324 +58,401 @@ a {
     text-decoration: underline;
 }
 
-/* --- General Sections & Buttons --- */
-.section {
-    padding: 3rem 0;
-}
-
-.section-title {
-    text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-}
-
-.bg-light {
-    background-color: var(--bg-light);
-    border-top: 1px solid var(--border-color);
+/* --- Category Buttons --- */
+.category-section {
+    background-color: #fff;
+    padding: 0.5rem 0;
     border-bottom: 1px solid var(--border-color);
 }
 
-.btn {
-    display: inline-block;
-    padding: 12px 28px;
-    border-radius: 25px;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    text-align: center;
+.category-scroller {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0.5rem 5%;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-.btn-primary {
+
+.category-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+.category-btn {
+    flex-shrink: 0;
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 1rem;
+    margin-right: 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.category-btn:hover {
+    background-color: #d4d9de;
+}
+
+.category-btn.active {
     background-color: var(--primary-color);
     color: var(--text-light);
-}
-.btn-primary:hover {
-    background-color: var(--secondary-color);
-}
-.btn-secondary {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-}
-.btn-secondary:hover {
-    background-color: var(--primary-color);
-    color: var(--text-light);
+    border-color: var(--primary-color);
 }
 
-/* --- Hero Section --- */
-.hero-section {
-    background-color: var(--secondary-color);
-    color: var(--text-light);
-    text-align: center;
-    padding: 4rem 1rem;
+/* --- Main Content & Product Grid --- */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
 }
 
-.hero-section h2 {
-    font-size: 2.5rem;
-    color: var(--text-light);
-    margin-bottom: 1rem;
-}
-
-.hero-section p {
-    font-size: 1.2rem;
+.search-form {
+    margin: 1.5rem auto 0 auto;
+    display: flex;
+    justify-content: center;
     max-width: 600px;
-    margin: 0 auto 2rem;
 }
 
-.hero-buttons .btn {
-    margin: 0.5rem;
+.search-form input {
+    width: 70%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px 0 0 8px;
+    font-size: 1rem;
 }
 
-/* --- Category Section --- */
-.category-grid {
+.search-form button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 2rem;
 }
 
-.category-card {
+.product-card {
+    background-color: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 1.5rem;
-    text-align: center;
+    text-align: left;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 12px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-.category-card:hover {
+.product-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+.product-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.category-card h4 {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+.product-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border-radius: 4px;
 }
 
-.category-card p {
+.product-card h3 {
+    font-size: 1em;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 700;
+}
+
+.product-card .product-price {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.product-card .product-description {
+    font-size: 0.8em;
     color: #6c757d;
-    font-size: 0.9rem;
 }
 
-/* --- About & Why Simple Sections --- */
-.disclaimer-box {
-    background-color: #eef7f8;
-    border-left: 5px solid var(--primary-color);
-    padding: 1.5rem;
-    margin-top: 2rem;
-    border-radius: 0 8px 8px 0;
-}
-.disclaimer-box h4 {
-    margin-bottom: 1rem;
-}
-.disclaimer-box ol {
-    padding-left: 20px;
-    margin-top: 1rem;
-}
-.bg-light ul {
-    list-style-type: '✓ ';
-    padding-left: 20px;
-}
-.bg-light li {
-    margin-bottom: 0.75rem;
-}
 
-/* --- Final CTA Section --- */
+/* --- CTA & Footer --- */
 .cta-section {
-    background-color: var(--bg-dark); /* Using a variable from previous CSS */
+    background-color: var(--bg-dark);
     color: var(--text-light);
     text-align: center;
     padding: 3rem 1rem;
+    margin-top: 2rem;
 }
+
 .cta-section h2 {
-    color: var(--text-light);
-    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
 }
+
 .btn-cta {
     display: inline-block;
     background-color: var(--accent-color);
     color: var(--secondary-color);
-    padding: 12px 30px;
+    padding: 10px 25px;
     border-radius: 25px;
     text-decoration: none;
     font-weight: bold;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     transition: background-color 0.2s;
 }
+
 .btn-cta:hover {
     background-color: #e0a800;
 }
 
-/* --- Footer --- */
 footer {
     text-align: center;
     padding: 2rem;
     color: #6c757d;
     font-size: 0.9rem;
-    background-color: var(--bg-light);
-    border-top: 1px solid var(--border-color);
-}
-/* ============================================= */
-/* --- Blog List Page Styles --- */
-/* ============================================= */
-
-.blog-post-list {
-  display: grid;
-  grid-template-columns: 1fr; /* One column on mobile */
-  gap: 25px;
-  margin-top: 30px;
+    background-color: #fff;
 }
 
-.blog-card-link {
-  text-decoration: none; /* Remove underline from the link */
-  color: inherit;
-  display: block;
+#contact-us-section {
+    padding: 3rem 1rem 2rem 1rem;
 }
 
-.blog-card {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden; /* Keeps the image inside the rounded corners */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.blog-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.blog-card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover; /* Ensures all images are the same size and look good */
-}
-
-.blog-card-content {
-  padding: 20px;
-}
-
-.blog-card-content h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.4rem;
-  color: #333;
-}
-
-.blog-card-meta {
-  font-size: 0.9rem;
-  color: #777;
-}
-
-
-/* ============================================= */
-/* --- Single Blog Post Styles --- */
-/* ============================================= */
-
-.blog-post-full {
-  max-width: 750px; /* Limits width for better readability on large screens */
-  margin: 0 auto; /* Centers the post content */
-  padding: 20px 0;
-}
-
-.blog-post-full h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    line-height: 1.2;
-}
-
-.blog-post-meta {
-  font-size: 1rem;
-  color: #777;
-  margin-bottom: 30px;
-}
-
-.blog-post-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
-.blog-post-body {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #333;
-}
-
-/* Styles for content generated from Markdown */
-.blog-post-body p {
-  margin-bottom: 1.5rem;
-}
-
-.blog-post-body h2, .blog-post-body h3 {
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.blog-post-body ul, .blog-post-body ol {
-  padding-left: 25px;
-  margin-bottom: 1.5rem;
-}
-
-.blog-post-body a {
-  color: #007bff;
-  text-decoration: underline;
-}
-
-.blog-post-body blockquote {
-  border-left: 4px solid #007bff;
-  padding-left: 20px;
-  margin: 2rem 0;
-  font-style: italic;
-  color: #555;
-}
-
-
-/* ============================================= */
-/* --- Responsive Styles for Blog (Desktop) --- */
-/* ============================================= */
-
-@media (min-width: 768px) {
-  .blog-post-list {
-    /* Creates a responsive grid with 2 or 3 columns on larger screens */
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
-}
-/* --- Blog Post Call to Action (CTA) Styles --- */
-
-.blog-cta-section {
-    margin-top: 50px;
-    padding: 30px;
-    background-color: #eef7ff; /* A light, friendly blue */
-    border: 1px solid #bce0ff;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.blog-cta-section h3 {
+#contact-us-section h2 {
     margin-top: 0;
-    font-size: 1.5rem;
-    color: #004085;
-}
-
-.blog-cta-section p {
-    margin-bottom: 25px;
-    font-size: 1.1rem;
+    margin-bottom: 20px;
+    font-weight: 700;
     color: #333;
 }
 
-/* This reuses the style of your existing CTA button */
-.blog-cta-section .btn-cta {
-    display: inline-block;
-    padding: 12px 28px;
-    background-color: #007bff; /* Or your main button color */
-    color: white;
+.contact-buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.contact-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 8px;
     text-decoration: none;
+    color: white;
     font-weight: bold;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.blog-cta-section .btn-cta:hover {
-    background-color: #0056b3; /* A darker shade on hover */
+.contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+.whatsapp-btn { background-color: #25D366; }
+.email-btn { background-color: #5865F2; }
+
+.contact-btn i {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+
+/* --- Responsive: Big Screens --- */
+@media (min-width: 768px) {
+    .site-title {
+        font-size: 2.2rem;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .product-card img {
+        height: 150px;
+    }
+
+    .product-card h3 {
+        font-size: 1.1em;
+    }
+}
+
+/* ================================================== */
+/* === NEW STYLES FOR REDESIGNED HOMEPAGE GO HERE === */
+/* ================================================== */
+
+/* --- New Hero Section CSS --- */
+.hero-section {
+    background: linear-gradient(to right, rgba(0, 77, 64, 0.85), rgba(0, 131, 143, 0.9));
+    color: var(--text-light);
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-cta {
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: 2px solid var(--accent-color);
+}
+
+.hero-cta:hover {
+    background-color: transparent;
+    color: var(--accent-color);
+    transform: translateY(-3px);
+}
+
+/* --- New Trust Section CSS --- */
+.trust-section {
+    background-color: #ffffff;
+    padding: 4rem 1rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    margin-bottom: 3rem;
+    font-weight: 700;
+}
+
+.trust-steps {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.trust-step {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.trust-step i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.trust-step h3 {
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+/* --- Marketplace Section CSS --- */
+.marketplace-section {
+    padding-top: 4rem;
+}
+.marketplace-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: -2.5rem auto 2rem auto;
+}
+
+@media (min-width: 768px) {
+    .hero-title { font-size: 3.5rem; }
+    .hero-subtitle { font-size: 1.3rem; }
+    .hero-cta { font-size: 1.2rem; padding: 1rem 2.5rem; }
+}
+/* --- Add this CSS to style.css --- */
+
+/* Style for the new Sell button in the header */
+.nav-btn-sell {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.nav-btn-sell:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-light); /* Ensure text color stays light on hover */
+    text-decoration: none; /* Remove underline on hover */
+    transform: translateY(-2px);
+}
+
+
+/* Styling for the new links in the footer */
+.footer-links {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.footer-link {
+    color: #6c757d;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 0.9rem;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+    color: var(--primary-color);
+}
+
+.copyright {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
