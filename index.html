@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-8T3YSBPPG3');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8T3YSBPPG3');
+    </script>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-   <meta name="description" content="Your local online marketplace for Kabale Uganda. Find great deals on used phones, clothes, furniture, and more. Sell your second-hand items for free today! . Buy in Kabale . Buy and sell in Kabale Uganda . sell in kabale Uganda . Kabale . Kabale Uganda . Your local online marketplace for Kabale. Find great deals on used phones, clothes, furniture, and more. Sell your second-hand items for free today!">
-
-    <title>Kabale Online | Buy & Sell Used and New Items in Kabale</title>
-<link rel="icon" href="favicon.webp" type="image/webp">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your local online marketplace for Kabale, Uganda. Find great deals on used phones, clothes, furniture, and more. Sell your second-hand items for free today!">
+    <title>Kabale Online | Your Local Marketplace in Kigezi</title>
+    <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -29,169 +22,117 @@
         <div class="header-content">
             <h1 class="site-title">Kabale Online</h1>
             <nav class="main-nav">
-                <a href="https://kabaleonline.com" class="active">Home</a>
-                <a href="shop/index.html">Shop</a>
-                <a href="sell/index.html">Sell</a>
+                <a href="sell/index.html" class="nav-btn-sell">Sell an Item</a>
             </nav>
         </div>
     </header>
 
-    <main>
-        <section class="hero-section">
-            <div class="container">
-                <h2>Your Local Marketplace in Kabale</h2>
-                <p>Connecting buyers and sellers right here in our community. Buy and sell almost anything, safely and easily.</p>
-                <div class="hero-buttons">
-                    <a href="shop/index.html" class="btn btn-primary">Shop Now</a>
-                    <a href="sell/index.html" class="btn btn-secondary">Sell Your Items</a>
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">The Heart of Kabale's Marketplace, Online.</h1>
+            <p class="hero-subtitle">Find amazing deals on second-hand items from your local community.</p>
+            <a href="#marketplace" class="hero-cta">Start Browse</a>
+        </div>
+    </section>
+
+    <section class="trust-section">
+        <div class="container">
+            <h2 class="section-title">A Safe & Simple Way to Trade</h2>
+            <div class="trust-steps">
+                <div class="trust-step">
+                    <i class="fas fa-search"></i>
+                    <h3>1. Find Your Item</h3>
+                    <p>Browse or search through hundreds of local listings.</p>
+                </div>
+                <div class="trust-step">
+                    <i class="fas fa-comments"></i>
+                    <h3>2. Contact the Seller</h3>
+                    <p>Use WhatsApp or phone to arrange details securely.</p>
+                </div>
+                <div class="trust-step">
+                    <i class="fas fa-handshake"></i>
+                    <h3>3. Meet & Pay</h3>
+                    <p>Meet locally to inspect your item and pay with confidence.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
+    
+    <section id="marketplace" class="marketplace-section">
+        <div class="marketplace-header">
+            <h2 class="section-title">Explore the Marketplace</h2>
+            <p class="section-subtitle">New deals posted every day by people in your community.</p>
+        </div>
 
-        <section class="container section">
-            <h3 class="section-title">Browse by Category</h3>
-            <div class="category-grid">
-                <a href="shop/index.html?category=electronics" class="category-card">
-                    <h4>Electronics</h4>
-                    <p>Phones, Laptops, TVs</p>
-                </a>
-                <a href="shop/index.html?category=fashion" class="category-card">
-                    <h4>Fashion</h4>
-                    <p>Clothing, Shoes, Bags</p>
-                </a>
-                <a href="shop/index.html?category=home" class="category-card">
-                    <h4>Home & Garden</h4>
-                    <p>Furniture, Kitchenware</p>
-                </a>
-                <a href="shop/index.html?category=vehicles" class="category-card">
-                    <h4>Vehicles</h4>
-                    <p>Cars, Boda Bodas</p>
-                </a>
+        <section class="category-section">
+            <div class="category-scroller" id="category-scroller">
+                <button class="category-btn active" data-category="All">All Categories</button>
+                <button class="category-btn" data-category="Electronics">Electronics</button>
+                <button class="category-btn" data-category="Fashion">Fashion</button>
+                <button class="category-btn" data-category="Home">Home</button>
+                <button class="category-btn" data-category="Vehicles">Vehicles</button>
+                <button class="category-btn" data-category="Property">Property</button>
+                <button class="category-btn" data-category="Other">Other</button>
             </div>
         </section>
 
-        <section class="container section">
-            <h3 class="section-title">About Kabale Online</h3>
-            <p>We are a community-focused platform created to make local trade simpler and more accessible for everyone in Kabale. Our mission is to provide a central place where you can find great deals from your neighbours or turn your unused items into cash.</p>
-            <div class="disclaimer-box">
-                <h4>How It Works</h4>
-                <p><strong>Important:</strong> Kabale Online is a marketplace to connect people. <strong>We do not own any of the products displayed on the site.</strong> All transactions are handled directly between the buyer and the seller.</p>
-                <ol>
-                    <li><strong>Browse:</strong> Look through listings or search for what you need.</li>
-                    <li><strong>Contact:</strong> Use the details on the listing to contact the seller directly.</li>
-                    <li><strong>Transact:</strong> Meet the seller in a safe, public place to inspect the item and make your purchase.</li>
-                </ol>
+        <main class="container">
+            <form class="search-form" id="search-form">
+                <input type="search" id="search-input" placeholder="Search by name, e.g., 'iPhone' or 'sofa'">
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="filter-group" style="margin-top: 15px;">
+                <label for="district-filter">Filter by District:</label>
+                <select id="district-filter">
+                    <option value="All">All Districts</option>
+                    <option value="Kabale">Kabale</option>
+                    <option value="Kisoro">Kisoro</option>
+                    <option value="Rukungiri">Rukungiri</option>
+                    <option value="Kanungu">Kanungu</option>
+                    <option value="Rubanda">Rubanda</option>
+                    <option value="Rukiga">Rukiga</option>
+                </select>
             </div>
+            
+            <section class="product-grid" id="product-grid">
+                <p>Loading products from Kabale...</p>
+            </section>
+
+            <section class="pagination-controls" id="pagination-controls" style="text-align: center; margin: 30px 0;">
+                <button id="prev-btn" disabled>&larr; Previous</button>
+                <span id="page-indicator" style="margin: 0 15px;">Page 1</span>
+                <button id="next-btn">Next &rarr;</button>
+            </section>
+        </main>
+    </section>
+
+    <footer>
+        <section class="cta-section">
+            <h2>Have Something to Sell?</h2>
+            <a href="sell/index.html" class="btn-cta">Start Selling Now</a>
         </section>
 
-        <section class="bg-light section">
-            <div class="container">
-                <h3 class="section-title">Why We Keep Our Site Simple</h3>
-                <p>We believe in a fast and straightforward experience. Here’s why we built a simple, static website:</p>
-                <ul>
-                    <li><strong>Loads Quickly:</strong> Our pages load fast, even on slower internet connections, saving you time.</li>
-                    <li><strong>Saves Your Data:</strong> A simple site uses less mobile data, which means you can browse for longer without worry.</li>
-                    <li><strong>Easy to Use:</strong> No complicated features. Just a clean, simple way to find what you're looking for.</li>
-                    <li><strong>Focus on What Matters:</strong> Our simplicity allows us to focus on our main goal: connecting you with sellers in our community.</li>
-                </ul>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
             </div>
         </section>
         
-        <section class="cta-section">
-            <div class="container">
-                <h2>Have Something to Sell?</h2>
-                <p>It's free to list your items. Turn your clutter into cash and reach hundreds of local buyers today!</p>
-                <a href="sell/index.html" class="btn-cta">Start Selling Now</a>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-<style>
-    /* CSS for the Contact Us section */
-    #contact-us-section {
-        font-family: 'Lato', sans-serif;
-        background-color: #f8f9fa;
-        border-top: 1px solid #e7e7e7;
-        padding: 40px 20px;
-        text-align: center;
-    }
-
-    #contact-us-section h2 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-weight: 700;
-        color: #333;
-    }
-
-    .contact-buttons-container {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        flex-wrap: wrap; /* Allows buttons to stack on small screens */
-    }
-
-    /* General styles for both buttons */
-    .contact-btn {
-        display: inline-flex;
-        align-items: center;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .contact-btn:hover {
-        transform: translateY(-2px); /* Lifts the button slightly on hover */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    /* Specific style for the WhatsApp button */
-    .whatsapp-btn {
-        background-color: #25D366; /* Official WhatsApp green */
-    }
-
-    /* Specific style for the Email button */
-    .email-btn {
-        background-color: #5865F2; /* A nice, modern blue */
-    }
-
-    /* Style for the icons inside the buttons */
-    .contact-btn i {
-        margin-right: 10px;
-        font-size: 20px;
-    }
-</style>
-
-<section id="contact-us-section">
-    <h2>Get in Touch</h2>
-    <div class="contact-buttons-container">
-        <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
-            <i class="fa-brands fa-whatsapp"></i>
-            Chat on WhatsApp
-        </a>
-
-        <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
-            <i class="fa-solid fa-envelope"></i>
-            Send an Email
-        </a>
-    </div>
-</section>
-
-
-        <div class="container">
-            <p>&copy; 2025 Kabale Online. All Rights Reserved. A Community Marketplace.</p>
-             <a href="../shop/terms.html" class="footer-link">Terms of Service</a>
+        <div class="footer-links">
+            <a href="about.html" class="footer-link">About Us</a>
+            <a href="terms.html" class="footer-link">Terms of Service</a>
         </div>
+
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
+    <script src="script.js"></script>
 </body>
 </html>
