@@ -1,29 +1,10 @@
-// In your blog/script.js file
-
 async function fetchBlogPosts() {
     try {
         const response = await fetch('/.netlify/functions/get-blog-posts');
+        if (!response.ok) throw new Error('Failed to load posts.');
 
-        // --- START OF DEBUGGING CODE ---
-        // Let's log the raw response to the browser's console to inspect it.
-        console.log('Raw response from function:', response);
-
-        const responseData = await response.json();
-        console.log('Data from function (as JSON):', responseData);
-        // --- END OF DEBUGGING CODE ---
-
-        if (!response.ok) {
-            throw new Error(`Server responded with status: ${response.status}`);
-        }
-
-        // Use the variable we created for debugging
-        const { records } = responseData;
+        const { records } = await response.json();
         postListContainer.innerHTML = ''; // Clear loading message
-
-        if (records.length === 0) {
-            postListContainer.innerHTML = '<p>No blog posts have been published yet. Check back soon!</p>';
-            return;
-        }
 
         records.forEach(record => {
             const { Title, Slug, FeaturedImage, PublishDate, Author } = record.fields;
@@ -46,7 +27,6 @@ async function fetchBlogPosts() {
             postListContainer.appendChild(postCard);
         });
     } catch (error) {
-        console.error('Error fetching blog posts:', error); // Log the actual error
         postListContainer.innerHTML = '<p>Could not load blog posts at this time.</p>';
     }
 }
