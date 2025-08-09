@@ -27,6 +27,9 @@ body {
     background-color: #fff;
     padding: 1rem 5%;
     border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .header-content {
@@ -43,45 +46,96 @@ body {
     color: var(--secondary-color);
 }
 
-.main-nav a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-left: 1.5rem;
-    transition: color 0.2s;
-}
-
-.main-nav a:hover,
-.main-nav a.active {
-    color: var(--secondary-color);
-    text-decoration: underline;
-}
-
-/* Style for the new Sell button in the header */
 .nav-btn-sell {
-    background-color: var(--primary-color);
-    color: var(--text-light);
-    padding: 0.5rem 1rem;
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    padding: 0.6rem 1.2rem;
     border-radius: 8px;
     text-decoration: none;
     font-size: 1rem;
     font-weight: 700;
-    transition: background-color 0.2s, transform 0.2s;
+    transition: all 0.2s ease-in-out;
 }
 
 .nav-btn-sell:hover {
-    background-color: var(--secondary-color);
-    color: var(--text-light); /* Ensure text color stays light on hover */
-    text-decoration: none; /* Remove underline on hover */
+    background-color: #e0a800;
+    color: var(--secondary-color);
     transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* --- Hero Section CSS --- */
+.hero-section {
+    background: var(--secondary-color);
+    color: var(--text-light);
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-cta {
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: 2px solid var(--accent-color);
+}
+
+.hero-cta:hover {
+    background-color: transparent;
+    color: var(--accent-color);
+    transform: translateY(-3px);
+}
+
+/* --- Marketplace Section --- */
+.marketplace-section {
+    padding-top: 4rem;
+}
+.marketplace-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.section-title {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
 }
 
 /* --- Category Buttons --- */
 .category-section {
-    background-color: #fff;
+    background-color: var(--bg-light);
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
 }
 
 .category-scroller {
@@ -93,9 +147,7 @@ body {
     scrollbar-width: none;
 }
 
-.category-scroller::-webkit-scrollbar {
-    display: none;
-}
+.category-scroller::-webkit-scrollbar { display: none; }
 
 .category-btn {
     flex-shrink: 0;
@@ -110,9 +162,7 @@ body {
     transition: all 0.2s ease-in-out;
 }
 
-.category-btn:hover {
-    background-color: #d4d9de;
-}
+.category-btn:hover { background-color: #d4d9de; }
 
 .category-btn.active {
     background-color: var(--primary-color);
@@ -210,6 +260,42 @@ body {
     color: #6c757d;
 }
 
+/* --- Trust Section (Moved to Bottom) --- */
+.trust-section {
+    background-color: #ffffff;
+    padding: 4rem 1rem;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+}
+
+.trust-steps {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: -1rem;
+}
+
+.trust-step {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+    padding: 0 1rem;
+}
+
+.trust-step i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.trust-step h3 {
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
 
 /* --- CTA & Footer --- */
 .cta-section {
@@ -217,7 +303,6 @@ body {
     color: var(--text-light);
     text-align: center;
     padding: 3rem 1rem;
-    margin-top: 2rem;
 }
 
 .cta-section h2 {
@@ -237,15 +322,11 @@ body {
     transition: background-color 0.2s;
 }
 
-.btn-cta:hover {
-    background-color: #e0a800;
-}
+.btn-cta:hover { background-color: #e0a800; }
 
 footer {
     text-align: center;
-    padding: 2rem 1rem 1rem 1rem;
-    color: #6c757d;
-    font-size: 0.9rem;
+    padding: 0;
     background-color: #fff;
 }
 
@@ -296,8 +377,8 @@ footer {
 }
 
 .footer-links {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+    padding: 1.5rem 1rem;
+    border-top: 1px solid var(--border-color);
 }
 
 .footer-link {
@@ -313,145 +394,32 @@ footer {
 }
 
 .copyright {
+    background-color: var(--bg-light);
+    padding: 1rem;
     color: #6c757d;
     font-size: 0.8rem;
-    margin-top: 1rem;
 }
 
 /* --- Responsive: Big Screens --- */
 @media (min-width: 768px) {
-    .site-title {
-        font-size: 2.2rem;
-    }
-
+    .site-title { font-size: 2.2rem; }
+    .hero-title { font-size: 3.5rem; }
+    .hero-subtitle { font-size: 1.3rem; }
+    .hero-cta { font-size: 1.2rem; padding: 1rem 2.5rem; }
     .product-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
     }
-
     .product-card {
         padding: 15px;
         font-size: 14px;
     }
+    .product-card img { height: 150px; }
+    .product-card h3 { font-size: 1.1em; }
+}
 
-    .product-card img {
-        height: 150px;
+@media (min-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
-
-    .product-card h3 {
-        font-size: 1.1em;
-    }
-}
-
-
-/* ================================================== */
-/* === NEW STYLES FOR REDESIGNED HOMEPAGE GO HERE === */
-/* ================================================== */
-
-/* --- New Hero Section CSS --- */
-.hero-section {
-    background: linear-gradient(to right, rgba(0, 77, 64, 0.85), rgba(0, 131, 143, 0.9));
-    color: var(--text-light);
-    text-align: center;
-    padding: 4rem 1rem;
-}
-
-.hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.hero-title {
-    font-size: 2.5rem;
-    font-weight: 900;
-    margin-bottom: 1rem;
-    line-height: 1.2;
-}
-
-.hero-subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
-}
-
-.hero-cta {
-    background-color: var(--accent-color);
-    color: var(--secondary-color);
-    padding: 0.8rem 2rem;
-    border-radius: 50px;
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    display: inline-block;
-    border: 2px solid var(--accent-color);
-}
-
-.hero-cta:hover {
-    background-color: transparent;
-    color: var(--accent-color);
-    transform: translateY(-3px);
-}
-
-/* --- New Trust Section CSS --- */
-.trust-section {
-    background-color: #ffffff;
-    padding: 4rem 1rem;
-    text-align: center;
-}
-
-.section-title {
-    font-size: 2rem;
-    color: var(--secondary-color);
-    margin-bottom: 3rem;
-    font-weight: 700;
-}
-
-.trust-steps {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.trust-step {
-    flex: 1;
-    min-width: 250px;
-    max-width: 300px;
-    padding: 0 1rem;
-}
-
-.trust-step i {
-    font-size: 3rem;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.trust-step h3 {
-    font-size: 1.3rem;
-    color: var(--secondary-color);
-    margin-bottom: 0.5rem;
-}
-
-/* --- Marketplace Section CSS --- */
-.marketplace-section {
-    padding-top: 4rem;
-}
-.marketplace-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-.section-subtitle {
-    font-size: 1.1rem;
-    color: #6c757d;
-    max-width: 600px;
-    margin: -2.5rem auto 2rem auto;
-}
-
-@media (min-width: 768px) {
-    .hero-title { font-size: 3.5rem; }
-    .hero-subtitle { font-size: 1.3rem; }
-    .hero-cta { font-size: 1.2rem; padding: 1rem 2.5rem; }
 }
