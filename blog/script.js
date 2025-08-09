@@ -1,12 +1,29 @@
-const postListContainer = document.getElementById('blog-post-list');
+// In your blog/script.js file
 
 async function fetchBlogPosts() {
     try {
         const response = await fetch('/.netlify/functions/get-blog-posts');
-        if (!response.ok) throw new Error('Failed to load posts.');
-        
-        const { records } = await response.json();
+
+        // --- START OF DEBUGGING CODE ---
+        // Let's log the raw response to the browser's console to inspect it.
+        console.log('Raw response from function:', response);
+
+        const responseData = await response.json();
+        console.log('Data from function (as JSON):', responseData);
+        // --- END OF DEBUGGING CODE ---
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        // Use the variable we created for debugging
+        const { records } = responseData;
         postListContainer.innerHTML = ''; // Clear loading message
+
+        if (records.length === 0) {
+            postListContainer.innerHTML = '<p>No blog posts have been published yet. Check back soon!</p>';
+            return;
+        }
 
         records.forEach(record => {
             const { Title, Slug, FeaturedImage, PublishDate, Author } = record.fields;
@@ -14,8 +31,8 @@ async function fetchBlogPosts() {
             const postDate = new Date(PublishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
             const postCard = document.createElement('a');
-            postCard.className = 'blog-card-link'; // Use a class for styling
-            postCard.href = `/post/?slug=${Slug}`; // Link to the single post page
+            postCard.className = 'blog-card-link';
+            postCard.href = `/post/?slug=${Slug}`;
 
             postCard.innerHTML = `
                 <article class="blog-card">
@@ -29,6 +46,7 @@ async function fetchBlogPosts() {
             postListContainer.appendChild(postCard);
         });
     } catch (error) {
+        console.error('Error fetching blog posts:', error); // Log the actual error
         postListContainer.innerHTML = '<p>Could not load blog posts at this time.</p>';
     }
 }
