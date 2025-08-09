@@ -9,6 +9,10 @@ const nextBtn = document.getElementById('next-btn');
 const pageIndicator = document.getElementById('page-indicator');
 const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 
+// Sections to hide/show dynamically
+const heroSection = document.querySelector('.hero-section');
+const marketplaceSection = document.querySelector('.marketplace-section');
+
 // --- STATE MANAGEMENT ---
 const PAGE_SIZE = 16;
 let pageOffsets = [null];
@@ -22,21 +26,33 @@ let isShowingFeatured = true;
 
 // --- FUNCTIONS ---
 
+/**
+ * Hides or shows the top sections for a cleaner Browse experience.
+ * @param {boolean} shouldBePaginatedView - True to hide sections, false to show them.
+ */
+function updatePageView(shouldBePaginatedView) {
+    if (shouldBePaginatedView) {
+        heroSection.classList.add('section-hidden');
+        // Smoothly scroll to the top of the marketplace content
+        marketplaceSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        heroSection.classList.remove('section-hidden');
+    }
+}
+
+
 function buildFilterFormula(isInitialLoad = false) {
     let formulas = ["{Status}='Approved'"];
-    
     if (isInitialLoad) {
         formulas.push("{IsFeatured}=1");
         return `AND(${formulas.join(', ')})`;
     }
-    
     if (currentFilters.category !== 'All') formulas.push(`{Category}='${currentFilters.category}'`);
-    if (currentFilters.district !== 'all') formulas.push(`{District}='${currentFilters.district}'`);
+    if (currentFilters.district !== 'All') formulas.push(`{District}='${currentFilters.district}'`);
     if (currentFilters.searchTerm) {
         const searchTerm = currentFilters.searchTerm.replace(/'/g, "\\'");
         formulas.push(`SEARCH('${searchTerm.toLowerCase()}', LOWER({Name}))`);
     }
-    
     return formulas.length === 1 ? formulas[0] : `AND(${formulas.join(', ')})`;
 }
 
@@ -45,10 +61,7 @@ async function fetchProducts(filterFormula, offset) {
     nextBtn.disabled = true;
     prevBtn.disabled = true;
 
-    const queryParams = new URLSearchParams({
-        pageSize: PAGE_SIZE,
-        filterByFormula: filterFormula
-    });
+    const queryParams = new URLSearchParams({ pageSize: PAGE_SIZE, filterByFormula: filterFormula });
     if (offset) queryParams.set('offset', offset);
     
     const url = `/.netlify/functions/get-products?${queryParams.toString()}`;
@@ -108,10 +121,11 @@ function displayProducts(records) {
     });
 }
 
-function handleFilterChange() {
+function handleFilterChange(isPaginatedAction = true) {
     isShowingFeatured = false;
     currentPage = 0;
     pageOffsets = [null];
+    updatePageView(isPaginatedAction);
     const formula = buildFilterFormula();
     fetchProducts(formula, null);
 }
@@ -123,12 +137,11 @@ searchForm.addEventListener('submit', (event) => {
     handleFilterChange();
 });
 
-// ** NEW **: Add this listener to reset products when the search bar is cleared
 searchInput.addEventListener('input', (event) => {
-    // If user clears the search box (e.g., by backspace or clicking 'x')
     if (event.target.value === '') {
         currentFilters.searchTerm = '';
-        handleFilterChange();
+        // Pass false to show the hero section again when search is cleared
+        handleFilterChange(false);
     }
 });
 
@@ -148,6 +161,7 @@ districtFilter.addEventListener('change', () => {
 
 nextBtn.addEventListener('click', () => {
     currentPage++;
+    updatePageView(true);
     const formula = buildFilterFormula();
     fetchProducts(formula, pageOffsets[currentPage]);
 });
@@ -155,6 +169,7 @@ nextBtn.addEventListener('click', () => {
 prevBtn.addEventListener('click', () => {
     if (currentPage > 0) {
         currentPage--;
+        updatePageView(true);
         const formula = buildFilterFormula();
         fetchProducts(formula, pageOffsets[currentPage]);
     }
