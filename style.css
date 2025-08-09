@@ -58,6 +58,25 @@ body {
     text-decoration: underline;
 }
 
+/* Style for the new Sell button in the header */
+.nav-btn-sell {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.nav-btn-sell:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-light); /* Ensure text color stays light on hover */
+    text-decoration: none; /* Remove underline on hover */
+    transform: translateY(-2px);
+}
+
 /* --- Category Buttons --- */
 .category-section {
     background-color: #fff;
@@ -224,7 +243,7 @@ body {
 
 footer {
     text-align: center;
-    padding: 2rem;
+    padding: 2rem 1rem 1rem 1rem;
     color: #6c757d;
     font-size: 0.9rem;
     background-color: #fff;
@@ -276,6 +295,28 @@ footer {
     font-size: 20px;
 }
 
+.footer-links {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.footer-link {
+    color: #6c757d;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 0.9rem;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+    color: var(--primary-color);
+}
+
+.copyright {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+}
 
 /* --- Responsive: Big Screens --- */
 @media (min-width: 768px) {
@@ -378,6 +419,7 @@ footer {
     flex: 1;
     min-width: 250px;
     max-width: 300px;
+    padding: 0 1rem;
 }
 
 .trust-step i {
@@ -411,48 +453,4 @@ footer {
     .hero-title { font-size: 3.5rem; }
     .hero-subtitle { font-size: 1.3rem; }
     .hero-cta { font-size: 1.2rem; padding: 1rem 2.5rem; }
-}
-/* --- Add this CSS to style.css --- */
-
-/* Style for the new Sell button in the header */
-.nav-btn-sell {
-    background-color: var(--primary-color);
-    color: var(--text-light);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 700;
-    transition: background-color 0.2s, transform 0.2s;
-}
-
-.nav-btn-sell:hover {
-    background-color: var(--secondary-color);
-    color: var(--text-light); /* Ensure text color stays light on hover */
-    text-decoration: none; /* Remove underline on hover */
-    transform: translateY(-2px);
-}
-
-
-/* Styling for the new links in the footer */
-.footer-links {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.footer-link {
-    color: #6c757d;
-    text-decoration: none;
-    margin: 0 10px;
-    font-size: 0.9rem;
-}
-
-.footer-link:hover {
-    text-decoration: underline;
-    color: var(--primary-color);
-}
-
-.copyright {
-    color: #6c757d;
-    font-size: 0.8rem;
 }
