@@ -1,29 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-8T3YSBPPG3');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8T3YSBPPG3');
+    </script>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="description" content="Your local online marketplace for Kabale Uganda. Find great deals on used phones, clothes, furniture, and more. Sell your second-hand items for free today! . Buy in Kabale . Buy and sell in Kabale Uganda . sell in kabale Uganda . Kabale . Kabale Uganda ">
-
-    <title>Sell Second-Hand Electronics, Fashion & More | Kabale Online</title>
-<link rel="icon" href="/favicon.webp" type="image/webp">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sell your second-hand items easily on Kabale's local online marketplace. List your used phones, clothes, furniture, and more for free today!">
+    <title>Sell Your Item | Kabale Online</title>
+    <link rel="icon" href="../favicon.webp" type="image/webp">
     <link rel="stylesheet" href="style.css">
-    <style>
-        #submission-status { display: none; margin-top: 15px; padding: 10px; border-radius: 5px; }
-        #submission-status.success { background-color: #d4edda; color: #155724; }
-        #submission-status.error { background-color: #f8d7da; color: #721c24; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -31,9 +22,7 @@
         <div class="header-content">
             <h1 class="site-title">Kabale Online</h1>
             <nav class="main-nav">
-                <a href="../index.html">Home</a>
-                <a href="../shop/index.html">Shop</a>
-                <a href="index.html" class="active">Sell</a>
+                <a href="../index.html#marketplace" class="nav-btn-shop">← Back to Shop</a>
             </nav>
         </div>
     </header>
@@ -41,22 +30,23 @@
     <main class="container">
         <div class="form-container">
             <header class="form-header">
-                <h2>Sell Your Item</h2>
-                <p>Fill out the details below. An admin will contact you for photos and to approve your listing.</p>
+                <h2>List Your Item for Sale</h2>
+                <p>Fill out the details below. An admin will review your submission and contact you via WhatsApp for photos to approve your listing.</p>
             </header>
 
             <form id="sell-item-form">
                 <div class="form-group">
                     <label for="product-name">Product Name</label>
-                    <input type="text" id="product-name" name="product-name" required>
+                    <input type="text" id="product-name" name="product-name" placeholder="e.g., iPhone 11 Pro" required>
                 </div>
 
                 <div class="form-group">
                     <label for="product-category">Category</label>
                     <select id="product-category" name="product-category" required>
+                        <option value="" disabled selected>Select a category...</option>
                         <option value="Electronics">Electronics</option>
                         <option value="Fashion">Fashion</option>
-                        <option value="Home">Home</option>
+                        <option value="Home">Home & Garden</option>
                         <option value="Vehicles">Vehicles</option>
                         <option value="Property">Property</option>
                         <option value="Other">Other</option>
@@ -66,7 +56,7 @@
                 <div class="form-group">
                     <label for="product-district">District</label>
                     <select id="product-district" name="product-district" required>
-                        <option value="Kabale">Kabale</option>
+                        <option value="Kabale" selected>Kabale</option>
                         <option value="Kisoro">Kisoro</option>
                         <option value="Rukungiri">Rukungiri</option>
                         <option value="Kanungu">Kanungu</option>
@@ -82,12 +72,12 @@
 
                 <div class="form-group">
                     <label for="product-price">Price (UGX)</label>
-                    <input type="number" id="product-price" name="product-price" required>
+                    <input type="number" id="product-price" name="product-price" placeholder="e.g., 50000" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="product-description">Product Description (Include Condition)</label>
-                    <textarea id="product-description" name="product-description" rows="4" required></textarea>
+                    <label for="product-description">Product Description</label>
+                    <textarea id="product-description" name="product-description" rows="4" placeholder="Include item condition, features, and any other important details." required></textarea>
                 </div>
                 
                 <div class="form-group">
@@ -97,7 +87,7 @@
                 
                 <div class="form-group">
                     <label for="seller-phone">Your WhatsApp Number</label>
-                    <input type="tel" id="seller-phone" name="seller-phone" required>
+                    <input type="tel" id="seller-phone" name="seller-phone" placeholder="e.g., 0740373021" required>
                 </div>
 
                 <button type="submit" id="submit-btn">Submit for Approval</button>
@@ -108,87 +98,24 @@
     </main>
     
     <footer>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </section>
+        
+        <div class="footer-links">
+            <a href="../about.html" class="footer-link">About Us</a>
+            <a href="../terms.html" class="footer-link">Terms of Service</a>
+        </div>
 
-<style>
-    /* CSS for the Contact Us section */
-    #contact-us-section {
-        font-family: 'Lato', sans-serif;
-        background-color: #f8f9fa;
-        border-top: 1px solid #e7e7e7;
-        padding: 40px 20px;
-        text-align: center;
-    }
-
-    #contact-us-section h2 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-weight: 700;
-        color: #333;
-    }
-
-    .contact-buttons-container {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        flex-wrap: wrap; /* Allows buttons to stack on small screens */
-    }
-
-    /* General styles for both buttons */
-    .contact-btn {
-        display: inline-flex;
-        align-items: center;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .contact-btn:hover {
-        transform: translateY(-2px); /* Lifts the button slightly on hover */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    /* Specific style for the WhatsApp button */
-    .whatsapp-btn {
-        background-color: #25D366; /* Official WhatsApp green */
-    }
-
-    /* Specific style for the Email button */
-    .email-btn {
-        background-color: #5865F2; /* A nice, modern blue */
-    }
-
-    /* Style for the icons inside the buttons */
-    .contact-btn i {
-        margin-right: 10px;
-        font-size: 20px;
-    }
-</style>
-
-<section id="contact-us-section">
-    <h2>Get in Touch</h2>
-    <div class="contact-buttons-container">
-        <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
-            <i class="fa-brands fa-whatsapp"></i>
-            Chat on WhatsApp
-        </a>
-
-        <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
-            <i class="fa-solid fa-envelope"></i>
-            Send an Email
-        </a>
-    </div>
-</section>
-
-        <p>&copy; 2025 Kabale Online. All Rights Reserved.</p>
-         <a href="../shop/terms.html" class="footer-link">Terms of Service</a>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
     <script src="script.js"></script>
