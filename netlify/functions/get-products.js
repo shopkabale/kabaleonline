@@ -2,7 +2,7 @@
 // We use a Map to store results for multiple different queries (e.g., sponsored, verified, page 2 of electronics, etc.)
 const cache = new Map();
 // Cache duration in milliseconds (50 minutes * 60 seconds * 1000 milliseconds)
-const CACHE_DURATION_MS = 50 * 60 * 1000;
+const CACHE_DURATION_MS = 12 * 60 * 60 * 1000;
 
 
 // This is the main function that runs when a request comes in
