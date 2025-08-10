@@ -13,6 +13,12 @@ const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 const heroSection = document.querySelector('.hero-section');
 const marketplaceSection = document.querySelector('.marketplace-section');
 
+// ** NEW **: Selectors for the new carousel containers
+const sponsoredGrid = document.getElementById('sponsored-products-grid');
+const verifiedGrid = document.getElementById('verified-products-grid');
+const saleGrid = document.getElementById('sale-products-grid');
+
+
 // --- STATE MANAGEMENT ---
 const PAGE_SIZE = 16;
 let pageOffsets = [null];
@@ -26,20 +32,14 @@ let isShowingFeatured = true;
 
 // --- FUNCTIONS ---
 
-/**
- * Hides or shows the top sections for a cleaner Browse experience.
- * @param {boolean} shouldBePaginatedView - True to hide sections, false to show them.
- */
 function updatePageView(shouldBePaginatedView) {
     if (shouldBePaginatedView) {
         heroSection.classList.add('section-hidden');
-        // Smoothly scroll to the top of the marketplace content
         marketplaceSection.scrollIntoView({ behavior: 'smooth' });
     } else {
         heroSection.classList.remove('section-hidden');
     }
 }
-
 
 function buildFilterFormula(isInitialLoad = false) {
     let formulas = ["{Status}='Approved'"];
@@ -71,7 +71,7 @@ async function fetchProducts(filterFormula, offset) {
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         
         const data = await response.json();
-        displayProducts(data.records);
+        displayProducts(data.records, productGrid); // Pass the main grid container
 
         if (data.offset) {
             nextBtn.disabled = false;
@@ -88,24 +88,27 @@ async function fetchProducts(filterFormula, offset) {
     }
 }
 
-function displayProducts(records) {
-    productGrid.innerHTML = '';
+// ** MODIFIED **: This function now accepts a container to render into
+function displayProducts(records, container) {
+    container.innerHTML = '';
     if (!records || records.length === 0) {
-        let message = isShowingFeatured 
-            ? 'No featured products found. Showing all products instead...' 
-            : 'No products match your filter. Try a different search!';
-        productGrid.innerHTML = `<p>${message}</p>`;
-        
-        if (isShowingFeatured) {
-            isShowingFeatured = false;
-            handleFilterChange();
+        if (container.id === 'product-grid') { // Only show complex messages for the main grid
+            let message = isShowingFeatured 
+                ? 'No featured products found. Showing all products instead...' 
+                : 'No products match your filter. Try a different search!';
+            container.innerHTML = `<p>${message}</p>`;
+            if (isShowingFeatured) {
+                isShowingFeatured = false;
+                handleFilterChange();
+            }
+        } else {
+            container.innerHTML = `<p>No items to show here right now.</p>`;
         }
         return;
     }
     records.forEach(record => {
         const fields = record.fields;
         if (!fields.Name) return;
-
         const imageUrl = fields.Image && fields.Image.length > 0 ? fields.Image[0].url : placeholderImage;
         const productCardLink = document.createElement('a');
         productCardLink.className = 'product-card-link';
@@ -117,9 +120,24 @@ function displayProducts(records) {
                 <p class="product-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
                 <p class="product-description">Seller: ${fields.SellerName || 'N/A'}</p>
             </article>`;
-        productGrid.appendChild(productCardLink);
+        container.appendChild(productCardLink);
     });
 }
+
+// ** NEW **: A function to load products for our carousels
+async function loadCarouselProducts(type, container) {
+    try {
+        const url = `/.netlify/functions/get-products?type=${type}&pageSize=10`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch ${type} products`);
+        const data = await response.json();
+        displayProducts(data.records, container);
+    } catch (error) {
+        console.error(`Error loading ${type} products:`, error);
+        container.innerHTML = `<p>Could not load items.</p>`;
+    }
+}
+
 
 function handleFilterChange(isPaginatedAction = true) {
     isShowingFeatured = false;
@@ -140,7 +158,6 @@ searchForm.addEventListener('submit', (event) => {
 searchInput.addEventListener('input', (event) => {
     if (event.target.value === '') {
         currentFilters.searchTerm = '';
-        // Pass false to show the hero section again when search is cleared
         handleFilterChange(false);
     }
 });
@@ -176,4 +193,10 @@ prevBtn.addEventListener('click', () => {
 });
 
 // --- INITIAL PAGE LOAD ---
+// ** NEW **: Load the data for the new carousels
+loadCarouselProducts('sponsored', sponsoredGrid);
+loadCarouselProducts('verified', verifiedGrid);
+loadCarouselProducts('sale', saleGrid);
+
+// Load the main grid with "Featured" products
 fetchProducts(buildFilterFormula(true), null);
