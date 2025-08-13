@@ -9,6 +9,7 @@ exports.handler = async (event) => {
   const cacheKey = event.rawQuery;
   const now = Date.now();
 
+  // --- Cache retrieval logic (unchanged) ---
   if (cache.has(cacheKey)) {
     const cachedItem = cache.get(cacheKey);
     if (now - cachedItem.timestamp < CACHE_DURATION_MS) {
@@ -23,6 +24,7 @@ exports.handler = async (event) => {
 
   console.log(`CACHE MISS. Fetching from Baserow for query: ${cacheKey}`);
 
+  // --- Parameter parsing (unchanged) ---
   const { type, pageSize, page, searchTerm, category } = event.queryStringParameters;
   
   const pageNumber = parseInt(page, 10) || 1;
@@ -37,25 +39,32 @@ exports.handler = async (event) => {
     order_by: `-${orderByFieldId}`
   });
 
-  // --- CORRECTED FILTER LOGIC ---
+  // --- REFACTORED AND ROBUST FILTER LOGIC ---
   const conditions = [];
 
   // Base filter: Always require products to be 'Approved'
   conditions.push({ type: 'equal', field: 'field_5235549', value: 'Approved' });
 
-  // Add filters based on the 'type' parameter (for carousels)
-  if (type === 'featured') {
-      conditions.push({ type: 'boolean', field: 'field_5235554', value: true }); // IsFeatured
-  } else if (type === 'sponsored') {
-      conditions.push({ type: 'boolean', field: 'field_5235555', value: true }); // IsSponsored
-  } else if (type === 'verified') {
-      conditions.push({ type: 'boolean', field: 'field_5235556', value: true }); // IsVerifiedSeller
-  } else if (type === 'sale') {
-      conditions.push({ type: 'boolean', field: 'field_5235557', value: true }); // IsOnSale
-  }
+  // Define a mapping from the 'type' parameter to the corresponding Baserow field ID
+  const typeToFieldMapping = {
+    'featured': 'field_5235554',  // IsFeatured
+    'sponsored': 'field_5235555', // IsSponsored
+    'verified': 'field_5235556',  // IsVerifiedSeller
+    'sale': 'field_5235557'       // IsOnSale
+  };
 
-  // Add filters for search and category pages
-  if (!type) {
+  // Handle filters for different 'type' carousels
+  if (type) {
+    const fieldForType = typeToFieldMapping[type];
+    if (fieldForType) {
+        // Only add the filter if the type is valid and maps to a known field
+        conditions.push({ type: 'boolean', field: fieldForType, value: true });
+    } else {
+        // Optional: Log if an unknown type is passed, but don't crash
+        console.warn(`An invalid 'type' parameter was received and ignored: ${type}`);
+    }
+  } else {
+    // Handle filters for search and category pages (only when 'type' is not present)
     if (category && category !== 'All') {
         conditions.push({ type: 'equal', field: 'field_5235550', value: category }); // Category
     }
@@ -64,7 +73,7 @@ exports.handler = async (event) => {
     }
   }
 
-  // Only add the filters parameter if there are conditions to apply
+  // --- API request building (unchanged) ---
   if (conditions.length > 0) {
     const filtersObject = {
         filter_type: 'AND',
@@ -81,11 +90,13 @@ exports.handler = async (event) => {
     });
     if (!response.ok) {
       const errorBody = await response.text();
+      // This line correctly reports errors from Baserow
       throw new Error(`Baserow Error: ${response.status} ${errorBody}`);
     }
     
     const baserowData = await response.json();
     
+    // --- Cache storage logic (unchanged) ---
     if (cache.size > 20) { cache.clear(); }
     cache.set(cacheKey, { timestamp: now, data: baserowData });
     
