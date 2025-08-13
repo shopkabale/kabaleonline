@@ -31,15 +31,11 @@ exports.handler = async (event) => {
   const queryParams = new URLSearchParams({
     user_field_names: true,
     size: size,
-    page: pageNumber,
-    order_by: '-PublishDate' 
+    page: pageNumber
+    // --- TEMPORARILY REMOVED order_by FOR DEBUGGING ---
   });
 
-  // --- TEMPORARY DEBUGGING STEP ---
-  // We are sending an empty filter object to test the basic connection.
-  // This will temporarily load ALL products, ignoring their status, category, etc.
   const filters = {};
-
   queryParams.append('filters', JSON.stringify(filters));
 
   const url = `https://api.baserow.io/api/database/rows/table/${BASEROW_PRODUCTS_TABLE_ID}/?${queryParams.toString()}`;
@@ -50,7 +46,6 @@ exports.handler = async (event) => {
     });
     if (!response.ok) {
       const errorBody = await response.text();
-      // Log the specific error body from Baserow for better debugging
       console.error(`Baserow Error Body: ${errorBody}`);
       throw new Error(`Baserow Error: ${response.status} ${errorBody}`);
     }
