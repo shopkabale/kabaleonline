@@ -23,7 +23,7 @@ exports.handler = async (event) => {
 
   console.log(`CACHE MISS. Fetching from Baserow for query: ${cacheKey}`);
 
-  const { type, pageSize, page, searchTerm, category } = event.queryStringParameters;
+  const { pageSize, page } = event.queryStringParameters;
   
   const pageNumber = parseInt(page, 10) || 1;
   const size = parseInt(pageSize, 10) || 16;
@@ -32,36 +32,13 @@ exports.handler = async (event) => {
     user_field_names: true,
     size: size,
     page: pageNumber,
-    // Sorting by the 'PublishDate' field NAME is correct. Baserow uses names for sorting.
     order_by: '-PublishDate' 
   });
 
-  // --- FINAL FILTER LOGIC USING YOUR CORRECT FIELD IDs ---
-  let filters = {
-    filter_type: 'AND',
-    filters: [
-      { type: 'equal', field: 'field_5235549', value: 'Approved' } // Status
-    ]
-  };
-
-  if (type === 'featured') {
-      filters.filters.push({ type: 'boolean', field: 'field_5235554', value: true }); // IsFeatured
-  } else if (type === 'sponsored') {
-      filters.filters.push({ type: 'boolean', field: 'field_5235555', value: true }); // IsSponsored
-  } else if (type === 'verified') {
-      filters.filters.push({ type: 'boolean', field: 'field_5235556', value: true }); // IsVerifiedSeller
-  } else if (type === 'sale') {
-      filters.filters.push({ type: 'boolean', field: 'field_5235557', value: true }); // IsOnSale
-  }
-
-  if (!type) {
-    if (category && category !== 'All') {
-        filters.filters.push({ type: 'equal', field: 'field_5235550', value: category }); // Category
-    }
-    if (searchTerm) {
-        filters.filters.push({ type: 'contains_ci', field: 'field_5235543', value: searchTerm }); // Name
-    }
-  }
+  // --- TEMPORARY DEBUGGING STEP ---
+  // We are sending an empty filter object to test the basic connection.
+  // This will temporarily load ALL products, ignoring their status, category, etc.
+  const filters = {};
 
   queryParams.append('filters', JSON.stringify(filters));
 
@@ -73,6 +50,8 @@ exports.handler = async (event) => {
     });
     if (!response.ok) {
       const errorBody = await response.text();
+      // Log the specific error body from Baserow for better debugging
+      console.error(`Baserow Error Body: ${errorBody}`);
       throw new Error(`Baserow Error: ${response.status} ${errorBody}`);
     }
     
