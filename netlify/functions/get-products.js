@@ -1,15 +1,17 @@
 // In netlify/functions/get-products.js
 
+// --- Advanced Caching Setup ---
 const cache = new Map();
-const CACHE_DURATION_MS = 10 * 60 * 60 * 1000; // 10 hours
+const CACHE_DURATION_MS = 50 * 60 * 1000; // 50 minutes
 
+// This is the main function that runs when a request comes in
 exports.handler = async (event) => {
-  // CORRECTED: Using AIRTABLE_TABLE_NAME to match your setup
-  const { AIRTABLE_PAT, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;
+  const { BASEROW_API_TOKEN, BASEROW_DATABASE_ID, BASEROW_PRODUCTS_TABLE_ID } = process.env;
 
   const cacheKey = event.rawQuery;
   const now = Date.now();
 
+  // 1. Check if we have a recent, valid cache for this specific request
   if (cache.has(cacheKey)) {
     const cachedItem = cache.get(cacheKey);
     if (now - cachedItem.timestamp < CACHE_DURATION_MS) {
@@ -22,56 +24,79 @@ exports.handler = async (event) => {
     }
   }
 
-  console.log(`CACHE MISS. Fetching from Airtable for query: ${cacheKey}`);
+  // 2. If no valid cache entry is found, fetch fresh data from Baserow
+  console.log(`CACHE MISS. Fetching from Baserow for query: ${cacheKey}`);
 
-  const { type, pageSize, offset, filterByFormula: clientFormula } = event.queryStringParameters;
+  const { type, pageSize, page, searchTerm, category, district } = event.queryStringParameters;
   
-  let finalFilterFormula = clientFormula || "{Status}='Approved'";
-
-  if (type === 'sponsored') {
-    finalFilterFormula = "AND({Status}='Approved', {IsSponsored}=1)";
-  } else if (type === 'verified') {
-    finalFilterFormula = "AND({Status}='Approved', {IsVerifiedSeller}=1)";
-  } else if (type === 'sale') {
-    finalFilterFormula = "AND({Status}='Approved', {IsOnSale}=1)";
-  }
+  const pageNumber = parseInt(page, 10) || 1;
+  const size = parseInt(pageSize, 10) || 16;
   
   const queryParams = new URLSearchParams({
-    'sort[0][field]': 'PublishDate',
-    'sort[0][direction]': 'desc',
-    filterByFormula: finalFilterFormula
+    user_field_names: true,
+    size: size,
+    page: pageNumber,
+    order_by: '-PublishDate'
   });
 
-  if (pageSize) queryParams.set('pageSize', pageSize);
-  if (offset) queryParams.set('offset', offset);
+  let filters = {
+    filter_type: 'AND',
+    filters: [
+      { type: 'equal', field: 'Status', value: 'Approved' }
+    ]
+  };
 
-  // CORRECTED: Using AIRTABLE_TABLE_NAME here as well
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?${queryParams.toString()}`;
+  if (type === 'featured') {
+      filters.filters.push({ type: 'boolean', field: 'IsFeatured', value: true });
+  } else if (type === 'sponsored') {
+      filters.filters.push({ type: 'boolean', field: 'IsSponsored', value: true });
+  } else if (type === 'verified') {
+      filters.filters.push({ type: 'boolean', field: 'IsVerifiedSeller', value: true });
+  } else if (type === 'sale') {
+      filters.filters.push({ type: 'boolean', field: 'IsOnSale', value: true });
+  }
+
+  if (!type) {
+    if (category && category !== 'All') {
+        filters.filters.push({ type: 'equal', field: 'Category', value: category });
+    }
+    if (district && district !== 'All') {
+        filters.filters.push({ type: 'equal', field: 'District', value: district });
+    }
+    if (searchTerm) {
+        filters.filters.push({ type: 'contains_ci', field: 'Name', value: searchTerm });
+    }
+  }
+
+  queryParams.append('filters', JSON.stringify(filters));
+
+  const url = `https://api.baserow.io/api/database/rows/table/${BASEROW_PRODUCTS_TABLE_ID}/?${queryParams.toString()}`;
 
   try {
     const response = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` },
+      headers: { 'Authorization': `Token ${BASEROW_API_TOKEN}` },
     });
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new Error(`Airtable Error: ${response.status} ${errorBody}`);
+      throw new Error(`Baserow Error: ${response.status} ${errorBody}`);
     }
     
-    const airtableData = await response.json();
+    const baserowData = await response.json();
 
+    // 3. Update our cache with the fresh data
     if (cache.size > 20) {
         cache.clear();
         console.log('Cache cleared to prevent memory overflow.');
     }
     cache.set(cacheKey, {
         timestamp: now,
-        data: airtableData
+        data: baserowData
     });
     
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(airtableData),
+      body: JSON.stringify(baserowData),
     };
 
   } catch (error) {
