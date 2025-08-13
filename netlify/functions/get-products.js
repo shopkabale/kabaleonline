@@ -12,7 +12,7 @@ exports.handler = async (event) => {
     user_field_names: true,
     size: size,
     page: pageNumber,
-    order_by: '-PublishDate'
+   // order_by: '-PublishDate'
   });
 
   let filters = {
