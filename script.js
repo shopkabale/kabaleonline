@@ -13,7 +13,7 @@ const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
 const heroSection = document.querySelector('.hero-section');
 const marketplaceSection = document.querySelector('.marketplace-section');
 
-// ** NEW **: Selectors for the new carousel containers
+// Selectors for the new carousel containers
 const sponsoredGrid = document.getElementById('sponsored-products-grid');
 const verifiedGrid = document.getElementById('verified-products-grid');
 const saleGrid = document.getElementById('sale-products-grid');
@@ -21,8 +21,7 @@ const saleGrid = document.getElementById('sale-products-grid');
 
 // --- STATE MANAGEMENT ---
 const PAGE_SIZE = 16;
-let pageOffsets = [null];
-let currentPage = 0;
+let currentPage = 1; // Baserow uses page numbers starting from 1
 let currentFilters = {
     category: 'All',
     district: 'All',
@@ -41,29 +40,25 @@ function updatePageView(shouldBePaginatedView) {
     }
 }
 
-function buildFilterFormula(isInitialLoad = false) {
-    let formulas = ["{Status}='Approved'"];
-    if (isInitialLoad) {
-        formulas.push("{IsFeatured}=1");
-        return `AND(${formulas.join(', ')})`;
-    }
-    if (currentFilters.category !== 'All') formulas.push(`{Category}='${currentFilters.category}'`);
-    if (currentFilters.district !== 'All') formulas.push(`{District}='${currentFilters.district}'`);
-    if (currentFilters.searchTerm) {
-        const searchTerm = currentFilters.searchTerm.replace(/'/g, "\\'");
-        formulas.push(`SEARCH('${searchTerm.toLowerCase()}', LOWER({Name}))`);
-    }
-    return formulas.length === 1 ? formulas[0] : `AND(${formulas.join(', ')})`;
-}
-
-async function fetchProducts(filterFormula, offset) {
+// ** MODIFIED **: Main function to fetch products from our new Baserow-compatible function
+async function fetchProducts(page = 1) {
     productGrid.innerHTML = '<p>Loading products...</p>';
     nextBtn.disabled = true;
     prevBtn.disabled = true;
 
-    const queryParams = new URLSearchParams({ pageSize: PAGE_SIZE, filterByFormula: filterFormula });
-    if (offset) queryParams.set('offset', offset);
+    // This now builds a simple query string with parameters our new function understands
+    const queryParams = new URLSearchParams({ pageSize: PAGE_SIZE, page: page });
     
+    // Add filters if we are not on the initial "Featured" load
+    if (!isShowingFeatured) {
+        if (currentFilters.category !== 'All') queryParams.set('category', currentFilters.category);
+        if (currentFilters.district !== 'All') queryParams.set('district', currentFilters.district);
+        if (currentFilters.searchTerm) queryParams.set('searchTerm', currentFilters.searchTerm);
+    } else {
+        // On first load, we tell the function we just want the 'featured' type
+        queryParams.set('type', 'featured');
+    }
+
     const url = `/.netlify/functions/get-products?${queryParams.toString()}`;
 
     try {
@@ -71,132 +66,69 @@ async function fetchProducts(filterFormula, offset) {
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         
         const data = await response.json();
-        displayProducts(data.records, productGrid); // Pass the main grid container
+        
+        // ** CRITICAL CHANGE **: Baserow's data is in a `results` array, not `records`
+        displayProducts(data.results, productGrid); 
 
-        if (data.offset) {
-            nextBtn.disabled = false;
-            if (currentPage === pageOffsets.length - 1) pageOffsets.push(data.offset);
-        } else {
-            nextBtn.disabled = true;
-        }
-
-        prevBtn.disabled = (currentPage === 0);
-        pageIndicator.textContent = `Page ${currentPage + 1}`;
+        // Baserow pagination works with 'next' and 'previous' links being null or not
+        nextBtn.disabled = data.next === null;
+        prevBtn.disabled = data.previous === null;
+        currentPage = page;
+        pageIndicator.textContent = `Page ${currentPage}`;
     } catch (error) {
         console.error('Error fetching products:', error);
         productGrid.innerHTML = '<p>Sorry, we could not load the products. Please check your connection and try again.</p>';
     }
 }
 
-// ** MODIFIED **: This function now accepts a container to render into
-function displayProducts(records, container) {
+// ** MODIFIED **: Reusable function to display products from Baserow's data structure
+function displayProducts(results, container) {
     container.innerHTML = '';
-    if (!records || records.length === 0) {
-        if (container.id === 'product-grid') { // Only show complex messages for the main grid
+    if (!results || results.length === 0) {
+        if (container.id === 'product-grid') {
             let message = isShowingFeatured 
-                ? 'No featured products found. Showing all products instead...' 
+                ? 'No featured products found.' 
                 : 'No products match your filter. Try a different search!';
             container.innerHTML = `<p>${message}</p>`;
-            if (isShowingFeatured) {
-                isShowingFeatured = false;
-                handleFilterChange();
-            }
         } else {
             container.innerHTML = `<p>No items to show here right now.</p>`;
         }
         return;
     }
-    records.forEach(record => {
-        const fields = record.fields;
-        if (!fields.Name) return;
-        const imageUrl = fields.Image && fields.Image.length > 0 ? fields.Image[0].url : placeholderImage;
+    // ** CRITICAL CHANGE **: Baserow data is flat. We access `record.Name` directly, not `record.fields.Name`
+    results.forEach(record => {
+        if (!record.Name) return;
+        const imageUrl = record.Image && record.Image.length > 0 ? record.Image[0].url : placeholderImage;
         const productCardLink = document.createElement('a');
         productCardLink.className = 'product-card-link';
         productCardLink.href = `product/?id=${record.id}`;
         productCardLink.innerHTML = `
             <article class="product-card">
-                <img src="${imageUrl}" alt="${fields.Name}" loading="lazy">
-                <h3>${fields.Name}</h3>
-                <p class="product-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
-                <p class="product-description">Seller: ${fields.SellerName || 'N/A'}</p>
+                <img src="${imageUrl}" alt="${record.Name}" loading="lazy">
+                <h3>${record.Name}</h3>
+                <p class="product-price">UGX ${record.Price ? record.Price.toLocaleString() : 'N/A'}</p>
+                <p class="product-description">Seller: ${record.SellerName || 'N/A'}</p>
             </article>`;
         container.appendChild(productCardLink);
     });
 }
 
-// ** NEW **: A function to load products for our carousels
+// ** MODIFIED **: Carousel loader to use Baserow's `results`
 async function loadCarouselProducts(type, container) {
     try {
         const url = `/.netlify/functions/get-products?type=${type}&pageSize=10`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Failed to fetch ${type} products`);
         const data = await response.json();
-        displayProducts(data.records, container);
+        displayProducts(data.results, container); // Use results
     } catch (error) {
         console.error(`Error loading ${type} products:`, error);
         container.innerHTML = `<p>Could not load items.</p>`;
     }
 }
 
-
 function handleFilterChange(isPaginatedAction = true) {
     isShowingFeatured = false;
-    currentPage = 0;
-    pageOffsets = [null];
     updatePageView(isPaginatedAction);
-    const formula = buildFilterFormula();
-    fetchProducts(formula, null);
+    fetchProducts(1); // For any new filter, always reset to page 1
 }
-
-// --- EVENT LISTENERS ---
-searchForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    currentFilters.searchTerm = searchInput.value;
-    handleFilterChange();
-});
-
-searchInput.addEventListener('input', (event) => {
-    if (event.target.value === '') {
-        currentFilters.searchTerm = '';
-        handleFilterChange(false);
-    }
-});
-
-categoryScroller.addEventListener('click', (event) => {
-    if (event.target.tagName === 'BUTTON') {
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-        currentFilters.category = event.target.dataset.category;
-        handleFilterChange();
-    }
-});
-
-districtFilter.addEventListener('change', () => {
-    currentFilters.district = districtFilter.value;
-    handleFilterChange();
-});
-
-nextBtn.addEventListener('click', () => {
-    currentPage++;
-    updatePageView(true);
-    const formula = buildFilterFormula();
-    fetchProducts(formula, pageOffsets[currentPage]);
-});
-
-prevBtn.addEventListener('click', () => {
-    if (currentPage > 0) {
-        currentPage--;
-        updatePageView(true);
-        const formula = buildFilterFormula();
-        fetchProducts(formula, pageOffsets[currentPage]);
-    }
-});
-
-// --- INITIAL PAGE LOAD ---
-// ** NEW **: Load the data for the new carousels
-loadCarouselProducts('sponsored', sponsoredGrid);
-loadCarouselProducts('verified', verifiedGrid);
-loadCarouselProducts('sale', saleGrid);
-
-// Load the main grid with "Featured" products
-fetchProducts(buildFilterFormula(true), null);
