@@ -9,7 +9,6 @@ exports.handler = async (event) => {
   const cacheKey = event.rawQuery;
   const now = Date.now();
 
-  // --- Cache retrieval logic (unchanged) ---
   if (cache.has(cacheKey)) {
     const cachedItem = cache.get(cacheKey);
     if (now - cachedItem.timestamp < CACHE_DURATION_MS) {
@@ -24,28 +23,21 @@ exports.handler = async (event) => {
 
   console.log(`CACHE MISS. Fetching from Baserow for query: ${cacheKey}`);
 
-  // --- Parameter parsing (unchanged) ---
   const { pageSize, page } = event.queryStringParameters;
   
   const pageNumber = parseInt(page, 10) || 1;
   const size = parseInt(pageSize, 10) || 16;
   
-  // Note: Your 'order_by' still uses a field ID. If this field is wrong, it could cause an error.
-  const orderByFieldId = 'field_5235558'; // PublishDate field ID
-
   const queryParams = new URLSearchParams({
     user_field_names: true,
     size: size,
     page: pageNumber,
-    order_by: `-${orderByFieldId}`
+    // --- QUICK FIX: The order_by parameter is temporarily removed ---
+    // order_by: `-${'YOUR_REAL_PUBLISH_DATE_FIELD_ID'}` 
   });
 
-  // --- ALL FILTERS TEMPORARILY REMOVED FOR DEBUGGING ---
-  // The 'conditions' array is now empty, so no 'filters' parameter will be sent to Baserow.
   const conditions = [];
 
-
-  // --- API request building (unchanged) ---
   if (conditions.length > 0) {
     const filtersObject = {
         filter_type: 'AND',
@@ -67,7 +59,6 @@ exports.handler = async (event) => {
     
     const baserowData = await response.json();
     
-    // --- Cache storage logic (unchanged) ---
     if (cache.size > 20) { cache.clear(); }
     cache.set(cacheKey, { timestamp: now, data: baserowData });
     
