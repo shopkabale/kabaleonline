@@ -23,20 +23,49 @@ exports.handler = async (event) => {
 
   console.log(`CACHE MISS. Fetching from Baserow for query: ${cacheKey}`);
 
-  const { pageSize, page } = event.queryStringParameters;
+  const { type, pageSize, page, searchTerm, category } = event.queryStringParameters;
   
   const pageNumber = parseInt(page, 10) || 1;
   const size = parseInt(pageSize, 10) || 16;
   
+  // STEP 2.1: Replace this with the ID for your "PublishDate" field
+  const orderByFieldId = 'YOUR_PUBLISH_DATE_FIELD_ID';
+
   const queryParams = new URLSearchParams({
     user_field_names: true,
     size: size,
     page: pageNumber,
-    // --- QUICK FIX: The order_by parameter is temporarily removed ---
-    // order_by: `-${'YOUR_REAL_PUBLISH_DATE_FIELD_ID'}` 
+    order_by: `-${orderByFieldId}`
   });
 
+  // --- FINAL FILTER LOGIC ---
   const conditions = [];
+
+  // STEP 2.2: Replace this with the ID for your "Status" or "Approved" field
+  conditions.push({ type: 'equal', field: 'YOUR_APPROVED_STATUS_FIELD_ID', value: 'Approved' });
+
+  // STEP 2.3: Replace these with the IDs for your boolean (checkbox) fields
+  const typeToFieldMapping = {
+    'featured': 'YOUR_FEATURED_FIELD_ID',
+    'sponsored': 'YOUR_SPONSORED_FIELD_ID',
+    'verified': 'YOUR_VERIFIED_SELLER_FIELD_ID',
+    'sale': 'YOUR_ON_SALE_FIELD_ID'
+  };
+
+  if (type) {
+    const fieldForType = typeToFieldMapping[type];
+    if (fieldForType) {
+        conditions.push({ type: 'boolean', field: fieldForType, value: true });
+    }
+  } else {
+    // STEP 2.4: Replace these with the IDs for your Category and Name fields
+    if (category && category !== 'All') {
+        conditions.push({ type: 'equal', field: 'YOUR_CATEGORY_FIELD_ID', value: category });
+    }
+    if (searchTerm) {
+        conditions.push({ type: 'contains_ci', field: 'YOUR_NAME_FIELD_ID', value: searchTerm });
+    }
+  }
 
   if (conditions.length > 0) {
     const filtersObject = {
