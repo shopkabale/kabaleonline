@@ -68,79 +68,9 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-
-
-/* --- Marketplace Section --- */
-.marketplace-section {
-    padding-top: 4rem;
-}
-.marketplace-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-.section-title {
-    font-size: 2rem;
-    color: var(--secondary-color);
-    margin-bottom: 1rem;
-    font-weight: 700;
-}
-.section-subtitle {
-    font-size: 1.1rem;
-    color: #6c757d;
-    max-width: 600px;
-    margin: -0.5rem auto 2rem auto;
-}
-
-
-/* --- Category Buttons --- */
-.category-section {
-    background-color: var(--bg-light);
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color);
-    border-top: 1px solid var(--border-color);
-}
-
-.category-scroller {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 0.5rem 5%;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.category-scroller::-webkit-scrollbar { display: none; }
-
-.category-btn {
-    flex-shrink: 0;
-    background-color: #e9ecef;
-    color: #495057;
-    border: 1px solid #ced4da;
-    padding: 0.5rem 1rem;
-    margin-right: 0.75rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.category-btn:hover { background-color: #d4d9de; }
-
-.category-btn.active {
-    background-color: var(--primary-color);
-    color: var(--text-light);
-    border-color: var(--primary-color);
-}
-
 /* --- Hero Section CSS --- */
 .hero-section {
-    /* This creates a dark overlay on top of your image so the text is readable */
-    background: 
-        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-        url('/images/kabale-hero-bg.jpg'); /* This points to your new image */
-    
-    background-size: cover; /* Ensures the image covers the whole area */
-    background-position: center; /* Centers the image */
+    background: var(--secondary-color);
     color: var(--text-light);
     text-align: center;
     padding: 4rem 1rem;
@@ -182,6 +112,67 @@ body {
     background-color: transparent;
     color: var(--accent-color);
     transform: translateY(-3px);
+}
+
+/* --- Marketplace Section --- */
+.marketplace-section {
+    padding-top: 4rem;
+}
+.marketplace-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.section-title {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: -0.5rem auto 2rem auto;
+}
+
+/* --- Category Buttons --- */
+.category-section {
+    background-color: var(--bg-light);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+}
+
+.category-scroller {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0.5rem 5%;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.category-scroller::-webkit-scrollbar { display: none; }
+
+.category-btn {
+    flex-shrink: 0;
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 1rem;
+    margin-right: 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.category-btn:hover { background-color: #d4d9de; }
+
+.category-btn.active {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border-color: var(--primary-color);
 }
 
 /* --- Main Content & Product Grid --- */
@@ -274,7 +265,7 @@ body {
     color: #6c757d;
 }
 
-/* --- Trust Section (Moved to Bottom) --- */
+/* --- Trust Section --- */
 .trust-section {
     background-color: #ffffff;
     padding: 4rem 1rem;
@@ -441,7 +432,7 @@ footer {
     border-bottom: 1px solid var(--border-color);
 }
 .sale-carousel {
-    background-color: #fff9e6; /* Light yellow from disclaimer box */
+    background-color: #fff9e6;
 }
 
 .carousel-header {
@@ -481,27 +472,28 @@ footer {
 .carousel-scroller::-webkit-scrollbar { display: none; }
 
 .carousel-scroller .product-card {
-    flex: 0 0 160px; /* This sets the width of each card in the carousel */
+    flex: 0 0 160px;
     height: auto;
 }
 
 @media (min-width: 768px) {
     .carousel-scroller .product-card {
-        flex: 0 0 200px; /* A bit wider on larger screens */
+        flex: 0 0 200px;
     }
 }
+
 /* ================================================== */
 /* ===         STYLES FOR THE SELL PAGE           === */
 /* ================================================== */
+/* This section is intentionally left here, even if some styles are unused on the homepage,
+   to ensure that other pages like /sell/index.html can link to this single stylesheet
+   and have their content styled correctly without needing a separate CSS file. */
 
-/* This makes the main container on the sell page centered */
 .sell-page-container {
     width: 90%;
     max-width: 650px;
     margin: 2rem auto;
 }
-
-/* Form Container & Header */
 .form-container {
     background-color: #fff;
     padding: 2rem;
@@ -522,8 +514,6 @@ footer {
     color: #6c757d;
     font-size: 1.1rem;
 }
-
-/* Form Elements */
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -554,8 +544,6 @@ footer {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(0, 131, 143, 0.2);
 }
-
-/* Submit Button */
 #submit-btn {
     width: 100%;
     padding: 16px;
@@ -577,9 +565,6 @@ footer {
     background-color: #cccccc;
     cursor: not-allowed;
 }
-
-
-/* Submission Status Message */
 #submission-status { 
     display: none; 
     margin-top: 15px; 
@@ -596,4 +581,115 @@ footer {
     background-color: #f8d7da; 
     color: #721c24; 
     border-left: 5px solid #721c24;
+}
+
+/* ================================================== */
+/* ===    STYLES FOR TERMS & ABOUT US PAGES       === */
+/* ================================================== */
+
+.main-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+.page-header {
+    text-align: center;
+    padding: 2rem 1rem 3rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 3rem;
+}
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+.page-header p {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+.terms-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    border: 1px solid var(--border-color);
+}
+.intro-text {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: var(--text-dark);
+    line-height: 1.6;
+    font-style: italic;
+}
+.terms-section {
+    margin-bottom: 2.5rem;
+}
+.terms-section:last-child {
+    margin-bottom: 1rem;
+}
+.terms-section h2 {
+    font-size: 1.6rem;
+    color: var(--secondary-color);
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+.terms-section h2 .icon {
+    margin-right: 0.75rem;
+    font-size: 1.4rem;
+    color: var(--primary-color);
+}
+.icon-list {
+    list-style: none;
+    padding-left: 0;
+}
+.icon-list li {
+    padding-left: 2.2rem;
+    position: relative;
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+}
+.icon-list li::before {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    font-weight: bold;
+    font-family: "Font Awesome 6 Free";
+    font-size: 1.2rem;
+}
+.icon-list.safe li::before {
+    content: '\f058';
+    color: #28a745;
+}
+.icon-list.trust li::before {
+    content: '\f058';
+    color: #007bff;
+}
+.icon-list.prohibited li::before {
+    content: '\f057';
+    color: #dc3545;
+}
+.disclaimer-box {
+    background-color: #fff9e6;
+    border-left: 5px solid var(--accent-color);
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+.disclaimer-box p {
+    margin-bottom: 1rem;
+}
+.disclaimer-box p:last-child {
+    margin-bottom: 0;
+}
+@media (max-width: 768px) {
+    .terms-card {
+        padding: 1.5rem;
+    }
+    .page-header h1 {
+        font-size: 2.2rem;
+    }
 }
