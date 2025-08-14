@@ -1,3 +1,27 @@
+/* Add these styles to the bottom of your style.css file */
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Adds space between the login and sell buttons */
+}
+
+.nav-btn-login {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+
+.nav-btn-login:hover {
+    color: var(--primary-color);
+}
+
+.cta-login-link {
+    color: var(--primary-color);
+    font-weight: 700;
+    text-decoration: underline;
+}
 /* General Setup and Variables */
 :root {
     --primary-color: #004d40; /* Dark Teal */
