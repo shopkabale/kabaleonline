@@ -1,22 +1,17 @@
-// The Final script.js for your homepage
+// FINAL version of script.js
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- ELEMENT SELECTORS ---
     const mainGrid = document.getElementById('product-grid');
     const sponsoredGrid = document.getElementById('sponsored-products-grid');
     const verifiedGrid = document.getElementById('verified-products-grid');
     const saleGrid = document.getElementById('sale-products-grid');
-    
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const categoryScroller = document.getElementById('category-scroller');
-    
     const paginationControls = document.getElementById('pagination-controls');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const pageIndicator = document.getElementById('page-indicator');
 
-    // --- STATE MANAGEMENT ---
     const state = {
         searchTerm: '',
         category: 'All',
@@ -24,19 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
         isLoading: false,
     };
 
-    // --- API & RENDERING FUNCTIONS ---
     function renderProductCard(product, container) {
         const card = document.createElement('article');
         card.className = 'product-card';
-        
-        // THIS IS THE FIX: We now get the URL directly from the 'ImageURL' column.
         const imageUrl = product.ImageURL || '';
-        
         const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
-
         card.innerHTML = `
             <a href="shop/product.html?id=${product.id}" style="text-decoration:none; color:inherit;">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${product.Name}" loading="lazy">` : '<div class="product-image-placeholder"></div>'}
+                <img src="${imageUrl}" alt="${product.Name}" loading="lazy">
                 <div class="product-info">
                     <h2 class="product-name">${product.Name}</h2>
                     <p class="product-price">UGX ${formattedPrice}</p>
@@ -48,9 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadCarousel(type, container) {
-        // This function will need the full backend to work. For now, it might not load.
         if (!container) return;
-        const params = new URLSearchParams({ type: type, pageSize: 10 });
+        // The 'type' parameter is a custom name we give it.
+        // We'll create a special query for each carousel type.
+        let params;
+        if (type === 'sponsored') params = new URLSearchParams({ sponsored: 'true', pageSize: 10 });
+        else if (type === 'verified') params = new URLSearchParams({ verified: 'true', pageSize: 10 });
+        else if (type === 'sale') params = new URLSearchParams({ sale: 'true', pageSize: 10 });
+
         try {
             const response = await fetch(`/.netlify/functions/get-products?${params.toString()}`);
             if (!response.ok) throw new Error('Carousel fetch failed');
@@ -66,22 +61,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.isLoading) return;
         state.isLoading = true;
         mainGrid.innerHTML = '<p>Loading products...</p>';
-        
+        updatePagination(null);
+
         const params = new URLSearchParams({ page: state.page, pageSize: 12 });
-        // NOTE: Filters like searchTerm and category will only work after the backend supports them again.
-        
+        if (state.searchTerm) params.append('searchTerm', state.searchTerm);
+        if (state.category && state.category !== 'All') params.append('category', state.category);
+
         try {
             const response = await fetch(`/.netlify/functions/get-products?${params.toString()}`);
             if (!response.ok) throw new Error('Main grid fetch failed');
             const data = await response.json();
-            
             mainGrid.innerHTML = '';
             if (data.results.length > 0) {
                 data.results.forEach(product => renderProductCard(product, mainGrid));
             } else {
-                mainGrid.innerHTML = '<p>No products found.</p>';
+                mainGrid.innerHTML = '<p>No products found matching your criteria.</p>';
             }
-            // Pagination logic would go here once we add it back
+            updatePagination(data.page, data.has_next_page);
         } catch (error) {
             mainGrid.innerHTML = '<p>Sorry, we could not load the products. Please try again.</p>';
         } finally {
@@ -89,13 +85,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- INITIAL PAGE LOAD ---
-    function initialLoad() {
-        // For now, let's just load the main grid since the carousels need filtering
+    function updatePagination(currentPage, hasNext) {
+        if (currentPage === null) {
+            paginationControls.style.display = 'none';
+            return;
+        }
+        paginationControls.style.display = 'flex';
+        pageIndicator.textContent = `Page ${currentPage}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = !hasNext;
+    }
+
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.searchTerm = searchInput.value.trim();
+        state.page = 1;
         fetchMainGridProducts();
-        // loadCarousel('sponsored', sponsoredGrid);
-        // loadCarousel('verified', verifiedGrid);
-        // loadCarousel('sale', saleGrid);
+    });
+
+    categoryScroller.addEventListener('click', (e) => {
+        if (e.target.classList.contains('category-btn')) {
+            categoryScroller.querySelector('.active').classList.remove('active');
+            e.target.classList.add('active');
+            state.category = e.target.dataset.category;
+            state.page = 1;
+            state.searchTerm = '';
+            searchInput.value = '';
+            fetchMainGridProducts();
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (state.page > 1) {
+            state.page--;
+            fetchMainGridProducts();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        state.page++;
+        fetchMainGridProducts();
+    });
+
+    function initialLoad() {
+        fetchMainGridProducts();
+        loadCarousel('sponsored', sponsoredGrid);
+        loadCarousel('verified', verifiedGrid);
+        loadCarousel('sale', saleGrid);
     }
 
     initialLoad();
