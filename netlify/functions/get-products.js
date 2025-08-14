@@ -1,11 +1,10 @@
 // netlify/functions/get-products.js
 
-// For Node 16 or lower on Netlify:
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 exports.handler = async (event) => {
+  // --- Replace with your actual values ---
   const BASEROW_PRODUCTS_TABLE_ID = '641145';
   const BASEROW_API_TOKEN = '4wVfVprHP28mXOqJaRTs0sienxgaJBlY';
+  // ----------------------------------------
 
   const { 
     pageSize, 
@@ -16,13 +15,14 @@ exports.handler = async (event) => {
     featured,
     sponsored,
     verified,
-    sort,
-    direction
+    sort,       // e.g., "price" or "publishDate"
+    direction   // "asc" or "desc"
   } = event.queryStringParameters || {};
 
   const pageNumber = parseInt(page, 10) || 1;
   const size = parseInt(pageSize, 10) || 16;
 
+  // Field IDs (replace with your real ones from Baserow)
   const fieldIds = {
     status: 'field_5235549',
     name: 'field_5235543',
@@ -31,20 +31,26 @@ exports.handler = async (event) => {
     isFeatured: 'field_5235554',
     isSponsored: 'field_5235555',
     isVerified: 'field_5235556',
-    publishDate: 'field_5235558',
-    price: 'field_5235545' // replace with actual ID
+    publishDate: 'field_5235558', // Example for sorting
+    price: 'field_5235545'        // Replace with real Price field ID
   };
 
+  // Default filter: only Approved products
   const conditions = [
     { type: 'equal', field: fieldIds.status, value: 'Approved' }
   ];
 
+  // Search filter
   if (searchTerm) {
     conditions.push({ type: 'contains_ci', field: fieldIds.name, value: searchTerm });
   }
+
+  // Category filter
   if (category) {
     conditions.push({ type: 'equal', field: fieldIds.category, value: category });
   }
+
+  // Boolean filters
   if (sale === 'true') {
     conditions.push({ type: 'boolean', field: fieldIds.isOnSale, value: 'true' });
   }
@@ -58,20 +64,23 @@ exports.handler = async (event) => {
     conditions.push({ type: 'boolean', field: fieldIds.isVerified, value: 'true' });
   }
 
+  // Build query params
   const queryParams = new URLSearchParams({
     user_field_names: true,
     size: size,
     page: pageNumber
   });
 
-  // Safe sorting
+  // Sorting logic
   if (sort && fieldIds[sort]) {
     const sortField = fieldIds[sort];
     queryParams.append('order_by', direction === 'asc' ? sortField : `-${sortField}`);
   } else {
-    queryParams.append('order_by', '-id');
+    // Default: newest first
+    queryParams.append('order_by', `-${fieldIds.publishDate}`);
   }
 
+  // Add filters if present
   if (conditions.length > 0) {
     queryParams.append('filters', JSON.stringify({
       filter_type: 'AND',
