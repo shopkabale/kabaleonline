@@ -22,7 +22,7 @@ exports.handler = async (event) => {
   const pageNumber = parseInt(page, 10) || 1;
   const size = parseInt(pageSize, 10) || 16;
 
-  // Field IDs (replace with your real ones from Baserow)
+  // Field IDs mapping (replace with your real Baserow field IDs)
   const fieldIds = {
     status: 'field_5235549',
     name: 'field_5235543',
@@ -31,36 +31,37 @@ exports.handler = async (event) => {
     isFeatured: 'field_5235554',
     isSponsored: 'field_5235555',
     isVerified: 'field_5235556',
-    publishDate: 'field_5235558', // Example for sorting
-    price: 'field_5235545'        // Replace with real Price field ID
+    publishDate: 'field_5235558',
+    price: 'field_5235545' // replace with your actual Price field ID
   };
 
   // Default filter: only Approved products
-  const conditions = [
-    { type: 'equal', field: fieldIds.status, value: 'Approved' }
-  ];
+  const conditions = [];
+  if (fieldIds.status) {
+    conditions.push({ type: 'equal', field: fieldIds.status, value: 'Approved' });
+  }
 
   // Search filter
-  if (searchTerm) {
+  if (searchTerm && fieldIds.name) {
     conditions.push({ type: 'contains_ci', field: fieldIds.name, value: searchTerm });
   }
 
   // Category filter
-  if (category) {
+  if (category && fieldIds.category) {
     conditions.push({ type: 'equal', field: fieldIds.category, value: category });
   }
 
-  // Boolean filters
-  if (sale === 'true') {
+  // Boolean filters (only if the field exists)
+  if (sale === 'true' && fieldIds.isOnSale) {
     conditions.push({ type: 'boolean', field: fieldIds.isOnSale, value: 'true' });
   }
-  if (featured === 'true') {
+  if (featured === 'true' && fieldIds.isFeatured) {
     conditions.push({ type: 'boolean', field: fieldIds.isFeatured, value: 'true' });
   }
-  if (sponsored === 'true') {
+  if (sponsored === 'true' && fieldIds.isSponsored) {
     conditions.push({ type: 'boolean', field: fieldIds.isSponsored, value: 'true' });
   }
-  if (verified === 'true') {
+  if (verified === 'true' && fieldIds.isVerified) {
     conditions.push({ type: 'boolean', field: fieldIds.isVerified, value: 'true' });
   }
 
@@ -71,16 +72,21 @@ exports.handler = async (event) => {
     page: pageNumber
   });
 
-  // Sorting logic
+  // Sorting (only if the sort field exists)
   if (sort && fieldIds[sort]) {
     const sortField = fieldIds[sort];
     queryParams.append('order_by', direction === 'asc' ? sortField : `-${sortField}`);
   } else {
-    // Default: newest first
-    queryParams.append('order_by', `-${fieldIds.publishDate}`);
+    // Default sort by publishDate if available
+    if (fieldIds.publishDate) {
+      queryParams.append('order_by', `-${fieldIds.publishDate}`);
+    } else {
+      // fallback to id if publishDate missing
+      queryParams.append('order_by', '-id');
+    }
   }
 
-  // Add filters if present
+  // Add filters if any
   if (conditions.length > 0) {
     queryParams.append('filters', JSON.stringify({
       filter_type: 'AND',
@@ -108,7 +114,7 @@ exports.handler = async (event) => {
     };
 
   } catch (error) {
-    console.error('Function Error:', error);
+    console.error('Function Error:', error.message);
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };
