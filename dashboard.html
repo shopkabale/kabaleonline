@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard - Kabale Online</title>
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-content">
+            <h1 class="site-title">Kabale Online Seller Dashboard</h1>
+            <nav class="main-nav">
+                <button id="logout-button" class="nav-btn-sell">Log Out</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container section">
+        <div class="dashboard-header">
+            <h2 id="welcome-message">Welcome, Seller!</h2>
+            <a href="sell/index.html" class="btn-primary">Sell a New Item</a>
+        </div>
+
+        <hr class="dashboard-divider">
+
+        <h3 class="section-title">Your Listings</h3>
+        <div class="product-grid" id="my-products-grid">
+            <p>Loading your products...</p>
+            </div>
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
