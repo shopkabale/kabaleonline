@@ -290,3 +290,13 @@ footer { background-color: var(--primary-color); color: #e0e0e0; text-align: cen
 .footer-links { padding: 20px; }
 .footer-link { color: #a7c5c1; text-decoration: none; margin: 0 10px; }
 .copyright { background-color: #002b21; padding: 15px; margin: 0; font-size: 0.9rem; }
+/* Add this to your style.css */
+.nav-btn-login {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-light);
+    margin-right: 15px;
+}
+.nav-btn-login:hover {
+    color: var(--primary-color);
+}
