@@ -19,22 +19,19 @@ exports.handler = async (event) => {
 
   const fieldIds = {
     publishDate: 'field_5235558',
-    status: 'field_5235549', // This is your 'Approved' checkbox field
     name: 'field_5235543',
     category: 'field_5235550',
     isOnSale: 'field_5235557',
     isFeatured: 'field_5235554',
     isSponsored: 'field_5235555',
     isVerified: 'field_5235556'
+    // NOTE: 'status' field removed as a required filter
   };
 
+  // The conditions array now starts empty.
   const conditions = [];
 
-  // --- THIS IS THE CORRECTED LINE ---
-  // We now filter the 'Status' field as a boolean (checkbox) that must be checked (true)
-  conditions.push({ type: 'boolean', field: fieldIds.status, value: true });
-
-  // Add other filters only if they are provided
+  // Add filters only if they are provided in the request URL
   if (searchTerm) {
     conditions.push({ type: 'contains_ci', field: fieldIds.name, value: searchTerm });
   }
@@ -54,18 +51,21 @@ exports.handler = async (event) => {
     conditions.push({ type: 'boolean', field: fieldIds.isVerified, value: true });
   }
   
-  const filtersObject = {
-      filter_type: 'AND',
-      filters: conditions
-  };
-
   const queryParams = new URLSearchParams({
     user_field_names: true,
     size: size,
     page: pageNumber,
-    order_by: `-${fieldIds.publishDate}`,
-    filters: JSON.stringify(filtersObject)
+    order_by: `-${fieldIds.publishDate}`
   });
+
+  // The 'filters' parameter is now ONLY added if there is at least one condition
+  if (conditions.length > 0) {
+    const filtersObject = {
+        filter_type: 'AND',
+        filters: conditions
+    };
+    queryParams.append('filters', JSON.stringify(filtersObject));
+  }
 
   const url = `https://api.baserow.io/api/database/rows/table/${BASEROW_PRODUCTS_TABLE_ID}/?${queryParams.toString()}`;
 
