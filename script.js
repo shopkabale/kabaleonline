@@ -1,3 +1,36 @@
+// Add this to the top of your script.js file
+
+// This code block will run on every page that includes script.js
+document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.getElementById('main-nav');
+    const user = netlifyIdentity.currentUser();
+
+    if (user) {
+        // If the user is logged in, show Dashboard and Logout buttons
+        nav.innerHTML = `
+            <a href="/dashboard.html" class="nav-btn-login">My Dashboard</a>
+            <button id="logout-button-main" class="nav-btn-sell">Log Out</button>
+        `;
+        const logoutButton = document.getElementById('logout-button-main');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                netlifyIdentity.logout();
+            });
+        }
+        netlifyIdentity.on('logout', () => {
+            window.location.href = '/';
+        });
+    } else {
+        // If the user is logged out, show the default Login and Sell buttons
+        nav.innerHTML = `
+            <a href="/login.html" class="nav-btn-login">Login / Sign Up</a>
+            <a href="/sell/index.html" class="nav-btn-sell">Sell an Item</a>
+        `;
+    }
+});
+
+// The rest of your existing script.js code follows below...
+
 // FINAL version of script.js
 document.addEventListener('DOMContentLoaded', () => {
     const mainGrid = document.getElementById('product-grid');
