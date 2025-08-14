@@ -1,2 +1,11 @@
-[functions]
-  directory = "netlify/functions/"
+[build]
+  functions = "netlify/functions/"
+
+# Add these new lines below for the Identity settings
+[identity]
+  # This section tells Netlify where to redirect users
+  [identity.redirect]
+    # After a user logs in, send them to the dashboard
+    login = "/dashboard.html"
+    # After a new user signs up, also send them to the dashboard
+    signup = "/dashboard.html"
