@@ -1,104 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8T3YSBPPG3');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sell your second-hand items easily on Kabale's local online marketplace. List your used phones, clothes, furniture, and more for free today!">
-    <title>Sell Your Item | Kabale Online</title>
-    <link rel="icon" href="../favicon.webp" type="image/webp">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
+    <title>Sell an Item - Kabale Online</title>
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <link rel="stylesheet" href="../style.css"> </head>
 <body>
 
     <header class="site-header">
         <div class="header-content">
             <h1 class="site-title">Kabale Online</h1>
             <nav class="main-nav">
-                <a href="../index.html#marketplace" class="nav-btn-shop">← Back to Shop</a>
+                <a href="../dashboard.html">My Dashboard</a>
             </nav>
         </div>
     </header>
 
-    <main class="container">
-        <div class="form-container">
-            <header class="form-header">
-                <h2>List Your Item for Sale</h2>
-                <p>Fill out the details below. An admin will review your submission and contact you via WhatsApp for photos to approve your listing.</p>
-            </header>
-
-            <form id="sell-item-form">
-                <div class="form-group">
-                    <label for="product-name">Product Name</label>
-                    <input type="text" id="product-name" name="product-name" placeholder="e.g., iPhone 11 Pro" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="product-category">Category</label>
-                    <select id="product-category" name="product-category" required>
-                        <option value="" disabled selected>Select a category...</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Home">Home & Garden</option>
-                        <option value="Vehicles">Vehicles</option>
-                        <option value="Property">Property</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="product-price">Price (UGX)</label>
-                    <input type="number" id="product-price" name="product-price" placeholder="e.g., 50000" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="product-description">Product Description</label>
-                    <textarea id="product-description" name="product-description" rows="4" placeholder="Include item condition, features, and any other important details." required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="seller-name">Your Name</label>
-                    <input type="text" id="seller-name" name="seller-name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="seller-phone">Your WhatsApp Number</label>
-                    <input type="tel" id="seller-phone" name="seller-phone" placeholder="e.g., 0740373021" required>
-                </div>
-
-                <button type="submit" id="submit-btn">Submit for Approval</button>
-            </form>
-            
-            <div id="submission-status"></div>
-        </div>
-    </main>
-    
-    <footer>
-        <section id="contact-us-section">
-            <h2>Get in Touch</h2>
-            <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
-                    <i class="fa-solid fa-envelope"></i> Send an Email
-                </a>
+    <main class="container section">
+        <h2 class="section-title">List Your Item for Sale</h2>
+        <form id="sell-form" class="sell-form">
+            <div class="form-group">
+                <label for="name">Product Name</label>
+                <input type="text" id="name" name="name" required>
             </div>
-        </section>
-        <div class="footer-links">
-            <a href="../about.html" class="footer-link">About Us</a>
-            <a href="../terms.html" class="footer-link">Terms of Service</a>
-        </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="price">Price (UGX)</label>
+                <input type="number" id="price" name="price" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Home">Home</option>
+                    <option value="Vehicles">Vehicles</option>
+                    <option value="Property">Property</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="seller-name">Your Name</label>
+                <input type="text" id="seller-name" name="sellerName" required>
+            </div>
+            <div class="form-group">
+                <label for="seller-phone">Your Phone (WhatsApp)</label>
+                <input type="tel" id="seller-phone" name="sellerPhone" required>
+            </div>
+            
+            <button type="submit" id="submit-button" class="btn-primary">Submit for Review</button>
+            <p id="form-status"></p>
+        </form>
+    </main>
 
-    <script src="script.js"></script>
+    <script src="sell.js"></script>
 </body>
 </html>
