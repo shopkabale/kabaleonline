@@ -8,11 +8,14 @@ exports.handler = async (event) => {
   const pageNumber = parseInt(page, 10) || 1;
   const size = parseInt(pageSize, 10) || 16;
   
-  // This version has NO sorting and NO filters
+  // --- THIS IS THE ONLY LINE WE ARE ADDING BACK ---
+  const orderByFieldId = 'field_5235558'; // Your PublishDate Field ID
+
   const queryParams = new URLSearchParams({
     user_field_names: true,
     size: size,
-    page: pageNumber
+    page: pageNumber,
+    order_by: `-${orderByFieldId}` // Sorting by newest first
   });
 
   const url = `https://api.baserow.io/api/database/rows/table/${BASEROW_PRODUCTS_TABLE_ID}/?${queryParams.toString()}`;
