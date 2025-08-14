@@ -1,155 +1,144 @@
-// --- DOM ELEMENTS ---
-const productGrid = document.getElementById('product-grid');
-const searchForm = document.getElementById('search-form');
-const searchInput = document.getElementById('search-input');
-const categoryScroller = document.getElementById('category-scroller');
-// Removed 'districtFilter' element
-const prevBtn = document.getElementById('prev-btn');
-const nextBtn = document.getElementById('next-btn');
-const pageIndicator = document.getElementById('page-indicator');
-const placeholderImage = 'https://i.imgur.com/WJ9S92O.png';
-const heroSection = document.querySelector('.hero-section');
-const marketplaceSection = document.querySelector('.marketplace-section');
-const sponsoredGrid = document.getElementById('sponsored-products-grid');
-const verifiedGrid = document.getElementById('verified-products-grid');
-const saleGrid = document.getElementById('sale-products-grid');
+// Paste this entire code into your script.js file
 
-// --- STATE MANAGEMENT ---
-const PAGE_SIZE = 16;
-let currentPage = 1;
-let currentFilters = {
-    category: 'All',
-    // Removed 'district' from the state
-    searchTerm: ''
-};
-let isShowingFeatured = true; 
+// This runs when the entire HTML page has been loaded
+document.addEventListener('DOMContentLoaded', () => {
 
-// --- FUNCTIONS ---
+  // --- 1. SELECTING ELEMENTS ---
+  // We get references to all the important parts of our page
+  const productGrid = document.getElementById('product-grid');
+  const searchInput = document.getElementById('search-input');
+  const searchButton = document.getElementById('search-button');
+  const filterPanel = document.getElementById('filter-panel');
+  const filterToggleButton = document.getElementById('filter-toggle-button');
+  const applyFiltersButton = document.getElementById('apply-filters-button');
+  const filterCheckboxes = document.querySelectorAll('.filter-checkbox');
 
-function updatePageView(shouldBePaginatedView) {
-    if (shouldBePaginatedView) {
-        heroSection.classList.add('section-hidden');
-        marketplaceSection.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        heroSection.classList.remove('section-hidden');
-    }
-}
+  // --- 2. STATE MANAGEMENT ---
+  // A simple object to keep track of the current filters and page
+  let state = {
+    searchTerm: '',
+    category: [],
+    sale: false,
+    verified: false,
+    page: 1,
+    isLoading: false
+  };
 
-async function fetchProducts(page = 1) {
-    productGrid.innerHTML = '<p>Loading products...</p>';
-    nextBtn.disabled = true;
-    prevBtn.disabled = true;
+  // --- 3. RENDERING PRODUCTS ---
+  // This function takes product data and turns it into HTML
+  function renderProducts(products) {
+    // Clear the grid of any old products or messages
+    productGrid.innerHTML = '';
 
-    const queryParams = new URLSearchParams({ pageSize: PAGE_SIZE, page: page });
-    
-    if (!isShowingFeatured) {
-        if (currentFilters.category !== 'All') queryParams.set('category', currentFilters.category);
-        // Removed 'district' from the query parameters
-        if (currentFilters.searchTerm) queryParams.set('searchTerm', currentFilters.searchTerm);
-    } else {
-        queryParams.set('type', 'featured');
+    if (products.length === 0) {
+      productGrid.innerHTML = '<p>Sorry, no products were found matching your criteria.</p>';
+      return;
     }
 
-    const url = `/.netlify/functions/get-products?${queryParams.toString()}`;
+    products.forEach(product => {
+      // Create the product card HTML
+      const card = document.createElement('article');
+      card.className = 'product-card';
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        
-        const data = await response.json();
-        displayProducts(data.results, productGrid); 
+      // Safely get the image URL (handles cases with no image)
+      const imageUrl = product.Image && product.Image[0] ? product.Image[0].url : '';
+      
+      // Format the price with commas
+      const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
 
-        nextBtn.disabled = data.next === null;
-        prevBtn.disabled = data.previous === null;
-        currentPage = page;
-        pageIndicator.textContent = `Page ${currentPage}`;
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        productGrid.innerHTML = '<p>Sorry, we could not load the products. Please check your connection and try again.</p>';
-    }
-}
-
-function displayProducts(results, container) {
-    container.innerHTML = '';
-    if (!results || results.length === 0) {
-        if (container.id === 'product-grid') {
-            container.innerHTML = `<p>No products match your filter. Try a different search!</p>`;
-        } else {
-            container.innerHTML = `<p>No items to show here right now.</p>`;
-        }
-        return;
-    }
-    results.forEach(record => {
-        if (!record.Name) return;
-        const imageUrl = record.Image && record.Image.length > 0 ? record.Image[0].url : placeholderImage;
-        const productCardLink = document.createElement('a');
-        productCardLink.className = 'product-card-link';
-        productCardLink.href = `product/?id=${record.id}`;
-        productCardLink.innerHTML = `
-            <article class="product-card">
-                <img src="${imageUrl}" alt="${record.Name}" loading="lazy">
-                <h3>${record.Name}</h3>
-                <p class="product-price">UGX ${record.Price ? record.Price.toLocaleString() : 'N/A'}</p>
-                <p class="product-description">Seller: ${record.SellerName || 'N/A'}</p>
-            </article>`;
-        container.appendChild(productCardLink);
+      card.innerHTML = `
+        ${imageUrl ? `<img src="${imageUrl}" alt="${product.Name}">` : '<div class="product-image-placeholder"></div>'}
+        <div class="product-info">
+          <h2 class="product-name">${product.Name}</h2>
+          <p class="product-price">UGX ${formattedPrice}</p>
+          <p class="product-seller">by ${product.SellerName}</p>
+        </div>
+      `;
+      productGrid.appendChild(card);
     });
-}
+  }
 
-async function loadCarouselProducts(type, container) {
+  // --- 4. FETCHING PRODUCTS ---
+  // The main function to talk to our backend
+  async function fetchProducts() {
+    if (state.isLoading) return; // Prevent multiple requests at the same time
+    state.isLoading = true;
+    
+    // Show a loading message
+    productGrid.innerHTML = '<p>Loading products...</p>';
+
+    // Build the query string from our state object
+    const params = new URLSearchParams({
+      pageSize: 16,
+      page: state.page
+    });
+    if (state.searchTerm) params.append('searchTerm', state.searchTerm);
+    if (state.sale) params.append('sale', 'true');
+    if (state.verified) params.append('verified', 'true');
+    state.category.forEach(cat => params.append('category', cat));
+    
     try {
-        const url = `/.netlify/functions/get-products?type=${type}&pageSize=10`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Failed to fetch ${type} products`);
-        const data = await response.json();
-        displayProducts(data.results, container);
+      // Call our Netlify Function
+      const response = await fetch(`/.netlify/functions/get-products?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      renderProducts(data.results); // Baserow data is in the 'results' property
+
     } catch (error) {
-        console.error(`Error loading ${type} products:`, error);
-        container.innerHTML = `<p>Could not load items.</p>`;
+      console.error("Failed to fetch products:", error);
+      productGrid.innerHTML = '<p>Sorry, we could not load the products. Please try again.</p>';
+    } finally {
+      state.isLoading = false; // Allow new requests
     }
-}
+  }
 
-function handleFilterChange(isPaginatedAction = true) {
-    isShowingFeatured = false;
-    updatePageView(isPaginatedAction);
-    fetchProducts(1);
-}
+  // --- 5. EVENT LISTENERS ---
+  // This is where we connect user actions to our functions
 
-// --- EVENT LISTENERS ---
-searchForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    currentFilters.searchTerm = searchInput.value;
-    handleFilterChange();
+  // Toggle filter panel on mobile
+  filterToggleButton.addEventListener('click', () => {
+    filterPanel.classList.toggle('is-open');
+  });
+
+  // Handle applying filters
+  function applyAllFilters() {
+      // Update state from the form
+      state.searchTerm = searchInput.value.trim();
+      state.page = 1; // Reset to page 1 for any new filter
+      
+      // Get selected categories
+      state.category = [];
+      document.querySelectorAll('input[name="category"]:checked').forEach(checkbox => {
+          state.category.push(checkbox.value);
+      });
+
+      // Get other special offers
+      state.sale = document.querySelector('input[name="sale"]').checked;
+      state.verified = document.querySelector('input[name="verified"]').checked;
+
+      // Close panel on mobile after applying
+      if (window.innerWidth < 768) {
+          filterPanel.classList.remove('is-open');
+      }
+
+      fetchProducts();
+  }
+
+  applyFiltersButton.addEventListener('click', applyAllFilters);
+  searchButton.addEventListener('click', applyAllFilters);
+  searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+          applyAllFilters();
+      }
+  });
+
+
+  // --- 6. INITIAL LOAD ---
+  // Fetch products for the first time when the page loads
+  fetchProducts();
+
 });
-
-searchInput.addEventListener('input', (event) => {
-    if (event.target.value === '') {
-        currentFilters.searchTerm = '';
-        handleFilterChange(false);
-    }
-});
-
-categoryScroller.addEventListener('click', (event) => {
-    if (event.target.tagName === 'BUTTON') {
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-        currentFilters.category = event.target.dataset.category;
-        handleFilterChange();
-    }
-});
-
-// Removed the event listener for 'districtFilter'
-
-nextBtn.addEventListener('click', () => {
-    fetchProducts(currentPage + 1);
-});
-
-prevBtn.addEventListener('click', () => {
-    fetchProducts(currentPage - 1);
-});
-
-// --- INITIAL PAGE LOAD ---
-loadCarouselProducts('sponsored', sponsoredGrid);
-loadCarouselProducts('verified', verifiedGrid);
-loadCarouselProducts('sale', saleGrid);
-fetchProducts(1);
