@@ -1,248 +1,26 @@
-/* --- General Setup & Variables --- */
-:root {
-    --primary-color: #00838f; /* Darker Teal */
-    --secondary-color: #004d40; /* Very Dark Teal for Title */
-    --accent-color: #f7b731; /* Yellow accent */
-    --bg-light: #f4f7f6; /* A slightly off-white background */
-    --text-dark: #333;
-    --text-light: #ffffff;
-    --border-color: #dee2e6;
-    --success-bg: #d4edda;
-    --success-text: #155724;
-    --error-bg: #f8d7da;
-    --error-text: #721c24;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Lato', sans-serif;
-    color: var(--text-dark);
-    background-color: var(--bg-light);
-    line-height: 1.6;
-}
-
-/* --- Sticky Header (Matches Homepage) --- */
-.site-header {
-    background-color: #fff;
-    padding: 1rem 5%;
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 1000; /* High z-index to stay on top */
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
+/* Styles for the Sell Form */
+.sell-form {
+    max-width: 600px;
     margin: 0 auto;
-}
-
-.site-title {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: var(--secondary-color);
-}
-
-.nav-btn-shop {
-    background-color: var(--primary-color);
-    color: var(--text-light);
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 700;
-    transition: all 0.2s ease-in-out;
-}
-
-.nav-btn-shop:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* --- Main Content --- */
-.container {
-    width: 90%;
-    max-width: 650px; /* Optimal width for a form */
-    margin: 2rem auto; /* Add margin for spacing from header/footer */
-}
-
-/* --- Form Container & Header --- */
-.form-container {
-    background-color: #fff;
+    background: var(--light-gray);
     padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-    border-top: 5px solid var(--primary-color);
+    border-radius: 8px;
 }
-.form-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-.form-header h2 {
-    color: var(--secondary-color);
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-}
-.form-header p {
-    color: #6c757d;
-    font-size: 1.1rem;
-}
-
-/* --- Form Elements --- */
 .form-group {
     margin-bottom: 1.5rem;
 }
 .form-group label {
     display: block;
-    font-weight: bold;
     margin-bottom: 0.5rem;
-    color: #495057;
-    font-size: 1rem;
-}
-input[type="text"],
-input[type="number"],
-input[type="tel"],
-select,
-textarea {
-    width: 100%;
-    padding: 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    font-family: 'Lato', sans-serif;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 131, 143, 0.2);
-}
-
-/* --- Submit Button --- */
-#submit-btn {
-    width: 100%;
-    padding: 16px;
-    background-color: var(--accent-color);
-    color: var(--secondary-color);
-    border: none;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-#submit-btn:hover {
-    background-color: #eab12c;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
-}
-#submit-btn:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
-
-/* --- Submission Status Message --- */
-#submission-status { 
-    display: none; 
-    margin-top: 15px; 
-    padding: 15px; 
-    border-radius: 8px; 
-    font-weight: 500;
-}
-#submission-status.success { 
-    background-color: var(--success-bg); 
-    color: var(--success-text); 
-    border-left: 5px solid var(--success-text);
-}
-#submission-status.error { 
-    background-color: var(--error-bg); 
-    color: var(--error-text); 
-    border-left: 5px solid var(--error-text);
-}
-
-/* --- Footer (Matches Homepage) --- */
-footer {
-    text-align: center;
-    padding: 0;
-    background-color: #fff;
-    margin-top: 3rem;
-}
-
-#contact-us-section {
-    padding: 3rem 1rem 2rem 1rem;
-}
-
-#contact-us-section h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
     font-weight: 700;
-    color: #333;
 }
-
-.contact-buttons-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.contact-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.contact-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.whatsapp-btn { background-color: #25D366; }
-.email-btn { background-color: #5865F2; }
-
-.contact-btn i {
-    margin-right: 10px;
-    font-size: 20px;
-}
-
-.footer-links {
-    padding: 1.5rem 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.footer-link {
-    color: #6c757d;
-    text-decoration: none;
-    margin: 0 10px;
-    font-size: 0.9rem;
-}
-
-.footer-link:hover {
-    text-decoration: underline;
-    color: var(--primary-color);
-}
-
-.copyright {
-    background-color: var(--bg-light);
-    padding: 1rem;
-    color: #6c757d;
-    font-size: 0.8rem;
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: inherit;
 }
