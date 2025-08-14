@@ -1,33 +1,71 @@
 // This script manages the seller dashboard page
-
 document.addEventListener('DOMContentLoaded', () => {
     const user = netlifyIdentity.currentUser();
     const welcomeMessage = document.getElementById('welcome-message');
     const logoutButton = document.getElementById('logout-button');
+    const myProductsGrid = document.getElementById('my-products-grid');
 
-    // STEP 1: Protect the page
+    // Protect the page
     if (!user) {
-        // If no user is logged in, redirect to the login page
-        window.location.href = '/login.html';
+        return window.location.href = '/login.html';
     } else {
-        // If a user is logged in, show their email in the welcome message
         welcomeMessage.textContent = `Welcome, ${user.email}!`;
     }
 
-    // STEP 2: Make the logout button work
+    // Make the logout button work
     logoutButton.addEventListener('click', () => {
         netlifyIdentity.logout();
     });
-
-    // When the user logs out, redirect them to the homepage
     netlifyIdentity.on('logout', () => {
         window.location.href = '/';
     });
 
-    // STEP 3: We will add the code to fetch the seller's products here later
-    // For now, let's just show a placeholder message
-    const myProductsGrid = document.getElementById('my-products-grid');
-    if (myProductsGrid) {
-        myProductsGrid.innerHTML = "<p>Your approved products will appear here soon.</p>";
+    // --- NEW: Function to fetch and display the seller's products ---
+    async function fetchMyProducts() {
+        if (!myProductsGrid) return;
+        
+        try {
+            const response = await fetch('/.netlify/functions/get-my-products', {
+                headers: {
+                    'Authorization': `Bearer ${user.token.access_token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Could not fetch your products.');
+            }
+
+            const data = await response.json();
+            myProductsGrid.innerHTML = ''; // Clear the "Loading..." message
+
+            if (data.results.length === 0) {
+                myProductsGrid.innerHTML = "<p>You have not submitted any products yet. Click 'Sell a New Item' to get started!</p>";
+                return;
+            }
+
+            // Reuse the product card style from the main page
+            data.results.forEach(product => {
+                const card = document.createElement('article');
+                card.className = 'product-card';
+                const imageUrl = product.ImageURL || '';
+                const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
+
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${product.Name}" loading="lazy">
+                    <div class="product-info">
+                        <h2 class="product-name">${product.Name}</h2>
+                        <p class="product-price">UGX ${formattedPrice}</p>
+                        <p class="product-seller">Status: ${product.Status}</p>
+                    </div>
+                `;
+                myProductsGrid.appendChild(card);
+            });
+
+        } catch (error) {
+            myProductsGrid.innerHTML = `<p>${error.message}</p>`;
+        }
     }
+
+    // Call the function to load the products when the dashboard opens
+    fetchMyProducts();
 });
