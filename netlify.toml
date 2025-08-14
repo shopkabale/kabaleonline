@@ -1,6 +1,2 @@
 [functions]
   directory = "netlify/functions/"
-  node_bundler = "esbuild"
-
-[functions.environment]
-  AWS_LAMBDA_JS_RUNTIME = "nodejs18.x"
