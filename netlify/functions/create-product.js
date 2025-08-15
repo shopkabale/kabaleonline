@@ -1,4 +1,4 @@
-// Advanced create-product.js with image uploading
+// In netlify/functions/create-product.js
 const { google } = require('googleapis');
 const { v2: cloudinary } = require('cloudinary');
 const busboy = require('busboy');
@@ -31,17 +31,15 @@ const parseMultipartForm = (event) => {
 
 
 exports.handler = async (event, context) => {
-    // Ensure a user is logged in
     const { user } = context.clientContext;
     if (!user) {
         return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
     try {
-        // --- 1. Parse the form data (including the image file) ---
         const { fields, fileData } = await parseMultipartForm(event);
 
-        // --- 2. Configure and upload the image to Cloudinary ---
+        // Upload image to Cloudinary
         cloudinary.config({ 
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
             api_key: process.env.CLOUDINARY_API_KEY, 
@@ -61,27 +59,28 @@ exports.handler = async (event, context) => {
         });
         const imageUrl = imageUploadResult.secure_url;
 
-        // --- 3. Prepare credentials and connect to Google Sheets ---
+        // Connect to Google Sheets
         const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
         const auth = new google.auth.GoogleAuth({ credentials, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // --- 4. Prepare the new row for the sheet ---
+        // --- THIS IS THE CORRECTED SECTION ---
+        // We now use the correct uppercase properties from the form (fields.Name, fields.Price, etc.)
         const newRow = [
-            new Date().getTime(),      // id
-            fields.Name,               // Name from form
-            fields.Description,        // Description from form
-            fields.Price,              // Price from form
-            fields.SellerName,         // SellerName from form
-            fields.SellerPhone,        // SellerPhone from form
-            imageUrl,                  // <-- The new image URL from Cloudinary
-            'Pending Review',          // Status
-            fields.Category,           // Category from form
-            'FALSE', 'FALSE', 'FALSE', 'FALSE', // IsFeatured, etc.
-            user.sub                   // The logged-in seller's unique Netlify ID
+            new Date().getTime(),
+            fields.Name,
+            fields.Description,
+            fields.Price,
+            fields.SellerName,
+            fields.SellerPhone,
+            imageUrl,
+            'Pending Review',
+            fields.Category,
+            'FALSE', 'FALSE', 'FALSE', 'FALSE',
+            user.sub
         ];
 
-        // --- 5. Append the new row to the sheet ---
+        // Append the new row to the sheet
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.GOOGLE_SHEET_ID,
             range: 'KabaleOnline Products!A1',
