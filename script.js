@@ -1,74 +1,61 @@
-// The final, "smart" script.js with client-side filtering
+// The final script.js with client-side filtering
 document.addEventListener('DOMContentLoaded', () => {
-    
     // --- ELEMENT SELECTORS ---
     const mainGrid = document.getElementById('product-grid');
+    const sponsoredGrid = document.getElementById('sponsored-products-grid');
+    const verifiedGrid = document.getElementById('verified-products-grid');
+    const saleGrid = document.getElementById('sale-products-grid');
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const categoryScroller = document.getElementById('category-scroller');
-    // We remove pagination as we will show all results
-    document.getElementById('pagination-controls')?.remove();
+    document.getElementById('pagination-controls')?.remove(); // Remove pagination
 
     // --- STATE & DATA STORAGE ---
-    let allProducts = []; // This will store all products from the sheet
-    const state = {
-        searchTerm: '',
-        category: 'All',
-    };
+    let allProducts = [];
+    const state = { searchTerm: '', category: 'All' };
 
     // --- RENDERING FUNCTION ---
-    function renderGrid(productsToDisplay) {
-        mainGrid.innerHTML = ''; // Clear the grid
-
-        if (productsToDisplay.length === 0) {
-            mainGrid.innerHTML = '<p>No products found matching your criteria.</p>';
-            return;
-        }
-
-        productsToDisplay.forEach(product => {
-            if (!product || !product.Name || !product.Price) return;
-            
-            const card = document.createElement('article');
-            card.className = 'product-card';
-            const imageUrl = product.ImageURL || '';
-            const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
-
-            card.innerHTML = `
-                <a href="/Product/index.html?id=${product.id}" style="text-decoration:none; color:inherit;">
-                    <img src="${imageUrl}" alt="${product.Name}" loading="lazy">
-                    <div class="product-info">
-                        <h2 class="product-name">${product.Name}</h2>
-                        <p class="product-price">UGX ${formattedPrice}</p>
-                        <p class="product-seller">by ${product.SellerName}</p>
-                    </div>
-                </a>
-            `;
-            mainGrid.appendChild(card);
-        });
+    function renderProductCard(product, container) {
+        if (!product || !product.Name || !product.Price) return;
+        const card = document.createElement('article');
+        card.className = 'product-card';
+        const imageUrl = product.ImageURL || '';
+        const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
+        card.innerHTML = `
+            <a href="/Product/index.html?id=${product.id}" style="text-decoration:none; color:inherit;">
+                <img src="${imageUrl}" alt="${product.Name}" loading="lazy">
+                <div class="product-info">
+                    <h2 class="product-name">${product.Name}</h2>
+                    <p class="product-price">UGX ${formattedPrice}</p>
+                    <p class="product-seller">by ${product.SellerName}</p>
+                </div>
+            </a>
+        `;
+        container.appendChild(card);
     }
 
-    // --- FILTERING FUNCTION ---
-    function applyFilters() {
+    function renderGrids() {
         let filteredProducts = allProducts;
-
-        // 1. Filter by category
-        if (state.category && state.category !== 'All') {
+        if (state.category !== 'All') {
             filteredProducts = filteredProducts.filter(p => p.Category === state.category);
         }
-
-        // 2. Filter by search term
         if (state.searchTerm) {
             filteredProducts = filteredProducts.filter(p => p.Name && p.Name.toLowerCase().includes(state.searchTerm.toLowerCase()));
         }
 
-        renderGrid(filteredProducts);
+        mainGrid.innerHTML = '';
+        if (filteredProducts.length === 0) {
+            mainGrid.innerHTML = '<p>No products found matching your criteria.</p>';
+        } else {
+            filteredProducts.forEach(product => renderProductCard(product, mainGrid));
+        }
     }
-    
+
     // --- EVENT LISTENERS ---
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         state.searchTerm = searchInput.value.trim();
-        applyFilters();
+        renderGrids();
     });
 
     categoryScroller.addEventListener('click', (e) => {
@@ -76,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryScroller.querySelector('.active').classList.remove('active');
             e.target.classList.add('active');
             state.category = e.target.dataset.category;
-            applyFilters();
+            renderGrids();
         }
     });
 
@@ -84,20 +71,36 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initialLoad() {
         try {
             mainGrid.innerHTML = '<p>Loading products...</p>';
+            sponsoredGrid.innerHTML = '<p>Loading...</p>';
+            verifiedGrid.innerHTML = '<p>Loading...</p>';
+            saleGrid.innerHTML = '<p>Loading...</p>';
+
             const response = await fetch(`/.netlify/functions/get-products`);
-            if (!response.ok) throw new Error('Main grid fetch failed');
+            if (!response.ok) throw new Error('Fetch failed');
             
-            allProducts = await response.json(); // Store all products in our variable
-            renderGrid(allProducts); // Render them for the first time
+            allProducts = await response.json();
             
+            // Render the main grid with all products
+            renderGrids();
+            
+            // Render the carousels by filtering the main list
+            sponsoredGrid.innerHTML = '';
+            allProducts.filter(p => p.IsSponsored === 'TRUE').slice(0, 10).forEach(p => renderProductCard(p, sponsoredGrid));
+            
+            verifiedGrid.innerHTML = '';
+            allProducts.filter(p => p.IsVerified === 'TRUE').slice(0, 10).forEach(p => renderProductCard(p, verifiedGrid));
+
+            saleGrid.innerHTML = '';
+            allProducts.filter(p => p.IsOnSale === 'TRUE').slice(0, 10).forEach(p => renderProductCard(p, saleGrid));
+
         } catch (error) {
-            mainGrid.innerHTML = '<p>Sorry, we could not load the products. Please try again.</p>';
-            console.error('Failed to load main grid:', error);
+            mainGrid.innerHTML = '<p>Sorry, we could not load the products.</p>';
+            sponsoredGrid.innerHTML = '<p>Could not load items.</p>';
+            verifiedGrid.innerHTML = '<p>Could not load items.</p>';
+            saleGrid.innerHTML = '<p>Could not load items.</p>';
+            console.error('Failed to load initial data:', error);
         }
     }
 
     initialLoad();
-
-    // We no longer need the carousel logic or dynamic header here,
-    // as this script is for the main marketplace grid.
 });
