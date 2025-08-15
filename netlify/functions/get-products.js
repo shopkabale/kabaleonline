@@ -1,40 +1,30 @@
-// A hardcoded test to force connection to the correct sheet.
-exports.handler = async (event) => {
-  // --- PASTE YOUR DETAILS DIRECTLY HERE FOR THE TEST ---
+// The final get-products.js for Netlify CMS
+const fs = require('fs');
+const path = require('path');
+const matter = require('gray-matter');
 
-  const GOOGLE_SHEET_ID = '1VfPh73UlwLZRWoIOuwgcrmDeyLtchMaaWSluaZeCq5U';
-  const GOOGLE_SHEETS_API_KEY = 'AIzaSyBA3daP6sl9cnVM3m2EsI-gZ_Zq90EJco8';
-  
-  // ----------------------------------------------------
-
-  const sheetName = 'KabaleOnline Products';
-  const range = 'A1:Z';
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${sheetName}!${range}?key=${GOOGLE_SHEETS_API_KEY}`;
-
+exports.handler = async () => {
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-        const errorBody = await response.json();
-        console.error('Google Sheets API Error:', errorBody);
-        throw new Error('Google Sheets API request failed');
-    }
-    
-    const data = await response.json();
-    const rows = data.values;
+    // This tells the function to look for the '_products' folder
+    const postsDirectory = path.join(process.cwd(), '_products');
+    const filenames = fs.readdirSync(postsDirectory);
 
-    if (!rows || rows.length < 2) {
-      return { statusCode: 200, body: JSON.stringify([]) };
-    }
+    // Go through each product file, read its content, and get the data
+    const products = filenames.map(filename => {
+      const filePath = path.join(postsDirectory, filename);
+      const fileContents = fs.readFileSync(filePath, 'utf8');
+      
+      // Use gray-matter to parse the file's data
+      const { data } = matter(fileContents);
+      
+      // We'll manually create an 'id' from the filename for our links
+      data.id = filename.replace(/\.md$/, '');
 
-    const headers = rows[0];
-    const products = rows.slice(1)
-      .filter(row => row[0] && row[0].trim() !== '')
-      .map(row => {
-        const product = {};
-        headers.forEach((header, index) => { product[header] = row[index] || null; });
-        return product;
-      });
+      return data;
+    });
 
+    // We no longer need to do filtering here, as the frontend will handle it.
+    // We just send all the products.
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -42,7 +32,10 @@ exports.handler = async (event) => {
     };
 
   } catch (error) {
-    console.error('Function Error:', error);
-    return { statusCode: 500, body: JSON.stringify({ error: 'An error occurred.' }) };
+    console.error('Error reading products:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to load products.' })
+    };
   }
 };
