@@ -6,7 +6,6 @@ backend:
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-# This new line enables the "submit for review" workflow
 publish_mode: editorial_workflow
 
 collections:
@@ -15,8 +14,8 @@ collections:
     folder: "_products"
     create: true
     
-    # This new line tells the CMS to save files in the correct format
-    format: "yml-frontmatter"
+    # THIS IS THE CORRECTED LINE
+    format: "frontmatter"
 
     slug: "{{slug}}"
     fields:
