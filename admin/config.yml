@@ -1,18 +1,25 @@
-# The main configuration for your Netlify CMS
+# The correct and final config.yml for the Netlify CMS setup
 backend:
   name: git-gateway
-  branch: main # Or 'master', depending on your main branch in GitHub
+  branch: main
 
-media_folder: "images/uploads" # Where uploaded images will be stored in your project
-public_folder: "/images/uploads" # The public URL path to the images
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+# This new line enables the "submit for review" workflow
+publish_mode: editorial_workflow
 
 collections:
-  - name: "products" # The name of the collection
-    label: "Products" # The name shown in the admin panel
-    folder: "_products" # Saves each product as a file in a '_products' folder
-    create: true # Allow users to create new products
-    slug: "{{slug}}" # The filename for each product
-    fields: # The fields for each product
+  - name: "products"
+    label: "Products"
+    folder: "_products"
+    create: true
+    
+    # This new line tells the CMS to save files in the correct format
+    format: "yml-frontmatter"
+
+    slug: "{{slug}}"
+    fields:
       - { label: "Name", name: "name", widget: "string" }
       - { label: "Price (UGX)", name: "price", widget: "number" }
       - { label: "Image", name: "image", widget: "image" }
@@ -21,7 +28,7 @@ collections:
       - { label: "Seller Name", name: "sellerName", widget: "string" }
       - { label: "Seller Phone", name: "sellerPhone", widget: "string" }
       - { label: "Status", name: "status", widget: "select", options: ["Approved", "Pending Review"], default: "Approved" }
-      - { label: "Is Featured", name: "isFeatured", widget: "boolean", default: false }
-      - { label: "Is Sponsored", name: "isSponsored", widget: "boolean", default: false }
-      - { label: "Is Verified Seller product", name: "isVerified", widget: "boolean", default: false }
-      - { label: "Is On Sale", name: "isOnSale", widget: "boolean", default: false }
+      - { label: "Is Featured", name: "isFeatured", widget: "boolean", default: false, required: false }
+      - { label: "Is Sponsored", name: "isSponsored", widget: "boolean", default: false, required: false }
+      - { label: "Is Verified Seller product", name: "isVerified", widget: "boolean", default: false, required: false }
+      - { label: "Is On Sale", name: "isOnSale", widget: "boolean", default: false, required: false }
