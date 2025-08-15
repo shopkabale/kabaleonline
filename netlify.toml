@@ -1,7 +1,17 @@
+# Netlify Configuration File
+
 [build]
   functions = "netlify/functions/"
+  
+  # This section forces the environment variables during the build
+  [build.environment]
+    # Your Spreadsheet ID is now included
+    GOOGLE_SHEET_ID = "1VfPh73UlwLZRWoIOuwgcrmDeyLtchMaaWSluaZeCq5U"
+    
+    # --- PASTE YOUR API KEY FROM THE SCREENSHOT HERE ---
+    GOOGLE_SHEETS_API_KEY = "PASTE_YOUR_API_KEY_FROM_THE_SCREENSHOT_HERE"
 
-# Add these new lines below for the Identity settings
+# These are the settings for Netlify Identity
 [identity]
   # This section tells Netlify where to redirect users
   [identity.redirect]
