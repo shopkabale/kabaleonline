@@ -11,8 +11,10 @@ exports.handler = async () => {
     const products = filenames.map(filename => {
       const filePath = path.join(postsDirectory, filename);
       const fileContents = fs.readFileSync(filePath, 'utf8');
+      
       const { data } = matter(fileContents);
       data.id = filename.replace(/\.md$/, '');
+
       return data;
     });
 
