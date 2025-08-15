@@ -1,127 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-8T3YSBPPG3');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - Kabale Online</title>
-    <link rel="stylesheet" href="../style.css"> <style>
-        /* Add some basic styles for the image gallery */
-        .gallery-thumbnails { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .gallery-thumbnails img { width: 80px; height: 80px; object-fit: cover; cursor: pointer; border: 2px solid transparent; }
-        .gallery-thumbnails img.active { border-color: #007bff; }
-        .product-detail-main-image { max-height: 400px; width: 100%; object-fit: contain; }
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* CSS is now embedded in this file */
+
+        /* 1. General Site Styles */
+        :root {
+            --primary-color: #004d40; /* Dark Teal */
+            --secondary-color: #f9a825; /* Yellow/Gold */
+            --light-gray: #f8f9fa;
+            --text-color: #333;
+            --text-light: #555;
+            --border-color: #e0e0e0;
+            --font-family: 'Lato', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            background-color: #fff;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .section {
+            padding: 40px 0;
+        }
+
+        /* 2. Header Styles */
+        .site-header {
+            background-color: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .site-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .main-nav a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 700;
+            margin-left: 25px;
+        }
+        
+        .nav-btn-sell {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 700;
+        }
+
+        /* 3. Product Detail Page Specific Styles */
+        .product-detail-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .product-detail-image img, .product-image-placeholder {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background-color: var(--light-gray);
+        }
+        
+        .product-image-placeholder {
+            background-image: linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%, #e0e0e0), linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%, #e0e0e0);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .product-detail-info h1 {
+            margin-top: 0;
+        }
+        
+        .product-detail-price {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        .btn-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            background-color: #25D366;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        
+        .btn-whatsapp i {
+            font-size: 1.2rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 20px 0;
+        }
+
+        @media (min-width: 768px) {
+            .product-detail-layout {
+                grid-template-columns: 1fr 1.2fr;
+            }
+        }
     </style>
 </head>
 <body>
-
     <header class="site-header">
         <div class="header-content">
-            <h1 class="site-title">Kabale Online</h1>
+            <a href="/" class="site-title">Kabale Online</a>
             <nav class="main-nav">
-                <a href="../index.html">Home</a>
-                <a href="../shop/index.html">Shop</a>
-                <a href="../sell/index.html">Sell</a>
+                <a href="/sell/" class="nav-btn-sell">Sell an Item</a>
             </nav>
         </div>
     </header>
 
-    <main class="container" id="product-detail-container">
-        <p>Loading product details...</p>
+    <main class="container section" id="product-detail-container">
+        <p>Loading product...</p>
     </main>
-    
-    <footer>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-<style>
-    /* CSS for the Contact Us section */
-    #contact-us-section {
-        font-family: 'Lato', sans-serif;
-        background-color: #f8f9fa;
-        border-top: 1px solid #e7e7e7;
-        padding: 40px 20px;
-        text-align: center;
-    }
-
-    #contact-us-section h2 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-weight: 700;
-        color: #333;
-    }
-
-    .contact-buttons-container {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        flex-wrap: wrap; /* Allows buttons to stack on small screens */
-    }
-
-    /* General styles for both buttons */
-    .contact-btn {
-        display: inline-flex;
-        align-items: center;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .contact-btn:hover {
-        transform: translateY(-2px); /* Lifts the button slightly on hover */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    /* Specific style for the WhatsApp button */
-    .whatsapp-btn {
-        background-color: #25D366; /* Official WhatsApp green */
-    }
-
-    /* Specific style for the Email button */
-    .email-btn {
-        background-color: #5865F2; /* A nice, modern blue */
-    }
-
-    /* Style for the icons inside the buttons */
-    .contact-btn i {
-        margin-right: 10px;
-        font-size: 20px;
-    }
-</style>
-
-<section id="contact-us-section">
-    <h2>Get in Touch</h2>
-    <div class="contact-buttons-container">
-        <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
-            <i class="fa-brands fa-whatsapp"></i>
-            Chat on WhatsApp
-        </a>
-
-        <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
-            <i class="fa-solid fa-envelope"></i>
-            Send an Email
-        </a>
-    </div>
-</section>
-
-
-        <p>&copy; 2025 Kabale Online. All Rights Reserved.</p>
-         <a href="../shop/terms.html" class="footer-link">Terms of Service</a>
-    </footer>
 
     <script src="script.js"></script>
 </body>
