@@ -1,21 +1,18 @@
-# Netlify Configuration File
+# The correct and final netlify.toml for the Netlify CMS setup
 
 [build]
+  # This tells Netlify to install tools from package.json during the build
+  command = "npm install"
+  # This tells Netlify where your functions are
   functions = "netlify/functions/"
-  
-  # This section forces the environment variables during the build
-  [build.environment]
-    # Your Spreadsheet ID is now included
-    GOOGLE_SHEET_ID = "1VfPh73UlwLZRWoIOuwgcrmDeyLtchMaaWSluaZeCq5U"
-    
-    # --- PASTE YOUR API KEY FROM THE SCREENSHOT HERE ---
-    GOOGLE_SHEETS_API_KEY = "AIzaSyBA3daP6sl9cnVM3m2EsI-gZ_Zq90EJco8"
 
-# These are the settings for Netlify Identity
+# This is the new section that fixes the "Could not load items" error
+# It ensures the _products folder is available to your function
+[functions]
+  included_files = ["_products/**"]
+
+# These are the settings for Netlify Identity redirects
 [identity]
-  # This section tells Netlify where to redirect users
   [identity.redirect]
-    # After a user logs in, send them to the dashboard
     login = "/dashboard.html"
-    # After a new user signs up, also send them to the dashboard
     signup = "/dashboard.html"
