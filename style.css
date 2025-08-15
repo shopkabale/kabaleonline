@@ -214,10 +214,12 @@ body {
 /* Product Grid and Card */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    /* This line forces two equal-width columns */
+    grid-template-columns: repeat(2, 1fr); 
     gap: 20px;
-    min-height: 200px; /* Prevents layout shift while loading */
+    min-height: 200px;
 }
+
 .product-card {
     border: 1px solid var(--border-color);
     border-radius: 8px;
