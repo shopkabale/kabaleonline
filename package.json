@@ -2,8 +2,6 @@
   "name": "kabale-online-functions",
   "version": "1.0.0",
   "dependencies": {
-    "cloudinary": "^1.37.0",
-    "busboy": "^1.6.0",
-    "googleapis": "^105.0.0"
+    "gray-matter": "^4.0.3"
   }
 }
