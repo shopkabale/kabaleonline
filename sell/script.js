@@ -1,6 +1,5 @@
-// This is the script for the sell/index.html page
+// Updated sell.js with FormData for image uploads
 document.addEventListener('DOMContentLoaded', () => {
-    // Protect the page: if user is not logged in, redirect them
     const user = netlifyIdentity.currentUser();
     if (!user) {
         return window.location.href = '/login.html';
@@ -15,18 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = true;
         formStatus.textContent = 'Submitting your product...';
 
+        // Use FormData to handle the file upload
         const formData = new FormData(sellForm);
-        const productData = Object.fromEntries(formData.entries());
 
         try {
+            // Note: We don't set a 'Content-Type' header when using FormData.
+            // The browser does it automatically.
             const response = await fetch('/.netlify/functions/create-product', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(productData),
+                body: formData,
             });
 
             if (!response.ok) {
-                throw new Error('Submission failed. Please try again.');
+                const errorResult = await response.json();
+                throw new Error(errorResult.error || 'Submission failed. Please try again.');
             }
 
             const result = await response.json();
