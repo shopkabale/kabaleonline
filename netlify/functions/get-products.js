@@ -1,4 +1,4 @@
-// A version of get-products.js with caching REMOVED to force fresh data
+// This version has improved error logging
 exports.handler = async (event) => {
   const { GOOGLE_SHEET_ID, GOOGLE_SHEETS_API_KEY } = process.env;
   const { 
@@ -12,7 +12,13 @@ exports.handler = async (event) => {
 
   try {
     const response = await fetch(url);
-    if (!response.ok) throw new Error('Google Sheets API request failed');
+    
+    // --- THIS IS THE NEW, DETAILED ERROR LOGGING ---
+    if (!response.ok) {
+      const errorBody = await response.json(); // Get the detailed error from Google
+      console.error('Google Sheets API Error:', errorBody); // Print it to the log
+      throw new Error('Google Sheets API request failed'); // Continue with the original error
+    }
     
     const data = await response.json();
     const rows = data.values;
@@ -30,7 +36,7 @@ exports.handler = async (event) => {
         return product;
       });
 
-    // Filtering Logic
+    // Filtering & Pagination logic remains the same...
     if (searchTerm) allProducts = allProducts.filter(p => p.Name && p.Name.toLowerCase().includes(searchTerm.toLowerCase()));
     if (category && category !== 'All') allProducts = allProducts.filter(p => p.Category === category);
     if (sale === 'true') allProducts = allProducts.filter(p => p.IsOnSale === 'TRUE');
@@ -38,7 +44,6 @@ exports.handler = async (event) => {
     if (sponsored === 'true') allProducts = allProducts.filter(p => p.IsSponsored === 'TRUE');
     if (verified === 'true') allProducts = allProducts.filter(p => p.IsVerified === 'TRUE');
 
-    // Pagination Logic
     const pageNumber = parseInt(page, 10) || 1;
     const size = parseInt(pageSize, 10) || 12;
     const startIndex = (pageNumber - 1) * size;
