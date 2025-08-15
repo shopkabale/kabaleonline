@@ -1,61 +1,73 @@
-// A simple in-memory cache for individual products.
-// The key will be the product ID.
-const productCache = {};
-
-// Cache duration for a single product (e.g., 60 minutes).
-// Individual products don't change often, so we can use a longer cache time.
-const CACHE_DURATION_MS = 60 * 60 * 1000;
-
-const { AIRTABLE_PAT, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;
+// In netlify/functions/get-product-detail.js
 
 exports.handler = async (event) => {
+  // Get secrets from Netlify environment variables
+  const { GOOGLE_SHEET_ID, GOOGLE_SHEETS_API_KEY } = process.env;
+  
+  // Get the product ID from the request URL (e.g., ?id=123)
   const { id } = event.queryStringParameters;
 
+  // If no ID is provided, return an error
   if (!id) {
-    return { statusCode: 400, body: 'Product ID is required' };
-  }
-
-  const now = Date.now();
-  
-  // 1. Check if we have a recent, valid cache for this specific product ID
-  if (productCache[id] && (now - productCache[id].timestamp < CACHE_DURATION_MS)) {
-    console.log(`Serving product ${id} from CACHE`);
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productCache[id].data),
+    return { 
+      statusCode: 400, 
+      body: JSON.stringify({ error: 'Product ID is required.' }) 
     };
   }
 
-  // 2. If no cache, fetch fresh data from Airtable
-  console.log(`CACHE MISS for product ${id}. Fetching from Airtable.`);
-  
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${id}`;
+  const sheetName = 'KabaleOnline Products';
+  const range = 'A1:Z'; // Get all data to find the product
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${sheetName}!${range}?key=${GOOGLE_SHEETS_API_KEY}`;
 
   try {
-    const response = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${AIRTABLE_PAT}` },
-    });
-    if (!response.ok) throw new Error('Failed to fetch product from Airtable');
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Google Sheets API request failed');
+    }
     
-    const productData = await response.json();
+    const data = await response.json();
+    const rows = data.values;
 
-    // 3. Update the cache for this specific product ID
-    productCache[id] = {
-      timestamp: Date.now(),
-      data: productData,
-    };
+    if (!rows || rows.length < 2) {
+      // No data in the sheet
+      return { 
+        statusCode: 404, 
+        body: JSON.stringify({ error: 'Product not found.' }) 
+      };
+    }
+
+    const headers = rows[0];
+    const productsData = rows.slice(1);
     
+    // Find the specific product row where the first column matches the requested ID
+    const productRow = productsData.find(row => row[0] === id); 
+
+    if (!productRow) {
+      // The specific ID was not found in the sheet
+      return { 
+        statusCode: 404, 
+        body: JSON.stringify({ error: 'Product not found.' }) 
+      };
+    }
+
+    // Convert the found row into a clean JSON object
+    const product = {};
+    headers.forEach((header, index) => {
+      product[header] = productRow[index] || null;
+    });
+
+    // Return the single product's data
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(product),
     };
 
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+    console.error('Function Error:', error);
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ error: 'An error occurred.' }) 
     };
   }
 };
