@@ -9,7 +9,7 @@
     GOOGLE_SHEET_ID = "1VfPh73UlwLZRWoIOuwgcrmDeyLtchMaaWSluaZeCq5U"
     
     # --- PASTE YOUR API KEY FROM THE SCREENSHOT HERE ---
-    GOOGLE_SHEETS_API_KEY = "PASTE_YOUR_API_KEY_FROM_THE_SCREENSHOT_HERE"
+    GOOGLE_SHEETS_API_KEY = "AIzaSyBA3daP6sl9cnVM3m2EsI-gZ_Zq90EJco8"
 
 # These are the settings for Netlify Identity
 [identity]
