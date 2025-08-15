@@ -1,9 +1,7 @@
 {
-  "name": "kabale-online-functions",
+  "name": "kabale-online-cms",
   "version": "1.0.0",
   "dependencies": {
-    "googleapis": "^105.0.0",
-    "cloudinary": "^1.37.0",
-    "busboy": "^1.6.0"
+    "gray-matter": "^4.0.3"
   }
 }
