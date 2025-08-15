@@ -6,8 +6,35 @@
     <title>Sell an Item - Kabale Online</title>
     
     <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-    <link rel="stylesheet" href="../style.css"> </head>
+    
+    <style>
+        /* CSS is now embedded as requested */
+        :root {
+            --primary-color: #004d40;
+            --secondary-color: #f9a825;
+            --light-gray: #f8f9fa;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --font-family: 'Lato', sans-serif;
+        }
+        body { font-family: var(--font-family); margin: 0; color: var(--text-color); }
+        .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+        .section { padding: 40px 0; }
+        .section-title { text-align: center; font-size: 2rem; color: var(--primary-color); margin-bottom: 30px; }
+        .site-header { border-bottom: 1px solid var(--border-color); padding: 10px 0; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .site-title { margin: 0; font-size: 1.5rem; color: var(--primary-color); }
+        .main-nav a { text-decoration: none; color: var(--text-light); font-weight: 700; }
+        
+        .sell-form { max-width: 600px; margin: 0 auto; background: var(--light-gray); padding: 2rem; border-radius: 8px; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 700; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 5px; font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+        .btn-primary { background-color: var(--primary-color); color: white; border: none; padding: 1rem; width: 100%; font-size: 1.1rem; border-radius: 5px; cursor: pointer; }
+        .btn-primary:disabled { background-color: #ccc; }
+        #form-status { text-align: center; font-weight: bold; margin-top: 1rem; }
+    </style>
+</head>
 <body>
 
     <header class="site-header">
@@ -23,36 +50,16 @@
         <h2 class="section-title">List Your Item for Sale</h2>
         <form id="sell-form" class="sell-form">
             <div class="form-group">
-                <label for="name">Product Name</label>
-                <input type="text" id="name" name="name" required>
+                <label for="image">Product Image (Required)</label>
+                <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/webp" required>
             </div>
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="price">Price (UGX)</label>
-                <input type="number" id="price" name="price" required>
-            </div>
-            <div class="form-group">
-                <label for="category">Category</label>
-                <select id="category" name="category" required>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Fashion">Fashion</option>
-                    <option value="Home">Home</option>
-                    <option value="Vehicles">Vehicles</option>
-                    <option value="Property">Property</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="seller-name">Your Name</label>
-                <input type="text" id="seller-name" name="sellerName" required>
-            </div>
-            <div class="form-group">
-                <label for="seller-phone">Your Phone (WhatsApp)</label>
-                <input type="tel" id="seller-phone" name="sellerPhone" required>
-            </div>
+            
+            <div class="form-group"><label for="name">Product Name</label><input type="text" id="name" name="Name" required></div>
+            <div class="form-group"><label for="description">Description</label><textarea id="description" name="Description" rows="4" required></textarea></div>
+            <div class="form-group"><label for="price">Price (UGX)</label><input type="number" id="price" name="Price" required></div>
+            <div class="form-group"><label for="category">Category</label><select id="category" name="Category" required><option value="Electronics">Electronics</option><option value="Fashion">Fashion</option><option value="Home">Home</option><option value="Vehicles">Vehicles</option><option value="Property">Property</option><option value="Other">Other</option></select></div>
+            <div class="form-group"><label for="seller-name">Your Name</label><input type="text" id="seller-name" name="SellerName" required></div>
+            <div class="form-group"><label for="seller-phone">Your Phone (WhatsApp)</label><input type="tel" id="seller-phone" name="SellerPhone" required></div>
             
             <button type="submit" id="submit-button" class="btn-primary">Submit for Review</button>
             <p id="form-status"></p>
