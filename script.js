@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
 
         card.innerHTML = `
-            <a href="shop/product.html?id=${product.id}" style="text-decoration:none; color:inherit;">
+            <a href="/Product/index.html?id=${product.id}" style="text-decoration:none; color:inherit;">
                 <img src="${imageUrl}" alt="${product.Name}" loading="lazy">
                 <div class="product-info">
                     <h2 class="product-name">${product.Name}</h2>
