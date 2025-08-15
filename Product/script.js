@@ -1,89 +1,52 @@
-// NOTE: Airtable credentials are now removed from this file, making it secure.
+// In shop/product.js
+document.addEventListener('DOMContentLoaded', async () => {
+    const productContainer = document.getElementById('product-detail-container');
 
-const productDetailContainer = document.getElementById('product-detail-container');
-const placeholderImage = 'https.i.imgur.com/WJ9S92O.png';
-
-async function fetchProductDetails() {
-    const productId = new URLSearchParams(window.location.search).get('id');
+    // Get the product ID from the URL (e.g., ?id=123)
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
 
     if (!productId) {
-        productDetailContainer.innerHTML = '<p>Error: No product ID provided.</p>';
+        productContainer.innerHTML = '<h2>Product not found</h2><p>No product ID was provided.</p>';
         return;
     }
 
     try {
-        // This now calls our new, secure caching function
-        const url = `/.netlify/functions/get-product-detail?id=${productId}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Product not found.');
-        
+        // Fetch the details for this specific product
+        const response = await fetch(`/.netlify/functions/get-product-by-id?id=${productId}`);
+        if (!response.ok) {
+            throw new Error('Product could not be loaded.');
+        }
         const product = await response.json();
-        const fields = product.fields;
-        
-        document.title = `${fields.Name} - Kabale Online`;
 
-        const images = fields.Image && fields.Image.length > 0 ? fields.Image : [{ url: placeholderImage }];
-        let thumbnailsHTML = '';
-        images.forEach((image, index) => {
-            thumbnailsHTML += `<img src="${image.url}" alt="Thumbnail ${index + 1}" class="${index === 0 ? 'active' : ''}" data-index="${index}">`;
-        });
-        
-        const whatsappUrl = createWhatsAppLink(fields.SellerPhone, fields.Name);
+        // Format the data
+        const imageUrl = product.ImageURL || '';
+        const formattedPrice = new Intl.NumberFormat('en-US').format(product.Price);
+        const whatsappLink = `https://wa.me/${product.SellerPhone.replace(/\D/g,'')}`; // Formats a clean WhatsApp link
 
-        productDetailContainer.innerHTML = `
+        // Display the product details on the page
+        productContainer.innerHTML = `
             <div class="product-detail-layout">
                 <div class="product-detail-image">
-                    <img src="${images[0].url}" alt="${fields.Name}" class="product-detail-main-image" id="main-image">
-                    <div class="gallery-thumbnails" id="thumbnail-container">
-                        ${thumbnailsHTML}
-                    </div>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.Name}">` : '<div class="product-image-placeholder"></div>'}
                 </div>
                 <div class="product-detail-info">
-                    <h1>${fields.Name}</h1>
-                    <p class="product-detail-price">UGX ${fields.Price ? fields.Price.toLocaleString() : 'N/A'}</p>
-                    <h3>Description</h3>
-                    <p>${fields.Description ? fields.Description.replace(/\n/g, '<br>') : 'No description available.'}</p>
+                    <h1>${product.Name}</h1>
+                    <p class="product-detail-price">UGX ${formattedPrice}</p>
                     <hr>
-                    <h3>Item Information</h3>
-                    <p><strong>Seller:</strong> ${fields.SellerName || 'N/A'}</p>
-                    <p><strong>Category:</strong> ${fields.Category || 'N/A'}</p>
-                    <p><strong>District:</strong> ${fields.District || 'N/A'}</p>
-                    <p><strong>Neighborhood:</strong> ${fields.Neighborhood || 'N/A'}</p>
-                    <a href="${whatsappUrl}" class="btn-cta" target="_blank">Contact Seller on WhatsApp</a>
+                    <h3>Product Details</h3>
+                    <p>${product.Description.replace(/\n/g, '<br>')}</p>
+                    <hr>
+                    <h3>Seller Information</h3>
+                    <p><strong>Name:</strong> ${product.SellerName}</p>
+                    <p><strong>Phone:</strong> ${product.SellerPhone}</p>
+                    <a href="${whatsappLink}" class="btn-whatsapp" target="_blank">
+                        <i class="fa-brands fa-whatsapp"></i> Contact Seller on WhatsApp
+                    </a>
                 </div>
             </div>
         `;
-        
-        setupThumbnailListeners(images);
-
     } catch (error) {
-        console.error('Error fetching product details:', error);
-        productDetailContainer.innerHTML = '<p>Sorry, we could not find this product. It may have been removed.</p>';
+        productContainer.innerHTML = `<h2>Error</h2><p>${error.message}</p>`;
     }
-}
-
-function setupThumbnailListeners(images) {
-    const mainImage = document.getElementById('main-image');
-    const thumbnailContainer = document.getElementById('thumbnail-container');
-
-    thumbnailContainer.addEventListener('click', (event) => {
-        if (event.target.tagName === 'IMG') {
-            const imageIndex = event.target.dataset.index;
-            mainImage.src = images[imageIndex].url;
-            document.querySelectorAll('#thumbnail-container img').forEach(img => img.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-    });
-}
-
-function createWhatsAppLink(phone, productName) {
-    let whatsappNumber = phone || '';
-    if (whatsappNumber.startsWith('0')) {
-        whatsappNumber = '256' + whatsappNumber.substring(1);
-    }
-    const message = `Hello, I'm interested in your ${productName} listed on Kabale Online.`;
-    const encodedMessage = encodeURIComponent(message);
-    return `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-}
-
-fetchProductDetails();
+});
