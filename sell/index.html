@@ -7,13 +7,10 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-   <body>
     <div class="container">
          <a href="/" class="home-link">&larr; Back to Home</a>
 
         <h1>Seller Dashboard</h1>
-        ```
-
 
         <div id="auth-container">
             <h2>Login or Create Account</h2>
@@ -32,12 +29,12 @@
 
             <h2>Add/Edit Product</h2>
             <form id="product-form">
-                <input type="hidden" id="productId"> <input type="text" id="product-name" placeholder="Product Name" required>
+                <input type="hidden" id="productId">
+                <input type="text" id="product-name" placeholder="Product Name" required>
                 <input type="number" id="product-price" placeholder="Price (UGX)" required>
                 <textarea id="product-description" placeholder="Product Description" required></textarea>
                 <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
-                <input type="file" id="product-image" accept="image/*" required>
-                <button type="submit" id="submit-btn">Add Product</button>
+                <input type="file" id="product-image" accept="image/*"> <button type="submit" id="submit-btn">Add Product</button>
             </form>
 
             <hr>
