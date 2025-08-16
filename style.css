@@ -1,354 +1,66 @@
-
-/* General Setup and Variables */
-:root {
-    --primary-color: #004d40; /* Dark Teal */
-    --secondary-color: #f9a825; /* Yellow/Gold */
-    --light-gray: #f8f9fa;
-    --text-color: #333;
-    --text-light: #555;
-    --border-color: #e0e0e0;
-    --font-family: 'Lato', sans-serif;
+:root{
+  --bg:#0b0b0f; --panel:#13131a; --card:#171823;
+  --text:#eaeaf2; --muted:#a4a6b3;
+  --brand:#ff2e63; --brand-2:#08d9d6; --ok:#25D366;
 }
+*{box-sizing:border-box}
+body{margin:0;font-family:Lato,system-ui,-apple-system;background:var(--bg);color:var(--text)}
 
-body {
-    font-family: var(--font-family);
-    margin: 0;
-    background-color: #fff;
-    color: var(--text-color);
-    line-height: 1.6;
+.site-header{background:linear-gradient(90deg,var(--panel),#0f1117);color:#fff;position:sticky;top:0;z-index:5}
+.header-content{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+.site-title{margin:0}
+.main-nav a{color:#fff;text-decoration:none;padding:8px 12px;background:var(--brand);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.main-nav a:hover{opacity:.9}
+
+.hero-section{background: radial-gradient(80% 80% at 20% 10%, #1a1b27 0%, #0b0b0f 100%);padding:56px 16px;text-align:center}
+.hero-title{margin:0 0 8px;font-size:2rem}
+.hero-subtitle{color:var(--muted)}
+.hero-cta{display:inline-block;margin-top:10px;padding:10px 14px;background:var(--brand-2);color:#0b0b0f;border-radius:12px;text-decoration:none;font-weight:700}
+
+.product-carousel{max-width:1100px;margin:24px auto;padding:0 16px}
+.carousel-header{display:flex;align-items:center;justify-content:space-between}
+.carousel-scroller{display:flex;gap:12px;overflow-x:auto;padding:8px 0}
+
+.marketplace-section .container{max-width:1100px;margin:auto;padding:0 16px}
+.category-scroller{display:flex;gap:8px;overflow:auto;padding:8px 16px}
+.category-btn{padding:6px 12px;border:1px solid #2a2b36;background:#0f1117;color:#eaeaf2;border-radius:999px;cursor:pointer}
+.category-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+.search-form{display:flex;gap:8px;margin:12px 0}
+.search-form input{flex:1;padding:10px;border:1px solid #2a2b36;background:#0f1117;color:#eaeaf2;border-radius:10px}
+.search-form button{padding:10px 14px;border:none;background:#1f6feb;color:#fff;border-radius:10px;cursor:pointer}
+
+.product-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);  /* ✅ two per row on phones */
+  gap:14px;margin:16px 0
 }
-
-.container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Header */
-.site-header {
-    background-color: #fff;
-    border-bottom: 1px solid var(--border-color);
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+@media(min-width:720px){
+  .product-grid{ grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); } /* auto on desktop */
 }
 
-.site-title {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--primary-color);
-}
+.product-card{position:relative;border:1px solid #222436;border-radius:16px;overflow:hidden;background:var(--card);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.product-card img{width:100%;height:170px;object-fit:cover}
+.product-body{padding:10px}
+.product-body h3{margin:0 0 6px;font-size:1.05rem}
+.price{font-weight:800;color:#fff;margin:0 0 6px}
+.category{color:var(--muted);margin:0 0 8px}
+.whatsapp{display:inline-block;padding:8px 10px;background:var(--ok);color:#fff;text-decoration:none;border-radius:10px;font-weight:700}
+.badge{position:absolute;top:10px;left:10px;background:#111;color:#fff;padding:4px 8px;border-radius:8px;font-size:.75rem}
+.badge.sponsored{background:#ff9800}
+.badge.verified{background:#2196f3;left:auto;right:10px}
+.badge.sale{background:var(--brand);top:auto;bottom:10px}
 
-.nav-btn-sell {
-    background-color: var(--secondary-color);
-    color: var(--primary-color);
-    padding: 8px 16px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.2s ease;
-}
-.nav-btn-sell:hover {
-    opacity: 0.9;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
+.pagination-controls{display:flex;gap:12px;align-items:center;justify-content:center;margin:12px 0}
+footer{background:#0f1117;padding:20px;text-align:center;border-top:1px solid #222436}
+.container{max-width:900px;margin:auto;padding:0 16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
 
-/* Hero Section */
-.hero-section {
-    background: var(--primary-color) url('https://www.transparenttextures.com/patterns/az-subtle.png');
-    color: white;
-    text-align: center;
-    padding: 80px 20px;
+#auth-form input, #product-form input, #product-form select, #product-form textarea {
+  width:100%;padding:10px;margin:6px 0;border:1px solid #2a2b36;background:#0f1117;color:#eaeaf2;border-radius:12px
 }
-.hero-title {
-    font-size: 2.8rem;
-    font-weight: 900;
-    margin: 0 0 10px 0;
+#product-form textarea{min-height:110px}
+#product-form button, #auth-form button, .btn-delete, .btn-save {
+  padding:10px 14px;border:none;background:#1f6feb;color:#fff;border-radius:12px;cursor:pointer
 }
-.hero-subtitle {
-    font-size: 1.2rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto 30px auto;
-}
-.hero-cta {
-    background-color: var(--secondary-color);
-    color: var(--primary-color);
-    padding: 15px 40px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: transform 0.2s ease;
-}
-.hero-cta:hover {
-    transform: scale(1.05);
-}
-
-/* Product Carousel */
-.product-carousel {
-    padding: 40px 0;
-    border-bottom: 1px solid var(--light-gray);
-}
-.sale-carousel {
-    background-color: var(--light-gray);
-}
-.carousel-header {
-    max-width: 1200px;
-    margin: 0 auto 20px auto;
-    padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.carousel-header h2 {
-    margin: 0;
-    font-size: 1.8rem;
-}
-.carousel-header a {
-    text-decoration: none;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-.carousel-scroller {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-    padding: 10px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-.carousel-scroller::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-}
-.carousel-scroller .product-card {
-    flex: 0 0 220px; /* Makes cards a fixed width */
-}
-
-/* Marketplace Section */
-.marketplace-section {
-    padding: 60px 0;
-}
-.section-title {
-    text-align: center;
-    font-size: 2.2rem;
-    margin-bottom: 10px;
-    color: var(--primary-color);
-}
-.section-subtitle {
-    text-align: center;
-    margin-top: 0;
-    margin-bottom: 40px;
-    color: var(--text-light);
-}
-
-/* Category Scroller */
-.category-section {
-    padding-bottom: 30px;
-}
-.category-scroller {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 10px 20px;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-.category-scroller::-webkit-scrollbar {
-    display: none;
-}
-.category-btn {
-    flex-shrink: 0;
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 700;
-    border: 1px solid var(--border-color);
-    border-radius: 50px;
-    background-color: #fff;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.category-btn.active, .category-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-/* Search and Filters */
-.search-form {
-    display: flex;
-    margin-bottom: 20px;
-}
-.search-form input {
-    flex-grow: 1;
-    border: 1px solid var(--border-color);
-    padding: 0.75rem;
-    font-size: 1rem;
-    border-radius: 5px 0 0 5px;
-}
-.search-form button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0 1.5rem;
-    cursor: pointer;
-    border-radius: 0 5px 5px 0;
-    font-size: 1rem;
-}
-
-/* Product Grid and Card */
-.product-grid {
-    display: grid;
-    /* This line forces two equal-width columns */
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 20px;
-    min-height: 200px;
-}
-
-.product-card {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-.product-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    background-color: var(--light-gray);
-}
-.product-info {
-    padding: 1rem;
-}
-.product-name {
-    font-size: 1rem;
-    margin: 0 0 0.5rem 0;
-    font-weight: 600;
-}
-.product-price {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin: 0 0 0.25rem 0;
-}
-.product-seller {
-    font-size: 0.8rem;
-    color: #757575;
-    margin: 0;
-}
-
-/* Pagination */
-.pagination-controls {
-    text-align: center;
-    margin: 30px 0;
-}
-.pagination-controls button {
-    padding: 10px 20px;
-    border: 1px solid var(--border-color);
-    background-color: #fff;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.pagination-controls button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-.pagination-controls span {
-    margin: 0 15px;
-    font-weight: 700;
-}
-
-/* CTA and Trust Sections */
-.cta-section { background-color: var(--secondary-color); text-align: center; padding: 60px 20px; }
-.btn-cta { background-color: var(--primary-color); color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 1.1rem; display: inline-block; }
-.trust-section { padding: 60px 0; background-color: var(--light-gray); }
-.trust-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; text-align: center; }
-.trust-step i { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; }
-
-/* Footer */
-footer { background-color: var(--primary-color); color: #e0e0e0; text-align: center; }
-#contact-us-section { background-color: #fff; padding: 40px 20px; border-bottom: 1px solid #00382c; }
-#contact-us-section h2 { color: var(--primary-color); margin: 0 0 20px 0; }
-.contact-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-.contact-btn { display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; text-decoration: none; color: white; font-weight: bold; }
-.whatsapp-btn { background-color: #25D366; }
-.email-btn { background-color: #5865F2; }
-.contact-btn i { margin-right: 10px; }
-.footer-links { padding: 20px; }
-.footer-link { color: #a7c5c1; text-decoration: none; margin: 0 10px; }
-.copyright { background-color: #002b21; padding: 15px; margin: 0; font-size: 0.9rem; }
-/* Add this to your style.css */
-.nav-btn-login {
-    font-weight: 700;
-    text-decoration: none;
-    color: var(--text-light);
-    margin-right: 15px;
-}
-.nav-btn-login:hover {
-    color: var(--primary-color);
-}
-/* Add these styles to the bottom of your style.css file */
-
-.main-nav {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Adds space between the login and sell buttons */
-}
-
-.nav-btn-login {
-    font-weight: 700;
-    text-decoration: none;
-    color: var(--text-light);
-    transition: color 0.2s ease;
-}
-
-.nav-btn-login:hover {
-    color: var(--primary-color);
-}
-
-.cta-login-link {
-    color: var(--primary-color);
-    font-weight: 700;
-    text-decoration: underline;
-}
-/* Add these styles to the bottom of your style.css */
-
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.dashboard-header h2 {
-    margin: 0;
-}
-
-.dashboard-divider {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 30px 0;
-}
-/* Add this to the bottom of style.css */
-.login-container {
-    text-align: center;
-    max-width: 500px;
-}
+.small{color:var(--muted);font-size:.85rem}
