@@ -1,4 +1,4 @@
-// sell.js (Re-verified and Corrected)
+// sell.js (Complete version working with Netlify environment variables)
 
 // --- IMPORTS ---
 import { auth, db } from '../firebase.js';
@@ -26,15 +26,12 @@ const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
 const logoutBtn = document.getElementById('logout-btn');
-
 const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
-
 const productForm = document.getElementById('product-form');
 const sellerProductsList = document.getElementById('seller-products-list');
 const submitBtn = document.getElementById('submit-btn');
 const productIdInput = document.getElementById('productId');
-
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
 
@@ -52,10 +49,7 @@ onAuthStateChanged(auth, user => {
         sellerProductsList.innerHTML = '';
     }
 });
-
-logoutBtn.addEventListener('click', () => {
-    signOut(auth).catch(error => alert(error.message));
-});
+logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
 
 
 // --- ACCORDION UI LOGIC ---
@@ -70,39 +64,26 @@ accordionButtons.forEach(button => {
         });
         button.classList.toggle('active');
         const panel = button.nextElementSibling;
-        if (panel.style.maxHeight) {
-            panel.style.maxHeight = null;
-        } else {
-            panel.style.maxHeight = panel.scrollHeight + "px";
-        }
+        if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
+        else { panel.style.maxHeight = panel.scrollHeight + "px"; }
     });
 });
 
 
 // --- FORM SUBMISSION HANDLING ---
-// This section has been checked to ensure it works correctly.
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    signInWithEmailAndPassword(auth, email, password)
-        .catch(error => {
-            alert("Login failed: " + error.message);
-        });
+    signInWithEmailAndPassword(auth, email, password).catch(error => alert("Login failed: " + error.message));
 });
-
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     createUserWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
-            alert('Account created successfully!');
-            // onAuthStateChanged will now automatically show the dashboard.
-        })
-        .catch(error => {
-            alert("Signup failed: " + error.message);
-        });
+        .then(() => alert('Account created successfully!'))
+        .catch(error => alert("Signup failed: " + error.message));
 });
 
 
@@ -130,12 +111,39 @@ showProductFormBtn.addEventListener('click', () => {
     } else {
         productFormContainer.style.display = 'block';
         showProductFormBtn.textContent = 'Close Form';
-        // When opening the form, ensure it's ready for a new product
         productForm.reset();
         productIdInput.value = '';
         submitBtn.textContent = 'Add Product';
     }
 });
+
+
+// --- **UPDATED** Cloudinary Upload Function ---
+async function uploadImageToCloudinary(file) {
+    // Step 1: Fetch the signature AND public keys from our secure function
+    const response = await fetch('/.netlify/functions/generate-signature');
+    const { signature, timestamp, cloudname, apikey } = await response.json();
+
+    // Step 2: Build the form data using the keys from the server
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', apikey); // Use the key from the server
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    
+    // Step 3: Send the data to Cloudinary
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`; // Use the cloudname from the server
+    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+    
+    if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        console.error('Cloudinary upload failed:', errorData);
+        throw new Error('Cloudinary upload failed. Check the console for details.');
+    }
+    
+    const uploadData = await uploadResponse.json();
+    return uploadData.secure_url;
+}
 
 
 // --- PRODUCT MANAGEMENT ---
@@ -145,13 +153,13 @@ productForm.addEventListener('submit', async (e) => {
     if (!user) return alert('You must be logged in!');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
-    const productName = document.getElementById('product-name').value;
-    const productPrice = document.getElementById('product-price').value;
-    const productDescription = document.getElementById('product-description').value;
-    const whatsappNumber = document.getElementById('whatsapp-number').value;
-    const imageFile = document.getElementById('product-image').files[0];
-    const editingProductId = productIdInput.value;
     try {
+        const productName = document.getElementById('product-name').value;
+        const productPrice = document.getElementById('product-price').value;
+        const productDescription = document.getElementById('product-description').value;
+        const whatsappNumber = document.getElementById('whatsapp-number').value;
+        const imageFile = document.getElementById('product-image').files[0];
+        const editingProductId = productIdInput.value;
         let imageUrl = '';
         if (editingProductId) {
            const existingCard = document.querySelector(`.product-card[data-product-id="${editingProductId}"] img`);
@@ -161,12 +169,9 @@ productForm.addEventListener('submit', async (e) => {
             imageUrl = await uploadImageToCloudinary(imageFile);
         }
         if (!imageUrl) throw new Error('An image is required for the product.');
-        const productData = {
-            name: productName, price: Number(productPrice), description: productDescription, imageUrl: imageUrl, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, createdAt: new Date()
-        };
+        const productData = { name: productName, price: Number(productPrice), description: productDescription, imageUrl: imageUrl, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, createdAt: new Date() };
         if (editingProductId) {
-            const productRef = doc(db, 'products', editingProductId);
-            await updateDoc(productRef, productData);
+            await updateDoc(doc(db, 'products', editingProductId), productData);
             alert('Product updated successfully!');
         } else {
             await addDoc(collection(db, 'products'), productData);
@@ -174,8 +179,6 @@ productForm.addEventListener('submit', async (e) => {
         }
         productForm.reset();
         productIdInput.value = '';
-        submitBtn.textContent = 'Add Product';
-        document.getElementById('product-image').required = true;
         productFormContainer.style.display = 'none';
         showProductFormBtn.textContent = 'Sell another Item';
         fetchSellerProducts(user.uid);
@@ -184,23 +187,10 @@ productForm.addEventListener('submit', async (e) => {
         alert('Failed to submit product. ' + error.message);
     } finally {
         submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Product';
     }
 });
-async function uploadImageToCloudinary(file) {
-    const response = await fetch('/.netlify/functions/generate-signature');
-    const { signature, timestamp } = await response.json();
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', 'YOUR_CLOUDINARY_API_KEY');
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-    const cloudName = 'YOUR_CLOUDINARY_CLOUD_NAME';
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-    if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-    const uploadData = await uploadResponse.json();
-    return uploadData.secure_url;
-}
+
 async function fetchSellerProducts(uid) {
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
@@ -212,24 +202,17 @@ async function fetchSellerProducts(uid) {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.setAttribute('data-product-id', productId);
-        productCard.innerHTML = `
-            <img src="${product.imageUrl}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <p>UGX ${product.price.toLocaleString()}</p>
-            <div class="seller-controls">
-                <button class="edit-btn">Edit</button>
-                <button class="delete-btn">Delete</button>
-            </div>
-        `;
+        productCard.innerHTML = `<img src="${product.imageUrl}" alt="${product.name}"><h3>${product.name}</h3><p>UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
         productCard.querySelector('.edit-btn').addEventListener('click', () => {
             productFormContainer.style.display = 'block';
             showProductFormBtn.textContent = 'Close Form';
-            populateFormForEdit(productId, product)
+            populateFormForEdit(productId, product);
         });
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
         sellerProductsList.appendChild(productCard);
     });
 }
+
 function populateFormForEdit(id, product) {
     productIdInput.value = id;
     document.getElementById('product-name').value = product.name;
@@ -241,18 +224,19 @@ function populateFormForEdit(id, product) {
     document.getElementById('product-image').required = false;
     window.scrollTo(0, 0);
 }
+
 async function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product? This cannot be undone.')) {
+    if (confirm('Are you sure you want to delete this product?')) {
         try {
             await deleteDoc(doc(db, 'products', productId));
             alert('Product deleted successfully.');
             fetchSellerProducts(auth.currentUser.uid);
         } catch (error) {
-            console.error('Error deleting product:', error);
             alert('Failed to delete product.');
         }
     }
 }
+
 function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
