@@ -1,26 +1,29 @@
-// main.js (Updated)
-import { db, auth } from './firebase.js'; // <-- Import auth
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"; // <-- Import auth function
+import { db, auth } from './firebase.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productGrid = document.getElementById('product-grid');
-const sellerNavLink = document.getElementById('seller-nav-link'); // <-- Get the nav link
+const sellerNavLink = document.getElementById('seller-nav-link');
 
-// --- NEW: Check login status and update the navigation link ---
-onAuthStateChanged(auth, (user) => {
+// Check login status and update the navigation link
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // User is signed in
-        sellerNavLink.textContent = 'My Dashboard';
-        sellerNavLink.href = '/sell/';
+        // Check if the user is an admin
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+            sellerNavLink.textContent = 'Admin Panel';
+            sellerNavLink.href = '/admin/';
+        } else {
+            sellerNavLink.textContent = 'My Dashboard';
+            sellerNavLink.href = '/sell/';
+        }
     } else {
-        // User is signed out
         sellerNavLink.textContent = 'Sell on Kabale Online';
         sellerNavLink.href = '/sell/';
     }
 });
 
-
-// Fetch all products from Firestore and display them
+// Fetch all products and display them in a simplified card format
 async function fetchAndDisplayProducts() {
     try {
         const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -31,24 +34,25 @@ async function fetchAndDisplayProducts() {
             return;
         }
 
-        productGrid.innerHTML = ''; // Clear the "Loading..." message
+        productGrid.innerHTML = '';
         querySnapshot.forEach((doc) => {
             const product = doc.data();
-            const message = encodeURIComponent(`Hello, I'm interested in your product: ${product.name} - Price: UGX ${product.price}`);
-            const whatsappLink = `https://wa.me/${product.whatsapp}?text=${message}`;
+            const productId = doc.id;
 
-            const productCard = document.createElement('div');
-            productCard.className = 'product-card';
-            productCard.innerHTML = `
-                <img src="${product.imageUrl}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                <p class="description">${product.description}</p>
-                <p class="price">UGX ${product.price.toLocaleString()}</p>
-                <a href="${whatsappLink}" target="_blank" class="whatsapp-btn">
-                    Buy on WhatsApp
-                </a>
+            // Create a link that wraps the entire product card
+            const productLink = document.createElement('a');
+            productLink.href = `product.html?id=${productId}`;
+            productLink.className = 'product-card-link';
+
+            // Create the card content
+            productLink.innerHTML = `
+                <div class="product-card">
+                    <img src="${product.imageUrl}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p class="price">UGX ${product.price.toLocaleString()}</p>
+                </div>
             `;
-            productGrid.appendChild(productCard);
+            productGrid.appendChild(productLink);
         });
 
     } catch (error) {
@@ -57,5 +61,4 @@ async function fetchAndDisplayProducts() {
     }
 }
 
-// Initial call to load products when the page loads
 fetchAndDisplayProducts();
