@@ -1,66 +1,147 @@
-:root{
-  --bg:#0b0b0f; --panel:#13131a; --card:#171823;
-  --text:#eaeaf2; --muted:#a4a6b3;
-  --brand:#ff2e63; --brand-2:#08d9d6; --ok:#25D366;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Lato,system-ui,-apple-system;background:var(--bg);color:var(--text)}
-
-.site-header{background:linear-gradient(90deg,var(--panel),#0f1117);color:#fff;position:sticky;top:0;z-index:5}
-.header-content{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
-.site-title{margin:0}
-.main-nav a{color:#fff;text-decoration:none;padding:8px 12px;background:var(--brand);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.main-nav a:hover{opacity:.9}
-
-.hero-section{background: radial-gradient(80% 80% at 20% 10%, #1a1b27 0%, #0b0b0f 100%);padding:56px 16px;text-align:center}
-.hero-title{margin:0 0 8px;font-size:2rem}
-.hero-subtitle{color:var(--muted)}
-.hero-cta{display:inline-block;margin-top:10px;padding:10px 14px;background:var(--brand-2);color:#0b0b0f;border-radius:12px;text-decoration:none;font-weight:700}
-
-.product-carousel{max-width:1100px;margin:24px auto;padding:0 16px}
-.carousel-header{display:flex;align-items:center;justify-content:space-between}
-.carousel-scroller{display:flex;gap:12px;overflow-x:auto;padding:8px 0}
-
-.marketplace-section .container{max-width:1100px;margin:auto;padding:0 16px}
-.category-scroller{display:flex;gap:8px;overflow:auto;padding:8px 16px}
-.category-btn{padding:6px 12px;border:1px solid #2a2b36;background:#0f1117;color:#eaeaf2;border-radius:999px;cursor:pointer}
-.category-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-
-.search-form{display:flex;gap:8px;margin:12px 0}
-.search-form input{flex:1;padding:10px;border:1px solid #2a2b36;background:#0f1117;color:#eaeaf2;border-radius:10px}
-.search-form button{padding:10px 14px;border:none;background:#1f6feb;color:#fff;border-radius:10px;cursor:pointer}
-
-.product-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);  /* ✅ two per row on phones */
-  gap:14px;margin:16px 0
-}
-@media(min-width:720px){
-  .product-grid{ grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); } /* auto on desktop */
+/* styles.css */
+:root {
+    --primary-color: #4A90E2; /* A nice blue */
+    --secondary-color: #50E3C2; /* A fresh mint green */
+    --text-color: #333;
+    --bg-color: #F4F5F7;
+    --card-bg: #FFFFFF;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.product-card{position:relative;border:1px solid #222436;border-radius:16px;overflow:hidden;background:var(--card);box-shadow:0 6px 24px rgba(0,0,0,.25)}
-.product-card img{width:100%;height:170px;object-fit:cover}
-.product-body{padding:10px}
-.product-body h3{margin:0 0 6px;font-size:1.05rem}
-.price{font-weight:800;color:#fff;margin:0 0 6px}
-.category{color:var(--muted);margin:0 0 8px}
-.whatsapp{display:inline-block;padding:8px 10px;background:var(--ok);color:#fff;text-decoration:none;border-radius:10px;font-weight:700}
-.badge{position:absolute;top:10px;left:10px;background:#111;color:#fff;padding:4px 8px;border-radius:8px;font-size:.75rem}
-.badge.sponsored{background:#ff9800}
-.badge.verified{background:#2196f3;left:auto;right:10px}
-.badge.sale{background:var(--brand);top:auto;bottom:10px}
-
-.pagination-controls{display:flex;gap:12px;align-items:center;justify-content:center;margin:12px 0}
-footer{background:#0f1117;padding:20px;text-align:center;border-top:1px solid #222436}
-.container{max-width:900px;margin:auto;padding:0 16px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-
-#auth-form input, #product-form input, #product-form select, #product-form textarea {
-  width:100%;padding:10px;margin:6px 0;border:1px solid #2a2b36;background:#0f1117;color:#eaeaf2;border-radius:12px
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
 }
-#product-form textarea{min-height:110px}
-#product-form button, #auth-form button, .btn-delete, .btn-save {
-  padding:10px 14px;border:none;background:#1f6feb;color:#fff;border-radius:12px;cursor:pointer
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
-.small{color:var(--muted);font-size:.85rem}
+
+h1, h2 {
+    color: var(--primary-color);
+}
+
+/* --- Forms & Buttons --- */
+input, textarea, button {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #357ABD;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* --- Product Grid --- */
+.product-grid {
+    display: grid;
+    gap: 20px;
+    /* Automatically fit as many columns as possible with a min width of 280px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.product-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.product-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+}
+
+.product-card .description {
+    font-size: 0.9rem;
+    color: #666;
+    flex-grow: 1; /* Pushes the price and button down */
+}
+
+.product-card .price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 10px 0;
+}
+
+.whatsapp-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    background-color: #25D366; /* WhatsApp Green */
+    color: white;
+    padding: 12px;
+    border-radius: var(--border-radius);
+    margin-top: auto; /* Pushes button to the bottom */
+    transition: background-color 0.3s;
+}
+
+.whatsapp-btn:hover {
+    background-color: #128C7E;
+}
+
+/* Seller Dashboard Controls */
+.seller-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.seller-controls .edit-btn {
+    background-color: var(--secondary-color);
+}
+.seller-controls .delete-btn {
+    background-color: #E74C3C; /* Red */
+}
+
+/* --- Responsive Design for Phones --- */
+@media (max-width: 600px) {
+    .product-grid {
+        /* This will create two columns on phones */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .product-card h3 {
+        font-size: 1rem;
+    }
+}
