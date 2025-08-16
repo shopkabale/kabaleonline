@@ -1,25 +1,18 @@
-<!-- firebase.js -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-// (Optional) App Check to reduce abuse:
-// import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app-check.js";
+// firebase.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-async function loadFirebaseConfig() {
-  const res = await fetch("/.netlify/functions/firebase-config", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load Firebase config");
-  return res.json();
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyBLf0fZUFGXS9NMS3rMr8Iisy-siAAiIyI",  
+  authDomain: "http://kabale-20ec4.firebaseapp.com",  
+  projectId: "kabale-20ec4",  
+  storageBucket: "http://kabale-20ec4.firebasestorage.app",  
+  messagingSenderId: "792218710477",  
+  appId: "1:792218710477:web:5a32cc3177ddba98ff5484"
+};
 
-const cfg = await loadFirebaseConfig();
-export const firebaseApp = initializeApp(cfg);
-export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
-
-// Optional App Check (create a site key in Firebase → App Check):
-// const appCheck = initializeAppCheck(firebaseApp, {
-//   provider: new ReCaptchaV3Provider("YOUR_RECAPTCHA_V3_SITE_KEY"),
-//   isTokenAutoRefreshEnabled: true,
-// });
-</script>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
