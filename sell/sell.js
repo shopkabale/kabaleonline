@@ -29,8 +29,6 @@ const logoutBtn = document.getElementById('logout-btn');
 
 const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
-const showLoginBtn = document.getElementById('show-login-btn');
-const showSignupBtn = document.getElementById('show-signup-btn');
 
 const productForm = document.getElementById('product-form');
 const sellerProductsList = document.getElementById('seller-products-list');
@@ -41,16 +39,14 @@ const productIdInput = document.getElementById('productId');
 // --- CORE AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, user => {
     if (user) {
-        // User is logged in
         authContainer.style.display = 'none';
         dashboardContainer.style.display = 'block';
         sellerEmailSpan.textContent = user.email;
         fetchSellerProducts(user.uid);
     } else {
-        // User is logged out
         authContainer.style.display = 'block';
         dashboardContainer.style.display = 'none';
-        sellerProductsList.innerHTML = ''; // Clear products on logout
+        sellerProductsList.innerHTML = '';
     }
 });
 
@@ -59,20 +55,32 @@ logoutBtn.addEventListener('click', () => {
 });
 
 
-// --- AUTH FORM HANDLING (LOGIN / SIGNUP TABS) ---
-showLoginBtn.addEventListener('click', () => {
-    loginForm.style.display = 'block';
-    signupForm.style.display = 'none';
-    showLoginBtn.classList.add('active');
-    showSignupBtn.classList.remove('active');
+// --- NEW: ACCORDION UI LOGIC ---
+const accordionButtons = document.querySelectorAll('.accordion-button');
+
+accordionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // First, close all other panels
+        accordionButtons.forEach(otherButton => {
+            if (otherButton !== button) {
+                otherButton.classList.remove('active');
+                otherButton.nextElementSibling.style.maxHeight = null;
+            }
+        });
+
+        // Then, toggle the clicked panel
+        button.classList.toggle('active');
+        const panel = button.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null; // Close it
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px"; // Open it
+        }
+    });
 });
 
-showSignupBtn.addEventListener('click', () => {
-    loginForm.style.display = 'none';
-    signupForm.style.display = 'block';
-    showLoginBtn.classList.remove('active');
-    showSignupBtn.classList.add('active');
-});
+
+// --- FORM SUBMISSION HANDLING ---
 
 // Handle Login Submission
 loginForm.addEventListener('submit', (e) => {
@@ -117,7 +125,7 @@ document.querySelectorAll('.toggle-password').forEach(toggle => {
 });
 
 
-// --- PRODUCT MANAGEMENT ---
+// --- PRODUCT MANAGEMENT (This part remains unchanged) ---
 
 // Handle Product Form Submission (for both Add and Edit)
 productForm.addEventListener('submit', async (e) => {
@@ -137,23 +145,14 @@ productForm.addEventListener('submit', async (e) => {
 
     try {
         let imageUrl = '';
-        
-        // If we are editing, check for an existing image URL
         if (editingProductId) {
            const existingCard = document.querySelector(`.product-card[data-product-id="${editingProductId}"] img`);
-           if (existingCard) {
-               imageUrl = existingCard.src;
-           }
+           if (existingCard) imageUrl = existingCard.src;
         }
-
-        // If a new image file is selected, upload it and overwrite the old URL
         if (imageFile) {
             imageUrl = await uploadImageToCloudinary(imageFile);
         }
-
-        if (!imageUrl) {
-            throw new Error('An image is required for the product.');
-        }
+        if (!imageUrl) throw new Error('An image is required for the product.');
 
         const productData = {
             name: productName,
@@ -162,63 +161,51 @@ productForm.addEventListener('submit', async (e) => {
             imageUrl: imageUrl,
             whatsapp: normalizeWhatsAppNumber(whatsappNumber),
             sellerId: user.uid,
-            createdAt: new Date() // Always set/update the timestamp
+            createdAt: new Date()
         };
         
         if (editingProductId) {
-            // Update the existing product document in Firestore
             const productRef = doc(db, 'products', editingProductId);
             await updateDoc(productRef, productData);
             alert('Product updated successfully!');
         } else {
-            // Add a new product document to Firestore
             await addDoc(collection(db, 'products'), productData);
             alert('Product added successfully!');
         }
         
         productForm.reset();
-        productIdInput.value = ''; // Clear editing state
+        productIdInput.value = '';
         submitBtn.textContent = 'Add Product';
-        document.getElementById('product-image').required = true; // Make image required again for new products
-        fetchSellerProducts(user.uid); // Refresh the list of products
+        document.getElementById('product-image').required = true;
+        fetchSellerProducts(user.uid);
 
     } catch (error) {
         console.error('Error submitting product:', error);
         alert('Failed to submit product. ' + error.message);
     } finally {
-        submitBtn.disabled = false; // Re-enable the submit button
+        submitBtn.disabled = false;
     }
 });
 
-
 // Upload image to Cloudinary via our Netlify serverless function
 async function uploadImageToCloudinary(file) {
-    // 1. Get a secure signature from our serverless function
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp } = await response.json();
 
-    // 2. Prepare the form data for Cloudinary
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('api_key', 'YOUR_CLOUDINARY_API_KEY'); // ⚠️ IMPORTANT: Replace with your actual API Key
+    formData.append('api_key', 'YOUR_CLOUDINARY_API_KEY');
     formData.append('timestamp', timestamp);
     formData.append('signature', signature);
     
-    // 3. Upload the image directly to your Cloudinary account
-    const cloudName = 'YOUR_CLOUDINARY_CLOUD_NAME'; // ⚠️ IMPORTANT: Replace with your actual Cloud Name
+    const cloudName = 'YOUR_CLOUDINARY_CLOUD_NAME';
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-    const uploadResponse = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-    });
-
-    if (!uploadResponse.ok) {
-        throw new Error('Cloudinary upload failed.');
-    }
+    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+    if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
     
     const uploadData = await uploadResponse.json();
-    return uploadData.secure_url; // This is the public URL of the uploaded image
+    return uploadData.secure_url;
 }
 
 // Fetch and display products for the currently logged-in seller
@@ -227,7 +214,7 @@ async function fetchSellerProducts(uid) {
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
 
-    sellerProductsList.innerHTML = ''; // Clear previous list
+    sellerProductsList.innerHTML = '';
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
@@ -245,10 +232,8 @@ async function fetchSellerProducts(uid) {
             </div>
         `;
         
-        // Add event listeners for edit and delete buttons
         productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
-
         sellerProductsList.appendChild(productCard);
     });
 }
@@ -260,14 +245,12 @@ function populateFormForEdit(id, product) {
     document.getElementById('product-price').value = product.price;
     document.getElementById('product-description').value = product.description;
     
-    // Convert normalized number back to local format for display
     const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
     document.getElementById('whatsapp-number').value = localNumber;
     
     submitBtn.textContent = 'Update Product';
-    document.getElementById('product-image').required = false; // Image is not required when editing
-    
-    window.scrollTo(0, 0); // Scroll to top to see the form
+    document.getElementById('product-image').required = false;
+    window.scrollTo(0, 0);
 }
 
 // Delete a product from Firestore
@@ -276,7 +259,7 @@ async function deleteProduct(productId) {
         try {
             await deleteDoc(doc(db, 'products', productId));
             alert('Product deleted successfully.');
-            fetchSellerProducts(auth.currentUser.uid); // Refresh the list
+            fetchSellerProducts(auth.currentUser.uid);
         } catch (error) {
             console.error('Error deleting product:', error);
             alert('Failed to delete product.');
@@ -284,26 +267,11 @@ async function deleteProduct(productId) {
     }
 }
 
-
-// --- HELPER FUNCTIONS ---
-
-// Normalize WhatsApp number to include country code (e.g., 256) for wa.me links
+// Normalize WhatsApp number to include country code
 function normalizeWhatsAppNumber(phone) {
-    let cleaned = ('' + phone).replace(/\D/g, ''); // Remove all non-digit characters
-    
-    // If it starts with '0', replace with '256'
-    if (cleaned.startsWith('0')) {
-        return '256' + cleaned.substring(1);
-    }
-    // If it already starts with '256', it's correct
-    if (cleaned.startsWith('256')) {
-        return cleaned;
-    }
-    // If it's a 9-digit number (e.g., 771234567), prepend '256'
-    if (cleaned.length === 9) {
-        return '256' + cleaned;
-    }
-    
-    // Fallback for unknown formats
+    let cleaned = ('' + phone).replace(/\D/g, '');
+    if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
+    if (cleaned.startsWith('256')) return cleaned;
+    if (cleaned.length === 9) return '256' + cleaned;
     return cleaned;
 }
