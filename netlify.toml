@@ -1,18 +1,8 @@
-# The correct and final netlify.toml for the Netlify CMS setup
-
 [build]
-  # This tells Netlify to install tools from package.json during the build
-  command = "npm install"
-  # This tells Netlify where your functions are
-  functions = "netlify/functions/"
+  publish = "."
+  functions = "netlify/functions"
 
-# This is the new section that fixes the "Could not load items" error
-# It ensures the _products folder is available to your function
-[functions]
-  included_files = ["_products/**"]
-
-# These are the settings for Netlify Identity redirects
-[identity]
-  [identity.redirect]
-    login = "/dashboard.html"
-    signup = "/dashboard.html"
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 200
