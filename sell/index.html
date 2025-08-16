@@ -4,59 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
     <div class="container">
         <a href="/" class="home-link">&larr; Back to Home</a>
 
-        <h1>Seller Dashboard</h1>
+        <div class="page-header">
+            <h1>Kabale Online</h1>
+            <p>Access your seller dashboard or create a new account to start selling.</p>
+        </div>
 
         <div id="auth-container">
-            <div class="auth-tabs">
-                <button id="show-login-btn" class="active">Login</button>
-                <button id="show-signup-btn">Create Account</button>
+            <div class="accordion">
+                <button class="accordion-button">Login to Your Account</button>
+                <div class="accordion-panel">
+                    <form id="login-form">
+                        <input type="email" id="login-email" placeholder="Email" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="login-password" placeholder="Password" required>
+                            <span class="toggle-password">👁️</span>
+                        </div>
+                        <button type="submit">Login</button>
+                    </form>
+                </div>
+
+                <button class="accordion-button">Create a New Account</button>
+                <div class="accordion-panel">
+                    <form id="signup-form">
+                        <input type="email" id="signup-email" placeholder="Email" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="signup-password" placeholder="Password" required>
+                            <span class="toggle-password">👁️</span>
+                        </div>
+                        <button type="submit">Create Account</button>
+                    </form>
+                </div>
             </div>
-
-            <form id="login-form">
-                <h2>Login to Your Account</h2>
-                <input type="email" id="login-email" placeholder="Email" required>
-                <div class="password-wrapper">
-                    <input type="password" id="login-password" placeholder="Password" required>
-                    <span class="toggle-password">👁️</span>
-                </div>
-                <button type="submit">Login</button>
-            </form>
-
-            <form id="signup-form" style="display: none;">
-                <h2>Create a New Account</h2>
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <div class="password-wrapper">
-                    <input type="password" id="signup-password" placeholder="Password" required>
-                    <span class="toggle-password">👁️</span>
-                </div>
-                <button type="submit">Create Account</button>
-            </form>
         </div>
 
         <div id="dashboard-container" style="display: none;">
             <p>Welcome, <span id="seller-email"></span>!</p>
             <button id="logout-btn">Logout</button>
-
             <hr>
-
             <h2>Add/Edit Product</h2>
             <form id="product-form">
-                <input type="hidden" id="productId"> <input type="text" id="product-name" placeholder="Product Name" required>
+                <input type="hidden" id="productId">
+                <input type="text" id="product-name" placeholder="Product Name" required>
                 <input type="number" id="product-price" placeholder="Price (UGX)" required>
                 <textarea id="product-description" placeholder="Product Description" required></textarea>
                 <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
                 <input type="file" id="product-image" accept="image/*">
                 <button type="submit" id="submit-btn">Add Product</button>
             </form>
-
             <hr>
-
             <h2>Your Products</h2>
             <div id="seller-products-list" class="product-grid">
                 </div>
