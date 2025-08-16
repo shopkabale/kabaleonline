@@ -1,61 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Seller Dashboard — Kabale Online</title>
-  <link rel="stylesheet" href="../style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Dashboard</title>
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-content">
-      <h1 class="site-title">Seller Dashboard</h1>
-      <nav class="main-nav">
-        <a href="../index.html">← Back to Home</a>
-      </nav>
-    </div>
-  </header>
+  <h1>Seller Dashboard</h1>
+  <a href="/">⬅ Back to Home</a>
 
-  <main class="container">
-    <section id="auth-section">
-      <h2>Login / Sign Up</h2>
-      <form id="auth-form">
-        <input type="email" id="auth-email" placeholder="Email" required>
-        <input type="password" id="auth-password" placeholder="Password" required>
-        <div class="row">
-          <button type="submit" id="btn-login">Login</button>
-          <button type="button" id="btn-signup">Sign Up</button>
-          <button type="button" id="btn-logout" style="display:none">Logout</button>
-        </div>
-        <p id="auth-msg"></p>
-      </form>
-    </section>
+  <!-- Login / Signup form -->
+  <div id="auth-section">
+    <h2>Login / Sign Up</h2>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
+  </div>
 
-    <section id="post-section" style="display:none">
-      <h2>Post a Product</h2>
-      <form id="product-form">
-        <input type="text" id="title" placeholder="Product name" required>
-        <input type="number" id="price" placeholder="Price (UGX)" required>
-        <select id="category" required>
-          <option>Electronics</option><option>Fashion</option><option>Home</option>
-          <option>Vehicles</option><option>Property</option><option>Other</option>
-        </select>
-        <textarea id="description" placeholder="Short description" required></textarea>
-        <input type="text" id="sellerName" placeholder="Your name" required>
-        <input type="tel" id="phone" placeholder="Phone (e.g., 0740...)" required>
-        <input type="file" id="imageFile" accept="image/*" required>
-        <button type="submit">Submit</button>
-        <p class="small">Images are safely uploaded via Cloudinary.</p>
-        <p id="form-msg"></p>
-      </form>
-    </section>
+  <!-- Dashboard (only visible when logged in) -->
+  <div id="dashboard" style="display:none;">
+    <h2>Welcome Seller</h2>
+    <button id="logoutBtn">Logout</button>
 
-    <section id="mine-section" style="display:none">
-      <h2>My Products</h2>
-      <div id="my-products" class="product-grid"></div>
-    </section>
-  </main>
+    <h3>Post a Product</h3>
+    <input type="text" id="productName" placeholder="Product Name"><br>
+    <input type="number" id="productPrice" placeholder="Price"><br>
+    <button id="postProductBtn">Post Product</button>
 
+    <h3>Your Products</h3>
+    <ul id="productList"></ul>
+  </div>
+
+  <!-- Firebase & JS -->
   <script type="module" src="../firebase.js"></script>
-  <script type="module" src="./sell.js"></script>
+  <script type="module" src="sell.js"></script>
 </body>
 </html>
