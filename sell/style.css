@@ -24,3 +24,35 @@
     font-size: 1rem;
     font-family: inherit;
 }
+/* Add to the bottom of styles.css */
+
+/* Navigation on Homepage */
+.main-nav {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.main-nav a {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.main-nav a:hover {
+    transform: scale(1.05);
+}
+
+/* "Back to Home" link on seller page */
+.home-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
