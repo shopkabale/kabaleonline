@@ -110,3 +110,87 @@
     box-shadow: var(--box-shadow);
     border: 1px solid #e0e0e0;
 }
+/* Add to the bottom of styles.css */
+
+/* --- Page Header --- */
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.page-header h1 {
+    margin: 0;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 500px;
+    margin: 10px auto 0;
+}
+
+/* --- Accordion Styles --- */
+.accordion-button {
+    background-color: #f1f1f1;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: background-color 0.4s;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+}
+
+.accordion-button:first-of-type {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+.accordion-button:last-of-type {
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    border-bottom: none;
+}
+
+
+.accordion-button.active, .accordion-button:hover {
+    background-color: #e0e0e0;
+}
+
+.accordion-button::after {
+    content: '+';
+    font-size: 1.3rem;
+    color: #777;
+    float: right;
+    margin-left: 5px;
+}
+
+.accordion-button.active::after {
+    content: "−";
+}
+
+.accordion-panel {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+
+.accordion-panel:last-of-type {
+    border-bottom: 1px solid #ddd;
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
+.accordion-panel form {
+    padding: 20px 0;
+}
