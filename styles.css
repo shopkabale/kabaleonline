@@ -101,3 +101,30 @@ button:disabled { background-color: #ccc; cursor: not-allowed; }
         grid-template-columns: repeat(4, 1fr);
     }
 }
+/* --- Filter Bar Styles --- */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.filter-bar input[type="search"],
+.filter-bar select {
+    flex-grow: 1;
+    margin-bottom: 0;
+    border: 1px solid #ddd;
+}
+
+.filter-bar input[type="search"] {
+    flex-basis: 300px; /* Give the search bar more space */
+}
+
+.filter-bar select {
+    flex-basis: 200px; /* Give the dropdown a minimum space */
+}
+
