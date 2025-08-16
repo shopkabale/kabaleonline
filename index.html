@@ -1,169 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8T3YSBPPG3');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Your local online marketplace for Kabale, Uganda. Find great deals on used phones, clothes, furniture, and more. Sell your items for free today!">
-    <title>Kabale Online | Your Online Marketplace in Kigezi</title>
-    
-    <link rel="icon" href="favicon.webp" type="image/webp">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script type="module" src="firebase.js"></script>
-<script type="module" src="script.js"></script>
+    <title>Kabale Online Market</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <header class="site-header">
-        <div class="header-content">
-            <h1 class="site-title">Kabale Online</h1>
-           <nav class="main-nav" id="main-nav">
-    <a href="sell/index.html" class="nav-btn-sell">Sell an Item</a>
-</nav>
- 
-
-        </div>
-    </header>
-
-    <main>
-        <section class="hero-section">
-            <div class="hero-content">
-                <h1 class="hero-title">Join hundreds of Buyers and Sellers from Kabale.</h1>
-                <p class="hero-subtitle">Find amazing deals on any items from the Kigezi community.</p>
-                <a href="#marketplace" class="hero-cta">Start Exploring</a>
+    <div class="container">
+        <header>
+            <h1>Welcome to Kabale Online</h1>
+            <p>Browse products from local sellers.</p>
+        </header>
+        <main>
+            <div id="product-grid" class="product-grid">
+                <p>Loading products...</p>
             </div>
-        </section>
-        
-        <section class="product-carousel">
-            <div class="carousel-header">
-                <h2>Sponsored Products</h2>
-                <a href="#marketplace">See All</a>
-            </div>
-            <div class="carousel-scroller" id="sponsored-products-grid">
-                <p>Loading...</p>
-            </div>
-        </section>
-
-        <section class="product-carousel">
-            <div class="carousel-header">
-                <h2>From Verified Sellers</h2>
-                <a href="#marketplace">See All</a>
-            </div>
-            <div class="carousel-scroller" id="verified-products-grid">
-                <p>Loading...</p>
-            </div>
-        </section>
-
-        <section class="product-carousel sale-carousel">
-            <div class="carousel-header">
-                <h2>Save More With Deals</h2>
-                <a href="#marketplace">See All</a>
-            </div>
-            <div class="carousel-scroller" id="sale-products-grid">
-                <p>Loading...</p>
-            </div>
-        </section>
-        
-        <section id="marketplace" class="marketplace-section">
-            <div class="marketplace-header">
-                <h2 class="section-title">Explore All Listings</h2>
-                <p class="section-subtitle">Use the filters below to find exactly what you're looking for.</p>
-            </div>
-
-            <div class="category-section">
-                <div class="category-scroller" id="category-scroller">
-                    <button class="category-btn active" data-category="All">All</button>
-                    <button class="category-btn" data-category="Electronics">Electronics</button>
-                    <button class="category-btn" data-category="Fashion">Fashion</button>
-                    <button class="category-btn" data-category="Home">Home</button>
-                    <button class="category-btn" data-category="Vehicles">Vehicles</button>
-                    <button class="category-btn" data-category="Property">Property</button>
-                    <button class="category-btn" data-category="Other">Other</button>
-                </div>
-            </div>
-
-            <div class="container">
-                <form class="search-form" id="search-form">
-                    <input type="search" id="search-input" placeholder="Search by name, e.g., 'iPhone' or 'sofa'">
-                    <button type="submit">Search</button>
-                </form>
-                
-                <div class="product-grid" id="product-grid">
-                    <p>Loading products from Kabale...</p>
-                </div>
-
-                <div class="pagination-controls" id="pagination-controls">
-                    <button id="prev-btn" disabled>&larr; Previous</button>
-                    <span id="page-indicator">Page 1</span>
-                    <button id="next-btn">Next &rarr;</button>
-                </div>
-            </div>
-        </section>
-
-        <section class="cta-section">
-            <div class="container">
-                <h2>Have Something to Sell?</h2>
-                <p>Join our community of sellers and turn your items into cash. Already have an account? <a href="login.html" class="cta-login-link">Login here</a>.</p>
-                <a href="sell/index.html" class="btn-cta">Start Selling Now</a>
-            </div>
-        </section>
-
-        <section class="trust-section">
-            <div class="container">
-                <h2 class="section-title">A Safe & Simple Way to Trade</h2>
-                <div class="trust-steps">
-                    <div class="trust-step">
-                        <i class="fas fa-search"></i>
-                        <h3>1. Find Your Item</h3>
-                        <p>Browse or search through hundreds of local listings.</p>
-                    </div>
-                    <div class="trust-step">
-                        <i class="fas fa-comments"></i>
-                        <h3>2. Contact the Seller</h3>
-                        <p>Use WhatsApp or phone to arrange details securely.</p>
-                    </div>
-                    <div class="trust-step">
-                        <i class="fas fa-handshake"></i>
-                        <h3>3. Meet & Pay</h3>
-                        <p>Meet locally to inspect your item and pay with confidence.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div id="contact-us-section">
-            <h2>Get in Touch</h2>
-            <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp-btn" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email-btn">
-                    <i class="fa-solid fa-envelope"></i> Send an Email
-                </a>
-            </div>
-        </div>
-        
-        <div class="footer-links">
-            <a href="about.html" class="footer-link">About Us</a>
-            <a href="terms.html" class="footer-link">Terms of Service</a>
-        </div>
-
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
-
-    <script src="script.js"></script>
+        </main>
+    </div>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
