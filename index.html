@@ -1,21 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8T3YSBPPG3');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kabale Online Market</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="description" content="Buy and Sell Anything right Here for free . Your local online marketplace for Kabale Uganda. Find great deals on used phones, clothes, furniture, and more. Sell your second-hand items for free today! . Buy in Kabale . Buy and sell in Kabale Uganda . sell in kabale Uganda . Kabale . Kabale Uganda . Your local online marketplace for Kabale. Find great deals on used phones, clothes, furniture, and more. Sell your Any items for free today!">
+    <title>Kabale Online | Your Online Marketplace in Kigezi</title>
+    <link rel="icon" href="favicon.webp" type="image/webp">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Welcome to Kabale Online</h1>
-            <p>Browse products from local sellers.</p>
-            <nav class="main-nav">
-                <a href="/sell/" id="seller-nav-link">Sell on Kabale Online</a>
-            </nav>
-        </header>
 
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">Kabale Online</h1>
+            <p class="site-tagline">Your local marketplace for Kigezi.</p>
+            <nav class="main-nav">
+                <a href="/sell/" id="seller-nav-link" class="cta-button">Sell an Item</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
         <div class="filter-bar">
             <input type="search" id="search-input" placeholder="🔍 Search for products...">
             <select id="sort-filter">
@@ -32,6 +45,27 @@
         </main>
     </div>
 
-    <script type="module" src="main.js"></script>
+    <footer>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </section>
+        
+        <div class="footer-links">
+            <a href="about.html" class="footer-link">About Us</a>
+            <a href="terms.html" class="footer-link">Terms of Service</a>
+        </div>
+
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
