@@ -194,3 +194,24 @@
 .accordion-panel form {
     padding: 20px 0;
 }
+/* Add to the bottom of styles.css */
+
+/* --- "Sell an Item" Call-to-Action Button --- */
+.cta-button {
+    background-color: var(--secondary-color); /* A fresh, vibrant color */
+    color: #1a1a1a; /* Dark text for better contrast on the light button */
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 15px 25px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    margin-right: 10px;
+    margin-bottom: 15px;
+    transition: all 0.2s ease-in-out;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
