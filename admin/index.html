@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Panel</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="home-link">&larr; Back to Home</a>
+        <h1>Super Admin Panel</h1>
+
+        <div id="access-denied" style="display: none;">
+            <h2>Access Denied</h2>
+            <p>You do not have permission to view this page. Please log in with an admin account.</p>
+            <a href="/sell/">Go to Login Page</a>
+        </div>
+
+        <div id="admin-content" style="display: none;">
+            <p>Welcome, Admin! Here you can see all products from all sellers and moderate content.</p>
+            <hr>
+            <h2>All Products on Kabale Online</h2>
+            <div id="all-products-list" class="product-grid">
+                </div>
+        </div>
+    </div>
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
