@@ -56,3 +56,57 @@
     text-decoration: none;
     font-weight: bold;
 }
+/* Add to the bottom of styles.css */
+
+/* --- Auth Tabs --- */
+.auth-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.auth-tabs button {
+    flex-grow: 1;
+    padding: 15px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #888;
+    margin-bottom: -2px; /* Pulls the button border over the container border */
+}
+
+.auth-tabs button.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* --- Password Show/Hide Icon --- */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    /* Make space for the icon */
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none; /* Prevents text selection */
+    font-size: 1.2rem;
+}
+
+/* --- Improved Dashboard Look --- */
+#dashboard-container {
+    background-color: var(--card-bg);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid #e0e0e0;
+}
