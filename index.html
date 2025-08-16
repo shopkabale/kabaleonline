@@ -15,12 +15,23 @@
                 <a href="/sell/" id="seller-nav-link">Sell on Kabale Online</a>
             </nav>
         </header>
+
+        <div class="filter-bar">
+            <input type="search" id="search-input" placeholder="🔍 Search for products...">
+            <select id="sort-filter">
+                <option value="default">Default Sorting</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+            </select>
+        </div>
+
         <main>
             <div id="product-grid" class="product-grid">
                 <p>Loading products...</p>
             </div>
         </main>
     </div>
+
     <script type="module" src="main.js"></script>
 </body>
 </html>
