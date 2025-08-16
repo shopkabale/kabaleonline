@@ -35,10 +35,15 @@ const sellerProductsList = document.getElementById('seller-products-list');
 const submitBtn = document.getElementById('submit-btn');
 const productIdInput = document.getElementById('productId');
 
+// NEW selections for the Sell an Item feature
+const showProductFormBtn = document.getElementById('show-product-form-btn');
+const productFormContainer = document.getElementById('product-form-container');
+
 
 // --- CORE AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, user => {
     if (user) {
+        // This function runs on login AND after successful signup
         authContainer.style.display = 'none';
         dashboardContainer.style.display = 'block';
         sellerEmailSpan.textContent = user.email;
@@ -55,26 +60,22 @@ logoutBtn.addEventListener('click', () => {
 });
 
 
-// --- NEW: ACCORDION UI LOGIC ---
+// --- ACCORDION UI LOGIC ---
 const accordionButtons = document.querySelectorAll('.accordion-button');
-
 accordionButtons.forEach(button => {
     button.addEventListener('click', () => {
-        // First, close all other panels
         accordionButtons.forEach(otherButton => {
             if (otherButton !== button) {
                 otherButton.classList.remove('active');
                 otherButton.nextElementSibling.style.maxHeight = null;
             }
         });
-
-        // Then, toggle the clicked panel
         button.classList.toggle('active');
         const panel = button.nextElementSibling;
         if (panel.style.maxHeight) {
-            panel.style.maxHeight = null; // Close it
+            panel.style.maxHeight = null;
         } else {
-            panel.style.maxHeight = panel.scrollHeight + "px"; // Open it
+            panel.style.maxHeight = panel.scrollHeight + "px";
         }
     });
 });
@@ -82,38 +83,37 @@ accordionButtons.forEach(button => {
 
 // --- FORM SUBMISSION HANDLING ---
 
-// Handle Login Submission
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password)
         .catch(error => {
-            console.error("Login Error:", error.code);
+            // This alert IS the button working correctly when details are wrong
             alert("Login failed: " + error.message);
         });
 });
 
-// Handle Sign Up Submission
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     createUserWithEmailAndPassword(auth, email, password)
         .then(userCredential => {
-            console.log('Created new user:', userCredential.user);
-            alert('Account created successfully! You are now logged in.');
+            // 1. Show success notification
+            alert('Account created successfully!');
+            // 2. onAuthStateChanged will now automatically show the dashboard
         })
         .catch(error => {
-            console.error("Signup Error:", error.code);
             alert("Signup failed: " + error.message);
         });
 });
 
-// Show/Hide Password Toggle Logic
+
+// --- PASSWORD TOGGLE LOGIC ---
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
-        const passwordInput = e.target.previousElementSibling;
+        const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
             e.target.textContent = '🙈';
@@ -125,24 +125,33 @@ document.querySelectorAll('.toggle-password').forEach(toggle => {
 });
 
 
-// --- PRODUCT MANAGEMENT (This part remains unchanged) ---
+// --- NEW: DASHBOARD "SELL AN ITEM" BUTTON LOGIC ---
+showProductFormBtn.addEventListener('click', () => {
+    const isVisible = productFormContainer.style.display === 'block';
+    if (isVisible) {
+        productFormContainer.style.display = 'none';
+        showProductFormBtn.textContent = 'Sell an Item';
+    } else {
+        productFormContainer.style.display = 'block';
+        showProductFormBtn.textContent = 'Close Form';
+    }
+});
 
-// Handle Product Form Submission (for both Add and Edit)
+
+// --- PRODUCT MANAGEMENT (Unchanged) ---
+// ... (The rest of the file is exactly the same as before) ...
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return alert('You must be logged in!');
-
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
-
     const productName = document.getElementById('product-name').value;
     const productPrice = document.getElementById('product-price').value;
     const productDescription = document.getElementById('product-description').value;
     const whatsappNumber = document.getElementById('whatsapp-number').value;
     const imageFile = document.getElementById('product-image').files[0];
     const editingProductId = productIdInput.value;
-
     try {
         let imageUrl = '';
         if (editingProductId) {
@@ -153,17 +162,9 @@ productForm.addEventListener('submit', async (e) => {
             imageUrl = await uploadImageToCloudinary(imageFile);
         }
         if (!imageUrl) throw new Error('An image is required for the product.');
-
         const productData = {
-            name: productName,
-            price: Number(productPrice),
-            description: productDescription,
-            imageUrl: imageUrl,
-            whatsapp: normalizeWhatsAppNumber(whatsappNumber),
-            sellerId: user.uid,
-            createdAt: new Date()
+            name: productName, price: Number(productPrice), description: productDescription, imageUrl: imageUrl, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, createdAt: new Date()
         };
-        
         if (editingProductId) {
             const productRef = doc(db, 'products', editingProductId);
             await updateDoc(productRef, productData);
@@ -172,13 +173,14 @@ productForm.addEventListener('submit', async (e) => {
             await addDoc(collection(db, 'products'), productData);
             alert('Product added successfully!');
         }
-        
         productForm.reset();
         productIdInput.value = '';
         submitBtn.textContent = 'Add Product';
         document.getElementById('product-image').required = true;
+        // After submitting, hide the form again for a cleaner look
+        productFormContainer.style.display = 'none';
+        showProductFormBtn.textContent = 'Sell another Item';
         fetchSellerProducts(user.uid);
-
     } catch (error) {
         console.error('Error submitting product:', error);
         alert('Failed to submit product. ' + error.message);
@@ -186,39 +188,29 @@ productForm.addEventListener('submit', async (e) => {
         submitBtn.disabled = false;
     }
 });
-
-// Upload image to Cloudinary via our Netlify serverless function
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp } = await response.json();
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('api_key', 'YOUR_CLOUDINARY_API_KEY');
     formData.append('timestamp', timestamp);
     formData.append('signature', signature);
-    
     const cloudName = 'YOUR_CLOUDINARY_CLOUD_NAME';
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
     const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
     if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-    
     const uploadData = await uploadResponse.json();
     return uploadData.secure_url;
 }
-
-// Fetch and display products for the currently logged-in seller
 async function fetchSellerProducts(uid) {
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-
     sellerProductsList.innerHTML = '';
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
-        
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.setAttribute('data-product-id', productId);
@@ -231,29 +223,26 @@ async function fetchSellerProducts(uid) {
                 <button class="delete-btn">Delete</button>
             </div>
         `;
-        
-        productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
+        productCard.querySelector('.edit-btn').addEventListener('click', () => {
+            productFormContainer.style.display = 'block'; // Show form for editing
+            showProductFormBtn.textContent = 'Close Form';
+            populateFormForEdit(productId, product)
+        });
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
         sellerProductsList.appendChild(productCard);
     });
 }
-
-// Populate the main form when an "Edit" button is clicked
 function populateFormForEdit(id, product) {
     productIdInput.value = id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price;
     document.getElementById('product-description').value = product.description;
-    
     const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
     document.getElementById('whatsapp-number').value = localNumber;
-    
     submitBtn.textContent = 'Update Product';
     document.getElementById('product-image').required = false;
     window.scrollTo(0, 0);
 }
-
-// Delete a product from Firestore
 async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product? This cannot be undone.')) {
         try {
@@ -266,8 +255,6 @@ async function deleteProduct(productId) {
         }
     }
 }
-
-// Normalize WhatsApp number to include country code
 function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
