@@ -1,40 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seller Dashboard</title>
-  <link rel="stylesheet" href="../assets/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard</title>
+    <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-  <h1>Seller Dashboard</h1>
-  <a href="/">⬅ Back to Home</a>
+    <div class="container">
+        <h1>Seller Dashboard</h1>
 
-  <!-- Login / Signup form -->
-  <div id="auth-section">
-    <h2>Login / Sign Up</h2>
-    <input type="email" id="email" placeholder="Email"><br>
-    <input type="password" id="password" placeholder="Password"><br>
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
-  </div>
+        <div id="auth-container">
+            <h2>Login or Create Account</h2>
+            <form id="login-form">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login / Sign Up</button>
+            </form>
+        </div>
 
-  <!-- Dashboard (only visible when logged in) -->
-  <div id="dashboard" style="display:none;">
-    <h2>Welcome Seller</h2>
-    <button id="logoutBtn">Logout</button>
+        <div id="dashboard-container" style="display: none;">
+            <p>Welcome, <span id="seller-email"></span>!</p>
+            <button id="logout-btn">Logout</button>
 
-    <h3>Post a Product</h3>
-    <input type="text" id="productName" placeholder="Product Name"><br>
-    <input type="number" id="productPrice" placeholder="Price"><br>
-    <button id="postProductBtn">Post Product</button>
+            <hr>
 
-    <h3>Your Products</h3>
-    <ul id="productList"></ul>
-  </div>
+            <h2>Add/Edit Product</h2>
+            <form id="product-form">
+                <input type="hidden" id="productId"> <input type="text" id="product-name" placeholder="Product Name" required>
+                <input type="number" id="product-price" placeholder="Price (UGX)" required>
+                <textarea id="product-description" placeholder="Product Description" required></textarea>
+                <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
+                <input type="file" id="product-image" accept="image/*" required>
+                <button type="submit" id="submit-btn">Add Product</button>
+            </form>
 
-  <!-- Firebase & JS -->
-  <script type="module" src="../firebase.js"></script>
-  <script type="module" src="sell.js"></script>
+            <hr>
+
+            <h2>Your Products</h2>
+            <div id="seller-products-list" class="product-grid">
+                </div>
+        </div>
+    </div>
+
+    <script type="module" src="sell.js"></script>
 </body>
 </html>
