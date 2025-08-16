@@ -18,7 +18,7 @@
         <div id="auth-container">
             <div class="accordion">
                 <button class="accordion-button">Login to Your Account</button>
-                <div class="accordion-panel">
+                <div class="accordion-panel" id="login-panel">
                     <form id="login-form">
                         <input type="email" id="login-email" placeholder="Email" required>
                         <div class="password-wrapper">
@@ -30,7 +30,7 @@
                 </div>
 
                 <button class="accordion-button">Create a New Account</button>
-                <div class="accordion-panel">
+                <div class="accordion-panel" id="signup-panel">
                     <form id="signup-form">
                         <input type="email" id="signup-email" placeholder="Email" required>
                         <div class="password-wrapper">
@@ -45,18 +45,24 @@
 
         <div id="dashboard-container" style="display: none;">
             <p>Welcome, <span id="seller-email"></span>!</p>
+            
+            <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
             <button id="logout-btn">Logout</button>
-            <hr>
-            <h2>Add/Edit Product</h2>
-            <form id="product-form">
-                <input type="hidden" id="productId">
-                <input type="text" id="product-name" placeholder="Product Name" required>
-                <input type="number" id="product-price" placeholder="Price (UGX)" required>
-                <textarea id="product-description" placeholder="Product Description" required></textarea>
-                <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
-                <input type="file" id="product-image" accept="image/*">
-                <button type="submit" id="submit-btn">Add Product</button>
-            </form>
+            
+            <div id="product-form-container" style="display: none;">
+                <hr>
+                <h2>Add/Edit Product</h2>
+                <form id="product-form">
+                    <input type="hidden" id="productId">
+                    <input type="text" id="product-name" placeholder="Product Name" required>
+                    <input type="number" id="product-price" placeholder="Price (UGX)" required>
+                    <textarea id="product-description" placeholder="Product Description" required></textarea>
+                    <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
+                    <input type="file" id="product-image" accept="image/*">
+                    <button type="submit" id="submit-btn">Add Product</button>
+                </form>
+            </div>
+            
             <hr>
             <h2>Your Products</h2>
             <div id="seller-products-list" class="product-grid">
