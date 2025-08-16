@@ -1,38 +1,157 @@
-/* Styles for the Sell Form */
-.sell-form {
-    max-width: 600px;
-    margin: 0 auto;
-    background: var(--light-gray);
-    padding: 2rem;
-    border-radius: 8px;
-}
-.form-group {
-    margin-bottom: 1.5rem;
-}
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-}
-.form-group input,
-.form-group textarea,
-.form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
-    font-size: 1rem;
-    font-family: inherit;
-}
-/* Add to the bottom of styles.css */
+/* styles.css */
 
-/* Navigation on Homepage */
+/* --- Color Palette & Global Settings --- */
+:root {
+    --primary-color: #4A90E2; /* A nice blue */
+    --secondary-color: #50E3C2; /* A fresh mint green */
+    --text-color: #333;
+    --bg-color: #F4F5F7;
+    --card-bg: #FFFFFF;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1, h2 {
+    color: var(--primary-color);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 30px 0;
+}
+
+
+/* --- Forms & Buttons --- */
+input, textarea, button {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #357ABD;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+/* --- Product Grid (Homepage & Dashboard) --- */
+.product-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.product-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.product-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+}
+
+.product-card .description {
+    font-size: 0.9rem;
+    color: #666;
+    flex-grow: 1; 
+}
+
+.product-card .price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 10px 0;
+}
+
+
+/* --- Specific Buttons --- */
+.whatsapp-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    background-color: #25D366; /* WhatsApp Green */
+    color: white;
+    padding: 12px;
+    border-radius: var(--border-radius);
+    margin-top: auto;
+    transition: background-color 0.3s;
+}
+
+.whatsapp-btn:hover {
+    background-color: #128C7E;
+}
+
+.seller-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.seller-controls .edit-btn {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+.seller-controls .delete-btn {
+    background-color: #E74C3C; /* Red */
+}
+
+
+/* --- Navigation Links --- */
 .main-nav {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid #eee;
 }
-
 .main-nav a {
     background-color: var(--secondary-color);
     color: var(--text-color);
@@ -43,12 +162,9 @@
     display: inline-block;
     transition: transform 0.2s;
 }
-
 .main-nav a:hover {
     transform: scale(1.05);
 }
-
-/* "Back to Home" link on seller page */
 .home-link {
     display: inline-block;
     margin-bottom: 20px;
@@ -56,74 +172,18 @@
     text-decoration: none;
     font-weight: bold;
 }
-/* Add to the bottom of styles.css */
 
-/* --- Auth Tabs --- */
-.auth-tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #eee;
-}
 
-.auth-tabs button {
-    flex-grow: 1;
-    padding: 15px;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    font-size: 1.1rem;
-    color: #888;
-    margin-bottom: -2px; /* Pulls the button border over the container border */
-}
-
-.auth-tabs button.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-}
-
-/* --- Password Show/Hide Icon --- */
-.password-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.password-wrapper input {
-    /* Make space for the icon */
-    padding-right: 45px;
-}
-
-.toggle-password {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    user-select: none; /* Prevents text selection */
-    font-size: 1.2rem;
-}
-
-/* --- Improved Dashboard Look --- */
-#dashboard-container {
-    background-color: var(--card-bg);
-    padding: 30px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    border: 1px solid #e0e0e0;
-}
-/* Add to the bottom of styles.css */
-
-/* --- Page Header --- */
+/* --- Seller Page Header --- */
 .page-header {
     text-align: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #eee;
 }
-
 .page-header h1 {
     margin: 0;
 }
-
 .page-header p {
     font-size: 1.1rem;
     color: #666;
@@ -131,7 +191,8 @@
     margin: 10px auto 0;
 }
 
-/* --- Accordion Styles --- */
+
+/* --- Accordion Styles (Login/Signup) --- */
 .accordion-button {
     background-color: #f1f1f1;
     color: #444;
@@ -146,23 +207,18 @@
     font-weight: bold;
     border-bottom: 1px solid #ddd;
 }
-
 .accordion-button:first-of-type {
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
 }
-
 .accordion-button:last-of-type {
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     border-bottom: none;
 }
-
-
 .accordion-button.active, .accordion-button:hover {
     background-color: #e0e0e0;
 }
-
 .accordion-button::after {
     content: '+';
     font-size: 1.3rem;
@@ -170,36 +226,58 @@
     float: right;
     margin-left: 5px;
 }
-
 .accordion-button.active::after {
     content: "−";
 }
-
 .accordion-panel {
     padding: 0 18px;
-    background-color: white;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
 }
-
 .accordion-panel:last-of-type {
     border-bottom: 1px solid #ddd;
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
 }
-
 .accordion-panel form {
     padding: 20px 0;
 }
-/* Add to the bottom of styles.css */
+
+/* Different backgrounds for login/signup sections */
+#login-panel {
+    background-color: #f8f9fa; /* A very light grey */
+}
+#signup-panel {
+    background-color: #f0f7ff; /* A very light blue */
+}
+
+
+/* --- Password Show/Hide Icon --- */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+.password-wrapper input {
+    padding-right: 45px !important;
+}
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.2rem;
+}
+
 
 /* --- "Sell an Item" Call-to-Action Button --- */
 .cta-button {
-    background-color: var(--secondary-color); /* A fresh, vibrant color */
-    color: #1a1a1a; /* Dark text for better contrast on the light button */
+    background-color: var(--secondary-color);
+    color: #1a1a1a;
     font-weight: bold;
     font-size: 1.1rem;
     padding: 15px 25px;
@@ -210,8 +288,20 @@
     margin-bottom: 15px;
     transition: all 0.2s ease-in-out;
 }
-
 .cta-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+
+/* --- Responsive Design for Phones --- */
+@media (max-width: 600px) {
+    .product-grid {
+        /* This will create two columns on phones */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .product-card h3 {
+        font-size: 1rem;
+    }
 }
