@@ -8,7 +8,7 @@ const headerActionBtn = document.getElementById('header-action-btn');
 const loadMoreBtn = document.getElementById('load-more-btn');
 const loadMoreContainer = document.getElementById('load-more-container');
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = 20;
 let lastVisibleProduct = null; // This will act as our "cursor" for the next page
 
 // --- Authentication Check for Header Button ---
