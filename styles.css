@@ -233,40 +233,41 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
         grid-template-columns: repeat(4, 1fr);
     }
 }
-​/* --- Search Bar --- /
+​/* --- Search Bar --- */
 .search-bar {
-margin-top: 30px;
-position: relative; / Needed to position the icon */
+    margin-top: 30px;
+    position: relative; /* Needed to position the icon */
 }
-​.search-bar input[type="search"] {
-width: 100%;
-padding: 15px 20px 15px 45px; /* Add space on the left for the icon /
-font-size: 1.1rem;
-border-radius: var(--border-radius);
-border: 1px solid #ced4da; / Keep a subtle border /
-box-shadow: var(--shadow); / Add a subtle shadow /
-background-color: #f9f9f9; / A light background /
-color: var(--text-dark); / Dark text for readability */
-transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+.search-bar input[type="search"] {
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding is included in the width */
+    padding: 16px 20px 16px 50px; /* Increased padding to make it taller */
+    font-size: 1.2rem; /* Larger font for better visibility */
+    border-radius: var(--border-radius);
+    border: 2px solid #ced4da; /* A slightly thicker border */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-​.search-bar input[type="search"]::placeholder {
-color: var(--text-muted); /* Muted placeholder text */
+
+.search-bar input[type="search"]::placeholder {
+    color: var(--text-muted);
 }
-​/* Style when the user clicks on the search bar /
+
+/* Style when the user clicks on the search bar */
 .search-bar input[type="search"]:focus {
-outline: none;
-border-color: var(--primary-color); / Use your primary blue for focus /
-box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); / A subtle blue glow on focus /
-background-color: white; / Go back to white on focus for clarity */
+    outline: none;
+    border-color: var(--primary-color); /* The blue border on focus */
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); /* A subtle blue glow */
 }
-​/* Add the icon using CSS pseudo-elements /
+
+/* Position the icon inside the larger search bar */
 .search-bar::before {
-content: '🔍';
-position: absolute;
-left: 15px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 1.2rem;
-color: var(--primary-color); / Make the icon your primary blue */
-pointer-events: none;
+    content: '🔍';
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.4rem; /* Larger icon */
+    color: var(--text-muted);
+    pointer-events: none;
 }
