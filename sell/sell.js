@@ -1,6 +1,16 @@
 import { auth, db } from '../firebase.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { 
+    collection, addDoc, query, where, getDocs, doc, 
+    updateDoc, deleteDoc, orderBy, getDoc, setDoc 
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // DOM Element Selections
 const authContainer = document.getElementById('auth-container');
@@ -9,6 +19,7 @@ const sellerEmailSpan = document.getElementById('seller-email');
 const logoutBtn = document.getElementById('logout-btn');
 const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
+const googleLoginBtn = document.getElementById('google-login-btn');
 const productForm = document.getElementById('product-form');
 const sellerProductsList = document.getElementById('seller-products-list');
 const submitBtn = document.getElementById('submit-btn');
@@ -32,6 +43,27 @@ onAuthStateChanged(auth, user => {
 
 logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
 
+// Google Sign-In Logic
+googleLoginBtn.addEventListener('click', () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then(async (result) => {
+            const user = result.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            if (!userDoc.exists()) {
+                await setDoc(userDocRef, {
+                    email: user.email,
+                    role: 'seller'
+                });
+            }
+        }).catch((error) => {
+            console.error("Google Sign-In Error:", error);
+            alert("Could not sign in with Google. Please try again.");
+        });
+});
+
 // Accordion UI Logic
 const accordionButtons = document.querySelectorAll('.accordion-button');
 accordionButtons.forEach(button => {
@@ -49,7 +81,7 @@ accordionButtons.forEach(button => {
     });
 });
 
-// Form Submission Handling
+// Email/Password Form Submission
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -62,7 +94,16 @@ signupForm.addEventListener('submit', (e) => {
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     createUserWithEmailAndPassword(auth, email, password)
-        .then(() => alert('Account created successfully!'))
+        .then(async (userCredential) => {
+            const user = userCredential.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            // Create user profile for email signups too
+            await setDoc(userDocRef, {
+                email: user.email,
+                role: 'seller'
+            });
+            alert('Account created successfully!');
+        })
         .catch(error => alert("Signup failed: " + error.message));
 });
 
