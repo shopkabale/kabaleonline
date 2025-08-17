@@ -159,7 +159,18 @@ productForm.addEventListener('submit', async (e) => {
             imageUrl = await uploadImageToCloudinary(imageFile);
         }
         if (!imageUrl) throw new Error('An image is required for the product.');
-        const productData = { name: productName, price: Number(productPrice), description: productDescription, imageUrl: imageUrl, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, createdAt: new Date() };
+        
+        const productData = {
+            name: productName,
+            name_lowercase: productName.toLowerCase(), // For searching
+            price: Number(productPrice),
+            description: productDescription,
+            imageUrl: imageUrl,
+            whatsapp: normalizeWhatsAppNumber(whatsappNumber),
+            sellerId: user.uid,
+            createdAt: new Date()
+        };
+
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), productData);
             alert('Product updated successfully!');
@@ -181,6 +192,8 @@ productForm.addEventListener('submit', async (e) => {
     }
 });
 
+// --- ALL OTHER HELPER FUNCTIONS ---
+
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
@@ -200,7 +213,6 @@ async function uploadImageToCloudinary(file) {
     return uploadData.secure_url;
 }
 
-// Fetch and display the seller's own products
 async function fetchSellerProducts(uid) {
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
