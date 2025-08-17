@@ -238,16 +238,16 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 ​/* --- Search Bar --- */
 .search-bar {
     margin-top: 30px;
-    position: relative; /* Needed to position the icon */
+    position: relative; /* <--- THIS IS THE CRITICAL FIX */
 }
 
 .search-bar input[type="search"] {
     width: 100%;
-    box-sizing: border-box; /* Ensures padding is included in the width */
-    padding: 16px 20px 16px 50px; /* Increased padding to make it taller */
-    font-size: 1.2rem; /* Larger font for better visibility */
+    box-sizing: border-box; 
+    padding: 16px 20px 16px 50px; 
+    font-size: 1.2rem; 
     border-radius: var(--border-radius);
-    border: 2px solid #ced4da; /* A slightly thicker border */
+    border: 2px solid #ced4da; 
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -258,8 +258,8 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 /* Style when the user clicks on the search bar */
 .search-bar input[type="search"]:focus {
     outline: none;
-    border-color: var(--primary-color); /* The blue border on focus */
-    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); /* A subtle blue glow */
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); 
 }
 
 /* Position the icon inside the larger search bar */
@@ -269,7 +269,7 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     left: 18px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 1.4rem; /* Larger icon */
+    font-size: 1.4rem; 
     color: var(--text-muted);
     pointer-events: none;
 }
