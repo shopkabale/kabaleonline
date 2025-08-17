@@ -73,7 +73,7 @@ async function fetchProducts(isNewSearch = false) {
             productGrid.appendChild(productLink);
         });
 
-        const PRODUCTS_PER_PAGE = 30;
+        const PRODUCTS_PER_PAGE = 8;
         if (products.length < PRODUCTS_PER_PAGE) {
             loadMoreBtn.style.display = 'none';
         } else {
