@@ -1,16 +1,17 @@
-import { db, auth } from './firebase.js';
+import { auth, db } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// DOM Elements
 const productGrid = document.getElementById('product-grid');
 const headerActionBtn = document.getElementById('header-action-btn');
 const searchInput = document.getElementById('search-input');
+const loadMoreBtn = document.getElementById('load-more-btn');
 
-// This array will hold all products fetched from Firestore
-let allProducts = [];
+let lastVisibleProductId = null;
+let currentSearchTerm = "";
+let fetching = false; // Prevents multiple fetches at once
 
-// --- Authentication Check for Header Button ---
+// --- Authentication Check ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -27,56 +28,77 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// --- Fetching and Displaying Products ---
+// --- Fetch Products via our Netlify Function ---
+async function fetchProducts(isNewSearch = false) {
+    if (fetching) return;
+    fetching = true;
+    loadMoreBtn.textContent = 'Loading...';
 
-// Main function to fetch all products from Firestore
-async function fetchAndDisplayProducts() {
+    if (isNewSearch) {
+        productGrid.innerHTML = '<p>Loading products...</p>';
+        lastVisibleProductId = null;
+    }
+    
+    let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentSearchTerm)}`;
+    if (lastVisibleProductId) {
+        url += `&lastVisible=${lastVisibleProductId}`;
+    }
+
     try {
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok.');
         
-        allProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        renderProducts(allProducts);
+        const products = await response.json();
+
+        if (isNewSearch) productGrid.innerHTML = '';
+        if (products.length === 0 && isNewSearch) {
+             productGrid.innerHTML = '<p>No products match your search.</p>';
+        }
+
+        if (products.length > 0) {
+            lastVisibleProductId = products[products.length - 1].id;
+        }
+
+        products.forEach(product => {
+            const productLink = document.createElement('a');
+            productLink.href = `product.html?id=${product.id}`;
+            productLink.className = 'product-card-link';
+            productLink.innerHTML = `
+                <div class="product-card">
+                    <img src="${product.imageUrl}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p class="price">UGX ${product.price.toLocaleString()}</p>
+                </div>
+            `;
+            productGrid.appendChild(productLink);
+        });
+
+        const PRODUCTS_PER_PAGE = 8;
+        if (products.length < PRODUCTS_PER_PAGE) {
+            loadMoreBtn.style.display = 'none';
+        } else {
+            loadMoreBtn.style.display = 'inline-block';
+        }
     } catch (error) {
-        console.error("Error fetching products: ", error);
-        productGrid.innerHTML = '<p>Sorry, could not load products at this time. Please check your connection.</p>';
+        console.error("Error fetching products:", error);
+        productGrid.innerHTML = '<p>Sorry, could not load products.</p>';
+    } finally {
+        fetching = false;
+        loadMoreBtn.textContent = 'Load More';
     }
 }
 
-// Function to render an array of products to the screen
-function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = '';
-    if (productsToDisplay.length === 0) {
-        productGrid.innerHTML = '<p>No products match your search.</p>';
-        return;
-    }
-    productsToDisplay.forEach(product => {
-        const productLink = document.createElement('a');
-        productLink.href = `product.html?id=${product.id}`;
-        productLink.className = 'product-card-link';
-        productLink.innerHTML = `
-            <div class="product-card">
-                <img src="${product.imageUrl}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                <p class="price">UGX ${product.price.toLocaleString()}</p>
-            </div>
-        `;
-        productGrid.appendChild(productLink);
-    });
-}
+// --- Event Listeners ---
+let searchTimeout;
+searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        currentSearchTerm = e.target.value;
+        fetchProducts(true);
+    }, 500);
+});
 
-// --- Search Logic ---
-function handleSearch() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const filteredProducts = allProducts.filter(product =>
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm)
-    );
-    renderProducts(filteredProducts);
-}
+loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-searchInput.addEventListener('input', handleSearch);
-
-// Initial Load
-fetchAndDisplayProducts();
+// --- Initial Load ---
+fetchProducts(true);
