@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard | Kabale Online</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+
     <header class="site-header">
         <div class="container header-content">
             <a href="/" class="site-title">Kabale Online</a>
@@ -56,20 +58,48 @@
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
             <p class="instruction-text"><b>To sell an item:</b> 1. Click 'Sell an Item'. 2. Fill in all the details. 3. Upload a clear photo. 4. Click 'Add Product'. Your item will be live instantly!</p>
+            
             <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
             <button id="logout-btn">Logout</button>
+            
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Product</h2>
                 <form id="product-form">
-                    </form>
+                    <input type="hidden" id="productId">
+                    <input type="text" id="product-name" placeholder="Product Name" required>
+                    <input type="number" id="product-price" placeholder="Price (UGX)" required>
+                    <textarea id="product-description" placeholder="Product Description" required></textarea>
+                    <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
+                    <input type="file" id="product-image" accept="image/*">
+                    <button type="submit" id="submit-btn">Add Product</button>
+                </form>
             </div>
+            
             <h2>Your Products</h2>
-            <div id="seller-products-list" class="product-grid"></div>
+            <div id="seller-products-list" class="product-grid">
+                </div>
         </div>
     </div>
     
     <footer>
-        </footer>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </section>
+        <div class="footer-links">
+            <a href="/about.html" class="footer-link">About Us</a>
+            <a href="/terms.html" class="footer-link">Terms of Service</a>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
     <script type="module" src="sell.js"></script>
 </body>
 </html>
