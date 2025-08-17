@@ -1,27 +1,8 @@
-// sell.js (Complete version working with Netlify environment variables)
-
-// --- IMPORTS ---
 import { auth, db } from '../firebase.js';
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import {
-    collection,
-    addDoc,
-    query,
-    where,
-    getDocs,
-    doc,
-    updateDoc,
-    deleteDoc,
-    orderBy
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-
-// --- DOM ELEMENT SELECTIONS ---
+// DOM Element Selections
 const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
@@ -35,8 +16,7 @@ const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
 
-
-// --- CORE AUTHENTICATION LOGIC ---
+// Core Authentication Logic
 onAuthStateChanged(auth, user => {
     if (user) {
         authContainer.style.display = 'none';
@@ -49,10 +29,10 @@ onAuthStateChanged(auth, user => {
         sellerProductsList.innerHTML = '';
     }
 });
+
 logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
 
-
-// --- ACCORDION UI LOGIC ---
+// Accordion UI Logic
 const accordionButtons = document.querySelectorAll('.accordion-button');
 accordionButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -69,14 +49,14 @@ accordionButtons.forEach(button => {
     });
 });
 
-
-// --- FORM SUBMISSION HANDLING ---
+// Form Submission Handling
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password).catch(error => alert("Login failed: " + error.message));
 });
+
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('signup-email').value;
@@ -86,8 +66,7 @@ signupForm.addEventListener('submit', (e) => {
         .catch(error => alert("Signup failed: " + error.message));
 });
 
-
-// --- PASSWORD TOGGLE LOGIC ---
+// Password Toggle Logic
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
         const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
@@ -101,8 +80,7 @@ document.querySelectorAll('.toggle-password').forEach(toggle => {
     });
 });
 
-
-// --- DASHBOARD "SELL AN ITEM" BUTTON LOGIC ---
+// Dashboard "Sell an Item" Button Logic
 showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     if (isVisible) {
@@ -117,36 +95,7 @@ showProductFormBtn.addEventListener('click', () => {
     }
 });
 
-
-// --- **UPDATED** Cloudinary Upload Function ---
-async function uploadImageToCloudinary(file) {
-    // Step 1: Fetch the signature AND public keys from our secure function
-    const response = await fetch('/.netlify/functions/generate-signature');
-    const { signature, timestamp, cloudname, apikey } = await response.json();
-
-    // Step 2: Build the form data using the keys from the server
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', apikey); // Use the key from the server
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-    
-    // Step 3: Send the data to Cloudinary
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`; // Use the cloudname from the server
-    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-    
-    if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        console.error('Cloudinary upload failed:', errorData);
-        throw new Error('Cloudinary upload failed. Check the console for details.');
-    }
-    
-    const uploadData = await uploadResponse.json();
-    return uploadData.secure_url;
-}
-
-
-// --- PRODUCT MANAGEMENT ---
+// Product Submission Logic
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -191,18 +140,41 @@ productForm.addEventListener('submit', async (e) => {
     }
 });
 
+async function uploadImageToCloudinary(file) {
+    const response = await fetch('/.netlify/functions/generate-signature');
+    const { signature, timestamp, cloudname, apikey } = await response.json();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', apikey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+    if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        console.error('Cloudinary upload failed:', errorData);
+        throw new Error('Cloudinary upload failed.');
+    }
+    const uploadData = await uploadResponse.json();
+    return uploadData.secure_url;
+}
+
+// Fetch and display the seller's own products
 async function fetchSellerProducts(uid) {
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
+    if (querySnapshot.empty) {
+        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell an Item' to get started!</p>";
+    }
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.setAttribute('data-product-id', productId);
-        productCard.innerHTML = `<img src="${product.imageUrl}" alt="${product.name}"><h3>${product.name}</h3><p>UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
+        productCard.innerHTML = `<img src="${product.imageUrl}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
         productCard.querySelector('.edit-btn').addEventListener('click', () => {
             productFormContainer.style.display = 'block';
             showProductFormBtn.textContent = 'Close Form';
