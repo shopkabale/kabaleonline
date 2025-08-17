@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-
     <header class="site-header">
         <div class="container header-content">
             <a href="/" class="site-title">Kabale Online</a>
@@ -19,13 +18,14 @@
 
     <div class="container page-content">
         <div id="auth-container">
+            <a href="/" class="home-link">&larr; Back to Home</a>
             <div class="page-welcome">
                 <h1>Seller Area</h1>
                 <p class="instruction-text">Login or create a free account to start selling your items on Kabale Online.</p>
             </div>
             <div class="accordion">
-                <button class="accordion-button">Login to Your Account</button>
-                <div class="accordion-panel" id="login-panel">
+                <button class="accordion-button active">Login to Your Account</button>
+                <div class="accordion-panel" style="max-height: fit-content;">
                     <form id="login-form">
                         <input type="email" id="login-email" placeholder="Email" required>
                         <div class="password-wrapper">
@@ -36,7 +36,7 @@
                     </form>
                 </div>
                 <button class="accordion-button">Create a New Account</button>
-                <div class="accordion-panel" id="signup-panel">
+                <div class="accordion-panel">
                     <form id="signup-form">
                         <input type="email" id="signup-email" placeholder="Email" required>
                         <div class="password-wrapper">
@@ -50,37 +50,26 @@
         </div>
 
         <div id="dashboard-container" style="display: none;">
+            <a href="/" class="home-link">&larr; Back to Home</a>
             <div class="page-welcome">
                  <h1>Your Dashboard</h1>
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
             <p class="instruction-text"><b>To sell an item:</b> 1. Click 'Sell an Item'. 2. Fill in all the details. 3. Upload a clear photo. 4. Click 'Add Product'. Your item will be live instantly!</p>
-            
             <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
             <button id="logout-btn">Logout</button>
-            
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Product</h2>
                 <form id="product-form">
-                    <input type="hidden" id="productId">
-                    <input type="text" id="product-name" placeholder="Product Name" required>
-                    <input type="number" id="product-price" placeholder="Price (UGX)" required>
-                    <textarea id="product-description" placeholder="Product Description" required></textarea>
-                    <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
-                    <input type="file" id="product-image" accept="image/*">
-                    <button type="submit" id="submit-btn">Add Product</button>
-                </form>
+                    </form>
             </div>
-            
             <h2>Your Products</h2>
-            <div id="seller-products-list" class="product-grid">
-                </div>
+            <div id="seller-products-list" class="product-grid"></div>
         </div>
     </div>
     
     <footer>
         </footer>
-
     <script type="module" src="sell.js"></script>
 </body>
 </html>
