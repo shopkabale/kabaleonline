@@ -189,7 +189,47 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 .password-wrapper input { padding-right: 45px !important; }
 .toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 1.2rem; }
 
-/* ... (other styles like accordion, google btn, form layout etc. go here if needed) ... */
+/* ... (accordion-button Google tag etc .....*/
+/* --- Centered Auth Box on Seller Page --- */
+#auth-container {
+    max-width: 550px;
+    margin: 40px auto;
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid #dee2e6;
+}
+
+/* --- Google Sign-In & Divider Styles --- */
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    background-color: #4285F4;
+    color: white;
+    border: 1px solid #4285F4;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+.google-btn:hover { background-color: #357ae8; }
+.google-btn .fa-google { font-size: 1.2rem; }
+.or-divider { text-align: center; margin: 20px 0; color: var(--text-muted); display: flex; align-items: center; gap: 15px; }
+.or-divider::before, .or-divider::after { content: ''; flex-grow: 1; height: 1px; background-color: #ddd; }
+
+
+/* --- Accordion Styles --- */
+.accordion-button { background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px; width: 100%; text-align: left; border: 1px solid #ddd; outline: none; transition: background-color 0.4s; font-size: 1.1rem; font-weight: bold; }
+.accordion-button:first-of-type { border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
+.accordion-button.active, .accordion-button:hover { background-color: #e0e0e0; }
+.accordion-button::after { content: '+'; font-size: 1.3rem; color: #777; float: right; margin-left: 5px; }
+.accordion-button.active::after { content: "−"; }
+.accordion-panel { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: white; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+.accordion-panel:last-of-type { border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); }
+.accordion-panel form { padding: 20px 0; }
+
 
 /* --- Responsive Media Queries --- */
 @media (min-width: 768px) {
