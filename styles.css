@@ -184,3 +184,36 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 #product-form #submit-btn {
     grid-column: 1 / -1; /* Span from the first to the last column line */
 }
+/* --- Add to the bottom of styles.css --- */
+
+/* --- Centered Auth Box on Seller Page --- */
+#auth-container {
+    max-width: 550px; /* Sets a maximum width for the login box */
+    margin: 40px auto; /* Centers the box on the page */
+    background-color: var(--card-bg); /* A clean white background */
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid #dee2e6;
+}
+
+/* Overwrite previous accordion styles to ensure they look perfect */
+#auth-container .accordion-button {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+}
+
+#auth-container .accordion-button:first-of-type {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+#auth-container .accordion-panel {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    background-color: #fdfdff; /* Slightly different background for the form area */
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
