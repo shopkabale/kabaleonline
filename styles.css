@@ -82,7 +82,9 @@ body {
     border-radius: var(--border-radius);
     margin-top: 30px;
     border: 1px solid #dee2e6;
+    margin-bottom: 30px; /* ADD THIS LINE */
 }
+
 .page-welcome h1 { font-size: 2.2rem; margin-top: 0; color: var(--primary-color); }
 .page-welcome p { color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0; }
 
