@@ -233,3 +233,40 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
         grid-template-columns: repeat(4, 1fr);
     }
 }
+​/* --- Search Bar --- /
+.search-bar {
+margin-top: 30px;
+position: relative; / Needed to position the icon */
+}
+​.search-bar input[type="search"] {
+width: 100%;
+padding: 15px 20px 15px 45px; /* Add space on the left for the icon /
+font-size: 1.1rem;
+border-radius: var(--border-radius);
+border: 1px solid #ced4da; / Keep a subtle border /
+box-shadow: var(--shadow); / Add a subtle shadow /
+background-color: #f9f9f9; / A light background /
+color: var(--text-dark); / Dark text for readability */
+transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+​.search-bar input[type="search"]::placeholder {
+color: var(--text-muted); /* Muted placeholder text */
+}
+​/* Style when the user clicks on the search bar /
+.search-bar input[type="search"]:focus {
+outline: none;
+border-color: var(--primary-color); / Use your primary blue for focus /
+box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); / A subtle blue glow on focus /
+background-color: white; / Go back to white on focus for clarity */
+}
+​/* Add the icon using CSS pseudo-elements /
+.search-bar::before {
+content: '🔍';
+position: absolute;
+left: 15px;
+top: 50%;
+transform: translateY(-50%);
+font-size: 1.2rem;
+color: var(--primary-color); / Make the icon your primary blue */
+pointer-events: none;
+}
