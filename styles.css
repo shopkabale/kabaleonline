@@ -86,38 +86,13 @@ body {
 .page-welcome h1 { font-size: 2.2rem; margin-top: 0; color: var(--primary-color); }
 .page-welcome p { color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0; }
 
-/* --- Search Bar --- */
-.search-bar { margin-top: 30px; }
-.search-bar input[type="search"] {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    border-radius: var(--border-radius);
-    border: 1px solid #ced4da;
-    box-shadow: var(--shadow);
-}
-
 /* --- Product Grid & Cards --- */
 .product-grid {
     padding-top: 30px;
     display: grid;
-    gap: 15px; /* A good gap for mobile */
-    grid-template-columns: repeat(2, 1fr); /* DEFAULT: 2 columns for small screens */
+    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
 }
-/* For tablets and medium screens */
-@media (min-width: 768px) {
-    .product-grid {
-        gap: 20px;
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-/* For large desktop screens */
-@media (min-width: 1200px) {
-    .product-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
 .product-card-link {
     text-decoration: none;
     color: inherit;
@@ -140,8 +115,8 @@ body {
 }
 .product-card img {
     width: 100%;
-    aspect-ratio: 1 / 1; /* Makes images perfectly square */
-    object-fit: cover; /* Ensures the image fills the space without distortion */
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
 }
 .product-card h3 {
     margin: 15px;
@@ -196,3 +171,65 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 .accordion-panel { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: white; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; }
 .accordion-panel:last-of-type { border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); }
 .accordion-panel form { padding: 20px 0; }
+
+/* --- NEW: Google Sign-In & Divider Styles --- */
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    background-color: #4285F4;
+    color: white;
+    border: 1px solid #4285F4;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+.google-btn:hover { background-color: #357ae8; }
+.google-btn .fa-google { font-size: 1.2rem; }
+.or-divider { text-align: center; margin: 20px 0; color: var(--text-muted); display: flex; align-items: center; gap: 15px; }
+.or-divider::before, .or-divider::after { content: ''; flex-grow: 1; height: 1px; background-color: #ddd; }
+
+/* --- NEW: Improved Product Form Layout --- */
+#product-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 20px;
+    border: 1px solid #dee2e6;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    background-color: var(--card-bg);
+}
+#product-form input, #product-form textarea, #product-form button {
+    margin-bottom: 10px;
+}
+#product-description {
+    grid-column: 1 / -1;
+    min-height: 120px;
+}
+#submit-btn {
+    grid-column: 1 / -1;
+    background-color: var(--secondary-color);
+}
+#submit-btn:hover {
+    background-color: #27ae60;
+}
+@media (min-width: 768px) {
+    #product-form {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+
+/* --- Responsive Grid Media Queries --- */
+@media (min-width: 768px) {
+    .product-grid {
+        gap: 20px;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (min-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
