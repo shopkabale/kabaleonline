@@ -1,54 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8T3YSBPPG3');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seller Dashboard</title>
-    <link rel="icon" href="../favicon.webp" type="image/webp">
+    <title>Seller Dashboard | Kabale Online</title>
     <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-
     <header class="site-header">
-        <div class="container">
-            <h1 class="site-title"><a href="/" style="color:white; text-decoration:none;">Kabale Online</a></h1>
-            <p class="site-tagline">Your local marketplace for Kigezi.</p>
+        <div class="container header-content">
+            <a href="/" class="site-title">Kabale Online</a>
+            <nav class="header-nav">
+                <a href="/sell/" id="header-action-btn">My Dashboard</a>
+            </nav>
         </div>
     </header>
 
-    <div class="container">
+    <div class="container page-content">
         <div id="auth-container">
+            <div class="page-welcome">
+                <h1>Seller Login</h1>
+                <p class="instruction-text">Login or create an account to start selling your items on Kabale Online for free.</p>
             </div>
+            </div>
+
         <div id="dashboard-container" style="display: none;">
+            <p>Welcome, <span id="seller-email"></span>!</p>
+            <p class="instruction-text"><b>To sell an item:</b> 1. Click 'Sell an Item'. 2. Fill in all the details. 3. Upload a clear photo. 4. Click 'Add Product'. Your item will be live instantly!</p>
             </div>
     </div>
     
     <footer>
-        <section id="contact-us-section">
-            <h2>Get in Touch</h2>
-            <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
-                    <i class="fa-solid fa-envelope"></i> Send an Email
-                </a>
-            </div>
-        </section>
-        <div class="footer-links">
-            <a href="/about.html" class="footer-link">About Us</a>
-            <a href="/terms.html" class="footer-link">Terms of Service</a>
-        </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
+        </footer>
 
     <script type="module" src="sell.js"></script>
 </body>
