@@ -23,7 +23,11 @@ body {
     line-height: 1.6;
 }
 
-.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
 
 /* --- New Sticky Header --- */
 .site-header {
@@ -94,37 +98,62 @@ body {
 }
 
 /* --- Product Grid & Cards --- */
-.product-grid { padding-top: 30px; display: grid; gap: 20px; }
-.product-card-link { text-decoration: none; color: inherit; display: block; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; border-radius: var(--border-radius); }
-.product-card-link:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
-.product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #e9ecef;}
+.product-grid {
+    padding-top: 30px;
+    display: grid;
+    gap: 15px; /* A good gap for mobile */
+    grid-template-columns: repeat(2, 1fr); /* DEFAULT: 2 columns for small screens */
+}
+/* For tablets and medium screens */
+@media (min-width: 768px) {
+    .product-grid {
+        gap: 20px;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+/* For large desktop screens */
+@media (min-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: var(--border-radius);
+}
+.product-card-link:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+.product-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid #e9ecef;
+}
 .product-card img {
     width: 100%;
     aspect-ratio: 1 / 1; /* Makes images perfectly square */
     object-fit: cover; /* Ensures the image fills the space without distortion */
 }
-.product-card h3 { margin: 15px; font-size: 1.1rem; }
-.product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); margin-top: auto; }
-
-/* Responsive Grid: 2 on small screens, 4 on big screens */
-@media (min-width: 600px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1200px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
-
-/* --- About Us Page Specifics --- */
-.about-story { line-height: 1.8; font-size: 1.1rem; }
-.disclaimer {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: #fffbe6;
-    border-left: 5px solid var(--accent-color);
-    border-radius: var(--border-radius);
+.product-card h3 {
+    margin: 15px;
+    font-size: 1.1rem;
 }
-.disclaimer h3 { margin-top: 0; color: #f39c12; }
-.disclaimer p { margin-bottom: 0; }
-
-/* --- Terms Page Specifics --- */
-.terms-section { margin-bottom: 2rem; }
-.terms-section h3 { color: var(--primary-color); border-bottom: 2px solid var(--secondary-color); padding-bottom: 0.5rem; }
+.product-card .price {
+    margin: 0 15px 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: auto;
+}
 
 /* --- Footer --- */
 footer { background-color: var(--footer-bg); color: var(--text-light); padding: 2.5rem 1rem; text-align: center; margin-top: 40px; }
@@ -139,81 +168,31 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 .footer-link:hover { opacity: 1; }
 .copyright { font-size: 0.9rem; opacity: 0.6; }
 
-/* --- Seller/Admin Page Styles --- */
-.page-content h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 2rem;}
-.instruction-text { padding: 1rem; background-color: #e7f5ff; border-left: 4px solid var(--primary-color); border-radius: var(--border-radius); margin-bottom: 2rem; }
-/* --- Accordion Styles (Login/Signup) --- */
-.accordion-button {
-    background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px;
-    width: 100%; text-align: left; border: none; outline: none;
-    transition: background-color 0.4s; font-size: 1.1rem; font-weight: bold;
-    border-bottom: 1px solid #ddd;
-}
-.accordion-button:first-of-type { border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
-.accordion-button:last-of-type { border-bottom: none; }
-.accordion-button.active, .accordion-button:hover { background-color: #e0e0e0; }
-.accordion-button::after { content: '+'; font-size: 1.3rem; color: #777; float: right; margin-left: 5px; }
-.accordion-button.active::after { content: "−"; }
-.accordion-panel {
-    padding: 0 18px; max-height: 0; overflow: hidden;
-    transition: max-height 0.3s ease-out; background-color: white;
-    border-left: 1px solid #ddd; border-right: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-}
-.accordion-panel form { padding: 20px 0; }
-
-/* --- Add to the bottom of styles.css --- */
-
-/* --- Improved Product Form Layout --- */
-#product-form {
-    display: grid;
-    grid-template-columns: 1fr; /* Default to one column on mobile */
-    gap: 0 20px; /* 0 gap on top/bottom, 20px on sides */
-}
-
-/* Arrange form into two columns on larger screens */
-@media (min-width: 768px) {
-    #product-form {
-        grid-template-columns: 1fr 1fr; /* Two equal columns */
-    }
-}
-
-/* Make specific fields span the full width */
-#product-form #product-description,
-#product-form #product-image,
-#product-form #submit-btn {
-    grid-column: 1 / -1; /* Span from the first to the last column line */
-}
-/* --- Add to the bottom of styles.css --- */
-
 /* --- Centered Auth Box on Seller Page --- */
 #auth-container {
-    max-width: 550px; /* Sets a maximum width for the login box */
-    margin: 40px auto; /* Centers the box on the page */
-    background-color: var(--card-bg); /* A clean white background */
+    max-width: 550px;
+    margin: 40px auto;
+    background-color: var(--card-bg);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     border: 1px solid #dee2e6;
 }
 
-/* Overwrite previous accordion styles to ensure they look perfect */
-#auth-container .accordion-button {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0;
-}
+/* --- Seller/Admin Page Styles --- */
+.page-content h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 2rem;}
+.instruction-text { padding: 1rem; background-color: #e7f5ff; border-left: 4px solid var(--primary-color); border-radius: var(--border-radius); margin-bottom: 2rem; }
+.home-link { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
+.password-wrapper { position: relative; width: 100%; }
+.password-wrapper input { padding-right: 45px !important; }
+.toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 1.2rem; }
 
-#auth-container .accordion-button:first-of-type {
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: var(--border-radius);
-}
-
-#auth-container .accordion-panel {
-    border: 1px solid #dee2e6;
-    border-top: none;
-    background-color: #fdfdff; /* Slightly different background for the form area */
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-}
-
+/* --- Accordion Styles --- */
+.accordion-button { background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px; width: 100%; text-align: left; border: 1px solid #ddd; outline: none; transition: background-color 0.4s; font-size: 1.1rem; font-weight: bold; }
+.accordion-button:first-of-type { border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
+.accordion-button.active, .accordion-button:hover { background-color: #e0e0e0; }
+.accordion-button::after { content: '+'; font-size: 1.3rem; color: #777; float: right; margin-left: 5px; }
+.accordion-button.active::after { content: "−"; }
+.accordion-panel { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: white; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+.accordion-panel:last-of-type { border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); }
+.accordion-panel form { padding: 20px 0; }
