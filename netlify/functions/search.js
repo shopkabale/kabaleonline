@@ -1,11 +1,13 @@
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-// Initialize Firebase Admin SDK using Netlify environment variables
+// Decode the Base64 key from the environment variable
+const decodedPrivateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii');
+
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  privateKey: decodedPrivateKey, // Use the decoded key here
 };
 
 initializeApp({
@@ -13,25 +15,22 @@ initializeApp({
 });
 
 const db = getFirestore();
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = 8; // Or 30, as you set it before
 
 exports.handler = async (event) => {
   const { searchTerm, lastVisible } = event.queryStringParameters;
   
   let q = db.collection("products");
 
-  // If there's a search term, modify the query
   if (searchTerm && searchTerm.trim() !== "") {
     const lowerCaseSearch = searchTerm.toLowerCase();
     q = q.orderBy("name_lowercase")
       .where("name_lowercase", ">=", lowerCaseSearch)
       .where("name_lowercase", "<=", lowerCaseSearch + '\uf8ff');
   } else {
-    // If no search term, just order by date
     q = q.orderBy("createdAt", "desc");
   }
   
-  // If we're paginating, start after the last visible product
   if (lastVisible) {
     const lastDoc = await db.collection('products').doc(lastVisible).get();
     q = q.startAfter(lastDoc);
