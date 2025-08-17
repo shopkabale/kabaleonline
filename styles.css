@@ -162,3 +162,25 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 }
 .accordion-panel form { padding: 20px 0; }
 
+/* --- Add to the bottom of styles.css --- */
+
+/* --- Improved Product Form Layout --- */
+#product-form {
+    display: grid;
+    grid-template-columns: 1fr; /* Default to one column on mobile */
+    gap: 0 20px; /* 0 gap on top/bottom, 20px on sides */
+}
+
+/* Arrange form into two columns on larger screens */
+@media (min-width: 768px) {
+    #product-form {
+        grid-template-columns: 1fr 1fr; /* Two equal columns */
+    }
+}
+
+/* Make specific fields span the full width */
+#product-form #product-description,
+#product-form #product-image,
+#product-form #submit-btn {
+    grid-column: 1 / -1; /* Span from the first to the last column line */
+}
