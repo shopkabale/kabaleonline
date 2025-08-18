@@ -1,17 +1,21 @@
 // This script fetches and displays blog posts from your GitHub repo.
-// NOTE: This client-side method is simple but has limitations. A more robust
-// long-term solution would be to use a Static Site Generator like Eleventy.
-
 const repoOwner = 'shopkabale';
 const repoName = 'kabaleonline';
-const postsDir = 'posts';
+const postsDir = 'posts'; // NOTE: This should be 'posts', not '_posts' based on your config.yml
 const postsContainer = document.getElementById('posts-container');
 
 async function fetchAndDisplayPosts() {
     try {
         // Use the GitHub API to get the contents of the 'posts' directory
         const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${postsDir}`);
-        if (!response.ok) throw new Error('Could not fetch posts list from GitHub.');
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                postsContainer.innerHTML = '<p>No blog posts have been published yet. Check back soon!</p>';
+                return;
+            }
+            throw new Error(`GitHub API error: ${response.statusText}`);
+        }
         
         const files = await response.json();
         
@@ -21,6 +25,9 @@ async function fetchAndDisplayPosts() {
         }
 
         postsContainer.innerHTML = ''; // Clear "Loading..." message
+
+        // Sort files by name descending to show newest first
+        files.sort((a, b) => b.name.localeCompare(a.name));
 
         // Fetch the content of each post file
         for (const file of files) {
@@ -44,8 +51,8 @@ async function fetchAndDisplayPosts() {
 
                 postElement.innerHTML = `
                     <h2>${postData.title}</h2>
-                    <p class="post-meta">Published on ${formattedDate}</p>
-                    <div class="post-excerpt">${postHtml.substring(0, 300)}...</div>
+                    <p class="post-meta">Published on ${formattedDate} by ${postData.author || 'Kabale Online'}</p>
+                    <div class="post-excerpt">${postHtml.substring(0, 400)}...</div>
                 `;
                 postsContainer.appendChild(postElement);
             }
