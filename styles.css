@@ -372,3 +372,25 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     box-shadow: var(--shadow);
     border: 1px solid #eee;
 }
+/* --- Blog Page Styles --- */
+.post-preview {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+    box-shadow: var(--shadow);
+}
+.post-preview h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+.post-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+.post-excerpt {
+    line-height: 1.7;
+}
