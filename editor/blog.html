@@ -9,13 +9,20 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="container header-content">
-            <a href="/" class="site-title">Kabale Online</a>
-            <nav class="header-nav">
-                <a href="/sell/" id="header-action-btn">Sell an Item</a>
-            </nav>
-        </div>
-    </header>
+    <div class="container header-content">
+        <a href="/" class="site-title">Kabale Online</a>
+        
+        <button class="hamburger-menu" aria-label="Open navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <nav class="header-nav">
+            <a href="/blog.html" class="nav-link">Blog</a>
+            <a href="/sell/" id="header-action-btn" class="cta-button">Sell an Item</a>
+        </nav>
+    </div>
+</header>
+
 
     <div class="container">
         <div class="page-welcome">
@@ -36,5 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gray-matter@4.0.3/browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script type="module" src="blog.js"></script>
+<script src="/nav.js" defer></script>
+
 </body>
 </html>
