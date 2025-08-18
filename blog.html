@@ -6,23 +6,22 @@
     <title>Blog | Kabale Online</title>
     <meta name="description" content="News, updates, and stories from Kabale Online, your local marketplace.">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+
     <header class="site-header">
-    <div class="container header-content">
-        <a href="/" class="site-title">Kabale Online</a>
-        
-        <button class="hamburger-menu" aria-label="Open navigation menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
-        <nav class="header-nav">
-            <a href="/blog.html" class="nav-link">Blog</a>
-            <a href="/sell/" id="header-action-btn" class="cta-button">Sell an Item</a>
-        </nav>
-    </div>
-</header>
-
+        <div class="container header-content">
+            <a href="/" class="site-title">Kabale Online</a>
+            <button class="hamburger-menu" aria-label="Open navigation menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <nav class="header-nav">
+                <a href="/blog.html" class="nav-link">Blog</a>
+                <a href="/sell/" id="header-action-btn" class="cta-button">Sell an Item</a>
+            </nav>
+        </div>
+    </header>
 
     <div class="container">
         <div class="page-welcome">
@@ -38,10 +37,25 @@
     </div>
 
     <footer>
-        </footer>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank"><i class="fa-solid fa-envelope"></i> Send an Email</a>
+            </div>
+        </section>
+        <div class="footer-links">
+            <a href="about.html" class="footer-link">About Us</a>
+            <a href="terms.html" class="footer-link">Terms of Service</a>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/gray-matter@4.0.3/browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-        <script type="module" src="shared.js"></script> <script src="/nav.js" defer></script>           </body>
+    
+    <script type="module" src="shared.js"></script>
+    <script type="module" src="blog.js"></script>
+    <script src="/nav.js" defer></script>
+</body>
 </html>
-
