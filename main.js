@@ -1,99 +1,40 @@
-import { auth, db } from './firebase.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { db } from './firebase.js';
+import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// DOM Elements
+// DOM Elements for the homepage ONLY
 const productGrid = document.getElementById('product-grid');
-const headerActionBtn = document.getElementById('header-action-btn');
 const searchInput = document.getElementById('search-input');
-const loadMoreBtn = document.getElementById('load-more-btn');
+let allProducts = [];
 
-const PRODUCTS_PER_PAGE = 8; // You can change this back to 30 if you like
-let lastVisibleProductId = null;
-let currentSearchTerm = "";
-let fetching = false;
-
-// --- Authentication Check for Header Button ---
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-            headerActionBtn.textContent = 'Admin Panel';
-            headerActionBtn.href = '/admin/';
-        } else {
-            headerActionBtn.textContent = 'My Dashboard';
-            headerActionBtn.href = '/sell/';
-        }
-    } else {
-        headerActionBtn.textContent = 'Sell an Item';
-        headerActionBtn.href = '/sell/';
-    }
-});
-
-// --- Fetch Products via our Netlify Function ---
-async function fetchProducts(isNewSearch = false) {
-    if (fetching) return;
-    fetching = true;
-    loadMoreBtn.textContent = 'Loading...';
-
-    if (isNewSearch) {
-        productGrid.innerHTML = '<p>Loading products...</p>';
-        lastVisibleProductId = null;
-    }
-    
-    let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentSearchTerm)}`;
-    if (lastVisibleProductId) {
-        url += `&lastVisible=${lastVisibleProductId}`;
-    }
-
+// --- Fetching and Displaying Products ---
+async function fetchAndDisplayProducts() {
     try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Network response was not ok.');
-        
-        const products = await response.json();
-
-        if (isNewSearch) {
-            productGrid.innerHTML = '';
-        }
-        
-        if (products.length === 0 && isNewSearch) {
-             productGrid.innerHTML = '<p>No products match your search.</p>';
-        }
-
-        if (products.length > 0) {
-            lastVisibleProductId = products[products.length - 1].id;
-        }
-
-        renderProducts(products);
-
-        if (products.length < PRODUCTS_PER_PAGE) {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'inline-block';
-        }
-
+        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        allProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(allProducts);
     } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching products: ", error);
         productGrid.innerHTML = '<p>Sorry, could not load products.</p>';
-    } finally {
-        fetching = false;
-        loadMoreBtn.textContent = 'Load More';
     }
 }
 
-// --- Render Products ---
+// --- Rendering Products ---
 function renderProducts(productsToDisplay) {
-    if (productsToDisplay.length === 0 && productGrid.innerHTML === '') {
-        productGrid.innerHTML = '<p>No products found.</p>';
+    productGrid.innerHTML = '';
+    if (productsToDisplay.length === 0) {
+        if (searchInput.value) {
+            productGrid.innerHTML = '<p>No products match your search.</p>';
+        } else {
+            productGrid.innerHTML = '<p>No products found yet. Be the first to sell!</p>';
+        }
         return;
     }
-
     productsToDisplay.forEach(product => {
         // Safeguard to handle both new and old image formats
         let primaryImage = '';
         if (product.imageUrls && product.imageUrls.length > 0) {
-            primaryImage = product.imageUrls[0]; // Use the first image from the new array
+            primaryImage = product.imageUrls[0];
         } else if (product.imageUrl) {
             primaryImage = product.imageUrl; // Fallback for old products
         }
@@ -112,18 +53,17 @@ function renderProducts(productsToDisplay) {
     });
 }
 
+// --- Search Logic ---
+function handleSearch() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filteredProducts = allProducts.filter(product =>
+        (product.name && product.name.toLowerCase().includes(searchTerm)) ||
+        (product.description && product.description.toLowerCase().includes(searchTerm))
+    );
+    renderProducts(filteredProducts);
+}
 
-// --- Event Listeners ---
-let searchTimeout;
-searchInput.addEventListener('input', (e) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        currentSearchTerm = e.target.value;
-        fetchProducts(true); // true indicates it's a new search
-    }, 500); // Wait 500ms after user stops typing before searching
-});
-
-loadMoreBtn.addEventListener('click', () => fetchProducts(false));
+searchInput.addEventListener('input', handleSearch);
 
 // --- Initial Load ---
-fetchProducts(true);
+fetchAndDisplayProducts();
