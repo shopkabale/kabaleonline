@@ -394,3 +394,56 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 .post-excerpt {
     line-height: 1.7;
 }
+/* --- Add to the bottom of styles.css --- */
+
+/* --- Responsive Hamburger Menu --- */
+.hamburger-menu {
+    display: none; /* Hidden on desktop */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.header-nav .nav-link {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-weight: bold;
+    color: var(--text-dark);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease-in-out;
+}
+.header-nav .nav-link:hover {
+    background-color: #f0f0f0;
+}
+
+/* --- Mobile Styles --- */
+@media (max-width: 768px) {
+    .hamburger-menu {
+        display: block; /* Show the hamburger on mobile */
+    }
+
+    .header-nav {
+        display: none; /* Hide the nav links container by default on mobile */
+        position: absolute;
+        top: 75px; /* Position it below the header */
+        left: 0;
+        right: 0;
+        background-color: var(--header-bg);
+        width: 100%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        flex-direction: column;
+        padding: 1rem 0;
+    }
+
+    .header-nav.is-active {
+        display: flex; /* Show the menu when it's active */
+    }
+
+    .header-nav a {
+        width: 90%;
+        margin: 0.5rem auto;
+        text-align: center;
+    }
+}
