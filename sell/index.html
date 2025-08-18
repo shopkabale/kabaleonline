@@ -74,14 +74,36 @@
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Product</h2>
                 <form id="product-form">
-                    <input type="hidden" id="productId">
-                    <input type="text" id="product-name" placeholder="Product Name" required>
-                    <input type="number" id="product-price" placeholder="Price (UGX)" required>
-                    <textarea id="product-description" placeholder="Product Description" required></textarea>
-                    <input type="tel" id="whatsapp-number" placeholder="WhatsApp Number (e.g., 0771234567)" required>
-                    <input type="file" id="product-image" accept="image/*">
-                    <button type="submit" id="submit-btn">Add Product</button>
-                </form>
+    <input type="hidden" id="productId">
+    
+    <div class="form-group">
+        <label for="product-name">Product Name</label>
+        <input type="text" id="product-name" placeholder="e.g., Scarlett Electric Kettle" required>
+    </div>
+
+    <div class="form-group">
+        <label for="product-price">Price (UGX)</label>
+        <input type="number" id="product-price" placeholder="e.g., 30000" required>
+    </div>
+
+    <div class="form-group">
+        <label for="product-description">Product Description</label>
+        <textarea id="product-description" placeholder="Describe the item's condition, features, etc." required rows="5"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="whatsapp-number">WhatsApp Number</label>
+        <input type="tel" id="whatsapp-number" placeholder="e.g., 0771234567" required>
+    </div>
+
+    <div class="form-group">
+        <label for="product-image">Product Image</label>
+        <input type="file" id="product-image" accept="image/*">
+    </div>
+
+    <button type="submit" id="submit-btn">Add Product</button>
+</form>
+
             </div>
             
             <h2>Your Products</h2>
