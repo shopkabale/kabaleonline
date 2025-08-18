@@ -2,6 +2,7 @@ import { auth, db } from '../firebase.js';
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// DOM Element Selections
 const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
@@ -16,16 +17,109 @@ const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
 
-onAuthStateChanged(auth, user => { /* ... same as before ... */ });
-logoutBtn.addEventListener('click', () => { /* ... same as before ... */ });
-googleLoginBtn.addEventListener('click', () => { /* ... same as before ... */ });
-const accordionButtons = document.querySelectorAll('.accordion-button');
-accordionButtons.forEach(button => { /* ... same as before ... */ });
-loginForm.addEventListener('submit', (e) => { /* ... same as before ... */ });
-signupForm.addEventListener('submit', (e) => { /* ... same as before ... */ });
-document.querySelectorAll('.toggle-password').forEach(toggle => { /* ... same as before ... */ });
-showProductFormBtn.addEventListener('click', () => { /* ... same as before ... */ });
+// Core Authentication Logic
+onAuthStateChanged(auth, user => {
+    if (user) {
+        authContainer.style.display = 'none';
+        dashboardContainer.style.display = 'block';
+        sellerEmailSpan.textContent = user.email;
+        fetchSellerProducts(user.uid);
+    } else {
+        authContainer.style.display = 'block';
+        dashboardContainer.style.display = 'none';
+        sellerProductsList.innerHTML = '';
+    }
+});
 
+logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
+
+// Google Sign-In Logic
+googleLoginBtn.addEventListener('click', () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then(async (result) => {
+            const user = result.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            if (!userDoc.exists()) {
+                await setDoc(userDocRef, { email: user.email, role: 'seller' });
+            }
+        }).catch((error) => {
+            console.error("Google Sign-In Error:", error);
+            alert("Could not sign in with Google. Please try again.");
+        });
+});
+
+// Accordion UI Logic
+const accordionButtons = document.querySelectorAll('.accordion-button');
+accordionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        accordionButtons.forEach(otherButton => {
+            if (otherButton !== button) {
+                otherButton.classList.remove('active');
+                otherButton.nextElementSibling.style.maxHeight = null;
+            }
+        });
+        button.classList.toggle('active');
+        const panel = button.nextElementSibling;
+        if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
+        else { panel.style.maxHeight = panel.scrollHeight + "px"; }
+    });
+});
+
+// Email/Password Form Submission
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    signInWithEmailAndPassword(auth, email, password).catch(error => alert("Login failed: " + error.message));
+});
+
+signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    createUserWithEmailAndPassword(auth, email, password)
+        .then(async (userCredential) => {
+            const user = userCredential.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, { email: user.email, role: 'seller' });
+            alert('Account created successfully!');
+        })
+        .catch(error => alert("Signup failed: " + error.message));
+});
+
+// Password Toggle Logic
+document.querySelectorAll('.toggle-password').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+        const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            e.target.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            e.target.textContent = '👁️';
+        }
+    });
+});
+
+// Dashboard "Sell an Item" Button Logic
+showProductFormBtn.addEventListener('click', () => {
+    const isVisible = productFormContainer.style.display === 'block';
+    if (isVisible) {
+        productFormContainer.style.display = 'none';
+        showProductFormBtn.textContent = 'Sell an Item';
+    } else {
+        productFormContainer.style.display = 'block';
+        showProductFormBtn.textContent = 'Close Form';
+        productForm.reset();
+        productIdInput.value = '';
+        submitBtn.textContent = 'Add Product';
+    }
+});
+
+// Product Submission Logic
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -65,14 +159,10 @@ productForm.addEventListener('submit', async (e) => {
         }
 
         const productData = {
-            name: productName,
-            name_lowercase: productName.toLowerCase(),
-            price: Number(productPrice),
-            description: productDescription,
-            imageUrls: finalImageUrls,
-            whatsapp: normalizeWhatsAppNumber(whatsappNumber),
-            sellerId: user.uid,
-            createdAt: new Date()
+            name: productName, name_lowercase: productName.toLowerCase(),
+            price: Number(productPrice), description: productDescription,
+            imageUrls: finalImageUrls, whatsapp: normalizeWhatsAppNumber(whatsappNumber),
+            sellerId: user.uid, createdAt: new Date()
         };
         
         if (editingProductId) {
@@ -88,7 +178,6 @@ productForm.addEventListener('submit', async (e) => {
         productFormContainer.style.display = 'none';
         showProductFormBtn.textContent = 'Sell another Item';
         fetchSellerProducts(user.uid);
-
     } catch (error) {
         console.error('Error submitting product:', error);
         alert('Failed to submit product. ' + error.message);
@@ -98,13 +187,32 @@ productForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Helper Functions
+async function uploadImageToCloudinary(file) {
+    const response = await fetch('/.netlify/functions/generate-signature');
+    const { signature, timestamp, cloudname, apikey } = await response.json();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', apikey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+    if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error('Cloudinary upload failed.');
+    }
+    const uploadData = await uploadResponse.json();
+    return uploadData.secure_url;
+}
+
 async function fetchSellerProducts(uid) {
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
     if (querySnapshot.empty) {
-        sellerProductsList.innerHTML = "<p>You haven't added any products yet.</p>";
+        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell an Item' to get started!</p>";
     }
     querySnapshot.forEach((doc) => {
         const product = doc.data();
@@ -114,9 +222,46 @@ async function fetchSellerProducts(uid) {
         productCard.className = 'product-card';
         productCard.setAttribute('data-product-id', productId);
         productCard.innerHTML = `<img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
-        productCard.querySelector('.edit-btn').addEventListener('click', () => { /* ... same as before ... */ });
+        productCard.querySelector('.edit-btn').addEventListener('click', () => {
+            productFormContainer.style.display = 'block';
+            showProductFormBtn.textContent = 'Close Form';
+            populateFormForEdit(productId, product);
+        });
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
         sellerProductsList.appendChild(productCard);
     });
 }
-// ... (All other functions like uploadImage, populateForm, deleteProduct, etc., remain the same)
+
+function populateFormForEdit(id, product) {
+    productIdInput.value = id;
+    document.getElementById('product-name').value = product.name;
+    document.getElementById('product-price').value = product.price;
+    document.getElementById('product-description').value = product.description;
+    const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
+    document.getElementById('whatsapp-number').value = localNumber;
+    submitBtn.textContent = 'Update Product';
+    // Clear file inputs when editing
+    document.getElementById('product-image-1').value = '';
+    document.getElementById('product-image-2').value = '';
+    window.scrollTo(0, 0);
+}
+
+async function deleteProduct(productId) {
+    if (confirm('Are you sure you want to delete this product?')) {
+        try {
+            await deleteDoc(doc(db, 'products', productId));
+            alert('Product deleted successfully.');
+            fetchSellerProducts(auth.currentUser.uid);
+        } catch (error) {
+            alert('Failed to delete product.');
+        }
+    }
+}
+
+function normalizeWhatsAppNumber(phone) {
+    let cleaned = ('' + phone).replace(/\D/g, '');
+    if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
+    if (cleaned.startsWith('256')) return cleaned;
+    if (cleaned.length === 9) return '256' + cleaned;
+    return cleaned;
+}
