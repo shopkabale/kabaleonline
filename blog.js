@@ -1,8 +1,6 @@
-// blog.js (Corrected)
-
 const repoOwner = 'shopkabale';
 const repoName = 'kabaleonline';
-const postsDir = 'posts'; // <-- THIS IS THE FIX (removed the underscore)
+const postsDir = 'posts';
 const postsContainer = document.getElementById('posts-container');
 
 async function fetchAndDisplayPosts() {
@@ -25,13 +23,20 @@ async function fetchAndDisplayPosts() {
         }
 
         postsContainer.innerHTML = '';
-
         files.sort((a, b) => b.name.localeCompare(a.name));
 
         for (const file of files) {
             if (file.type === 'file' && file.name.endsWith('.md')) {
                 const postResponse = await fetch(file.download_url);
                 const postContent = await postResponse.text();
+
+                // These are the most likely points of failure
+                if (typeof window.grayMatter === 'undefined') {
+                    throw new Error('The gray-matter library is not loaded.');
+                }
+                if (typeof window.marked === 'undefined') {
+                    throw new Error('The marked.js library is not loaded.');
+                }
 
                 const matter = window.grayMatter;
                 const parsedPost = matter(postContent);
@@ -56,8 +61,10 @@ async function fetchAndDisplayPosts() {
             }
         }
     } catch (error) {
-        console.error('Error loading blog posts:', error);
-        postsContainer.innerHTML = '<p>Sorry, there was an error loading the blog posts.</p>';
+        console.error('Detailed Error:', error);
+        // Show the specific error message in an alert
+        alert(`A technical error occurred. Please take a screenshot of this message:\n\nError: ${error.message}`);
+        postsContainer.innerHTML = `<p>A technical error occurred while loading posts. Please check the alert message for details.</p>`;
     }
 }
 
