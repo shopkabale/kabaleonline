@@ -1,4 +1,4 @@
-/* --- New Color Palette & Global Settings --- */
+/* --- Color Palette & Global Settings --- */
 :root {
     --primary-color: #3498db; /* A friendly, professional blue */
     --secondary-color: #2ecc71; /* A vibrant green for success/buy buttons */
@@ -16,8 +16,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding-top: 80px; /* Leave space for the sticky header */
+    margin: 0; /* Fixes "floating" header */
+    padding-top: 75px; /* Leave space for the sticky header */
     background-color: var(--bg-color);
     color: var(--text-dark);
     line-height: 1.6;
@@ -29,7 +29,7 @@ body {
     padding: 20px;
 }
 
-/* --- New Sticky Header --- */
+/* --- Sticky Header --- */
 .site-header {
     background-color: var(--header-bg);
     padding: 1rem 0;
@@ -57,6 +57,10 @@ body {
     text-decoration: none;
 }
 
+.site-title span {
+    color: var(--accent-color); /* Makes "Online" yellow */
+}
+
 .header-nav a {
     background-color: var(--accent-color);
     color: var(--text-dark);
@@ -74,7 +78,7 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* --- Page Welcome Text --- */
+/* --- Page Welcome & Search Bar --- */
 .page-welcome {
     text-align: center;
     padding: 2rem 1rem;
@@ -87,12 +91,9 @@ body {
 .page-welcome h1 { font-size: 2.2rem; margin-top: 0; color: var(--primary-color); }
 .page-welcome p { color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0; }
 
-
-/* --- CORRECTED Search Bar --- */
 .search-bar {
-    position: relative; /* THIS IS THE CRITICAL FIX for the icon */
+    position: relative;
 }
-
 .search-bar input[type="search"] {
     width: 100%;
     box-sizing: border-box; 
@@ -102,17 +103,11 @@ body {
     border: 2px solid #ced4da; 
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
-.search-bar input[type="search"]::placeholder {
-    color: var(--text-muted);
-}
-
 .search-bar input[type="search"]:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); 
 }
-
 .search-bar::before {
     content: '🔍';
     position: absolute;
@@ -129,7 +124,7 @@ body {
     padding-top: 30px;
     display: grid;
     gap: 15px;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* Default: 2 columns for small screens */
 }
 .product-card-link {
     text-decoration: none;
@@ -156,22 +151,42 @@ body {
     aspect-ratio: 1 / 1;
     object-fit: cover;
 }
-.product-card h3 {
-    margin: 15px;
-    font-size: 1.1rem;
-}
-.product-card .price {
-    margin: 0 15px 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-top: auto;
-}
+.product-card h3 { margin: 15px; font-size: 1.1rem; }
+.product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); margin-top: auto; }
+
+/* --- Product Detail Page --- */
+.product-detail-layout { display: grid; grid-template-columns: 1fr; gap: 30px; margin-top: 20px; }
+.product-detail-image-gallery { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.product-detail-image-gallery img { width: 100%; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid #eee; }
+.product-detail-info h1 { margin-top: 0; font-size: 2.5rem; }
+.product-detail-info .price { color: var(--accent-color); font-size: 1.8rem; }
+.product-detail-info .description { margin-top: 1.5rem; }
+
+/* --- Seller Page Auth Box --- */
+#auth-container { max-width: 550px; margin: 40px auto; background-color: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid #dee2e6; }
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 15px; width: 100%; background-color: #4285F4; color: white; border: 1px solid #4285F4; font-weight: bold; margin-bottom: 0; }
+.google-btn:hover { background-color: #357ae8; }
+.or-divider { text-align: center; margin: 20px 0; color: var(--text-muted); display: flex; align-items: center; gap: 15px; }
+.or-divider::before, .or-divider::after { content: ''; flex-grow: 1; height: 1px; background-color: #ddd; }
+.accordion-button { background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px; width: 100%; text-align: left; border: 1px solid #ddd; outline: none; transition: background-color 0.4s; font-size: 1.1rem; font-weight: bold; }
+.accordion-button.active, .accordion-button:hover { background-color: #e0e0e0; }
+.accordion-panel { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: white; border: 1px solid #ddd; border-top: none; }
+.password-wrapper { position: relative; width: 100%; }
+.password-wrapper input { padding-right: 45px !important; }
+.toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 1.2rem; }
+
+/* --- Professional Product Form --- */
+#product-form { display: flex; flex-direction: column; gap: 15px; border: 1px solid #dee2e6; padding: 20px; border-radius: var(--border-radius); background-color: var(--card-bg); }
+#product-form label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--text-dark); font-size: 0.9rem; }
+
+/* --- Other Page Styles --- */
+.page-content h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 2rem; }
+.instruction-text { padding: 1rem; background-color: #e7f5ff; border-left: 4px solid var(--primary-color); border-radius: var(--border-radius); margin-bottom: 2rem; }
+.home-link { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
 
 /* --- Footer --- */
 footer { background-color: var(--footer-bg); color: var(--text-light); padding: 2.5rem 1rem; text-align: center; margin-top: 40px; }
 footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
-.contact-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 2rem; }
 .contact-btn { color: var(--text-light); padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: var(--border-radius); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px; }
 .contact-btn.whatsapp { background-color: #25D366; }
 .contact-btn.email { background-color: #EA4335; }
@@ -181,269 +196,11 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 .footer-link:hover { opacity: 1; }
 .copyright { font-size: 0.9rem; opacity: 0.6; }
 
-/* --- Other Page Styles --- */
-.page-content h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 2rem;}
-.instruction-text { padding: 1rem; background-color: #e7f5ff; border-left: 4px solid var(--primary-color); border-radius: var(--border-radius); margin-bottom: 2rem; }
-.home-link { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
-.password-wrapper { position: relative; width: 100%; }
-.password-wrapper input { padding-right: 45px !important; }
-.toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 1.2rem; }
-
-/* ... (accordion-button Google tag etc .....*/
-/* --- Centered Auth Box on Seller Page --- */
-#auth-container {
-    max-width: 550px;
-    margin: 40px auto;
-    background-color: var(--card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    border: 1px solid #dee2e6;
-}
-
-/* --- Product Detail Page Styles --- */
-.product-detail-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 30px;
-    margin-top: 20px;
-}
-
-.product-detail-image img {
-    width: 100%; /* Make the image take up the full width of its container */
-    max-width: 500px; /* Prevent it from getting too large on desktop */
-    height: auto; /* Maintain the correct aspect ratio */
-    display: block; /* Removes any extra space below the image */
-    margin: 0 auto; /* Center the image if its container is wider */
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-}
-
-.product-detail-info h1 {
-    margin-top: 0;
-    font-size: 2.5rem;
-}
-.product-detail-info .price {
-    color: var(--accent-color);
-    font-size: 1.8rem;
-}
-
-/* For tablets and larger screens */
-@media (min-width: 768px) {
-    .product-detail-layout {
-        grid-template-columns: 1fr 1fr; /* Two columns on tablets and desktops */
-    }
-}
-
-
-/* --- Google Sign-In & Divider Styles --- */
-.google-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    width: 100%;
-    background-color: #4285F4;
-    color: white;
-    border: 1px solid #4285F4;
-    font-weight: bold;
-    margin-bottom: 0;
-}
-.google-btn:hover { background-color: #357ae8; }
-.google-btn .fa-google { font-size: 1.2rem; }
-.or-divider { text-align: center; margin: 20px 0; color: var(--text-muted); display: flex; align-items: center; gap: 15px; }
-.or-divider::before, .or-divider::after { content: ''; flex-grow: 1; height: 1px; background-color: #ddd; }
-
-
-/* --- Accordion Styles --- */
-.accordion-button { background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px; width: 100%; text-align: left; border: 1px solid #ddd; outline: none; transition: background-color 0.4s; font-size: 1.1rem; font-weight: bold; }
-.accordion-button:first-of-type { border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
-.accordion-button.active, .accordion-button:hover { background-color: #e0e0e0; }
-.accordion-button::after { content: '+'; font-size: 1.3rem; color: #777; float: right; margin-left: 5px; }
-.accordion-button.active::after { content: "−"; }
-.accordion-panel { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: white; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; }
-.accordion-panel:last-of-type { border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); }
-.accordion-panel form { padding: 20px 0; }
-
-
 /* --- Responsive Media Queries --- */
 @media (min-width: 768px) {
-    .product-grid {
-        gap: 20px;
-        grid-template-columns: repeat(3, 1fr);
-    }
+    .product-grid { gap: 20px; grid-template-columns: repeat(3, 1fr); }
+    .product-detail-layout { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 1200px) {
-    .product-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-/* --- Professional Product Form Layout --- */
-#product-form {
-    display: flex;
-    flex-direction: column; /* Stack all items vertically */
-    gap: 15px; /* Add space between each form field */
-    border: 1px solid #dee2e6;
-    padding: 20px;
-    border-radius: var(--border-radius);
-    background-color: var(--card-bg);
-}
-
-#product-form input,
-#product-form textarea,
-#product-form button {
-    margin-bottom: 0; /* Remove old margin to rely on gap */
-}
-
-
-/* --- Styles for Form Labels --- */
-.form-group {
-    width: 100%;
-}
-
-#product-form label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: var(--text-dark);
-    font-size: 0.9rem;
-}
-
-/* Minor adjustment for the form container */
-#product-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Adjust spacing between form groups */
-    border: 1px solid #dee2e6;
-    padding: 2rem; /* Add more padding */
-    border-radius: var(--border-radius);
-    background-color: var(--card-bg);
-}
-/* --- Add to the bottom of styles.css --- */
-
-/* --- Styles for Form Labels --- */
-.form-group {
-    width: 100%;
-}
-
-#product-form label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: var(--text-dark);
-    font-size: 0.9rem;
-}
-
-/* Minor adjustment for the form container */
-#product-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Adjust spacing between form groups */
-    border: 1px solid #dee2e6;
-    padding: 2rem; /* Add more padding */
-    border-radius: var(--border-radius);
-    background-color: var(--card-bg);
-}
-/* --- Professional Product Form Layout --- */
-#product-form {
-    display: flex;
-    flex-direction: column; /* Stack all items vertically */
-    gap: 15px; /* Add space between each form field */
-    border: 1px solid #dee2e6;
-    padding: 20px;
-    border-radius: var(--border-radius);
-    background-color: var(--card-bg);
-}
-
-#product-form input,
-#product-form textarea,
-#product-form button {
-    margin-bottom: 0; /* Remove old margin to rely on gap */
-}
-/* --- update--- */
-.product-detail-image-gallery {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-}
-.product-detail-image-gallery img {
-    width: 100%;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    border: 1px solid #eee;
-}
-/* --- Blog Page Styles --- */
-.post-preview {
-    background-color: var(--card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    margin-bottom: 20px;
-    border: 1px solid #dee2e6;
-    box-shadow: var(--shadow);
-}
-.post-preview h2 {
-    margin-top: 0;
-    color: var(--primary-color);
-}
-.post-meta {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin-top: -10px;
-    margin-bottom: 20px;
-}
-.post-excerpt {
-    line-height: 1.7;
-}
-/* --- Add to the bottom of styles.css --- */
-
-/* --- Responsive Hamburger Menu --- */
-.hamburger-menu {
-    display: none; /* Hidden on desktop */
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--primary-color);
-}
-
-.header-nav .nav-link {
-    padding: 10px 15px;
-    text-decoration: none;
-    font-weight: bold;
-    color: var(--text-dark);
-    border-radius: var(--border-radius);
-    transition: background-color 0.2s ease-in-out;
-}
-.header-nav .nav-link:hover {
-    background-color: #f0f0f0;
-}
-
-/* --- Mobile Styles --- */
-@media (max-width: 768px) {
-    .hamburger-menu {
-        display: block; /* Show the hamburger on mobile */
-    }
-
-    .header-nav {
-        display: none; /* Hide the nav links container by default on mobile */
-        position: absolute;
-        top: 75px; /* Position it below the header */
-        left: 0;
-        right: 0;
-        background-color: var(--header-bg);
-        width: 100%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        flex-direction: column;
-        padding: 1rem 0;
-    }
-
-    .header-nav.is-active {
-        display: flex; /* Show the menu when it's active */
-    }
-
-    .header-nav a {
-        width: 90%;
-        margin: 0.5rem auto;
-        text-align: center;
-    }
+    .product-grid { grid-template-columns: repeat(4, 1fr); }
 }
