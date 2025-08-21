@@ -17,6 +17,50 @@ const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
 
+// --- NEW: Modal Element Selections ---
+const customModal = document.getElementById('custom-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalMessage = document.getElementById('modal-message');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+
+// --- NEW: Modal Display Function ---
+function showModal(title, message) {
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    customModal.style.display = 'flex';
+}
+
+// --- NEW: Modal Close Logic ---
+modalCloseBtn.addEventListener('click', () => {
+    customModal.style.display = 'none';
+});
+// Also close the modal if the user clicks the overlay background
+customModal.addEventListener('click', (e) => {
+    if (e.target === customModal) {
+        customModal.style.display = 'none';
+    }
+});
+
+
+// --- NEW: Friendly Error Message Helper ---
+function getFriendlyAuthErrorMessage(errorCode) {
+    switch (errorCode) {
+        case 'auth/invalid-email':
+            return 'Please enter a valid email address.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+            return 'Incorrect email or password. Please check your credentials and try again.';
+        case 'auth/email-already-in-use':
+            return 'This email address is already registered. Please try logging in instead.';
+        case 'auth/weak-password':
+            return 'Your password is too weak. It must be at least 6 characters long.';
+        case 'auth/network-request-failed':
+            return 'Could not connect to the server. Please check your internet connection.';
+        default:
+            return 'An unexpected error occurred. Please try again later.';
+    }
+}
+
 // Core Authentication Logic
 onAuthStateChanged(auth, user => {
     if (user) {
@@ -31,7 +75,13 @@ onAuthStateChanged(auth, user => {
     }
 });
 
-logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
+logoutBtn.addEventListener('click', () => {
+    signOut(auth).catch(error => {
+        // MODIFIED: Use custom modal
+        showModal('Logout Error', 'There was an issue signing out. Please try again.');
+        console.error("Logout Error:", error);
+    });
+});
 
 // Google Sign-In Logic
 googleLoginBtn.addEventListener('click', () => {
@@ -47,11 +97,12 @@ googleLoginBtn.addEventListener('click', () => {
             }
         }).catch((error) => {
             console.error("Google Sign-In Error:", error);
-            alert("Could not sign in with Google. Please try again.");
+            // MODIFIED: Use custom modal
+            showModal('Sign-In Failed', 'Could not sign in with Google. Please try again.');
         });
 });
 
-// --- NEW: Tab Switching Logic ---
+// Tab Switching Logic
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
@@ -71,7 +122,11 @@ loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    signInWithEmailAndPassword(auth, email, password).catch(error => alert("Login failed: " + error.message));
+    signInWithEmailAndPassword(auth, email, password)
+        .catch(error => {
+            // MODIFIED: Use custom modal with friendly messages
+            showModal("Login Failed", getFriendlyAuthErrorMessage(error.code));
+        });
 });
 
 signupForm.addEventListener('submit', (e) => {
@@ -83,9 +138,13 @@ signupForm.addEventListener('submit', (e) => {
             const user = userCredential.user;
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
-            alert('Account created successfully!');
+            // MODIFIED: Use custom modal for success
+            showModal('Account Created!', 'Your account was created successfully. Welcome!');
         })
-        .catch(error => alert("Signup failed: " + error.message));
+        .catch(error => {
+            // MODIFIED: Use custom modal with friendly messages
+            showModal("Signup Failed", getFriendlyAuthErrorMessage(error.code));
+        });
 });
 
 // Password Toggle Logic
@@ -121,7 +180,10 @@ showProductFormBtn.addEventListener('click', () => {
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
-    if (!user) return alert('You must be logged in!');
+    if (!user) {
+        showModal('Authentication Error', 'You must be logged in to sell an item!');
+        return;
+    }
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
     try {
@@ -153,7 +215,7 @@ productForm.addEventListener('submit', async (e) => {
         }
 
         if (finalImageUrls.length === 0) {
-            throw new Error('At least one image is required.');
+            throw new Error('At least one image is required for the product.');
         }
 
         const productData = {
@@ -165,10 +227,12 @@ productForm.addEventListener('submit', async (e) => {
 
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), productData);
-            alert('Product updated successfully!');
+            // MODIFIED: Use custom modal
+            showModal('Success!', 'Product updated successfully!');
         } else {
             await addDoc(collection(db, 'products'), productData);
-            alert('Product added successfully!');
+            // MODIFIED: Use custom modal
+            showModal('Success!', 'Product added successfully!');
         }
 
         productForm.reset();
@@ -178,7 +242,8 @@ productForm.addEventListener('submit', async (e) => {
         fetchSellerProducts(user.uid);
     } catch (error) {
         console.error('Error submitting product:', error);
-        alert('Failed to submit product. ' + error.message);
+        // MODIFIED: Use custom modal
+        showModal('Submission Failed', 'Failed to submit product. ' + error.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Add Product';
@@ -187,6 +252,7 @@ productForm.addEventListener('submit', async (e) => {
 
 // Helper Functions
 async function uploadImageToCloudinary(file) {
+    // ... (This function remains unchanged)
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
     const formData = new FormData();
@@ -205,6 +271,7 @@ async function uploadImageToCloudinary(file) {
 }
 
 async function fetchSellerProducts(uid) {
+    // ... (This function remains unchanged)
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
@@ -231,6 +298,7 @@ async function fetchSellerProducts(uid) {
 }
 
 function populateFormForEdit(id, product) {
+    // ... (This function remains unchanged)
     productIdInput.value = id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price;
@@ -247,15 +315,18 @@ async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
             await deleteDoc(doc(db, 'products', productId));
-            alert('Product deleted successfully.');
+            // MODIFIED: Use custom modal
+            showModal('Success', 'Product deleted successfully.');
             fetchSellerProducts(auth.currentUser.uid);
         } catch (error) {
-            alert('Failed to delete product.');
+            // MODIFIED: Use custom modal
+            showModal('Error', 'Failed to delete product. Please try again.');
         }
     }
 }
 
 function normalizeWhatsAppNumber(phone) {
+    // ... (This function remains unchanged)
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
     if (cleaned.startsWith('256')) return cleaned;
