@@ -1,42 +1,66 @@
-import { db } from './firebase.js';
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-// DOM Elements for the homepage ONLY
+import { auth, db } from './firebase.js'; // db is needed by shared.js
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
-let allProducts = [];
+const loadMoreBtn = document.getElementById('load-more-btn');
 
-// --- Fetching and Displaying Products ---
-async function fetchAndDisplayProducts() {
+const PRODUCTS_PER_PAGE = 40; // <-- Set to 40
+let lastVisibleProductId = null;
+let currentSearchTerm = "";
+let fetching = false;
+
+async function fetchProducts(isNewSearch = false) {
+    if (fetching) return;
+    fetching = true;
+    loadMoreBtn.textContent = 'Loading...';
+
+    if (isNewSearch) {
+        productGrid.innerHTML = '<p>Loading products...</p>';
+        lastVisibleProductId = null;
+    }
+    
+    let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentSearchTerm)}`;
+    if (lastVisibleProductId) {
+        url += `&lastVisible=${lastVisibleProductId}`;
+    }
+
     try {
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        allProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProducts(allProducts);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok.');
+        
+        const products = await response.json();
+
+        if (isNewSearch) productGrid.innerHTML = '';
+        if (products.length === 0 && isNewSearch) {
+             productGrid.innerHTML = '<p>No products match your search.</p>';
+        }
+
+        if (products.length > 0) {
+            lastVisibleProductId = products[products.length - 1].id;
+        }
+        
+        renderProducts(products);
+
+        if (products.length < PRODUCTS_PER_PAGE) {
+            loadMoreBtn.style.display = 'none';
+        } else {
+            loadMoreBtn.style.display = 'inline-block';
+        }
     } catch (error) {
-        console.error("Error fetching products: ", error);
+        console.error("Error fetching products:", error);
         productGrid.innerHTML = '<p>Sorry, could not load products.</p>';
+    } finally {
+        fetching = false;
+        loadMoreBtn.textContent = 'Load More';
     }
 }
 
-// --- Rendering Products ---
 function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = '';
-    if (productsToDisplay.length === 0) {
-        if (searchInput.value) {
-            productGrid.innerHTML = '<p>No products match your search.</p>';
-        } else {
-            productGrid.innerHTML = '<p>No products found yet. Be the first to sell!</p>';
-        }
-        return;
-    }
     productsToDisplay.forEach(product => {
-        // Safeguard to handle both new and old image formats
         let primaryImage = '';
         if (product.imageUrls && product.imageUrls.length > 0) {
             primaryImage = product.imageUrls[0];
         } else if (product.imageUrl) {
-            primaryImage = product.imageUrl; // Fallback for old products
+            primaryImage = product.imageUrl;
         }
 
         const productLink = document.createElement('a');
@@ -53,17 +77,15 @@ function renderProducts(productsToDisplay) {
     });
 }
 
-// --- Search Logic ---
-function handleSearch() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const filteredProducts = allProducts.filter(product =>
-        (product.name && product.name.toLowerCase().includes(searchTerm)) ||
-        (product.description && product.description.toLowerCase().includes(searchTerm))
-    );
-    renderProducts(filteredProducts);
-}
+let searchTimeout;
+searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        currentSearchTerm = e.target.value;
+        fetchProducts(true);
+    }, 500);
+});
 
-searchInput.addEventListener('input', handleSearch);
+loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-// --- Initial Load ---
-fetchAndDisplayProducts();
+fetchProducts(true);
