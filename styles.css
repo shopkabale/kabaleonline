@@ -204,3 +204,108 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 @media (min-width: 1200px) {
     .product-grid { grid-template-columns: repeat(4, 1fr); }
 }
+
+
+
+/* --- New Modern Auth Page Design --- */
+.login-card {
+    max-width: 450px;
+    margin: 40px auto;
+    padding: 2.5rem 2rem;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    border-top: 5px solid var(--primary-color);
+}
+
+.auth-title {
+    font-size: 2rem;
+    color: var(--text-dark);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.auth-tabs {
+    display: flex;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+}
+
+.tab-link {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.tab-link.active {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.tab-link:first-child { border-radius: 7px 0 0 7px; }
+.tab-link:last-child { border-radius: 0 7px 7px 0; }
+
+.tab-content {
+    display: none;
+    text-align: left;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.login-card .form-group {
+    margin-bottom: 1rem;
+}
+
+.login-card label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+}
+
+.auth-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: var(--secondary-color);
+    color: white;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+.auth-button:hover {
+    background-color: #27ae60;
+}
+
+.auth-footer-text {
+    margin-top: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+.auth-footer-text span {
+    color: var(--accent-color);
+}
