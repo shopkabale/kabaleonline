@@ -51,20 +51,18 @@ googleLoginBtn.addEventListener('click', () => {
         });
 });
 
-// Accordion UI Logic
-const accordionButtons = document.querySelectorAll('.accordion-button');
-accordionButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        accordionButtons.forEach(otherButton => {
-            if (otherButton !== button) {
-                otherButton.classList.remove('active');
-                otherButton.nextElementSibling.style.maxHeight = null;
-            }
-        });
-        button.classList.toggle('active');
-        const panel = button.nextElementSibling;
-        if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
-        else { panel.style.maxHeight = panel.scrollHeight + "px"; }
+// --- NEW: Tab Switching Logic ---
+const tabs = document.querySelectorAll('.tab-link');
+const contents = document.querySelectorAll('.tab-content');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const activeContent = document.getElementById(tab.dataset.tab);
+        if (activeContent) {
+            activeContent.classList.add('active');
+        }
     });
 });
 
@@ -164,7 +162,7 @@ productForm.addEventListener('submit', async (e) => {
             imageUrls: finalImageUrls, whatsapp: normalizeWhatsAppNumber(whatsappNumber),
             sellerId: user.uid, createdAt: new Date()
         };
-        
+
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), productData);
             alert('Product updated successfully!');
@@ -172,7 +170,7 @@ productForm.addEventListener('submit', async (e) => {
             await addDoc(collection(db, 'products'), productData);
             alert('Product added successfully!');
         }
-        
+
         productForm.reset();
         productIdInput.value = '';
         productFormContainer.style.display = 'none';
@@ -240,7 +238,6 @@ function populateFormForEdit(id, product) {
     const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
     document.getElementById('whatsapp-number').value = localNumber;
     submitBtn.textContent = 'Update Product';
-    // Clear file inputs when editing
     document.getElementById('product-image-1').value = '';
     document.getElementById('product-image-2').value = '';
     window.scrollTo(0, 0);
