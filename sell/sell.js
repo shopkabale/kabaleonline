@@ -47,8 +47,8 @@ function getFriendlyAuthErrorMessage(errorCode) {
     switch (errorCode) {
         case 'auth/invalid-email':
             return 'Please enter a valid email address.';
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
+        // MODIFIED: This single case now handles both wrong password and non-existent user.
+        case 'auth/invalid-credential': 
             return 'Incorrect email or password. Please check your credentials and try again.';
         case 'auth/email-already-in-use':
             return 'This email address is already registered. Please try logging in instead.';
@@ -60,28 +60,6 @@ function getFriendlyAuthErrorMessage(errorCode) {
             return 'An unexpected error occurred. Please try again later.';
     }
 }
-
-// Core Authentication Logic
-onAuthStateChanged(auth, user => {
-    if (user) {
-        authContainer.style.display = 'none';
-        dashboardContainer.style.display = 'block';
-        sellerEmailSpan.textContent = user.email;
-        fetchSellerProducts(user.uid);
-    } else {
-        authContainer.style.display = 'block';
-        dashboardContainer.style.display = 'none';
-        sellerProductsList.innerHTML = '';
-    }
-});
-
-logoutBtn.addEventListener('click', () => {
-    signOut(auth).catch(error => {
-        // MODIFIED: Use custom modal
-        showModal('Logout Error', 'There was an issue signing out. Please try again.');
-        console.error("Logout Error:", error);
-    });
-});
 
 // Google Sign-In Logic
 googleLoginBtn.addEventListener('click', () => {
