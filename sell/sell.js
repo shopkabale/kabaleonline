@@ -17,38 +17,35 @@ const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
 
-// --- NEW: Modal Element Selections ---
+// --- Custom Modal Element Selections ---
 const customModal = document.getElementById('custom-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalMessage = document.getElementById('modal-message');
 const modalCloseBtn = document.getElementById('modal-close-btn');
 
-// --- NEW: Modal Display Function ---
+// --- Custom Modal Display Function ---
 function showModal(title, message) {
     modalTitle.textContent = title;
     modalMessage.textContent = message;
     customModal.style.display = 'flex';
 }
 
-// --- NEW: Modal Close Logic ---
+// --- Custom Modal Close Logic ---
 modalCloseBtn.addEventListener('click', () => {
     customModal.style.display = 'none';
 });
-// Also close the modal if the user clicks the overlay background
 customModal.addEventListener('click', (e) => {
     if (e.target === customModal) {
         customModal.style.display = 'none';
     }
 });
 
-
-// --- NEW: Friendly Error Message Helper ---
+// --- Friendly Auth Error Message Helper ---
 function getFriendlyAuthErrorMessage(errorCode) {
     switch (errorCode) {
         case 'auth/invalid-email':
             return 'Please enter a valid email address.';
-        // MODIFIED: This single case now handles both wrong password and non-existent user.
-        case 'auth/invalid-credential': 
+        case 'auth/invalid-credential':
             return 'Incorrect email or password. Please check your credentials and try again.';
         case 'auth/email-already-in-use':
             return 'This email address is already registered. Please try logging in instead.';
@@ -61,20 +58,34 @@ function getFriendlyAuthErrorMessage(errorCode) {
     }
 }
 
-// Core Authentication Logic
-onAuthStateChanged(auth, user => {
+// --- Core Authentication Logic with Role Verification ---
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        authContainer.style.display = 'none';
-        dashboardContainer.style.display = 'block';
-        sellerEmailSpan.textContent = user.email;
-        fetchSellerProducts(user.uid);
+        // Get user's role from Firestore
+        const userDocRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(userDocRef);
+
+        // Check if the user exists in Firestore and has the 'seller' role
+        if (docSnap.exists() && docSnap.data().role === 'seller') {
+            // User is a verified seller, show the dashboard
+            authContainer.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+            sellerEmailSpan.textContent = user.email;
+            fetchSellerProducts(user.uid);
+        } else {
+            // If they're not a seller, show an error and log them out
+            showModal('Access Denied', 'You do not have permission to access the seller dashboard.');
+            await signOut(auth);
+        }
     } else {
+        // No user is signed in, show the login form
         authContainer.style.display = 'block';
         dashboardContainer.style.display = 'none';
         sellerProductsList.innerHTML = '';
     }
 });
 
+// --- Logout Button Logic ---
 logoutBtn.addEventListener('click', () => {
     signOut(auth).catch(error => {
         showModal('Logout Error', 'There was an issue signing out. Please try again.');
@@ -82,8 +93,7 @@ logoutBtn.addEventListener('click', () => {
     });
 });
 
-
-// Google Sign-In Logic
+// --- Google Sign-In Logic ---
 googleLoginBtn.addEventListener('click', () => {
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
@@ -97,12 +107,11 @@ googleLoginBtn.addEventListener('click', () => {
             }
         }).catch((error) => {
             console.error("Google Sign-In Error:", error);
-            // MODIFIED: Use custom modal
             showModal('Sign-In Failed', 'Could not sign in with Google. Please try again.');
         });
 });
 
-// Tab Switching Logic
+// --- Tab Switching Logic ---
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
@@ -117,14 +126,13 @@ tabs.forEach(tab => {
     });
 });
 
-// Email/Password Form Submission
+// --- Email/Password Form Submission ---
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password)
         .catch(error => {
-            // MODIFIED: Use custom modal with friendly messages
             showModal("Login Failed", getFriendlyAuthErrorMessage(error.code));
         });
 });
@@ -138,16 +146,14 @@ signupForm.addEventListener('submit', (e) => {
             const user = userCredential.user;
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
-            // MODIFIED: Use custom modal for success
             showModal('Account Created!', 'Your account was created successfully. Welcome!');
         })
         .catch(error => {
-            // MODIFIED: Use custom modal with friendly messages
             showModal("Signup Failed", getFriendlyAuthErrorMessage(error.code));
         });
 });
 
-// Password Toggle Logic
+// --- Password Toggle Logic ---
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
         const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
@@ -161,7 +167,7 @@ document.querySelectorAll('.toggle-password').forEach(toggle => {
     });
 });
 
-// Dashboard "Sell an Item" Button Logic
+// --- Dashboard "Sell an Item" Button Logic ---
 showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     if (isVisible) {
@@ -176,7 +182,7 @@ showProductFormBtn.addEventListener('click', () => {
     }
 });
 
-// Product Submission Logic
+// --- Product Submission Logic ---
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -227,11 +233,9 @@ productForm.addEventListener('submit', async (e) => {
 
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), productData);
-            // MODIFIED: Use custom modal
             showModal('Success!', 'Product updated successfully!');
         } else {
             await addDoc(collection(db, 'products'), productData);
-            // MODIFIED: Use custom modal
             showModal('Success!', 'Product added successfully!');
         }
 
@@ -242,7 +246,6 @@ productForm.addEventListener('submit', async (e) => {
         fetchSellerProducts(user.uid);
     } catch (error) {
         console.error('Error submitting product:', error);
-        // MODIFIED: Use custom modal
         showModal('Submission Failed', 'Failed to submit product. ' + error.message);
     } finally {
         submitBtn.disabled = false;
@@ -250,9 +253,8 @@ productForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Helper Functions
+// --- Helper Functions ---
 async function uploadImageToCloudinary(file) {
-    // ... (This function remains unchanged)
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
     const formData = new FormData();
@@ -271,7 +273,6 @@ async function uploadImageToCloudinary(file) {
 }
 
 async function fetchSellerProducts(uid) {
-    // ... (This function remains unchanged)
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
@@ -298,7 +299,6 @@ async function fetchSellerProducts(uid) {
 }
 
 function populateFormForEdit(id, product) {
-    // ... (This function remains unchanged)
     productIdInput.value = id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price;
@@ -315,18 +315,15 @@ async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
             await deleteDoc(doc(db, 'products', productId));
-            // MODIFIED: Use custom modal
             showModal('Success', 'Product deleted successfully.');
             fetchSellerProducts(auth.currentUser.uid);
         } catch (error) {
-            // MODIFIED: Use custom modal
             showModal('Error', 'Failed to delete product. Please try again.');
         }
     }
 }
 
 function normalizeWhatsAppNumber(phone) {
-    // ... (This function remains unchanged)
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
     if (cleaned.startsWith('256')) return cleaned;
