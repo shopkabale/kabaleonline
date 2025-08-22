@@ -61,6 +61,28 @@ function getFriendlyAuthErrorMessage(errorCode) {
     }
 }
 
+// Core Authentication Logic
+onAuthStateChanged(auth, user => {
+    if (user) {
+        authContainer.style.display = 'none';
+        dashboardContainer.style.display = 'block';
+        sellerEmailSpan.textContent = user.email;
+        fetchSellerProducts(user.uid);
+    } else {
+        authContainer.style.display = 'block';
+        dashboardContainer.style.display = 'none';
+        sellerProductsList.innerHTML = '';
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    signOut(auth).catch(error => {
+        showModal('Logout Error', 'There was an issue signing out. Please try again.');
+        console.error("Logout Error:", error);
+    });
+});
+
+
 // Google Sign-In Logic
 googleLoginBtn.addEventListener('click', () => {
     const provider = new GoogleAuthProvider();
