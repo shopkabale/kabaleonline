@@ -16,6 +16,21 @@ const submitBtn = document.getElementById('submit-btn');
 const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
+const modal = document.getElementById('custom-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalMessage = document.getElementById('modal-message');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+
+// --- Custom Modal Functions ---
+function showModal(message, title = "Notice") {
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.style.display = 'flex';
+}
+
+modalCloseBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
 
 // Core Authentication Logic
 onAuthStateChanged(auth, user => {
@@ -31,7 +46,9 @@ onAuthStateChanged(auth, user => {
     }
 });
 
-logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
+logoutBtn.addEventListener('click', () => { 
+    signOut(auth).catch(error => showModal(error.message, "Error")); 
+});
 
 // Google Sign-In Logic
 googleLoginBtn.addEventListener('click', () => {
@@ -47,11 +64,11 @@ googleLoginBtn.addEventListener('click', () => {
             }
         }).catch((error) => {
             console.error("Google Sign-In Error:", error);
-            alert("Could not sign in with Google. Please try again.");
+            showModal("Could not sign in with Google. The pop-up may have been blocked or there was a network issue.", "Login Failed");
         });
 });
 
-// --- NEW: Tab Switching Logic ---
+// Tab Switching Logic
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
@@ -66,12 +83,23 @@ tabs.forEach(tab => {
     });
 });
 
-// Email/Password Form Submission
+// Email/Password Form Submission with Custom Errors
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    signInWithEmailAndPassword(auth, email, password).catch(error => alert("Login failed: " + error.message));
+    signInWithEmailAndPassword(auth, email, password)
+        .catch(error => {
+            let errorMessage = "An unknown error occurred. Please try again.";
+            switch (error.code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    errorMessage = "Incorrect email or password. Please try again.";
+                    break;
+            }
+            showModal(errorMessage, "Login Failed");
+        });
 });
 
 signupForm.addEventListener('submit', (e) => {
@@ -83,9 +111,20 @@ signupForm.addEventListener('submit', (e) => {
             const user = userCredential.user;
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
-            alert('Account created successfully!');
+            showModal("Account created successfully! You are now being logged in.", "Success!");
         })
-        .catch(error => alert("Signup failed: " + error.message));
+        .catch(error => {
+            let errorMessage = "An unknown error occurred. Please try again.";
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    errorMessage = "This email is already registered. Please go to the 'Login' tab.";
+                    break;
+                case 'auth/weak-password':
+                    errorMessage = "Your password is too weak. Please use at least 6 characters.";
+                    break;
+            }
+            showModal(errorMessage, "Signup Failed");
+        });
 });
 
 // Password Toggle Logic
@@ -121,7 +160,7 @@ showProductFormBtn.addEventListener('click', () => {
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
-    if (!user) return alert('You must be logged in!');
+    if (!user) return showModal('You must be logged in to add a product.', 'Error');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
     try {
@@ -152,7 +191,7 @@ productForm.addEventListener('submit', async (e) => {
             finalImageUrls = newImageUrls;
         }
 
-        if (finalImageUrls.length === 0) {
+        if (finalImageUrls.length === 0 && !editingProductId) {
             throw new Error('At least one image is required.');
         }
 
@@ -165,10 +204,10 @@ productForm.addEventListener('submit', async (e) => {
 
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), productData);
-            alert('Product updated successfully!');
+            showModal('Product updated successfully!', 'Success!');
         } else {
             await addDoc(collection(db, 'products'), productData);
-            alert('Product added successfully!');
+            showModal('Product added successfully!', 'Success!');
         }
 
         productForm.reset();
@@ -178,7 +217,7 @@ productForm.addEventListener('submit', async (e) => {
         fetchSellerProducts(user.uid);
     } catch (error) {
         console.error('Error submitting product:', error);
-        alert('Failed to submit product. ' + error.message);
+        showModal('Failed to submit product. ' + error.message, 'Error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Add Product';
@@ -247,10 +286,10 @@ async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
             await deleteDoc(doc(db, 'products', productId));
-            alert('Product deleted successfully.');
+            showModal('Product deleted successfully.', 'Success');
             fetchSellerProducts(auth.currentUser.uid);
         } catch (error) {
-            alert('Failed to delete product.');
+            showModal('Failed to delete product.', 'Error');
         }
     }
 }
