@@ -56,7 +56,7 @@ if (forgotPasswordLink) {
         hideAuthMessages();
         const email = document.getElementById('login-email').value;
         if (!email) {
-            return showMessage(loginErrorElement, "Please enter your email above to reset your password.");
+            return showMessage(loginErrorElement, "Please enter your email below to reset your password.");
         }
         try {
             await sendPasswordResetEmail(auth, email);
