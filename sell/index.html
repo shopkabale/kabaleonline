@@ -58,8 +58,7 @@
                 <div class="auth-tabs">
                     <button class="tab-link active" data-tab="login-tab">Login</button>
                     <button class="tab-link" data-tab="signup-tab">Sign Up</button>
-                    <button class="tab-link" data-tab="phone-tab">Phone</button>
-                    </div>
+                </div>
 
                 <div id="login-tab" class="tab-content active">
                     <form id="login-form">
@@ -99,24 +98,6 @@
                     </form>
                 </div>
 
-                <div id="phone-tab" class="tab-content">
-                    <form id="phone-form">
-                        <p id="phone-error" class="error-message"></p>
-                        <p id="phone-success" class="success-message"></p>
-                        <div class="form-group">
-                            <label for="phone-number">Phone Number (e.g., 0771234567)</label>
-                            <input type="tel" id="phone-number" required>
-                        </div>
-                        <div id="recaptcha-container"></div>
-                        <button type="button" id="send-code-btn" class="auth-button">Send Code</button>
-                        
-                        <div class="form-group" id="verification-code-group" style="display: none;">
-                            <label for="verification-code">Verification Code</label>
-                            <input type="text" id="verification-code" required>
-                        </div>
-                        <button type="submit" id="verify-code-btn" class="auth-button" style="display: none;">Verify & Login</button>
-                    </form>
-                </div>
                 <p class="or-divider"><span>OR</span></p>
                 <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
                 <p class="auth-footer-text">Kabale <span>Online</span></p>
