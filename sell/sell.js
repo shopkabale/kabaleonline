@@ -2,7 +2,7 @@ import { auth, db } from '../firebase.js';
 import { 
     GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, onAuthStateChanged, signOut, 
-    sendPasswordResetEmail   // --- NEW
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -20,31 +20,60 @@ const submitBtn = document.getElementById('submit-btn');
 const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
-
-// --- NEW: Forgot Password & Reset Password
 const forgotPasswordLink = document.getElementById('forgot-password-link');
+const resetPasswordBtn = document.getElementById('reset-password-btn');
+
+// START: ADDED CODE - Get references to the new message elements
+const loginErrorElement = document.getElementById('login-error');
+const signupErrorElement = document.getElementById('signup-error');
+const authSuccessElement = document.getElementById('auth-success');
+// END: ADDED CODE
+
+// Helper function to show messages
+const showMessage = (element, message, isError = true) => {
+    element.textContent = message;
+    element.style.display = 'block';
+    if (isError) {
+        element.classList.remove('success-message');
+        element.classList.add('error-message');
+    } else {
+        element.classList.remove('error-message');
+        element.classList.add('success-message');
+    }
+};
+
+// Helper function to hide all auth messages
+const hideAuthMessages = () => {
+    loginErrorElement.style.display = 'none';
+    signupErrorElement.style.display = 'none';
+    authSuccessElement.style.display = 'none';
+};
+
+// Forgot Password Logic
 if (forgotPasswordLink) {
     forgotPasswordLink.addEventListener('click', async (e) => {
         e.preventDefault();
+        hideAuthMessages();
         const email = document.getElementById('login-email').value;
         if (!email) {
-            return alert("Please enter your email above first.");
+            return showMessage(loginErrorElement, "Please enter your email above to reset your password.");
         }
         try {
             await sendPasswordResetEmail(auth, email);
-            alert("Password reset email sent. Please check your inbox.");
+            showMessage(authSuccessElement, "Password reset email sent. Please check your inbox.", false);
         } catch (error) {
-            alert("Error: " + error.message);
+            showMessage(loginErrorElement, "Could not send reset email. Please check the address and try again.");
+            console.error("Forgot password error:", error);
         }
     });
 }
 
-const resetPasswordBtn = document.getElementById('reset-password-btn');
+// Reset Password Logic (from dashboard)
 if (resetPasswordBtn) {
     resetPasswordBtn.addEventListener('click', async () => {
         const user = auth.currentUser;
         if (!user || !user.email) {
-            return alert("No user logged in.");
+            return alert("No user logged in."); // Alert is okay for this internal-only action
         }
         try {
             await sendPasswordResetEmail(auth, user.email);
@@ -69,31 +98,37 @@ onAuthStateChanged(auth, user => {
     }
 });
 
-logoutBtn.addEventListener('click', () => { signOut(auth).catch(error => alert(error.message)); });
+logoutBtn.addEventListener('click', () => { 
+    signOut(auth).catch(error => {
+        console.error("Logout Error:", error);
+        alert("Could not log out. Please try again.");
+    });
+});
 
 // Google Sign-In Logic
 googleLoginBtn.addEventListener('click', () => {
+    hideAuthMessages();
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
         .then(async (result) => {
             const user = result.user;
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
-
             if (!userDoc.exists()) {
                 await setDoc(userDocRef, { email: user.email, role: 'seller' });
             }
         }).catch((error) => {
             console.error("Google Sign-In Error:", error);
-            alert("Could not sign in with Google. Please try again.");
+            showMessage(loginErrorElement, "Could not sign in with Google. Please try again.");
         });
 });
 
-// --- Tab Switching Logic ---
+// Tab Switching Logic
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
+        hideAuthMessages(); // Hide messages when switching tabs
         tabs.forEach(t => t.classList.remove('active'));
         contents.forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
@@ -107,13 +142,31 @@ tabs.forEach(tab => {
 // Email/Password Form Submission
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    hideAuthMessages();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    signInWithEmailAndPassword(auth, email, password).catch(error => alert("Login failed: " + error.message));
+    signInWithEmailAndPassword(auth, email, password)
+        .catch(error => {
+            // START: REPLACED ALERT WITH CUSTOM ERROR LOGIC
+            let friendlyMessage = 'Invalid email or password. Please try again.';
+            switch (error.code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    friendlyMessage = 'Invalid email or password. Please check and try again.';
+                    break;
+                default:
+                    friendlyMessage = 'An error occurred during login. Please try again later.';
+                    console.error('Login error:', error);
+            }
+            showMessage(loginErrorElement, friendlyMessage);
+            // END: REPLACED ALERT WITH CUSTOM ERROR LOGIC
+        });
 });
 
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    hideAuthMessages();
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     createUserWithEmailAndPassword(auth, email, password)
@@ -121,9 +174,27 @@ signupForm.addEventListener('submit', (e) => {
             const user = userCredential.user;
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
-            alert('Account created successfully!');
         })
-        .catch(error => alert("Signup failed: " + error.message));
+        .catch(error => {
+            // START: REPLACED ALERT WITH CUSTOM ERROR LOGIC
+            let friendlyMessage = '';
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    friendlyMessage = 'This email address is already registered. Please log in instead.';
+                    break;
+                case 'auth/weak-password':
+                    friendlyMessage = 'Password is too weak. It should be at least 6 characters long.';
+                    break;
+                case 'auth/invalid-email':
+                    friendlyMessage = 'Please enter a valid email address.';
+                    break;
+                default:
+                    friendlyMessage = 'An error occurred during signup. Please try again later.';
+                    console.error('Signup error:', error);
+            }
+            showMessage(signupErrorElement, friendlyMessage);
+            // END: REPLACED ALERT WITH CUSTOM ERROR LOGIC
+        });
 });
 
 // Password Toggle Logic
@@ -155,7 +226,7 @@ showProductFormBtn.addEventListener('click', () => {
     }
 });
 
-// Product Submission Logic
+// Product Submission Logic (No changes to this function)
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -190,21 +261,27 @@ productForm.addEventListener('submit', async (e) => {
             finalImageUrls = newImageUrls;
         }
 
-        if (finalImageUrls.length === 0) {
-            throw new Error('At least one image is required.');
+        if (finalImageUrls.length === 0 && !editingProductId) {
+            throw new Error('At least one image is required for a new product.');
         }
 
         const productData = {
             name: productName, name_lowercase: productName.toLowerCase(),
             price: Number(productPrice), description: productDescription,
-            imageUrls: finalImageUrls, whatsapp: normalizeWhatsAppNumber(whatsappNumber),
-            sellerId: user.uid, createdAt: new Date()
+            whatsapp: normalizeWhatsAppNumber(whatsappNumber),
+            sellerId: user.uid,
         };
 
+        if (finalImageUrls.length > 0) {
+            productData.imageUrls = finalImageUrls;
+        }
+        
         if (editingProductId) {
+            productData.updatedAt = new Date();
             await updateDoc(doc(db, 'products', editingProductId), productData);
             alert('Product updated successfully!');
         } else {
+            productData.createdAt = new Date();
             await addDoc(collection(db, 'products'), productData);
             alert('Product added successfully!');
         }
@@ -219,11 +296,11 @@ productForm.addEventListener('submit', async (e) => {
         alert('Failed to submit product. ' + error.message);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Add Product';
+        submitBtn.textContent = editingProductId.value ? 'Update Product' : 'Add Product';
     }
 });
 
-// Helper Functions
+// Helper Functions (No changes to these functions)
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
@@ -235,7 +312,6 @@ async function uploadImageToCloudinary(file) {
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
     const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
     if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
         throw new Error('Cloudinary upload failed.');
     }
     const uploadData = await uploadResponse.json();
