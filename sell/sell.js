@@ -1,5 +1,9 @@
 import { auth, db } from '../firebase.js';
-import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { 
+    GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, onAuthStateChanged, signOut, 
+    sendPasswordResetEmail   // --- NEW
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // DOM Element Selections
@@ -16,6 +20,40 @@ const submitBtn = document.getElementById('submit-btn');
 const productIdInput = document.getElementById('productId');
 const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
+
+// --- NEW: Forgot Password & Reset Password
+const forgotPasswordLink = document.getElementById('forgot-password-link');
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        if (!email) {
+            return alert("Please enter your email above first.");
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert("Password reset email sent. Please check your inbox.");
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
+    });
+}
+
+const resetPasswordBtn = document.getElementById('reset-password-btn');
+if (resetPasswordBtn) {
+    resetPasswordBtn.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user || !user.email) {
+            return alert("No user logged in.");
+        }
+        try {
+            await sendPasswordResetEmail(auth, user.email);
+            alert("Password reset email sent to " + user.email);
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
+    });
+}
 
 // Core Authentication Logic
 onAuthStateChanged(auth, user => {
@@ -51,7 +89,7 @@ googleLoginBtn.addEventListener('click', () => {
         });
 });
 
-// --- NEW: Tab Switching Logic ---
+// --- Tab Switching Logic ---
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
