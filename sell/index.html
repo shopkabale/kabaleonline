@@ -9,7 +9,34 @@
 
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
+
+    <style>
+        .error-message {
+            display: none; /* Hidden by default */
+            color: #D8000C;
+            background-color: #FFD2D2;
+            border: 1px solid #D8000C;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .success-message {
+            display: none; /* Hidden by default */
+            color: #270;
+            background-color: #DFF2BF;
+            border: 1px solid #4F8A10;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+    </style>
+    </head>
 <body>
 
     <header class="site-header">
@@ -27,6 +54,7 @@
                 <h1 class="auth-title">Welcome Back!</h1>
                 <p class="auth-subtitle">Log in or create an account to get started.</p>
 
+                <p id="auth-success" class="success-message"></p>
                 <div class="auth-tabs">
                     <button class="tab-link active" data-tab="login-tab">Login</button>
                     <button class="tab-link" data-tab="signup-tab">Sign Up</button>
@@ -34,6 +62,7 @@
 
                 <div id="login-tab" class="tab-content active">
                     <form id="login-form">
+                        <p id="login-error" class="error-message"></p>
                         <div class="form-group">
                             <label for="login-email">Email</label>
                             <input type="email" id="login-email" required>
@@ -47,12 +76,13 @@
                         </div>
                         <button type="submit" class="auth-button">Login</button>
 
-<p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
+                        <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
                     </form>
                 </div>
 
                 <div id="signup-tab" class="tab-content">
                     <form id="signup-form">
+                        <p id="signup-error" class="error-message"></p>
                         <div class="form-group">
                             <label for="signup-email">Email</label>
                             <input type="email" id="signup-email" required>
@@ -84,7 +114,7 @@
             
             <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
             <button id="logout-btn">Logout</button>
-<button id="reset-password-btn">Reset Password</button>
+            <button id="reset-password-btn">Reset Password</button>
             
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Product</h2>
