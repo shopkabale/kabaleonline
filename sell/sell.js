@@ -2,9 +2,18 @@ import { auth, db } from '../firebase.js';
 import { 
     GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, onAuthStateChanged, signOut, 
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    // START: ADDED FIREBASE PHONE AUTH MODULES
+    RecaptchaVerifier, signInWithPhoneNumber
+    // END: ADDED FIREBASE PHONE AUTH MODULES
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { 
+    collection, addDoc, query, where, getDocs, doc, 
+    updateDoc, deleteDoc, orderBy, getDoc, setDoc,
+    // START: ADDED FIRESTORE TRANSACTION MODULES
+    runTransaction, increment
+    // END: ADDED FIRESTORE TRANSACTION MODULES
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // DOM Element Selections
 const authContainer = document.getElementById('auth-container');
@@ -23,16 +32,30 @@ const productFormContainer = document.getElementById('product-form-container');
 const forgotPasswordLink = document.getElementById('forgot-password-link');
 const resetPasswordBtn = document.getElementById('reset-password-btn');
 
-// START: ADDED CODE - Get references to the new message elements
+// Message elements
 const loginErrorElement = document.getElementById('login-error');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
-// END: ADDED CODE
+
+// START: ADDED PHONE AUTH DOM ELEMENT SELECTIONS
+const phoneForm = document.getElementById('phone-form');
+const phoneNumberInput = document.getElementById('phone-number');
+const sendCodeBtn = document.getElementById('send-code-btn');
+const verificationCodeGroup = document.getElementById('verification-code-group');
+const verificationCodeInput = document.getElementById('verification-code');
+const verifyCodeBtn = document.getElementById('verify-code-btn');
+const phoneErrorElement = document.getElementById('phone-error');
+const phoneSuccessElement = document.getElementById('phone-success');
+// END: ADDED PHONE AUTH DOM ELEMENT SELECTIONS
 
 // Helper function to show messages
 const showMessage = (element, message, isError = true) => {
     element.textContent = message;
     element.style.display = 'block';
+    // Clear other messages to avoid confusion
+    if (element.id !== 'phone-success') phoneSuccessElement.style.display = 'none';
+    if (element.id !== 'phone-error') phoneErrorElement.style.display = 'none';
+
     if (isError) {
         element.classList.remove('success-message');
         element.classList.add('error-message');
@@ -47,7 +70,156 @@ const hideAuthMessages = () => {
     loginErrorElement.style.display = 'none';
     signupErrorElement.style.display = 'none';
     authSuccessElement.style.display = 'none';
+    // START: ADDED HIDING FOR PHONE MESSAGES
+    phoneErrorElement.style.display = 'none';
+    phoneSuccessElement.style.display = 'none';
+    // END: ADDED HIDING FOR PHONE MESSAGES
 };
+
+
+// START: ADDED SMS DAILY LIMIT CHECK FUNCTION
+/**
+ * Checks if the daily SMS limit has been reached and increments the count.
+ * @returns {Promise<boolean>} True if the SMS can be sent, false otherwise.
+ */
+async function checkAndIncrementSmsCount() {
+    const DAILY_LIMIT = 250;
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const limitRef = doc(db, 'usage_limits', `sms_${today}`);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const limitDoc = await transaction.get(limitRef);
+            
+            if (!limitDoc.exists()) {
+                // Document for today doesn't exist, so create it and send SMS.
+                transaction.set(limitRef, { count: 1 });
+                return; 
+            }
+
+            const currentCount = limitDoc.data().count;
+            if (currentCount >= DAILY_LIMIT) {
+                // Limit reached, throw an error to abort the transaction.
+                throw new Error("Daily SMS limit reached.");
+            }
+
+            // Limit not reached, increment the count.
+            transaction.update(limitRef, { count: increment(1) });
+        });
+        return true; // Transaction succeeded
+    } catch (error) {
+        if (error.message === "Daily SMS limit reached.") {
+            console.warn("SMS limit for today has been reached.");
+            showMessage(phoneErrorElement, "SMS login/registration failed. Please use the email and password method.");
+        } else {
+            console.error("Transaction failed: ", error);
+            showMessage(phoneErrorElement, "Could not verify usage limits. Please try again later.");
+        }
+        return false; // Transaction failed
+    }
+}
+// END: ADDED SMS DAILY LIMIT CHECK FUNCTION
+
+// START: ADDED PHONE AUTHENTICATION LOGIC
+// Set up reCAPTCHA verifier
+function setupRecaptcha() {
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+            // reCAPTCHA solved, allow signInWithPhoneNumber.
+            console.log("reCAPTCHA solved");
+        }
+    });
+}
+// Call setupRecaptcha when the page loads
+setupRecaptcha();
+
+// "Send Code" button logic
+sendCodeBtn.addEventListener('click', async () => {
+    hideAuthMessages();
+    const canSend = await checkAndIncrementSmsCount();
+    
+    if (!canSend) {
+        return; // Stop if the limit is reached or an error occurred
+    }
+
+    const appVerifier = window.recaptchaVerifier;
+    let phoneNumber = phoneNumberInput.value.trim();
+
+    // Normalize phone number for Uganda (+256)
+    if (phoneNumber.startsWith('0')) {
+        phoneNumber = '+256' + phoneNumber.substring(1);
+    } else if (phoneNumber.length === 9 && !phoneNumber.startsWith('+')) {
+        phoneNumber = '+256' + phoneNumber;
+    } else if (!phoneNumber.startsWith('+256')) {
+        return showMessage(phoneErrorElement, "Please enter a valid Ugandan phone number (e.g., 077...).");
+    }
+
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = 'Sending...';
+
+    try {
+        const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+        // SMS sent. Store confirmation result to use later.
+        window.confirmationResult = confirmationResult;
+        
+        showMessage(phoneSuccessElement, "Verification code sent successfully!", false);
+        // Show the verification code input and hide the send button
+        sendCodeBtn.style.display = 'none';
+        verificationCodeGroup.style.display = 'block';
+        verifyCodeBtn.style.display = 'block';
+
+    } catch (error) {
+        console.error("SMS Sending Error:", error);
+        // Reset reCAPTCHA for another attempt
+        window.recaptchaVerifier.render().then(widgetId => {
+            grecaptcha.reset(widgetId);
+        });
+        showMessage(phoneErrorElement, "Failed to send code. Please check the number and try again.");
+    } finally {
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.textContent = 'Send Code';
+    }
+});
+
+
+// "Verify Code" form submission logic
+phoneForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAuthMessages();
+    const code = verificationCodeInput.value;
+    if (!window.confirmationResult) {
+        return showMessage(phoneErrorElement, "Please send a code first.");
+    }
+
+    verifyCodeBtn.disabled = true;
+    verifyCodeBtn.textContent = 'Verifying...';
+
+    try {
+        const result = await window.confirmationResult.confirm(code);
+        const user = result.user;
+        
+        // Check if user exists in Firestore, if not, create a new entry
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, { phoneNumber: user.phoneNumber, role: 'seller' });
+        }
+        // Login is handled by onAuthStateChanged observer
+        
+    } catch (error) {
+        console.error("Verification Error:", error);
+        let friendlyMessage = 'Invalid verification code. Please try again.';
+        if (error.code === 'auth/invalid-verification-code') {
+            friendlyMessage = 'The code you entered is incorrect. Please check and try again.';
+        }
+        showMessage(phoneErrorElement, friendlyMessage);
+    } finally {
+        verifyCodeBtn.disabled = false;
+        verifyCodeBtn.textContent = 'Verify & Login';
+    }
+});
+// END: ADDED PHONE AUTHENTICATION LOGIC
 
 // Forgot Password Logic
 if (forgotPasswordLink) {
@@ -73,7 +245,7 @@ if (resetPasswordBtn) {
     resetPasswordBtn.addEventListener('click', async () => {
         const user = auth.currentUser;
         if (!user || !user.email) {
-            return alert("No user logged in."); // Alert is okay for this internal-only action
+            return alert("No logged-in user with an email found. Cannot reset password."); 
         }
         try {
             await sendPasswordResetEmail(auth, user.email);
@@ -89,7 +261,8 @@ onAuthStateChanged(auth, user => {
     if (user) {
         authContainer.style.display = 'none';
         dashboardContainer.style.display = 'block';
-        sellerEmailSpan.textContent = user.email;
+        // Display email if available, otherwise phone number
+        sellerEmailSpan.textContent = user.email || user.phoneNumber; 
         fetchSellerProducts(user.uid);
     } else {
         authContainer.style.display = 'block';
@@ -147,7 +320,6 @@ loginForm.addEventListener('submit', (e) => {
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password)
         .catch(error => {
-            // START: REPLACED ALERT WITH CUSTOM ERROR LOGIC
             let friendlyMessage = 'Invalid email or password. Please try again.';
             switch (error.code) {
                 case 'auth/user-not-found':
@@ -160,7 +332,6 @@ loginForm.addEventListener('submit', (e) => {
                     console.error('Login error:', error);
             }
             showMessage(loginErrorElement, friendlyMessage);
-            // END: REPLACED ALERT WITH CUSTOM ERROR LOGIC
         });
 });
 
@@ -176,7 +347,6 @@ signupForm.addEventListener('submit', (e) => {
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
         })
         .catch(error => {
-            // START: REPLACED ALERT WITH CUSTOM ERROR LOGIC
             let friendlyMessage = '';
             switch (error.code) {
                 case 'auth/email-already-in-use':
@@ -193,7 +363,6 @@ signupForm.addEventListener('submit', (e) => {
                     console.error('Signup error:', error);
             }
             showMessage(signupErrorElement, friendlyMessage);
-            // END: REPLACED ALERT WITH CUSTOM ERROR LOGIC
         });
 });
 
@@ -275,7 +444,7 @@ productForm.addEventListener('submit', async (e) => {
         if (finalImageUrls.length > 0) {
             productData.imageUrls = finalImageUrls;
         }
-        
+
         if (editingProductId) {
             productData.updatedAt = new Date();
             await updateDoc(doc(db, 'products', editingProductId), productData);
