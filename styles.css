@@ -350,3 +350,18 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     width: auto;
     min-width: 100px;
 }
+/* WhatsApp button on product detail page */
+.whatsapp-btn {
+  background-color: #25D366;   /* WhatsApp green */
+  color: white;                /* text color */
+  padding: 10px 15px;          /* space inside button */
+  border-radius: 8px;          /* rounded corners */
+  text-decoration: none;       /* remove underline */
+  font-weight: bold;           /* make text bold */
+  display: inline-block;       /* so padding works */
+  transition: background 0.3s; /* smooth hover effect */
+}
+
+.whatsapp-btn:hover {
+  background-color: #1ebe5b;   /* darker green on hover */
+}
