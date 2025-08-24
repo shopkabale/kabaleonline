@@ -365,3 +365,22 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 .whatsapp-btn:hover {
   background-color: #1ebe5b;   /* darker green on hover */
 }
+
+/* back 2 header */
+.back-home-btn {
+  display: inline-block;
+  background-color: #ffc107; /* yellow */
+  color: #003366; /* dark blue text */
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 15px;
+  transition: 0.3s;
+  box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+}
+
+.back-home-btn:hover {
+  background-color: #003366; /* dark blue on hover */
+  color: #ffffff; /* white text */
+}
