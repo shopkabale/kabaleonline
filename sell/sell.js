@@ -2,7 +2,10 @@ import { auth, db } from '../firebase.js';
 import { 
     GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, onAuthStateChanged, signOut, 
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    // START: ADDED CODE - Import sendEmailVerification
+    sendEmailVerification
+    // END: ADDED CODE
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -23,10 +26,11 @@ const productFormContainer = document.getElementById('product-form-container');
 const forgotPasswordLink = document.getElementById('forgot-password-link');
 const resetPasswordBtn = document.getElementById('reset-password-btn');
 
-// START: ADDED CODE - Get references to the new message elements
+// START: ADDED CODE - Get references to new/existing message elements
 const loginErrorElement = document.getElementById('login-error');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
+const submissionMessage = document.getElementById('submission-message'); // For product form
 // END: ADDED CODE
 
 // Helper function to show messages
@@ -68,21 +72,25 @@ if (forgotPasswordLink) {
     });
 }
 
-// Reset Password Logic (from dashboard)
+// START: MODIFIED CODE - Updated Reset Password Logic for dashboard
 if (resetPasswordBtn) {
     resetPasswordBtn.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user || !user.email) {
-            return alert("No user logged in."); // Alert is okay for this internal-only action
+        // Use a prompt to ask for the user's email
+        const email = prompt("Please enter your email address to receive a password reset link:");
+        
+        if (email) { // Proceed only if the user entered an email
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("If an account exists for '" + email + "', a password reset email has been sent. Please check your inbox.");
+            } catch (error) {
+                console.error("Password reset error from dashboard:", error);
+                alert("Could not send reset email. Please ensure the email address is valid and try again.");
+            }
         }
-        try {
-            await sendPasswordResetEmail(auth, user.email);
-            alert("Password reset email sent to " + user.email);
-        } catch (error) {
-            alert("Error: " + error.message);
-        }
+        // If user clicks cancel or enters nothing, do nothing.
     });
 }
+// END: MODIFIED CODE
 
 // Core Authentication Logic
 onAuthStateChanged(auth, user => {
@@ -105,7 +113,7 @@ logoutBtn.addEventListener('click', () => {
     });
 });
 
-// Google Sign-In Logic
+// START: MODIFIED CODE - Google Sign-In now sends verification for new users
 googleLoginBtn.addEventListener('click', () => {
     hideAuthMessages();
     const provider = new GoogleAuthProvider();
@@ -115,6 +123,8 @@ googleLoginBtn.addEventListener('click', () => {
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
+                // This is a new user, send them a verification email
+                await sendEmailVerification(user);
                 await setDoc(userDocRef, { email: user.email, role: 'seller' });
             }
         }).catch((error) => {
@@ -122,6 +132,7 @@ googleLoginBtn.addEventListener('click', () => {
             showMessage(loginErrorElement, "Could not sign in with Google. Please try again.");
         });
 });
+// END: MODIFIED CODE
 
 // Tab Switching Logic
 const tabs = document.querySelectorAll('.tab-link');
@@ -147,7 +158,6 @@ loginForm.addEventListener('submit', (e) => {
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password)
         .catch(error => {
-            // START: REPLACED ALERT WITH CUSTOM ERROR LOGIC
             let friendlyMessage = 'Invalid email or password. Please try again.';
             switch (error.code) {
                 case 'auth/user-not-found':
@@ -160,10 +170,11 @@ loginForm.addEventListener('submit', (e) => {
                     console.error('Login error:', error);
             }
             showMessage(loginErrorElement, friendlyMessage);
-            // END: REPLACED ALERT WITH CUSTOM ERROR LOGIC
         });
 });
 
+
+// START: MODIFIED CODE - Signup now sends a welcome/verification email
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
     hideAuthMessages();
@@ -172,11 +183,20 @@ signupForm.addEventListener('submit', (e) => {
     createUserWithEmailAndPassword(auth, email, password)
         .then(async (userCredential) => {
             const user = userCredential.user;
+            
+            // Send the verification email
+            await sendEmailVerification(user);
+            
+            // NOTE: To add tips to this email, go to your Firebase Console:
+            // Authentication -> Templates -> Email address verification.
+            // You can customize the email content there.
+            showMessage(authSuccessElement, "Account created! Please check your inbox for a verification email with some tips.", false);
+
+            // Save user role to Firestore
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
         })
         .catch(error => {
-            // START: REPLACED ALERT WITH CUSTOM ERROR LOGIC
             let friendlyMessage = '';
             switch (error.code) {
                 case 'auth/email-already-in-use':
@@ -193,9 +213,10 @@ signupForm.addEventListener('submit', (e) => {
                     console.error('Signup error:', error);
             }
             showMessage(signupErrorElement, friendlyMessage);
-            // END: REPLACED ALERT WITH CUSTOM ERROR LOGIC
         });
 });
+// END: MODIFIED CODE
+
 
 // Password Toggle Logic
 document.querySelectorAll('.toggle-password').forEach(toggle => {
@@ -226,13 +247,17 @@ showProductFormBtn.addEventListener('click', () => {
     }
 });
 
-// Product Submission Logic (No changes to this function)
+// START: MODIFIED CODE - Product Submission now shows a patience message
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return alert('You must be logged in!');
+    
+    // Show the patience message
+    submissionMessage.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
+
     try {
         const productName = document.getElementById('product-name').value;
         const productPrice = document.getElementById('product-price').value;
@@ -296,9 +321,12 @@ productForm.addEventListener('submit', async (e) => {
         alert('Failed to submit product. ' + error.message);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = editingProductId.value ? 'Update Product' : 'Add Product';
+        submitBtn.textContent = productIdInput.value ? 'Update Product' : 'Add Product';
+        // Hide the patience message
+        submissionMessage.style.display = 'none';
     }
 });
+// END: MODIFIED CODE
 
 // Helper Functions (No changes to these functions)
 async function uploadImageToCloudinary(file) {
