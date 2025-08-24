@@ -114,7 +114,7 @@
 
             <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
             <button id="logout-btn">Logout</button>
-            <button id="reset-password-btn">Reset Password</button>
+            <button id="reset-password-btn">Change Password</button>
 
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Product</h2>
@@ -144,7 +144,10 @@
                         <label for="product-image-2">Optional Second Image</label>
                         <input type="file" id="product-image-2" accept="image/*">
                     </div>
-                    <button type="submit" id="submit-btn">Add Product</button>
+                     <p id="submission-message" style="display: none; font-weight: bold; text-align: center; color: #333; margin-top: 15px;">
+                        Submitting an item may take up to a minute, please be patient.
+                    </p>
+                     <button type="submit" id="submit-btn">Add Product</button>
                 </form>
             </div>
 
