@@ -3,9 +3,7 @@ import {
     GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, onAuthStateChanged, signOut, 
     sendPasswordResetEmail,
-    // START: ADDED CODE - Import sendEmailVerification
     sendEmailVerification
-    // END: ADDED CODE
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -26,13 +24,12 @@ const productFormContainer = document.getElementById('product-form-container');
 const forgotPasswordLink = document.getElementById('forgot-password-link');
 const resetPasswordBtn = document.getElementById('reset-password-btn');
 
-// START: ADDED CODE - Get references to new/existing message elements
 const loginErrorElement = document.getElementById('login-error');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
-const submissionMessage = document.getElementById('submission-message'); // For product form
-// END: ADDED CODE
+const submissionMessage = document.getElementById('submission-message'); 
 
+// START: MODIFIED CODE - showMessage function now auto-hides errors
 // Helper function to show messages
 const showMessage = (element, message, isError = true) => {
     element.textContent = message;
@@ -40,11 +37,16 @@ const showMessage = (element, message, isError = true) => {
     if (isError) {
         element.classList.remove('success-message');
         element.classList.add('error-message');
+        // Errors will now disappear after 4 seconds
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 4000);
     } else {
         element.classList.remove('error-message');
         element.classList.add('success-message');
     }
 };
+// END: MODIFIED CODE
 
 // Helper function to hide all auth messages
 const hideAuthMessages = () => {
@@ -52,6 +54,13 @@ const hideAuthMessages = () => {
     signupErrorElement.style.display = 'none';
     authSuccessElement.style.display = 'none';
 };
+
+// START: ADDED CODE - Helper function to clear login/signup form fields
+const clearAuthForms = () => {
+    if (loginForm) loginForm.reset();
+    if (signupForm) signupForm.reset();
+};
+// END: ADDED CODE
 
 // Forgot Password Logic
 if (forgotPasswordLink) {
@@ -72,13 +81,10 @@ if (forgotPasswordLink) {
     });
 }
 
-// START: MODIFIED CODE - Updated Reset Password Logic for dashboard
 if (resetPasswordBtn) {
     resetPasswordBtn.addEventListener('click', async () => {
-        // Use a prompt to ask for the user's email
         const email = prompt("Please enter your email address to receive a password reset link:");
-        
-        if (email) { // Proceed only if the user entered an email
+        if (email) { 
             try {
                 await sendPasswordResetEmail(auth, email);
                 alert("If an account exists for '" + email + "', a password reset email has been sent. Please check your inbox.");
@@ -87,10 +93,8 @@ if (resetPasswordBtn) {
                 alert("Could not send reset email. Please ensure the email address is valid and try again.");
             }
         }
-        // If user clicks cancel or enters nothing, do nothing.
     });
 }
-// END: MODIFIED CODE
 
 // Core Authentication Logic
 onAuthStateChanged(auth, user => {
@@ -113,7 +117,6 @@ logoutBtn.addEventListener('click', () => {
     });
 });
 
-// START: MODIFIED CODE - Google Sign-In now sends verification for new users
 googleLoginBtn.addEventListener('click', () => {
     hideAuthMessages();
     const provider = new GoogleAuthProvider();
@@ -123,7 +126,6 @@ googleLoginBtn.addEventListener('click', () => {
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
-                // This is a new user, send them a verification email
                 await sendEmailVerification(user);
                 await setDoc(userDocRef, { email: user.email, role: 'seller' });
             }
@@ -132,14 +134,14 @@ googleLoginBtn.addEventListener('click', () => {
             showMessage(loginErrorElement, "Could not sign in with Google. Please try again.");
         });
 });
-// END: MODIFIED CODE
 
 // Tab Switching Logic
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-        hideAuthMessages(); // Hide messages when switching tabs
+        hideAuthMessages();
+        clearAuthForms(); // Clear forms when switching tabs too
         tabs.forEach(t => t.classList.remove('active'));
         contents.forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
@@ -150,13 +152,18 @@ tabs.forEach(tab => {
     });
 });
 
-// Email/Password Form Submission
+// START: MODIFIED CODE - Login form now clears on success
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     hideAuthMessages();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+            // Success! The onAuthStateChanged will handle the redirect.
+            // Clear the form fields for security.
+            clearAuthForms();
+        })
         .catch(error => {
             let friendlyMessage = 'Invalid email or password. Please try again.';
             switch (error.code) {
@@ -172,9 +179,9 @@ loginForm.addEventListener('submit', (e) => {
             showMessage(loginErrorElement, friendlyMessage);
         });
 });
+// END: MODIFIED CODE
 
-
-// START: MODIFIED CODE - Signup now sends a welcome/verification email
+// START: MODIFIED CODE - Signup form now clears on success
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
     hideAuthMessages();
@@ -183,18 +190,15 @@ signupForm.addEventListener('submit', (e) => {
     createUserWithEmailAndPassword(auth, email, password)
         .then(async (userCredential) => {
             const user = userCredential.user;
-            
-            // Send the verification email
             await sendEmailVerification(user);
             
-            // NOTE: To add tips to this email, go to your Firebase Console:
-            // Authentication -> Templates -> Email address verification.
-            // You can customize the email content there.
-            showMessage(authSuccessElement, "Account created! Please check your inbox for a verification email with some tips.", false);
+            showMessage(authSuccessElement, "Account created! Please check your inbox for a verification email.", false);
 
-            // Save user role to Firestore
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
+            
+            // Clear the form fields now that registration is successful
+            clearAuthForms();
         })
         .catch(error => {
             let friendlyMessage = '';
@@ -247,13 +251,11 @@ showProductFormBtn.addEventListener('click', () => {
     }
 });
 
-// START: MODIFIED CODE - Product Submission now shows a patience message
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return alert('You must be logged in!');
     
-    // Show the patience message
     submissionMessage.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
@@ -322,11 +324,9 @@ productForm.addEventListener('submit', async (e) => {
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = productIdInput.value ? 'Update Product' : 'Add Product';
-        // Hide the patience message
         submissionMessage.style.display = 'none';
     }
 });
-// END: MODIFIED CODE
 
 // Helper Functions (No changes to these functions)
 async function uploadImageToCloudinary(file) {
