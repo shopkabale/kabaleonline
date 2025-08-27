@@ -8,13 +8,13 @@
       gtag('js', new Date());
       gtag('config', 'G-8T3YSBPPG3');
     </script>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kabale Online | Buy & Sell Anything in Kigezi</title>
     <meta name="description" content="Kabale Online is the #1 free local online marketplace for Kabale, Uganda. Find great deals on used and new phones, clothes, furniture, compuyers , and more. Sell your items for free today!">
     <meta name="keywords" content="shop online in kabale , shop in kabale , sell in kabale , buy and sell in uganda , kabale , buy and sell in kabale, kabale marketplace, used items uganda, second-hand kabale, kigezi online market">
-    
+
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -35,11 +35,29 @@
             <h1>Welcome to Kabale Online</h1>
             <p>Choose from hundreds of products from hundreds of sellers right here in Kabale.</p>
         </div>
-        
-        <div class="search-bar">
-            <input type="search" id="search-input" placeholder="Search by product name...">
+
+        <div class="search-and-filter-container">
+            <div class="search-bar">
+                <input type="search" id="search-input" placeholder="Search by product name...">
+            </div>
+    
+            <div class="filters">
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Clothing & Apparel">Clothing & Apparel</option>
+                    <option value="Home & Furniture">Home & Furniture</option>
+                    <option value="Health & Beauty">Health & Beauty</option>
+                    <option value="Vehicles">Vehicles</option>
+                    <option value="Property">Property</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                <button id="apply-filters-btn" class="cta-button">Filter</button>
+            </div>
         </div>
-        
+
         <main>
             <div id="product-grid" class="product-grid"><p>Loading products...</p></div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
