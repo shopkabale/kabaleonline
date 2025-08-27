@@ -191,12 +191,12 @@ signupForm.addEventListener('submit', (e) => {
         .then(async (userCredential) => {
             const user = userCredential.user;
             await sendEmailVerification(user);
-            
+
             showMessage(authSuccessElement, "Account created! Please check your inbox for a verification email.", false);
 
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
-            
+
             // Clear the form fields now that registration is successful
             clearAuthForms();
         })
@@ -255,7 +255,7 @@ productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return alert('You must be logged in!');
-    
+
     submissionMessage.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
@@ -263,12 +263,17 @@ productForm.addEventListener('submit', async (e) => {
     try {
         const productName = document.getElementById('product-name').value;
         const productPrice = document.getElementById('product-price').value;
+        const productCategory = document.getElementById('product-category').value; // GET CATEGORY VALUE
         const productDescription = document.getElementById('product-description').value;
         const whatsappNumber = document.getElementById('whatsapp-number').value;
         const imageFile1 = document.getElementById('product-image-1').files[0];
         const imageFile2 = document.getElementById('product-image-2').files[0];
         const editingProductId = productIdInput.value;
         let finalImageUrls = [];
+        
+        if (!productCategory) {
+            throw new Error('Please select a product category.');
+        }
 
         if (editingProductId) {
             const productRef = doc(db, 'products', editingProductId);
@@ -294,7 +299,9 @@ productForm.addEventListener('submit', async (e) => {
 
         const productData = {
             name: productName, name_lowercase: productName.toLowerCase(),
-            price: Number(productPrice), description: productDescription,
+            price: Number(productPrice),
+            category: productCategory, // ADD CATEGORY TO DATA OBJECT
+            description: productDescription,
             whatsapp: normalizeWhatsAppNumber(whatsappNumber),
             sellerId: user.uid,
         };
@@ -376,6 +383,7 @@ function populateFormForEdit(id, product) {
     productIdInput.value = id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price;
+    document.getElementById('product-category').value = product.category || ''; // SET CATEGORY ON EDIT
     document.getElementById('product-description').value = product.description;
     const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
     document.getElementById('whatsapp-number').value = localNumber;
