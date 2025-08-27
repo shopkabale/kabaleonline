@@ -16,7 +16,7 @@ async function fetchAndDisplayDeals() {
             dealsGrid.innerHTML = ''; // Clear any loading message
             deals.forEach(product => {
                 const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : '';
-                
+
                 const productLink = document.createElement('a');
                 productLink.href = `product.html?id=${product.id}`;
                 productLink.className = 'product-card-link';
@@ -64,13 +64,30 @@ let currentQuery = {
     maxPrice: ""
 };
 
+// --- NEW HELPER FUNCTION TO RENDER SKELETONS ---
+function renderSkeletonLoaders(count) {
+    let skeletonsHTML = '';
+    for (let i = 0; i < count; i++) {
+        skeletonsHTML += `
+            <div class="skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-price"></div>
+            </div>
+        `;
+    }
+    productGrid.innerHTML = skeletonsHTML;
+}
+
 async function fetchProducts(isNewSearch = false) {
     if (fetching) return;
     fetching = true;
     loadMoreBtn.textContent = 'Loading...';
 
     if (isNewSearch) {
-        productGrid.innerHTML = '<p>Loading products...</p>';
+        // --- THIS IS THE ONLY CHANGE IN THIS FUNCTION ---
+        // Instead of showing text, we now show 8 skeleton cards.
+        renderSkeletonLoaders(8);
         lastVisibleProductId = null;
     }
 
@@ -89,7 +106,7 @@ async function fetchProducts(isNewSearch = false) {
 
         const products = await response.json();
 
-        if (isNewSearch) productGrid.innerHTML = '';
+        if (isNewSearch) productGrid.innerHTML = ''; // This line now removes the skeletons
         if (products.length === 0 && isNewSearch) {
             productGrid.innerHTML = '<p>No products match your criteria.</p>';
         }
@@ -159,4 +176,4 @@ loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
 // Initial load
 fetchProducts(true);
-fetchAndDisplayDeals(); // <-- This calls the new function to get deals
+fetchAndDisplayDeals();
