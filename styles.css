@@ -470,3 +470,21 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     border-radius: 5px;
     z-index: 2; /* Ensures it's on top of the image */
 }
+/* Make the Quick Deals grid a horizontal, scrollable row */
+#quick-deals-grid {
+    display: flex; /* Lines up items in a row */
+    overflow-x: auto; /* Adds a horizontal scrollbar if needed */
+    padding-bottom: 20px; /* Adds some space for the scrollbar */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+}
+
+/* Give each product card in the deals section a fixed width */
+#quick-deals-grid .product-card-link {
+    flex: 0 0 250px; /* Prevents cards from shrinking. Adjust 250px if you want them wider or narrower. */
+    margin-right: 15px;
+}
+
+/* Hide scrollbar for a cleaner look (optional) */
+#quick-deals-grid::-webkit-scrollbar {
+    display: none;
+}
