@@ -3,10 +3,23 @@ const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const loadMoreBtn = document.getElementById('load-more-btn');
 
-const PRODUCTS_PER_PAGE = 40; // <-- Set to 40
+// Filter elements
+const categoryFilter = document.getElementById('category-filter');
+const minPriceInput = document.getElementById('min-price');
+const maxPriceInput = document.getElementById('max-price');
+const applyFiltersBtn = document.getElementById('apply-filters-btn');
+
+const PRODUCTS_PER_PAGE = 40;
 let lastVisibleProductId = null;
-let currentSearchTerm = "";
 let fetching = false;
+
+// Store current search and filter state
+let currentQuery = {
+    searchTerm: "",
+    category: "",
+    minPrice: "",
+    maxPrice: ""
+};
 
 async function fetchProducts(isNewSearch = false) {
     if (fetching) return;
@@ -17,8 +30,12 @@ async function fetchProducts(isNewSearch = false) {
         productGrid.innerHTML = '<p>Loading products...</p>';
         lastVisibleProductId = null;
     }
-    
-    let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentSearchTerm)}`;
+
+    let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
+    url += `&category=${encodeURIComponent(currentQuery.category)}`;
+    url += `&minPrice=${encodeURIComponent(currentQuery.minPrice)}`;
+    url += `&maxPrice=${encodeURIComponent(currentQuery.maxPrice)}`;
+
     if (lastVisibleProductId) {
         url += `&lastVisible=${lastVisibleProductId}`;
     }
@@ -26,18 +43,18 @@ async function fetchProducts(isNewSearch = false) {
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Network response was not ok.');
-        
+
         const products = await response.json();
 
         if (isNewSearch) productGrid.innerHTML = '';
         if (products.length === 0 && isNewSearch) {
-             productGrid.innerHTML = '<p>No products match your search.</p>';
+            productGrid.innerHTML = '<p>No products match your criteria.</p>';
         }
 
         if (products.length > 0) {
             lastVisibleProductId = products[products.length - 1].id;
         }
-        
+
         renderProducts(products);
 
         if (products.length < PRODUCTS_PER_PAGE) {
@@ -77,15 +94,25 @@ function renderProducts(productsToDisplay) {
     });
 }
 
-let searchTimeout;
-searchInput.addEventListener('input', (e) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        currentSearchTerm = e.target.value;
-        fetchProducts(true);
-    }, 500);
+function handleNewSearch() {
+    currentQuery.searchTerm = searchInput.value;
+    currentQuery.category = categoryFilter.value;
+    currentQuery.minPrice = minPriceInput.value;
+    currentQuery.maxPrice = maxPriceInput.value;
+    fetchProducts(true);
+}
+
+// Event Listeners
+applyFiltersBtn.addEventListener('click', handleNewSearch);
+
+// Allow pressing Enter in search bar to trigger search
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        handleNewSearch();
+    }
 });
 
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
+// Initial load
 fetchProducts(true);
