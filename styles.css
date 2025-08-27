@@ -454,37 +454,52 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 }
 /* Styling for the "DEAL" badge on product cards */
 .product-card {
-    position: relative; /* This is necessary for the badge positioning */
-    overflow: hidden; /* Keeps the badge from spilling out */
+    position: relative; 
+    overflow: hidden;
 }
 
 .deal-badge {
     position: absolute;
     top: 10px;
     left: 10px;
-    background-color: #ff4757; /* A bright, eye-catching color */
+    background-color: #ff4757;
     color: white;
     padding: 5px 10px;
     font-size: 0.8em;
     font-weight: bold;
     border-radius: 5px;
-    z-index: 2; /* Ensures it's on top of the image */
-}
-/* Make the Quick Deals grid a horizontal, scrollable row */
-#quick-deals-grid {
-    display: flex; /* Lines up items in a row */
-    overflow-x: auto; /* Adds a horizontal scrollbar if needed */
-    padding-bottom: 20px; /* Adds some space for the scrollbar */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+    z-index: 2;
 }
 
-/* Give each product card in the deals section a fixed width */
-#quick-deals-grid .product-card-link {
-    flex: 0 0 250px; /* Prevents cards from shrinking. Adjust 250px if you want them wider or narrower. */
+/* --- Default style for larger screens (horizontal scroll) --- */
+.horizontal-scroll-grid {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.horizontal-scroll-grid .product-card-link {
+    flex: 0 0 250px; 
     margin-right: 15px;
 }
 
-/* Hide scrollbar for a cleaner look (optional) */
-#quick-deals-grid::-webkit-scrollbar {
+.horizontal-scroll-grid::-webkit-scrollbar {
     display: none;
+}
+
+/* --- Added style for small screens (2-column grid) --- */
+@media (max-width: 768px) {
+    .horizontal-scroll-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Creates 2 equal columns */
+        gap: 15px; /* Sets the space between cards */
+        overflow-x: visible; /* Removes horizontal scroll */
+        padding-bottom: 0;
+    }
+
+    .horizontal-scroll-grid .product-card-link {
+        flex: auto; /* Resets the fixed width */
+        margin-right: 0; /* Removes the margin used for scrolling */
+    }
 }
