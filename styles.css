@@ -433,21 +433,22 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     background-color: #ec971f; /* A slightly darker shade for hover */
 }
 
-/* Style for the 'Add to Deals' button in the admin/seller dashboard */
+/* Style for the 'Add to Deals' button in the admin dashboard */
 .seller-controls .deal-btn {
     width: 100%;
     margin-bottom: 5px; /* Adds space between it and the delete button */
-    padding: 8px; /* A bit of padding */
+    padding: 8px;
     border: 1px solid #ccc;
     background-color: #f0f0f0;
     cursor: pointer;
     border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
 }
 
-/* Style for when the button is active (product is on deal) */
+/* Style for when the product IS ON DEAL (the button turns green) */
 .seller-controls .deal-btn.on-deal {
-    background-color: #28a745; /* Green background */
+    background-color: #28a745; /* A nice green color */
     color: white;
-    border-color: #28a745;
+    border-color: #218838;
     font-weight: bold;
 }
