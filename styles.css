@@ -421,12 +421,15 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     min-width: 100px;
 }
 
-/* Styling for the filter button */
+
 #apply-filters-btn {
-    padding: 12px 20px;
-    border: none;
-    cursor: pointer;
+    background-color: #f0ad4e; /* This is a common gold/yellow color */
+    color: #333;
     font-weight: bold;
-    /* It will also use styles from your .cta-button class */
+    border: none;
+}
+
+#apply-filters-btn:hover {
+    background-color: #ec971f; /* A slightly darker shade for hover */
 }
 
