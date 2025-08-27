@@ -503,3 +503,49 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
         margin-right: 0; /* Removes the margin used for scrolling */
     }
 }
+
+/* --- Skeleton Loader Styles --- */
+
+/* The container for a single skeleton card */
+.skeleton-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+/* The base style for any shimmering element */
+.skeleton {
+    background-color: #e0e0e0; /* Light gray for the placeholder */
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite linear;
+    background-image: linear-gradient(90deg, #e0e0e0 0px, #f0f0f0 40px, #e0e0e0 80px);
+    background-size: 600px; /* Make the gradient wider than the element */
+}
+
+/* Specific placeholder elements */
+.skeleton-image {
+    height: 150px; /* Approximate height of your product images */
+    margin-bottom: 10px;
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 80%; /* Title doesn't take up the full width */
+    margin-bottom: 8px;
+}
+
+.skeleton-price {
+    height: 18px;
+    width: 50%; /* Price is usually shorter */
+}
+
+/* The shimmer animation */
+@keyframes shimmer {
+    0% {
+        background-position: -300px; /* Start gradient off-screen to the left */
+    }
+    100% {
+        background-position: 300px; /* End gradient off-screen to the right */
+    }
+}
