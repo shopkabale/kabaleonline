@@ -40,15 +40,19 @@ async function fetchAllProducts() {
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
-        // --- CHANGE START: Check if the product is on deal ---
         const isOnDeal = product.isOnDeal || false;
-        // --- CHANGE END ---
+
+        // --- SOLUTION START: Get the primary image correctly ---
+        const primaryImage = (product.imageUrls && product.imageUrls.length > 0) 
+            ? product.imageUrls[0] 
+            : (product.imageUrl || ''); // Fallback for very old products
+        // --- SOLUTION END ---
 
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
-        // --- CHANGE START: Added the new "Deal" button to the HTML ---
+        
         productCard.innerHTML = `
-            <img src="${product.imageUrl}" alt="${product.name}">
+            <img src="${primaryImage}" alt="${product.name}">
             <h3>${product.name}</h3>
             <p class="price">UGX ${product.price.toLocaleString()}</p>
             <p style="font-size: 0.8em; color: grey; padding: 0 15px;">Seller ID: ${product.sellerId.substring(0, 10)}...</p>
@@ -59,16 +63,13 @@ async function fetchAllProducts() {
                 <button class="delete-btn admin-delete">Delete (Admin)</button>
             </div>
         `;
-        // --- CHANGE END ---
-
-        // --- CHANGE START: Add event listener for the new Deal button ---
+        
         productCard.querySelector('.deal-btn').addEventListener('click', (e) => {
             const id = e.target.dataset.id;
             const status = e.target.dataset.dealStatus === 'true';
             toggleDealStatusAsAdmin(id, status);
         });
-        // --- CHANGE END ---
-
+        
         productCard.querySelector('.admin-delete').addEventListener('click', () => {
             deleteProductAsAdmin(productId, product.name);
         });
@@ -76,7 +77,6 @@ async function fetchAllProducts() {
     });
 }
 
-// --- ADDED: New function to toggle the deal status ---
 async function toggleDealStatusAsAdmin(productId, currentStatus) {
     const newStatus = !currentStatus;
     const productRef = doc(db, 'products', productId);
@@ -90,7 +90,6 @@ async function toggleDealStatusAsAdmin(productId, currentStatus) {
         alert("Failed to update deal status.");
     }
 }
-// --- END OF ADDED FUNCTION ---
 
 async function deleteProductAsAdmin(productId, productName) {
     if (confirm(`ADMIN ACTION:\nAre you sure you want to delete the product "${productName}"? This cannot be undone.`)) {
