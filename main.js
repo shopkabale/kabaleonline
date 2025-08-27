@@ -1,4 +1,47 @@
 import { auth, db } from './firebase.js'; // db is needed by shared.js
+
+// ================== QUICK DEALS LOGIC START ==================
+async function fetchAndDisplayDeals() {
+    const dealsSection = document.getElementById('quick-deals-section');
+    const dealsGrid = document.getElementById('quick-deals-grid');
+
+    try {
+        const response = await fetch('/.netlify/functions/fetch-deals');
+        if (!response.ok) {
+            throw new Error('Network response for deals was not ok.');
+        }
+        const deals = await response.json();
+
+        if (deals && deals.length > 0) {
+            dealsGrid.innerHTML = ''; // Clear any loading message
+            deals.forEach(product => {
+                const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : '';
+                
+                const productLink = document.createElement('a');
+                productLink.href = `product.html?id=${product.id}`;
+                productLink.className = 'product-card-link';
+                productLink.innerHTML = `
+                    <div class="product-card">
+                        <div class="deal-badge">DEAL</div>
+                        <img src="${primaryImage}" alt="${product.name}">
+                        <h3>${product.name}</h3>
+                        <p class="price">UGX ${product.price.toLocaleString()}</p>
+                    </div>
+                `;
+                dealsGrid.appendChild(productLink);
+            });
+            dealsSection.style.display = 'block'; // Show the whole section
+        } else {
+            dealsSection.style.display = 'none'; // Keep it hidden if no deals
+        }
+    } catch (error) {
+        console.error("Could not fetch quick deals:", error);
+        dealsSection.style.display = 'none'; // Hide section on error
+    }
+}
+// ==================  QUICK DEALS LOGIC END  ==================
+
+
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const loadMoreBtn = document.getElementById('load-more-btn');
@@ -116,3 +159,4 @@ loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
 // Initial load
 fetchProducts(true);
+fetchAndDisplayDeals(); // <-- This calls the new function to get deals
