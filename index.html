@@ -40,23 +40,22 @@
             <div class="search-bar">
                 <input type="search" id="search-input" placeholder="Search by product name...">
             </div>
-    
-            <div class="filters">
-                <select id="category-filter">
-                    <option value="">All Categories</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Clothing & Apparel">Clothing & Apparel</option>
-                    <option value="Home & Furniture">Home & Furniture</option>
-                    <option value="Health & Beauty">Health & Beauty</option>
-                    <option value="Vehicles">Vehicles</option>
-                    <option value="Property">Property</option>
-                    <option value="Other">Other</option>
-                </select>
-                <input type="number" id="min-price" placeholder="Min Price (UGX)">
-                <input type="number" id="max-price" placeholder="Max Price (UGX)">
-                <button id="apply-filters-btn" class="cta-button">Filter</button>
-            </div>
-        </div>
+    <div class="filters">
+    <div class="filter-row">
+        <select id="category-filter">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing & Apparel">Clothing & Apparel</option>
+            </select>
+    </div>
+    <div class="filter-row price-filter-group">
+        <input type="number" id="min-price" placeholder="Min Price (UGX)">
+        <input type="number" id="max-price" placeholder="Max Price (UGX)">
+        <button id="apply-filters-btn" class="cta-button">Filter</button>
+    </div>
+</div>
+
+            
 
         <main>
             <div id="product-grid" class="product-grid"><p>Loading products...</p></div>
