@@ -384,3 +384,49 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
   background-color: #003366; /* dark blue on hover */
   color: #ffffff; /* white text */
 }
+/* --- New Two-Row Filter Styles --- */
+
+/* Main container for the filters */
+.filters {
+    display: flex;
+    flex-direction: column; /* Stacks the rows vertically */
+    gap: 10px; /* Space between the category row and price row */
+    margin-top: 15px;
+}
+
+/* This is the new group for the price inputs and button */
+.price-filter-group {
+    display: flex;
+    gap: 10px; /* Space between the price inputs and the button */
+}
+
+/* Shared styles for all input fields and the select dropdown */
+.filters select,
+.filters input[type="number"] {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Make the category dropdown take the full width of its row */
+#category-filter {
+    width: 100%;
+}
+
+/* Make the price inputs flexible so they grow to fill the space */
+.price-filter-group input[type="number"] {
+    flex: 1; /* This makes both price inputs share the space equally */
+    min-width: 100px;
+}
+
+/* Styling for the filter button */
+#apply-filters-btn {
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    /* It will also use styles from your .cta-button class */
+}
+
