@@ -174,5 +174,5 @@ loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 fetchProducts(true);
 fetchAndDisplayDeals();
 
-Does the search box filter the whole database or just one page , how many products will be displayed with pagination
+
 
