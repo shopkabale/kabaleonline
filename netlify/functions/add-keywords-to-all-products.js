@@ -16,6 +16,7 @@ const db = getFirestore();
 
 // Helper function to generate keywords from text
 const generateKeywords = (text) => {
+  if (!text) return []; // Return empty array if text is null or undefined
   const textLower = text.toLowerCase();
   const keywords = new Set();
   const words = textLower.split(' ').filter(word => word.length > 0);
@@ -40,7 +41,6 @@ exports.handler = async (event) => {
     snapshot.forEach(doc => {
       const productData = doc.data();
       
-      // *** THIS IS THE IMPORTANT CHANGE ***
       // Only update the product if it does NOT already have a keywords field.
       if (!productData.keywords) {
         const textToSearch = `${productData.name} ${productData.category}`;
@@ -55,14 +55,16 @@ exports.handler = async (event) => {
       return { statusCode: 200, body: "All products already have keywords. Nothing to do." };
     }
 
+    // Wait for all the updates to complete
     await Promise.all(updatePromises);
     
-    const successMessage = `Successfully updated ${updatedCount} products with keywords.`;
+    const successMessage = `Successfully updated ${updatedCount} products with keywords. You can now delete this script file.`;
     console.log(successMessage);
     return { statusCode: 200, body: successMessage };
 
-  } catch (error) {
+  } catch (error)
+ {
     console.error("Error updating products:", error);
-    return { statusCode: 500, body: "An error occurred." };
+    return { statusCode: 500, body: `An error occurred: ${error.message}` };
   }
 };
