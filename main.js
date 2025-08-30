@@ -11,9 +11,6 @@ const minPriceInput = document.getElementById('min-price');
 const maxPriceInput = document.getElementById('max-price');
 const applyFiltersBtn = document.getElementById('apply-filters-btn');
 const productCountContainer = document.getElementById('product-count-container');
-
-// NEW elements for added features
-const sortByFilter = document.getElementById('sort-by');
 const clearFiltersBtn = document.getElementById('clear-filters-btn');
 const gridViewBtn = document.getElementById('grid-view-btn');
 const listViewBtn = document.getElementById('list-view-btn');
@@ -24,22 +21,15 @@ const PRODUCTS_PER_PAGE = 40;
 let lastVisibleProductId = null;
 let fetching = false;
 
-// Store current search and filter state
 let currentQuery = {
     searchTerm: "",
     category: "",
     minPrice: "",
-    maxPrice: "",
-    sortBy: "default" // Added for sorting
+    maxPrice: ""
 };
 
 // ================== REUSABLE FUNCTIONS ==================
 
-/**
- * Creates a product card HTML element.
- * @param {object} product The product data.
- * @returns {HTMLAnchorElement} The product card element.
- */
 function createProductCard(product) {
     const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
     const isFavorited = wishlist.includes(product.id);
@@ -65,10 +55,6 @@ function createProductCard(product) {
     return productLink;
 }
 
-/**
- * Renders skeleton loaders for a better loading experience.
- * @param {number} count The number of skeletons to render.
- */
 function renderSkeletonLoaders(count) {
     let skeletonsHTML = '';
     for (let i = 0; i < count; i++) {
@@ -123,7 +109,6 @@ async function fetchProducts(isNewSearch = false) {
     url.searchParams.set('category', currentQuery.category);
     url.searchParams.set('minPrice', currentQuery.minPrice);
     url.searchParams.set('maxPrice', currentQuery.maxPrice);
-    url.searchParams.set('sortBy', currentQuery.sortBy);
     
     if (lastVisibleProductId) {
         url.searchParams.set('lastVisible', lastVisibleProductId);
@@ -174,7 +159,6 @@ function handleNewSearch() {
     currentQuery.category = categoryFilter.value;
     currentQuery.minPrice = minPriceInput.value;
     currentQuery.maxPrice = maxPriceInput.value;
-    currentQuery.sortBy = sortByFilter.value;
 
     const isSearchOrFilterActive = currentQuery.searchTerm || currentQuery.category || currentQuery.minPrice || currentQuery.maxPrice;
 
@@ -191,8 +175,8 @@ function handleWishlistClick(e) {
     const wishlistBtn = e.target.closest('.wishlist-btn');
     if (!wishlistBtn) return;
 
-    e.preventDefault(); // Stop link navigation
-    e.stopPropagation(); // Stop event bubbling
+    e.preventDefault();
+    e.stopPropagation();
 
     const productId = wishlistBtn.dataset.productId;
     let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
@@ -209,25 +193,20 @@ function handleWishlistClick(e) {
 
 // ================== EVENT LISTENERS ==================
 
-// Search and filter listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => e.key === 'Enter' && handleNewSearch());
-sortByFilter.addEventListener('change', handleNewSearch);
+categoryFilter.addEventListener('change', handleNewSearch);
 
-// Clear filters listener
 clearFiltersBtn.addEventListener('click', () => {
     searchInput.value = '';
     categoryFilter.value = '';
     minPriceInput.value = '';
     maxPriceInput.value = '';
-    sortByFilter.value = 'default';
     handleNewSearch();
 });
 
-// Load more listener
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-// View toggle listeners
 gridViewBtn.addEventListener('click', () => {
     productGrid.classList.remove('list-view');
     gridViewBtn.classList.add('active');
@@ -240,11 +219,9 @@ listViewBtn.addEventListener('click', () => {
     gridViewBtn.classList.remove('active');
 });
 
-// Wishlist click listener (delegated)
 productGrid.addEventListener('click', handleWishlistClick);
 dealsGrid.addEventListener('click', handleWishlistClick);
 
-// Scroll to top listener
 window.onscroll = () => {
     const showButton = document.body.scrollTop > 100 || document.documentElement.scrollTop > 100;
     scrollToTopBtn.style.display = showButton ? "block" : "none";
@@ -255,4 +232,3 @@ scrollToTopBtn.addEventListener('click', () => {
 
 // ================== INITIAL LOAD ==================
 handleNewSearch();
-
