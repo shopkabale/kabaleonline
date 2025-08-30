@@ -12,7 +12,7 @@ initializeApp({
 });
 
 const db = getFirestore();
-const PRODUCTS_PER_PAGE = 40;
+const PRODUCTS_PER_PAGE = 30;
 
 exports.handler = async (event) => {
   const { searchTerm, category, minPrice, maxPrice, lastVisible } = event.queryStringParameters;
