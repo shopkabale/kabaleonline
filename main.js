@@ -52,7 +52,7 @@ const minPriceInput = document.getElementById('min-price');
 const maxPriceInput = document.getElementById('max-price');
 const applyFiltersBtn = document.getElementById('apply-filters-btn');
 
-const PRODUCTS_PER_PAGE = 40;
+const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
 let fetching = false;
 
