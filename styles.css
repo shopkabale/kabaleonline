@@ -549,4 +549,27 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
         background-position: 300px; /* End gradient off-screen to the right */
     }
 }
+/* ================== LOAD MORE BUTTON STYLE ================== */
+
+#load-more-btn {
+  /* Sizing and Spacing */
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: bold;
+  
+  /* Colors and Appearance */
+  background-color: #f0ad4e; /* A nice yellow/orange color */
+  color: #ffffff;             /* White text */
+  border: none;
+  border-radius: 8px;          /* Rounded corners */
+  cursor: pointer;
+  
+  /* Smooth transition for hover effect */
+  transition: background-color 0.3s ease;
+}
+
+/* Style for when the user hovers their mouse over the button */
+#load-more-btn:hover {
+  background-color: #ec9b3b; /* A slightly darker shade */
+}
 
