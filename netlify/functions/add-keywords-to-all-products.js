@@ -6,7 +6,7 @@ const serviceAccount = {
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
 };
-
+    
 if (!initializeApp.length) {
     initializeApp({
         credential: cert(serviceAccount)
@@ -39,17 +39,24 @@ exports.handler = async (event) => {
 
     snapshot.forEach(doc => {
       const productData = doc.data();
-      const textToSearch = `${productData.name} ${productData.category}`;
-      const keywords = generateKeywords(textToSearch);
-
-      // Add the update operation to our list of promises
-      updatePromises.push(doc.ref.update({ keywords: keywords }));
-      updatedCount++;
+      
+      // *** THIS IS THE IMPORTANT CHANGE ***
+      // Only update the product if it does NOT already have a keywords field.
+      if (!productData.keywords) {
+        const textToSearch = `${productData.name} ${productData.category}`;
+        const keywords = generateKeywords(textToSearch);
+        
+        updatePromises.push(doc.ref.update({ keywords: keywords }));
+        updatedCount++;
+      }
     });
 
-    // Wait for all the updates to complete
-    await Promise.all(updatePromises);
+    if (updatedCount === 0) {
+      return { statusCode: 200, body: "All products already have keywords. Nothing to do." };
+    }
 
+    await Promise.all(updatePromises);
+    
     const successMessage = `Successfully updated ${updatedCount} products with keywords.`;
     console.log(successMessage);
     return { statusCode: 200, body: successMessage };
