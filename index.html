@@ -8,7 +8,6 @@
       gtag('js', new Date());
       gtag('config', 'G-8T3YSBPPG3');
     </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kabale Online | Buy and Sell Online in Kabale , Kigezi</title>
@@ -18,9 +17,37 @@
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        .skeleton-card {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        .skeleton-card .image {
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio */
+            background-color: #e0e0e0;
+        }
+        .skeleton-card .text {
+            height: 1.2em;
+            margin: 15px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+        .skeleton-card .text.short {
+            width: 60%;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-
     <header class="site-header">
         <div class="container header-content">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
@@ -62,7 +89,7 @@
                 </div>
             </div>
         </div>
-        
+
         <section id="quick-deals-section" class="container" style="display: none;">
             <h2>Featured Listings</h2>
             <div id="quick-deals-grid" class="product-grid">
@@ -71,7 +98,12 @@
 
         <main>
             <h2>All Listings</h2>
-            <div id="product-grid" class="product-grid"><p>Loading listings...</p></div>
+            <div id="product-grid" class="product-grid">
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+            </div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
@@ -99,6 +131,5 @@
 
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
-
 </body>
 </html>
