@@ -572,4 +572,33 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
 #load-more-btn:hover {
   background-color: #ec9b3b; /* A slightly darker shade */
 }
+/* --- Styles for the Search Bar & Button --- */
+
+.search-bar {
+    display: flex; /* Aligns the input and button horizontally */
+    gap: 10px;     /* Adds a small space between them */
+    align-items: center; /* Vertically aligns them nicely */
+}
+
+.search-bar input[type="search"] {
+    flex-grow: 1; /* Allows the search input to take up available space */
+    margin: 0;    /* Removes default margins */
+}
+
+/* This is the general style for all Call-to-Action buttons, including Search */
+.cta-button {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #0056b3;
+}
 
