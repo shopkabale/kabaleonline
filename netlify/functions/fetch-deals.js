@@ -1,54 +1,40 @@
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-// Initialize Firebase Admin SDK
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  // REVERTED: Using your original, working method for the private key
   privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
 };
 
-// Prevents re-initializing the app on hot reloads
 if (!global._firebaseApp) {
-  global._firebaseApp = initializeApp({
-    credential: cert(serviceAccount)
-  });
+  global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
 
 const db = getFirestore();
 
 exports.handler = async (event) => {
   try {
+    // CORRECTED a few lines down
     const dealsQuery = db.collection("products")
       .where("isDeal", "==", true) 
-      .orderBy("createdAt", "desc")
+      .orderBy("timestamp", "desc")
       .limit(10);
-
     const snapshot = await dealsQuery.get();
-
     if (snapshot.empty) {
-      return {
-        statusCode: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([]),
-      };
+      return { statusCode: 200, body: JSON.stringify([]) };
     }
-
     const deals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(deals),
     };
-
   } catch (error) {
     console.error("Fetch-deals function error:", error);
     const errorMessage = error.message.includes("indexes")
-      ? "Query requires a Firestore index. Please check your Firebase console for an automatic index creation link."
+      ? "Query requires a Firestore index. Please check your Firebase console for a link to create it."
       : "Failed to fetch deals.";
-
     return {
       statusCode: 500,
       body: JSON.stringify({ error: errorMessage, details: error.message }),
