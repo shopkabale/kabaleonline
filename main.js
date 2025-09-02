@@ -6,7 +6,6 @@ async function fetchAndDisplayServices() {
     const servicesGrid = document.getElementById('services-grid');
 
     try {
-        // This calls the new backend function you will create
         const response = await fetch('/.netlify/functions/fetch-services');
         if (!response.ok) {
             throw new Error('Network response for services was not ok.');
@@ -17,11 +16,9 @@ async function fetchAndDisplayServices() {
             servicesGrid.innerHTML = ''; // Clear any loading message
             services.forEach(product => {
                 const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
-
                 const productLink = document.createElement('a');
                 productLink.href = `product.html?id=${product.id}`;
                 productLink.className = 'product-card-link';
-                // Note: The "DEAL" badge is removed
                 productLink.innerHTML = `
                     <div class="product-card">
                         <img src="${primaryImage}" alt="${product.name}">
@@ -31,23 +28,22 @@ async function fetchAndDisplayServices() {
                 `;
                 servicesGrid.appendChild(productLink);
             });
-            servicesSection.style.display = 'block'; // Show the section
+            servicesSection.style.display = 'block';
         } else {
-            servicesSection.style.display = 'none'; // Hide if no services
+            servicesSection.style.display = 'none';
         }
     } catch (error) {
         console.error("Could not fetch services:", error);
-        servicesSection.style.display = 'none'; // Hide section on error
+        servicesSection.style.display = 'none';
     }
 }
 // ================== FEATURED SERVICES LOGIC END ==================
 
-
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const loadMoreBtn = document.getElementById('load-more-btn');
+const searchBtn = document.getElementById('search-btn');
 
-// Filter elements
 const categoryFilter = document.getElementById('category-filter');
 const minPriceInput = document.getElementById('min-price');
 const maxPriceInput = document.getElementById('max-price');
@@ -57,7 +53,6 @@ const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
 let fetching = false;
 
-// Store current search and filter state
 let currentQuery = {
     searchTerm: "",
     category: "",
@@ -65,7 +60,6 @@ let currentQuery = {
     maxPrice: ""
 };
 
-// --- NEW HELPER FUNCTION TO RENDER SKELETONS ---
 function renderSkeletonLoaders(count) {
     let skeletonsHTML = '';
     for (let i = 0; i < count; i++) {
@@ -102,12 +96,11 @@ async function fetchProducts(isNewSearch = false) {
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Network response was not ok.');
-
         const products = await response.json();
 
-        if (isNewSearch) productGrid.innerHTML = ''; 
+        if (isNewSearch) productGrid.innerHTML = '';
         if (products.length === 0 && isNewSearch) {
-            productGrid.innerHTML = '<p>No products match your criteria.</p>';
+            productGrid.innerHTML = '<p>No listings match your criteria.</p>';
         }
 
         if (products.length > 0) {
@@ -123,7 +116,7 @@ async function fetchProducts(isNewSearch = false) {
         }
     } catch (error) {
         console.error("Error fetching products:", error);
-        productGrid.innerHTML = '<p>Sorry, could not load products.</p>';
+        productGrid.innerHTML = '<p>Sorry, could not load listings.</p>';
     } finally {
         fetching = false;
         loadMoreBtn.textContent = 'Load More';
@@ -163,6 +156,7 @@ function handleNewSearch() {
 
 // Event Listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
+searchBtn.addEventListener('click', handleNewSearch);
 
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -172,6 +166,6 @@ searchInput.addEventListener('keydown', (e) => {
 
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-// Initial load
-fetchProducts(true);
+// Initial Load
 fetchAndDisplayServices();
+fetchProducts(true);
