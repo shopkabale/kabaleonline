@@ -1,14 +1,8 @@
 {
-  "name": "kabale-online-functions",
+  "name": "kabale-online-backend",
   "version": "1.0.0",
-  "description": "Backend functions for Kabale Online",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "firebase-admin": "^11.11.1"
+    "cloudinary": "^1.41.0",
+    "firebase-admin": "^11.10.1"
   }
 }
