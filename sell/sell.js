@@ -27,9 +27,50 @@ const resetPasswordBtn = document.getElementById('reset-password-btn');
 const loginErrorElement = document.getElementById('login-error');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
-const submissionMessage = document.getElementById('submission-message'); 
 
-// START: MODIFIED CODE - showMessage function now auto-hides errors
+// NEW: Logic for dynamic categories
+const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
+const categorySelect = document.getElementById('product-category');
+
+const itemCategories = {
+    "Electronics": "Electronics",
+    "Clothing & Apparel": "Clothing & Apparel",
+    "Home & Furniture": "Home & Furniture",
+    "Health & Beauty": "Health & Beauty",
+    "Vehicles": "Vehicles",
+    "Property": "Property",
+    "Other": "Other"
+};
+
+const serviceCategories = {
+    "Tutoring & Academics": "Tutoring & Academics",
+    "Printing & Design": "Printing & Design",
+    "Tech & Repair": "Tech & Repair",
+    "Personal & Beauty": "Personal & Beauty",
+    "Events & Creative": "Events & Creative",
+    "Other Services": "Other Services"
+};
+
+function updateCategoryOptions() {
+    const selectedType = document.querySelector('input[name="listing_type"]:checked').value;
+    const categories = (selectedType === 'item') ? itemCategories : serviceCategories;
+    
+    categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>'; // Reset
+    
+    for (const key in categories) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = categories[key];
+        categorySelect.appendChild(option);
+    }
+}
+
+listingTypeRadios.forEach(radio => radio.addEventListener('change', updateCategoryOptions));
+
+// Call it once on page load to set the initial state
+document.addEventListener('DOMContentLoaded', updateCategoryOptions);
+
+
 // Helper function to show messages
 const showMessage = (element, message, isError = true) => {
     element.textContent = message;
@@ -37,7 +78,6 @@ const showMessage = (element, message, isError = true) => {
     if (isError) {
         element.classList.remove('success-message');
         element.classList.add('error-message');
-        // Errors will now disappear after 4 seconds
         setTimeout(() => {
             element.style.display = 'none';
         }, 4000);
@@ -46,21 +86,17 @@ const showMessage = (element, message, isError = true) => {
         element.classList.add('success-message');
     }
 };
-// END: MODIFIED CODE
 
-// Helper function to hide all auth messages
 const hideAuthMessages = () => {
     loginErrorElement.style.display = 'none';
     signupErrorElement.style.display = 'none';
     authSuccessElement.style.display = 'none';
 };
 
-// START: ADDED CODE - Helper function to clear login/signup form fields
 const clearAuthForms = () => {
     if (loginForm) loginForm.reset();
     if (signupForm) signupForm.reset();
 };
-// END: ADDED CODE
 
 // Forgot Password Logic
 if (forgotPasswordLink) {
@@ -141,7 +177,7 @@ const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
         hideAuthMessages();
-        clearAuthForms(); // Clear forms when switching tabs too
+        clearAuthForms();
         tabs.forEach(t => t.classList.remove('active'));
         contents.forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
@@ -152,7 +188,6 @@ tabs.forEach(tab => {
     });
 });
 
-// START: MODIFIED CODE - Login form now clears on success
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     hideAuthMessages();
@@ -160,28 +195,19 @@ loginForm.addEventListener('submit', (e) => {
     const password = document.getElementById('login-password').value;
     signInWithEmailAndPassword(auth, email, password)
         .then(() => {
-            // Success! The onAuthStateChanged will handle the redirect.
-            // Clear the form fields for security.
             clearAuthForms();
         })
         .catch(error => {
             let friendlyMessage = 'Invalid email or password. Please try again.';
-            switch (error.code) {
-                case 'auth/user-not-found':
-                case 'auth/wrong-password':
-                case 'auth/invalid-credential':
-                    friendlyMessage = 'Invalid email or password. Please check and try again.';
-                    break;
-                default:
-                    friendlyMessage = 'An error occurred during login. Please try again later.';
-                    console.error('Login error:', error);
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                friendlyMessage = 'Invalid email or password. Please check and try again.';
+            } else {
+                console.error('Login error:', error);
             }
             showMessage(loginErrorElement, friendlyMessage);
         });
 });
-// END: MODIFIED CODE
 
-// START: MODIFIED CODE - Signup form now clears on success
 signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
     hideAuthMessages();
@@ -191,38 +217,23 @@ signupForm.addEventListener('submit', (e) => {
         .then(async (userCredential) => {
             const user = userCredential.user;
             await sendEmailVerification(user);
-
             showMessage(authSuccessElement, "Account created! Please check your inbox for a verification email.", false);
-
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, { email: user.email, role: 'seller' });
-
-            // Clear the form fields now that registration is successful
             clearAuthForms();
         })
         .catch(error => {
-            let friendlyMessage = '';
+            let friendlyMessage = 'An error occurred during signup. Please try again later.';
             switch (error.code) {
-                case 'auth/email-already-in-use':
-                    friendlyMessage = 'This email address is already registered. Please log in instead.';
-                    break;
-                case 'auth/weak-password':
-                    friendlyMessage = 'Password is too weak. It should be at least 6 characters long.';
-                    break;
-                case 'auth/invalid-email':
-                    friendlyMessage = 'Please enter a valid email address.';
-                    break;
-                default:
-                    friendlyMessage = 'An error occurred during signup. Please try again later.';
-                    console.error('Signup error:', error);
+                case 'auth/email-already-in-use': friendlyMessage = 'This email address is already registered. Please log in instead.'; break;
+                case 'auth/weak-password': friendlyMessage = 'Password is too weak. It should be at least 6 characters long.'; break;
+                case 'auth/invalid-email': friendlyMessage = 'Please enter a valid email address.'; break;
+                default: console.error('Signup error:', error);
             }
             showMessage(signupErrorElement, friendlyMessage);
         });
 });
-// END: MODIFIED CODE
 
-
-// Password Toggle Logic
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
         const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
@@ -236,7 +247,6 @@ document.querySelectorAll('.toggle-password').forEach(toggle => {
     });
 });
 
-// Dashboard "Sell an Item" Button Logic
 showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     if (isVisible) {
@@ -248,6 +258,7 @@ showProductFormBtn.addEventListener('click', () => {
         productForm.reset();
         productIdInput.value = '';
         submitBtn.textContent = 'Add Product';
+        updateCategoryOptions(); // Reset categories
     }
 });
 
@@ -256,6 +267,7 @@ productForm.addEventListener('submit', async (e) => {
     const user = auth.currentUser;
     if (!user) return alert('You must be logged in!');
 
+    const submissionMessage = document.getElementById('submission-message');
     submissionMessage.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
@@ -263,52 +275,43 @@ productForm.addEventListener('submit', async (e) => {
     try {
         const productName = document.getElementById('product-name').value;
         const productPrice = document.getElementById('product-price').value;
-        const productCategory = document.getElementById('product-category').value; // GET CATEGORY VALUE
+        const productCategory = document.getElementById('product-category').value;
         const productDescription = document.getElementById('product-description').value;
         const whatsappNumber = document.getElementById('whatsapp-number').value;
         const imageFile1 = document.getElementById('product-image-1').files[0];
         const imageFile2 = document.getElementById('product-image-2').files[0];
         const editingProductId = productIdInput.value;
         let finalImageUrls = [];
-        
-        if (!productCategory) {
-            throw new Error('Please select a product category.');
-        }
+
+        if (!productCategory) throw new Error('Please select a product category.');
 
         if (editingProductId) {
             const productRef = doc(db, 'products', editingProductId);
             const docSnap = await getDoc(productRef);
-            if (docSnap.exists()) {
-                finalImageUrls = docSnap.data().imageUrls || [];
-            }
+            if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
         }
 
-        const filesToUpload = [];
-        if (imageFile1) filesToUpload.push(imageFile1);
-        if (imageFile2) filesToUpload.push(imageFile2);
-
+        const filesToUpload = [imageFile1, imageFile2].filter(f => f);
         if (filesToUpload.length > 0) {
             const uploadPromises = filesToUpload.map(file => uploadImageToCloudinary(file));
             const newImageUrls = await Promise.all(uploadPromises);
             finalImageUrls = newImageUrls;
         }
 
-        if (finalImageUrls.length === 0 && !editingProductId) {
-            throw new Error('At least one image is required for a new product.');
-        }
+        if (finalImageUrls.length === 0 && !editingProductId) throw new Error('At least one image is required for a new product.');
 
         const productData = {
-            name: productName, name_lowercase: productName.toLowerCase(),
+            listing_type: document.querySelector('input[name="listing_type"]:checked').value,
+            name: productName,
+            name_lowercase: productName.toLowerCase(),
             price: Number(productPrice),
-            category: productCategory, // ADD CATEGORY TO DATA OBJECT
+            category: productCategory,
             description: productDescription,
             whatsapp: normalizeWhatsAppNumber(whatsappNumber),
             sellerId: user.uid,
         };
 
-        if (finalImageUrls.length > 0) {
-            productData.imageUrls = finalImageUrls;
-        }
+        if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
 
         if (editingProductId) {
             productData.updatedAt = new Date();
@@ -324,7 +327,9 @@ productForm.addEventListener('submit', async (e) => {
         productIdInput.value = '';
         productFormContainer.style.display = 'none';
         showProductFormBtn.textContent = 'Sell another Item';
+        updateCategoryOptions(); // Reset categories
         fetchSellerProducts(user.uid);
+
     } catch (error) {
         console.error('Error submitting product:', error);
         alert('Failed to submit product. ' + error.message);
@@ -335,7 +340,6 @@ productForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Helper Functions (No changes to these functions)
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
@@ -346,9 +350,7 @@ async function uploadImageToCloudinary(file) {
     formData.append('signature', signature);
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
     const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-    if (!uploadResponse.ok) {
-        throw new Error('Cloudinary upload failed.');
-    }
+    if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
     const uploadData = await uploadResponse.json();
     return uploadData.secure_url;
 }
@@ -360,6 +362,7 @@ async function fetchSellerProducts(uid) {
     sellerProductsList.innerHTML = '';
     if (querySnapshot.empty) {
         sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell an Item' to get started!</p>";
+        return;
     }
     querySnapshot.forEach((doc) => {
         const product = doc.data();
@@ -367,23 +370,26 @@ async function fetchSellerProducts(uid) {
         const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
-        productCard.setAttribute('data-product-id', productId);
         productCard.innerHTML = `<img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
-        productCard.querySelector('.edit-btn').addEventListener('click', () => {
-            productFormContainer.style.display = 'block';
-            showProductFormBtn.textContent = 'Close Form';
-            populateFormForEdit(productId, product);
-        });
+        productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
         sellerProductsList.appendChild(productCard);
     });
 }
 
 function populateFormForEdit(id, product) {
+    productFormContainer.style.display = 'block';
+    showProductFormBtn.textContent = 'Close Form';
+    
+    // Set the listing type and update categories
+    const type = product.listing_type || 'item'; // Default to 'item' if not set
+    document.getElementById(`type-${type}`).checked = true;
+    updateCategoryOptions();
+
     productIdInput.value = id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price;
-    document.getElementById('product-category').value = product.category || ''; // SET CATEGORY ON EDIT
+    document.getElementById('product-category').value = product.category || '';
     document.getElementById('product-description').value = product.description;
     const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
     document.getElementById('whatsapp-number').value = localNumber;
