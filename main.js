@@ -1,45 +1,46 @@
 import { auth, db } from './firebase.js'; // db is needed by shared.js
 
-// ================== QUICK DEALS LOGIC START ==================
-async function fetchAndDisplayDeals() {
-    const dealsSection = document.getElementById('quick-deals-section');
-    const dealsGrid = document.getElementById('quick-deals-grid');
+// ================== FEATURED SERVICES LOGIC START ==================
+async function fetchAndDisplayServices() {
+    const servicesSection = document.getElementById('services-section');
+    const servicesGrid = document.getElementById('services-grid');
 
     try {
-        const response = await fetch('/.netlify/functions/fetch-deals');
+        // This calls the new backend function you will create
+        const response = await fetch('/.netlify/functions/fetch-services');
         if (!response.ok) {
-            throw new Error('Network response for deals was not ok.');
+            throw new Error('Network response for services was not ok.');
         }
-        const deals = await response.json();
+        const services = await response.json();
 
-        if (deals && deals.length > 0) {
-            dealsGrid.innerHTML = ''; // Clear any loading message
-            deals.forEach(product => {
-                const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : '';
+        if (services && services.length > 0) {
+            servicesGrid.innerHTML = ''; // Clear any loading message
+            services.forEach(product => {
+                const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
 
                 const productLink = document.createElement('a');
                 productLink.href = `product.html?id=${product.id}`;
                 productLink.className = 'product-card-link';
+                // Note: The "DEAL" badge is removed
                 productLink.innerHTML = `
                     <div class="product-card">
-                        <div class="deal-badge">DEAL</div>
                         <img src="${primaryImage}" alt="${product.name}">
                         <h3>${product.name}</h3>
                         <p class="price">UGX ${product.price.toLocaleString()}</p>
                     </div>
                 `;
-                dealsGrid.appendChild(productLink);
+                servicesGrid.appendChild(productLink);
             });
-            dealsSection.style.display = 'block'; // Show the whole section
+            servicesSection.style.display = 'block'; // Show the section
         } else {
-            dealsSection.style.display = 'none'; // Keep it hidden if no deals
+            servicesSection.style.display = 'none'; // Hide if no services
         }
     } catch (error) {
-        console.error("Could not fetch quick deals:", error);
-        dealsSection.style.display = 'none'; // Hide section on error
+        console.error("Could not fetch services:", error);
+        servicesSection.style.display = 'none'; // Hide section on error
     }
 }
-// ==================  QUICK DEALS LOGIC END  ==================
+// ================== FEATURED SERVICES LOGIC END ==================
 
 
 const productGrid = document.getElementById('product-grid');
@@ -85,8 +86,6 @@ async function fetchProducts(isNewSearch = false) {
     loadMoreBtn.textContent = 'Loading...';
 
     if (isNewSearch) {
-        // --- THIS IS THE ONLY CHANGE IN THIS FUNCTION ---
-        // Instead of showing text, we now show 8 skeleton cards.
         renderSkeletonLoaders(8);
         lastVisibleProductId = null;
     }
@@ -106,7 +105,7 @@ async function fetchProducts(isNewSearch = false) {
 
         const products = await response.json();
 
-        if (isNewSearch) productGrid.innerHTML = ''; // This line now removes the skeletons
+        if (isNewSearch) productGrid.innerHTML = ''; 
         if (products.length === 0 && isNewSearch) {
             productGrid.innerHTML = '<p>No products match your criteria.</p>';
         }
@@ -165,7 +164,6 @@ function handleNewSearch() {
 // Event Listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
 
-// Allow pressing Enter in search bar to trigger search
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         handleNewSearch();
@@ -176,4 +174,4 @@ loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
 // Initial load
 fetchProducts(true);
-fetchAndDisplayDeals();
+fetchAndDisplayServices();
