@@ -23,12 +23,11 @@ const showProductFormBtn = document.getElementById('show-product-form-btn');
 const productFormContainer = document.getElementById('product-form-container');
 const forgotPasswordLink = document.getElementById('forgot-password-link');
 const resetPasswordBtn = document.getElementById('reset-password-btn');
-
 const loginErrorElement = document.getElementById('login-error');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
 
-// NEW: Logic for dynamic categories
+// Logic for dynamic categories
 const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
 const categorySelect = document.getElementById('product-category');
 
@@ -52,6 +51,7 @@ const serviceCategories = {
 };
 
 function updateCategoryOptions() {
+    if (!document.querySelector('input[name="listing_type"]:checked')) return;
     const selectedType = document.querySelector('input[name="listing_type"]:checked').value;
     const categories = (selectedType === 'item') ? itemCategories : serviceCategories;
     
