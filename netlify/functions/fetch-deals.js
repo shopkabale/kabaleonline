@@ -5,25 +5,29 @@ const { getFirestore } = require("firebase-admin/firestore");
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+  // FIX: Correctly formats the private key from environment variables
+  privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
 };
 
-initializeApp({
-  credential: cert(serviceAccount)
-});
+// IMPROVEMENT: Prevents re-initializing the app on hot reloads
+if (!global._firebaseApp) {
+  global._firebaseApp = initializeApp({
+    credential: cert(serviceAccount)
+  });
+}
 
 const db = getFirestore();
 
 exports.handler = async (event) => {
   try {
-    // Create a query to get products where isOnDeal is true
+    // FIX: Changed "isOnDeal" to "isDeal" to match your database structure
     const dealsQuery = db.collection("products")
-      .where("isOnDeal", "==", true)
+      .where("isDeal", "==", true) 
       .orderBy("createdAt", "desc") // Show newest deals first
       .limit(10); // Limit to a maximum of 10 deals
 
     const snapshot = await dealsQuery.get();
-    
+
     if (snapshot.empty) {
       return {
         statusCode: 200,
@@ -42,11 +46,10 @@ exports.handler = async (event) => {
 
   } catch (error) {
     console.error("Fetch-deals function error:", error);
-    // Firestore often gives specific errors for bad queries.
     const errorMessage = error.message.includes("indexes")
       ? "Query requires a Firestore index. Please check your Firebase console for an automatic index creation link."
       : "Failed to fetch deals.";
-      
+
     return {
       statusCode: 500,
       body: JSON.stringify({ error: errorMessage, details: error.message }),
