@@ -28,12 +28,15 @@ exports.handler = async (event) => {
                          .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff');
         }
 
-        // CORRECTED a few lines down
-        query = query.orderBy("timestamp", "desc");
+        // REMOVED: The line that sorts by date has been removed as you requested.
+        // query = query.orderBy("timestamp", "desc");
 
         if (lastVisible) {
             const lastDoc = await db.collection("products").doc(lastVisible).get();
-            if (lastDoc.exists) query = query.startAfter(lastDoc);
+            if (lastDoc.exists) {
+                // NOTE: Pagination without ordering can be unpredictable. We will use the default ordering.
+                query = query.startAfter(lastDoc);
+            }
         }
         
         query = query.limit(PRODUCTS_PER_PAGE);
@@ -47,12 +50,9 @@ exports.handler = async (event) => {
         };
     } catch (error) {
         console.error("Search function error:", error);
-        const errorMessage = error.message.includes("indexes")
-            ? "Query requires a Firestore index. Please check your Firebase console for a link to create it."
-            : "Failed to fetch products.";
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: errorMessage, details: error.message }),
+            body: JSON.stringify({ error: "Failed to fetch products.", details: error.message }),
         };
     }
 };
