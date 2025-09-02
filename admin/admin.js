@@ -40,12 +40,12 @@ async function fetchAllProducts() {
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
-        // CHANGE 1: Use 'isDeal' here
-        const isDeal = product.isDeal || false; 
+        // CORRECTED: Use 'isDeal' to match main.js
+        const isDeal = product.isDeal || false;
 
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) 
             ? product.imageUrls[0] 
-            : (product.imageUrl || ''); 
+            : (product.imageUrl || '');
 
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
@@ -81,8 +81,8 @@ async function toggleDealStatusAsAdmin(productId, currentStatus) {
     const productRef = doc(db, 'products', productId);
     try {
         await updateDoc(productRef, {
-            // CHANGE 2: Use 'isDeal' here
-            isDeal: newStatus 
+            // CORRECTED: Use 'isDeal' to match main.js
+            isDeal: newStatus
         });
         fetchAllProducts(); // Refresh the list to show the change
     } catch (error) {
