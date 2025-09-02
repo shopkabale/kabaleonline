@@ -5,11 +5,11 @@ const { getFirestore } = require("firebase-admin/firestore");
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  // FIX: Correctly formats the private key from environment variables
-  privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  // REVERTED: Using your original, working method for the private key
+  privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
 };
 
-// IMPROVEMENT: Prevents re-initializing the app on hot reloads
+// Prevents re-initializing the app on hot reloads
 if (!global._firebaseApp) {
   global._firebaseApp = initializeApp({
     credential: cert(serviceAccount)
@@ -20,11 +20,10 @@ const db = getFirestore();
 
 exports.handler = async (event) => {
   try {
-    // FIX: Changed "isOnDeal" to "isDeal" to match your database structure
     const dealsQuery = db.collection("products")
       .where("isDeal", "==", true) 
-      .orderBy("createdAt", "desc") // Show newest deals first
-      .limit(10); // Limit to a maximum of 10 deals
+      .orderBy("createdAt", "desc")
+      .limit(10);
 
     const snapshot = await dealsQuery.get();
 
@@ -32,7 +31,7 @@ exports.handler = async (event) => {
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([]), // Return an empty array if no deals are found
+        body: JSON.stringify([]),
       };
     }
 
