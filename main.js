@@ -1,20 +1,30 @@
-import { auth, db } from './firebase.js'; // db is needed by shared.js
+import { auth, db } from './firebase.js';
+import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// ================== FEATURED SERVICES LOGIC START ==================
-async function fetchAndDisplayServices() {
-    const servicesSection = document.getElementById('services-section');
-    const servicesGrid = document.getElementById('services-grid');
+// ================== FEATURED LISTINGS LOGIC START ==================
+async function fetchAndDisplayDeals() {
+    const dealsSection = document.getElementById('quick-deals-section');
+    const dealsGrid = document.getElementById('quick-deals-grid');
 
     try {
-        const response = await fetch('/.netlify/functions/fetch-services');
-        if (!response.ok) {
-            throw new Error('Network response for services was not ok.');
-        }
-        const services = await response.json();
+        const productsRef = collection(db, 'products');
+        // This query finds any listing where you have set 'isDeal' to true
+        const q = query(
+            productsRef, 
+            where('isDeal', '==', true), 
+            orderBy('createdAt', 'desc'),
+            limit(8) // Shows a maximum of 8 featured listings
+        );
+        const querySnapshot = await getDocs(q);
+        
+        const deals = [];
+        querySnapshot.forEach(doc => {
+            deals.push({ id: doc.id, ...doc.data() });
+        });
 
-        if (services && services.length > 0) {
-            servicesGrid.innerHTML = ''; // Clear any loading message
-            services.forEach(product => {
+        if (deals.length > 0) {
+            dealsGrid.innerHTML = '';
+            deals.forEach(product => {
                 const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
                 const productLink = document.createElement('a');
                 productLink.href = `product.html?id=${product.id}`;
@@ -26,18 +36,22 @@ async function fetchAndDisplayServices() {
                         <p class="price">UGX ${product.price.toLocaleString()}</p>
                     </div>
                 `;
-                servicesGrid.appendChild(productLink);
+                dealsGrid.appendChild(productLink);
             });
-            servicesSection.style.display = 'block';
+            dealsSection.style.display = 'block';
         } else {
-            servicesSection.style.display = 'none';
+            dealsSection.style.display = 'none';
         }
     } catch (error) {
-        console.error("Could not fetch services:", error);
-        servicesSection.style.display = 'none';
+        console.error("Could not fetch featured listings:", error);
+        dealsSection.style.display = 'none';
     }
 }
-// ================== FEATURED SERVICES LOGIC END ==================
+// ================== FEATURED LISTINGS LOGIC END ==================
+
+
+// Your full, existing code for search and all listings goes below.
+// I am including the full file for you to be sure.
 
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
@@ -53,23 +67,12 @@ const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
 let fetching = false;
 
-let currentQuery = {
-    searchTerm: "",
-    category: "",
-    minPrice: "",
-    maxPrice: ""
-};
+let currentQuery = { searchTerm: "", category: "", minPrice: "", maxPrice: "" };
 
 function renderSkeletonLoaders(count) {
     let skeletonsHTML = '';
     for (let i = 0; i < count; i++) {
-        skeletonsHTML += `
-            <div class="skeleton-card">
-                <div class="skeleton skeleton-image"></div>
-                <div class="skeleton skeleton-title"></div>
-                <div class="skeleton skeleton-price"></div>
-            </div>
-        `;
+        skeletonsHTML += `<div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-price"></div></div>`;
     }
     productGrid.innerHTML = skeletonsHTML;
 }
@@ -125,23 +128,11 @@ async function fetchProducts(isNewSearch = false) {
 
 function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
-        let primaryImage = '';
-        if (product.imageUrls && product.imageUrls.length > 0) {
-            primaryImage = product.imageUrls[0];
-        } else if (product.imageUrl) {
-            primaryImage = product.imageUrl;
-        }
-
+        let primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : '';
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
         productLink.className = 'product-card-link';
-        productLink.innerHTML = `
-            <div class="product-card">
-                <img src="${primaryImage}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                <p class="price">UGX ${product.price.toLocaleString()}</p>
-            </div>
-        `;
+        productLink.innerHTML = `<div class="product-card"><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
         productGrid.appendChild(productLink);
     });
 }
@@ -157,15 +148,11 @@ function handleNewSearch() {
 // Event Listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
 searchBtn.addEventListener('click', handleNewSearch);
-
 searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        handleNewSearch();
-    }
+    if (e.key === 'Enter') handleNewSearch();
 });
-
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
 // Initial Load
-fetchAndDisplayServices();
+fetchAndDisplayDeals();
 fetchProducts(true);
