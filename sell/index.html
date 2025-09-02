@@ -11,30 +11,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        .error-message {
-            display: none; /* Hidden by default */
-            color: #D8000C;
-            background-color: #FFD2D2;
-            border: 1px solid #D8000C;
-            border-radius: 5px;
-            padding: 10px;
-            text-align: center;
-            margin: 10px 0;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        .success-message {
-            display: none; /* Hidden by default */
-            color: #270;
-            background-color: #DFF2BF;
-            border: 1px solid #4F8A10;
-            border-radius: 5px;
-            padding: 10px;
-            text-align: center;
-            margin: 10px 0;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
+        .error-message { display: none; color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
+        .success-message { display: none; color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
+        .listing-type-selector { display: flex; gap: 20px; align-items: center; margin-bottom: 15px; }
+        .listing-type-selector input[type="radio"] { margin-right: 5px; }
     </style>
     </head>
 <body>
@@ -52,60 +32,7 @@
 </div>
     <div class="container page-content">
         <div id="auth-container">
-            <div class="login-card">
-                <h1 class="auth-title">Welcome Back!</h1>
-                <p class="auth-subtitle">Log in or create an account to access the sellerdashboard . <br>
-To start selling</p>
-
-                <p id="auth-success" class="success-message"></p>
-                <div class="auth-tabs">
-                    <button class="tab-link active" data-tab="login-tab">Login</button>
-                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
-                </div>
-
-                <div id="login-tab" class="tab-content active">
-                    <form id="login-form">
-                        <p id="login-error" class="error-message"></p>
-                        <div class="form-group">
-                            <label for="login-email">Email</label>
-                            <input type="email" id="login-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="login-password">Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="login-password" required>
-                                <span class="toggle-password">👁️</span>
-                            </div>
-                        </div>
-                        <button type="submit" class="auth-button">Login</button>
-
-                        <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
-                    </form>
-                </div>
-
-                <div id="signup-tab" class="tab-content">
-                    <form id="signup-form">
-                        <p id="signup-error" class="error-message"></p>
-                        <div class="form-group">
-                            <label for="signup-email">Email</label>
-                            <input type="email" id="signup-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="signup-password">Password</label>
-                             <div class="password-wrapper">
-                                <input type="password" id="signup-password" required>
-                                <span class="toggle-password">👁️</span>
-                            </div>
-                        </div>
-                        <button type="submit" class="auth-button">Create Account</button>
-                    </form>
-                </div>
-
-                <p class="or-divider"><span>OR</span></p>
-                <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
-                <p class="auth-footer-text">Kabale <span>Online</span></p>
             </div>
-        </div>
 
         <div id="dashboard-container" style="display: none;">
             <a href="/" class="home-link">&larr; Back to Home</a>
@@ -113,19 +40,30 @@ To start selling</p>
                  <h1>Your Dashboard</h1>
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
-            <p class="instruction-text"><b>To sell an item:</b> 1. Click 'Sell an Item'. 2. Fill in all the details. 3. Upload a clear photo. 4. Click 'Add Product'. Your item will be live instantly!</p>
+            <p class="instruction-text"><b>To sell:</b> 1. Click 'Sell an Item'. 2. Choose 'Item' or 'Service'. 3. Fill details & upload a photo. 4. Click 'Add'.</p>
 
             <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
             <button id="logout-btn">Logout</button>
             <button id="reset-password-btn">Change Password</button>
 
             <div id="product-form-container" style="display: none;">
-                <h2>Add/Edit Product</h2>
+                <h2>Add/Edit Listing</h2>
                 <form id="product-form">
                     <input type="hidden" id="productId">
+                    
                     <div class="form-group">
-                        <label for="product-name">Product Name</label>
-                        <input type="text" id="product-name" placeholder="e.g., Scarlett Electric Kettle" required>
+                        <label>What are you listing?</label>
+                        <div class="listing-type-selector">
+                            <input type="radio" id="type-item" name="listing_type" value="item" checked>
+                            <label for="type-item">An Item</label>
+                            <input type="radio" id="type-service" name="listing_type" value="service">
+                            <label for="type-service">A Service</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-name">Name of Item/Service</label>
+                        <input type="text" id="product-name" placeholder="e.g., Scarlett Electric Kettle or Mathematics Tutoring" required>
                     </div>
                     <div class="form-group">
                         <label for="product-price">Price (UGX)</label>
@@ -134,20 +72,11 @@ To start selling</p>
                     <div class="form-group">
                         <label for="product-category">Category</label>
                         <select id="product-category" required>
-                            <option value="" disabled selected>-- Select a Category --</option>
-                            <option value="Services">Services</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Clothing & Apparel">Clothing & Apparel</option>
-                            <option value="Home & Furniture">Home & Furniture</option>
-                            <option value="Health & Beauty">Health & Beauty</option>
-                            <option value="Vehicles">Vehicles</option>
-                            <option value="Property">Property</option>
-                            <option value="Other">Other</option>
-                        </select>
+                            </select>
                     </div>
                     <div class="form-group">
-                        <label for="product-description">Product Description</label>
-                        <textarea id="product-description" placeholder="Describe the item's condition, features, etc." required rows="5"></textarea>
+                        <label for="product-description">Description</label>
+                        <textarea id="product-description" placeholder="Describe the item's condition or the service you offer." required rows="5"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="whatsapp-number">WhatsApp Number</label>
@@ -162,7 +91,7 @@ To start selling</p>
                         <input type="file" id="product-image-2" accept="image/*">
                     </div>
                      <p id="submission-message" style="display: none; font-weight: bold; text-align: center; color: #333; margin-top: 15px;">
-                        Submitting an item may take up to a minute, please be patient.
+                        Submitting may take up to a minute, please be patient.
                     </p>
                      <button type="submit" id="submit-btn">Add Product</button>
                 </form>
@@ -172,28 +101,6 @@ To start selling</p>
             <div id="seller-products-list" class="product-grid"></div>
         </div>
     </div>
-
-    <footer>
-        <section id="contact-us-section">
-            <h2>Get in Touch</h2>
-            <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
-                    <i class="fa-solid fa-envelope"></i> Send an Email
-                </a>
-            </div>
-        </section>
-        <div class="footer-links">
-            <a href="/about.html" class="footer-link">About Us</a>
-            <a href="/terms.html" class="footer-link">Terms of Service</a>
-        </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
-
-    <script type="module" src="sell.js"></script>
-    <script type="module" src="../shared.js"></script>
-
-</body>
+    
+    </body>
 </html>
