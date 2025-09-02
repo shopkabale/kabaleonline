@@ -33,46 +33,45 @@
     <div class="container">
         <div class="page-welcome">
             <h1>Welcome to Kabale Online</h1>
-            <p>Choose from hundreds of products from hundreds of sellers right here in Kabale.</p>
+            <p>The #1 marketplace for students and residents in the Kigezi region.</p>
         </div>
 
         <div class="search-and-filter-container">
             <div class="search-bar">
-                <input type="search" id="search-input" placeholder="Search by product name...">
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+                <button id="search-btn" class="cta-button">Search</button>
             </div>
-    <div class="filters">
-    <div class="filter-row">
-        <select id="category-filter">
-
-    <option value="">All Categories</option>
-    <option value="Electronics">Electronics</option>
-    <option value="Clothing & Apparel">Clothing & Apparel</option>
-    <option value="Home & Furniture">Home & Furniture</option>
-    <option value="Health & Beauty">Health & Beauty</option>
-    <option value="Vehicles">Vehicles</option>
-    <option value="Property">Property</option>
-    <option value="Other">Other</option>
-
-
-
-            </select>
-    </div>
-    <div class="filter-row price-filter-group">
-        <input type="number" id="min-price" placeholder="Min Price (UGX)">
-        <input type="number" id="max-price" placeholder="Max Price (UGX)">
-        <button id="apply-filters-btn" class="cta-button">Filter</button>
-    </div>
-</div>
-<section id="quick-deals-section" class="container" style="display: none;">
-    <h2>Quick Deals</h2>
-    <div id="quick-deals-grid" class="product-grid">
+            <div class="filters">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="Services">Services</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing & Apparel">Clothing & Apparel</option>
+                        <option value="Home & Furniture">Home & Furniture</option>
+                        <option value="Health & Beauty">Health & Beauty</option>
+                        <option value="Vehicles">Vehicles</option>
+                        <option value="Property">Property</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="filter-row price-filter-group">
+                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <button id="apply-filters-btn" class="cta-button">Filter</button>
+                </div>
+            </div>
         </div>
-</section>
-
+        
+        <section id="services-section" class="container" style="display: none;">
+            <h2>Featured Services</h2>
+            <div id="services-grid" class="product-grid">
+                </div>
+        </section>
 
         <main>
-<h2>All Products</h2>
-            <div id="product-grid" class="product-grid"><p>Loading products...</p></div>
+            <h2>All Listings</h2>
+            <div id="product-grid" class="product-grid"><p>Loading listings...</p></div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
