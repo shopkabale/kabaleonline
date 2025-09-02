@@ -16,7 +16,7 @@
         .listing-type-selector { display: flex; gap: 20px; align-items: center; margin-bottom: 15px; }
         .listing-type-selector input[type="radio"] { margin-right: 5px; }
     </style>
-    </head>
+</head>
 <body>
 
     <header class="site-header">
@@ -27,12 +27,65 @@
             </nav>
         </div>
     </header>
-<div style="text-align: center; margin: 10px 0;">
-  <a href="../index.html" class="back-home-btn">⬅ Back to Home</a>
-</div>
+
+    <div style="text-align: center; margin: 10px 0;">
+      <a href="../index.html" class="back-home-btn">⬅ Back to Home</a>
+    </div>
+
     <div class="container page-content">
         <div id="auth-container">
+            <div class="login-card">
+                <h1 class="auth-title">Welcome Back!</h1>
+                <p class="auth-subtitle">Log in or create an account to access the seller dashboard and start selling.</p>
+
+                <p id="auth-success" class="success-message"></p>
+                <div class="auth-tabs">
+                    <button class="tab-link active" data-tab="login-tab">Login</button>
+                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
+                </div>
+
+                <div id="login-tab" class="tab-content active">
+                    <form id="login-form">
+                        <p id="login-error" class="error-message"></p>
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="login-password" required>
+                                <span class="toggle-password">👁️</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="auth-button">Login</button>
+                        <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
+                    </form>
+                </div>
+
+                <div id="signup-tab" class="tab-content">
+                    <form id="signup-form">
+                        <p id="signup-error" class="error-message"></p>
+                        <div class="form-group">
+                            <label for="signup-email">Email</label>
+                            <input type="email" id="signup-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                             <div class="password-wrapper">
+                                <input type="password" id="signup-password" required>
+                                <span class="toggle-password">👁️</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="auth-button">Create Account</button>
+                    </form>
+                </div>
+
+                <p class="or-divider"><span>OR</span></p>
+                <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+                <p class="auth-footer-text">Kabale <span>Online</span></p>
             </div>
+        </div>
 
         <div id="dashboard-container" style="display: none;">
             <a href="/" class="home-link">&larr; Back to Home</a>
@@ -40,9 +93,9 @@
                  <h1>Your Dashboard</h1>
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
-            <p class="instruction-text"><b>To sell:</b> 1. Click 'Sell an Item'. 2. Choose 'Item' or 'Service'. 3. Fill details & upload a photo. 4. Click 'Add'.</p>
+            <p class="instruction-text"><b>To sell:</b> 1. Click 'Sell'. 2. Choose 'Item' or 'Service'. 3. Fill details & upload a photo. 4. Click 'Add'.</p>
 
-            <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
+            <button id="show-product-form-btn" class="cta-button">Sell</button>
             <button id="logout-btn">Logout</button>
             <button id="reset-password-btn">Change Password</button>
 
@@ -97,10 +150,32 @@
                 </form>
             </div>
 
-            <h2>Your Products</h2>
+            <h2>Your Listings</h2>
             <div id="seller-products-list" class="product-grid"></div>
         </div>
     </div>
-    
-    </body>
+
+    <footer>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </section>
+        <div class="footer-links">
+            <a href="/about.html" class="footer-link">About Us</a>
+            <a href="/terms.html" class="footer-link">Terms of Service</a>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
+    <script type="module" src="sell.js"></script>
+    <script type="module" src="../shared.js"></script>
+
+</body>
 </html>
