@@ -9,69 +9,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* --- NEW CSS FOR CLEANER STICKY HEADER --- */
+        /* CSS FOR STICKY HEADER AND BUTTONS */
+        body { padding-top: 60px; }
+        .site-header-main { text-align: center; padding: 15px 0; }
+        .header-actions-sticky { position: sticky; top: 0; background-color: white; z-index: 1000; padding: 10px 0; display: flex; justify-content: center; gap: 15px; align-items: center; border-bottom: 1px solid #eee; }
+        .page-container { padding-top: 20px; }
+        .action-btn { padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; color: white; cursor: pointer; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .action-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        #items-btn { background-color: #007bff; } /* Blue */
+        #services-btn { background-color: #28a745; } /* Green */
+        #sell-btn { background-color: #ffc107; color: #212529; } /* Yellow */
+        .nav-link.active { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         
-        /* The main header with the title that scrolls away */
-        .site-header-main {
-            text-align: center;
-            padding: 15px 0;
-        }
-
-        /* The container for the buttons that will stick */
-        .header-actions-sticky {
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 1000;
-            padding: 10px 0;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-        }
-        
-        /* This pushes the main content down so it doesn't start underneath the sticky bar */
-        .page-container {
-            padding-top: 20px;
-        }
-
-        /* --- NEW CSS FOR BUTTON HIGHLIGHTING --- */
-
-        /* A base style for all action buttons */
-        .action-btn {
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: all 0.2s;
-            border: 1px solid #ddd;
-        }
-
-        /* Style for the non-active navigation links */
-        .nav-link {
-            background-color: #f0f0f0;
-            color: #333;
-        }
-        .nav-link:hover {
-            background-color: #e0e0e0;
-        }
-
-        /* Style for the main "Sell an Item" call-to-action button */
-        .cta-button {
-             background-color: #007bff;
-             color: white;
-             border-color: #007bff;
-        }
-
-        /* The highlighted style for the active nav link */
-        .nav-link.active {
-            background-color: #0d6efd; /* A slightly different blue */
-            color: white;
-            border-color: #0d6efd;
-        }
-        
-        /* --- CSS for Skeleton Loaders (Unchanged) --- */
+        /* CSS for Skeleton Loaders */
         .skeleton-card { background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: pulse 1.5s infinite ease-in-out; }
         .skeleton-card .image { width: 100%; padding-top: 100%; background-color: #e0e0e0; }
         .skeleton-card .text { height: 1.2em; margin: 15px; background-color: #e0e0e0; border-radius: 4px; }
@@ -87,7 +37,7 @@
     <div class="header-actions-sticky">
         <a href="/" class="action-btn nav-link" id="items-btn">All Items</a>
         <a href="/?type=service" class="action-btn nav-link" id="services-btn">Services</a>
-        <a href="/sell/" class="action-btn cta-button">Sell an Item</a>
+        <a href="/sell/" class="action-btn" id="sell-btn">Sell an Item</a>
     </div>
 
     <div class="container page-container">
@@ -97,7 +47,31 @@
         </div>
 
         <div class="search-and-filter-container">
+            <div class="search-bar">
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+                <button id="search-btn" class="cta-button">Search</button>
             </div>
+            <div class="filters">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="Services">Services</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing & Apparel">Clothing & Apparel</option>
+                        <option value="Home & Furniture">Home & Furniture</option>
+                        <option value="Health & Beauty">Health & Beauty</option>
+                        <option value="Vehicles">Vehicles</option>
+                        <option value="Property">Property</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="filter-row price-filter-group">
+                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <button id="apply-filters-btn" class="cta-button">Filter</button>
+                </div>
+            </div>
+        </div>
 
         <section id="quick-deals-section" class="container" style="display: none;">
             <h2>Featured Listings</h2>
@@ -107,7 +81,11 @@
         <main>
             <h2 id="listings-title">All Listings</h2>
             <div id="product-grid" class="product-grid">
-                </div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+            </div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
@@ -115,7 +93,23 @@
     </div>
 
     <footer>
-        </footer>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </section>
+        <div class="footer-links">
+            <a href="about.html" class="footer-link">About Us</a>
+            <a href="terms.html" class="footer-link">Terms of Service</a>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
 
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
