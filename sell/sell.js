@@ -263,7 +263,7 @@ showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     if (isVisible) {
         productFormContainer.style.display = 'none';
-        showProductFormBtn.textContent = 'Sell an Item';
+        showProductFormBtn.textContent = 'Post Something';
     } else {
         productFormContainer.style.display = 'block';
         showProductFormBtn.textContent = 'Close Form';
@@ -341,7 +341,7 @@ productForm.addEventListener('submit', async (e) => {
         productForm.reset();
         productIdInput.value = '';
         productFormContainer.style.display = 'none';
-        showProductFormBtn.textContent = 'Sell another Item';
+        showProductFormBtn.textContent = 'Post Another Listing';
         updateCategoryOptions();
         fetchSellerProducts(user.uid);
 
