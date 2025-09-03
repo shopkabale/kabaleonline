@@ -19,7 +19,11 @@ exports.handler = async (event) => {
         const { searchTerm, category, minPrice, maxPrice, lastVisible, type } = event.queryStringParameters;
         let query = db.collection("products");
 
-        if (type) query = query.where("listing_type", "==", type);
+        // Filter by service type if requested
+        if (type) {
+            query = query.where("listing_type", "==", type);
+        }
+
         if (category) query = query.where("category", "==", category);
         if (minPrice) query = query.where("price", ">=", Number(minPrice));
         if (maxPrice) query = query.where("price", "<=", Number(maxPrice));
@@ -29,8 +33,8 @@ exports.handler = async (event) => {
                          .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff');
         }
 
-        query = query.orderBy("createdAt", "desc"); // CORRECTED to use 'createdAt'
-
+        // NO SORTING is performed
+        
         if (lastVisible) {
             const lastDoc = await db.collection("products").doc(lastVisible).get();
             if (lastDoc.exists) query = query.startAfter(lastDoc);
