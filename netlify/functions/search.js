@@ -16,8 +16,15 @@ const PRODUCTS_PER_PAGE = 30;
 
 exports.handler = async (event) => {
     try {
-        const { searchTerm, category, minPrice, maxPrice, lastVisible } = event.queryStringParameters;
+        // ADDED: The 'type' parameter is now read from the URL
+        const { searchTerm, category, minPrice, maxPrice, lastVisible, type } = event.queryStringParameters;
+        
         let query = db.collection("products");
+
+        // ADDED: This new block filters by the listing_type ('item' or 'service')
+        if (type) {
+            query = query.where("listing_type", "==", type);
+        }
 
         if (category) query = query.where("category", "==", category);
         if (minPrice) query = query.where("price", ">=", Number(minPrice));
@@ -28,15 +35,13 @@ exports.handler = async (event) => {
                          .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff');
         }
 
-        // REMOVED: The line that sorts by date has been removed as you requested.
-        // query = query.orderBy("timestamp", "desc");
+        // RESTORED: Sorting by date to show newest first.
+        // NOTE: This requires your Firestore indexes for 'createdAt' to be set up correctly.
+        query = query.orderBy("createdAt", "desc");
 
         if (lastVisible) {
             const lastDoc = await db.collection("products").doc(lastVisible).get();
-            if (lastDoc.exists) {
-                // NOTE: Pagination without ordering can be unpredictable. We will use the default ordering.
-                query = query.startAfter(lastDoc);
-            }
+            if (lastDoc.exists) query = query.startAfter(lastDoc);
         }
         
         query = query.limit(PRODUCTS_PER_PAGE);
@@ -50,9 +55,6 @@ exports.handler = async (event) => {
         };
     } catch (error) {
         console.error("Search function error:", error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Failed to fetch products.", details: error.message }),
-        };
+        return { statusCode: 500, body: JSON.stringify({ error: "Failed to fetch products." })};
     }
 };
