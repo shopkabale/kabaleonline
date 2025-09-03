@@ -602,3 +602,46 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     background-color: #0056b3;
 }
 
+/* --- CSS for Seller Call-to-Action Section --- */
+#cta-seller-section {
+    background-color: #f8f9fa; /* A light grey background */
+    padding: 40px 20px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    margin-top: 30px;
+}
+#cta-seller-section h2 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+#cta-seller-section p {
+    color: #6c757d; /* A softer text color */
+    margin-bottom: 25px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.cta-buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between buttons */
+    flex-wrap: wrap; /* Allows buttons to stack on small screens */
+}
+.cta-button-large {
+    padding: 12px 25px;
+    font-size: 1.1em;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    color: white;
+    transition: transform 0.2s;
+}
+.cta-button-large:hover {
+    transform: translateY(-2px);
+}
+.cta-item-btn {
+    background-color: #007bff; /* Blue for items */
+}
+.cta-service-btn {
+    background-color: #28a745; /* Green for services */
+}
