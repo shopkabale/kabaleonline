@@ -9,39 +9,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* --- CSS FOR HEADER LAYOUT --- */
-        .site-header .header-content {
-            display: flex;
-            flex-direction: column; /* Stack items vertically */
-            align-items: center;    /* Center items horizontally */
-            padding-bottom: 15px;
-        }
-        .site-header .site-title {
-            margin-bottom: 15px; /* Add space below the title */
-        }
-        .header-actions {
-            display: flex;
-            gap: 15px; /* Add space between the buttons */
-            align-items: center;
-        }
-        .header-actions .nav-link {
-            padding: 10px 15px;
-            background-color: #f0f0f0;
-            color: #333;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-        }
+        /* CSS FOR STICKY HEADER AND ACTIVE BUTTON */
+        body { padding-top: 60px; }
+        .site-header .header-title-area { text-align: center; padding: 15px 0; }
+        .header-actions { position: sticky; top: 0; background-color: white; z-index: 1000; padding: 10px 0; display: flex; justify-content: center; gap: 15px; align-items: center; border-bottom: 1px solid #eee; margin-top: -60px; }
+        .header-actions .nav-link { padding: 10px 15px; background-color: #f0f0f0; color: #333; border-radius: 8px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
+        .header-actions .nav-link:hover { background-color: #e0e0e0; }
+        .header-actions .nav-link.active { background-color: #007bff; color: white; }
+        
+        /* CSS for Skeleton Loaders */
+        .skeleton-card { background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: pulse 1.5s infinite ease-in-out; }
+        .skeleton-card .image { width: 100%; padding-top: 100%; background-color: #e0e0e0; }
+        .skeleton-card .text { height: 1.2em; margin: 15px; background-color: #e0e0e0; border-radius: 4px; }
+        .skeleton-card .text.short { width: 60%; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
     <header class="site-header">
-        <div class="container header-content">
+        <div class="header-title-area">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <div class="header-actions">
-                <a href="/?type=service" class="nav-link">Services</a>
-                <a href="/sell/" class="cta-button">Sell an Item</a>
-            </div>
+        </div>
+        <div class="header-actions">
+            <a href="/" class="nav-link" id="items-btn">All Items</a>
+            <a href="/?type=service" class="nav-link" id="services-btn">Services</a>
+            <a href="/sell/" class="cta-button">Sell an Item</a>
         </div>
     </header>
 
@@ -86,12 +78,15 @@
         <main>
             <h2 id="listings-title">All Listings</h2>
             <div id="product-grid" class="product-grid">
-                <p>Loading listings...</p>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
+                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
             </div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
-        main>
+        </main>
     </div>
 
     <footer>
