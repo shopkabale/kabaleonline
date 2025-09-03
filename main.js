@@ -1,25 +1,15 @@
 import { db } from './firebase.js';
 import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// ================== FEATURED LISTINGS LOGIC (BROWSER-BASED) START ==================
 async function fetchAndDisplayDeals() {
     const dealsSection = document.getElementById('quick-deals-section');
     const dealsGrid = document.getElementById('quick-deals-grid');
-
     try {
         const productsRef = collection(db, 'products');
-        const q = query(
-            productsRef,
-            where('isDeal', '==', true),
-            orderBy('createdAt', 'desc'),
-            limit(8)
-        );
+        const q = query(productsRef, where('isDeal', '==', true), orderBy('createdAt', 'desc'), limit(8));
         const querySnapshot = await getDocs(q);
         const deals = [];
-        querySnapshot.forEach(doc => {
-            deals.push({ id: doc.id, ...doc.data() });
-        });
-
+        querySnapshot.forEach(doc => deals.push({ id: doc.id, ...doc.data() }));
         if (deals.length > 0) {
             dealsGrid.innerHTML = '';
             deals.forEach(product => {
@@ -27,14 +17,7 @@ async function fetchAndDisplayDeals() {
                 const productLink = document.createElement('a');
                 productLink.href = `product.html?id=${product.id}`;
                 productLink.className = 'product-card-link';
-                productLink.innerHTML = `
-                    <div class="product-card">
-                        <div class="deal-badge">DEAL</div>
-                        <img src="${primaryImage}" alt="${product.name}">
-                        <h3>${product.name}</h3>
-                        <p class="price">UGX ${product.price.toLocaleString()}</p>
-                    </div>
-                `;
+                productLink.innerHTML = `<div class="product-card"><div class="deal-badge">DEAL</div><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
                 dealsGrid.appendChild(productLink);
             });
             dealsSection.style.display = 'block';
@@ -46,7 +29,6 @@ async function fetchAndDisplayDeals() {
         dealsSection.style.display = 'none';
     }
 }
-// ================== FEATURED LISTINGS LOGIC (BROWSER-BASED) END ==================
 
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
@@ -56,28 +38,24 @@ const categoryFilter = document.getElementById('category-filter');
 const minPriceInput = document.getElementById('min-price');
 const maxPriceInput = document.getElementById('max-price');
 const applyFiltersBtn = document.getElementById('apply-filters-btn');
+const listingsTitle = document.querySelector('main h2');
 
 const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
 let fetching = false;
 let currentQuery = { searchTerm: "", category: "", minPrice: "", maxPrice: "" };
 
-// **NEW: Function to show skeleton loaders**
+const urlParams = new URLSearchParams(window.location.search);
+const listingTypeFilter = urlParams.get('type');
+
 function showSkeletonLoaders() {
-    productGrid.innerHTML = ''; // Clear previous results
+    productGrid.innerHTML = '';
     let skeletons = '';
     for (let i = 0; i < 8; i++) {
-        skeletons += `
-            <div class="skeleton-card">
-                <div class="image"></div>
-                <div class="text"></div>
-                <div class="text short"></div>
-            </div>
-        `;
+        skeletons += `<div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>`;
     }
     productGrid.innerHTML = skeletons;
 }
-
 
 async function fetchProducts(isNewSearch = false) {
     if (fetching) return;
@@ -86,13 +64,16 @@ async function fetchProducts(isNewSearch = false) {
 
     if (isNewSearch) {
         lastVisibleProductId = null;
-        showSkeletonLoaders(); // **MODIFIED: Show skeletons on new search**
+        showSkeletonLoaders();
     }
 
     let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
     url += `&category=${encodeURIComponent(currentQuery.category)}`;
     url += `&minPrice=${encodeURIComponent(currentQuery.minPrice)}`;
     url += `&maxPrice=${encodeURIComponent(currentQuery.maxPrice)}`;
+    if (listingTypeFilter) {
+        url += `&type=${listingTypeFilter}`;
+    }
     if (lastVisibleProductId) {
         url += `&lastVisible=${lastVisibleProductId}`;
     }
@@ -102,9 +83,7 @@ async function fetchProducts(isNewSearch = false) {
         if (!response.ok) throw new Error('Network response was not ok.');
         const products = await response.json();
 
-        if (isNewSearch) {
-            productGrid.innerHTML = ''; // Clear skeletons before rendering
-        }
+        if (isNewSearch) productGrid.innerHTML = '';
 
         if (products.length === 0 && isNewSearch) {
             productGrid.innerHTML = '<p>No listings match your criteria.</p>';
@@ -116,11 +95,7 @@ async function fetchProducts(isNewSearch = false) {
 
         renderProducts(products);
 
-        if (products.length < PRODUCTS_PER_PAGE) {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'inline-block';
-        }
+        loadMoreBtn.style.display = products.length < PRODUCTS_PER_PAGE ? 'none' : 'inline-block';
     } catch (error) {
         console.error("Error fetching products:", error);
         productGrid.innerHTML = '<p>Sorry, could not load listings. Please try again later.</p>';
@@ -132,38 +107,38 @@ async function fetchProducts(isNewSearch = false) {
 
 function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
-        let primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
+        const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
         productLink.className = 'product-card-link';
-        // **FIX: Corrected the template literal syntax**
-        productLink.innerHTML = `
-            <div class="product-card">
-                <img src="${primaryImage}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                <p class="price">UGX ${product.price.toLocaleString()}</p>
-            </div>
-        `;
+        productLink.innerHTML = `<div class="product-card"><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
         productGrid.appendChild(productLink);
     });
 }
 
 function handleNewSearch() {
-    currentQuery.searchTerm = searchInput.value;
-    currentQuery.category = categoryFilter.value;
-    currentQuery.minPrice = minPriceInput.value;
-    currentQuery.maxPrice = maxPriceInput.value;
+    currentQuery = {
+        searchTerm: searchInput.value,
+        category: categoryFilter.value,
+        minPrice: minPriceInput.value,
+        maxPrice: maxPriceInput.value,
+    };
     fetchProducts(true);
 }
 
-// Event Listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
 searchBtn.addEventListener('click', handleNewSearch);
-searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleNewSearch();
-});
+searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-// Initial Fetches on Page Load
-fetchAndDisplayDeals();
+// --- Initial Page Load Logic ---
+if (listingTypeFilter === 'service') {
+    listingsTitle.textContent = 'All Services';
+    const dealsSection = document.getElementById('quick-deals-section');
+    if (dealsSection) dealsSection.style.display = 'none';
+} else {
+    listingsTitle.textContent = 'All Listings';
+    fetchAndDisplayDeals();
+}
+
 fetchProducts(true);
