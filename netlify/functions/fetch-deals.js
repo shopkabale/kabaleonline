@@ -15,16 +15,14 @@ const db = getFirestore();
 
 exports.handler = async (event) => {
   try {
-    // CORRECTED a few lines down
     const dealsQuery = db.collection("products")
       .where("isDeal", "==", true) 
-      .orderBy("timestamp", "desc")
+      .orderBy("createdAt", "desc") // CORRECTED to use 'createdAt'
       .limit(10);
+
     const snapshot = await dealsQuery.get();
-    if (snapshot.empty) {
-      return { statusCode: 200, body: JSON.stringify([]) };
-    }
     const deals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
@@ -33,7 +31,7 @@ exports.handler = async (event) => {
   } catch (error) {
     console.error("Fetch-deals function error:", error);
     const errorMessage = error.message.includes("indexes")
-      ? "Query requires a Firestore index. Please check your Firebase console for a link to create it."
+      ? "Query requires a Firestore index for 'createdAt'. Please check your Firebase console."
       : "Failed to fetch deals.";
     return {
       statusCode: 500,
