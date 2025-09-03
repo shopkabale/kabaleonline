@@ -17,33 +17,41 @@
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <style>
-        .skeleton-card {
-            background-color: #fff;
+        /* CSS for skeleton loaders */
+        .skeleton-card { background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: pulse 1.5s infinite ease-in-out; }
+        .skeleton-card .image { width: 100%; padding-top: 100%; background-color: #e0e0e0; }
+        .skeleton-card .text { height: 1.2em; margin: 15px; background-color: #e0e0e0; border-radius: 4px; }
+        .skeleton-card .text.short { width: 60%; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* --- NEW CSS FOR HEADER LAYOUT --- */
+        .site-header .header-content {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            align-items: center;    /* Center items horizontally */
+            padding-bottom: 15px;
+        }
+        .site-header .site-title {
+            margin-bottom: 15px; /* Add space below the title */
+        }
+        .header-actions {
+            display: flex;
+            gap: 15px; /* Add space between the buttons */
+            align-items: center;
+        }
+        .header-actions .nav-link {
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            color: #333;
             border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            animation: pulse 1.5s infinite ease-in-out;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.2s;
         }
-        .skeleton-card .image {
-            width: 100%;
-            padding-top: 100%; /* 1:1 Aspect Ratio */
+         .header-actions .nav-link:hover {
             background-color: #e0e0e0;
-        }
-        .skeleton-card .text {
-            height: 1.2em;
-            margin: 15px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-        }
-        .skeleton-card .text.short {
-            width: 60%;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
         }
     </style>
 </head>
@@ -51,9 +59,10 @@
     <header class="site-header">
         <div class="container header-content">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <nav class="header-nav">
-                <a href="/sell/" id="header-action-btn" class="cta-button">Sell an Item</a>
-            </nav>
+            <div class="header-actions">
+                <a href="/?type=service" class="nav-link">Services</a>
+                <a href="/sell/" class="cta-button">Sell anything</a>
+            </div>
         </div>
     </header>
 
@@ -64,46 +73,17 @@
         </div>
 
         <div class="search-and-filter-container">
-            <div class="search-bar">
-                <input type="search" id="search-input" placeholder="Search for items or services...">
-                <button id="search-btn" class="cta-button">Search</button>
             </div>
-            <div class="filters">
-                <div class="filter-row">
-                    <select id="category-filter">
-                        <option value="">All Categories</option>
-                        <option value="Services">Services</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Clothing & Apparel">Clothing & Apparel</option>
-                        <option value="Home & Furniture">Home & Furniture</option>
-                        <option value="Health & Beauty">Health & Beauty</option>
-                        <option value="Vehicles">Vehicles</option>
-                        <option value="Property">Property</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="filter-row price-filter-group">
-                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
-                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
-                    <button id="apply-filters-btn" class="cta-button">Filter</button>
-                </div>
-            </div>
-        </div>
 
         <section id="quick-deals-section" class="container" style="display: none;">
             <h2>Featured Listings</h2>
-            <div id="quick-deals-grid" class="product-grid">
-                </div>
+            <div id="quick-deals-grid" class="product-grid"></div>
         </section>
 
         <main>
             <h2>All Listings</h2>
             <div id="product-grid" class="product-grid">
-                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
-                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
-                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
-                <div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>
-            </div>
+                </div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
@@ -111,23 +91,7 @@
     </div>
 
     <footer>
-        <section id="contact-us-section">
-            <h2>Get in Touch</h2>
-            <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
-                    <i class="fa-solid fa-envelope"></i> Send an Email
-                </a>
-            </div>
-        </section>
-        <div class="footer-links">
-            <a href="about.html" class="footer-link">About Us</a>
-            <a href="terms.html" class="footer-link">Terms of Service</a>
-        </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
+        </footer>
 
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
