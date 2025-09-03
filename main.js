@@ -7,6 +7,8 @@ const minPriceInput = document.getElementById('min-price');
 const maxPriceInput = document.getElementById('max-price');
 const applyFiltersBtn = document.getElementById('apply-filters-btn');
 const listingsTitle = document.getElementById('listings-title');
+const itemsBtn = document.getElementById('items-btn');
+const servicesBtn = document.getElementById('services-btn');
 
 const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
@@ -16,10 +18,24 @@ let currentQuery = { searchTerm: "", category: "", minPrice: "", maxPrice: "" };
 const urlParams = new URLSearchParams(window.location.search);
 const listingTypeFilter = urlParams.get('type');
 
-// This function fetches the "Featured Listings"
+function showSkeletonLoaders() {
+    productGrid.innerHTML = ''; // Clear previous results
+    let skeletons = '';
+    for (let i = 0; i < 8; i++) { // Show 8 skeletons
+        skeletons += `
+            <div class="skeleton-card">
+                <div class="image"></div>
+                <div class="text"></div>
+                <div class="text short"></div>
+            </div>
+        `;
+    }
+    productGrid.innerHTML = skeletons;
+}
+
 async function fetchAndDisplayDeals() {
     const dealsSection = document.getElementById('quick-deals-section');
-    if (!dealsSection) return; // Exit if the HTML section doesn't exist
+    if (!dealsSection) return;
     const dealsGrid = document.getElementById('quick-deals-grid');
 
     try {
@@ -47,7 +63,6 @@ async function fetchAndDisplayDeals() {
     }
 }
 
-// This function fetches the main list of products or services
 async function fetchProducts(isNewSearch = false) {
     if (fetching) return;
     fetching = true;
@@ -55,7 +70,7 @@ async function fetchProducts(isNewSearch = false) {
 
     if (isNewSearch) {
         lastVisibleProductId = null;
-        productGrid.innerHTML = '<p>Loading listings...</p>';
+        showSkeletonLoaders();
     }
 
     let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
@@ -64,6 +79,8 @@ async function fetchProducts(isNewSearch = false) {
     url += `&maxPrice=${encodeURIComponent(currentQuery.maxPrice)}`;
     if (listingTypeFilter) {
         url += `&type=${listingTypeFilter}`;
+    } else {
+        url += `&type=item`; 
     }
     if (lastVisibleProductId) {
         url += `&lastVisible=${lastVisibleProductId}`;
@@ -85,7 +102,6 @@ async function fetchProducts(isNewSearch = false) {
         }
 
         renderProducts(products);
-
         loadMoreBtn.style.display = products.length < PRODUCTS_PER_PAGE ? 'none' : 'inline-block';
     } catch (error) {
         console.error("Error fetching products:", error);
@@ -117,7 +133,6 @@ function handleNewSearch() {
     fetchProducts(true);
 }
 
-// Event Listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
 searchBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
@@ -126,11 +141,13 @@ loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 // --- Initial Page Load Logic ---
 if (listingTypeFilter === 'service') {
     listingsTitle.textContent = 'All Services';
+    servicesBtn.classList.add('active');
     const dealsSection = document.getElementById('quick-deals-section');
     if (dealsSection) dealsSection.style.display = 'none';
 } else {
-    listingsTitle.textContent = 'All Listings';
-    fetchAndDisplayDeals(); // This line re-enables the deals section
+    listingsTitle.textContent = 'All Items';
+    itemsBtn.classList.add('active');
+    fetchAndDisplayDeals(); // This is now active
 }
 
 fetchProducts(true);
