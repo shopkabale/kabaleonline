@@ -26,7 +26,7 @@
         .skeleton-card .text.short { width: 60%; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* --- NEW CSS FOR HEADER LAYOUT --- */
+        /* --- CSS FOR HEADER LAYOUT --- */
         .site-header .header-content {
             display: flex;
             flex-direction: column; /* Stack items vertically */
@@ -61,7 +61,7 @@
             <a href="/" class="site-title">Kabale <span>Online</span></a>
             <div class="header-actions">
                 <a href="/?type=service" class="nav-link">Services</a>
-                <a href="/sell/" class="cta-button">Sell anything</a>
+                <a href="/sell/" class="cta-button">Sell an Item</a>
             </div>
         </div>
     </header>
@@ -73,7 +73,31 @@
         </div>
 
         <div class="search-and-filter-container">
+            <div class="search-bar">
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+                <button id="search-btn" class="cta-button">Search</button>
             </div>
+            <div class="filters">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="Services">Services</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing & Apparel">Clothing & Apparel</option>
+                        <option value="Home & Furniture">Home & Furniture</option>
+                        <option value="Health & Beauty">Health & Beauty</option>
+                        <option value="Vehicles">Vehicles</option>
+                        <option value="Property">Property</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="filter-row price-filter-group">
+                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <button id="apply-filters-btn" class="cta-button">Filter</button>
+                </div>
+            </div>
+        </div>
 
         <section id="quick-deals-section" class="container" style="display: none;">
             <h2>Featured Listings</h2>
@@ -91,7 +115,23 @@
     </div>
 
     <footer>
-        </footer>
+        <section id="contact-us-section">
+            <h2>Get in Touch</h2>
+            <div class="contact-buttons-container">
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
+                    <i class="fa-solid fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </section>
+        <div class="footer-links">
+            <a href="about.html" class="footer-link">About Us</a>
+            <a href="terms.html" class="footer-link">Terms of Service</a>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
 
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
