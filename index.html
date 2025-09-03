@@ -1,31 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8T3YSBPPG3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8T3YSBPPG3');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kabale Online | Buy and Sell Online in Kabale , Kigezi</title>
-    <meta name="description" content="Kabale Online is the #1 free local online marketplace for Kabale, Uganda. Find great deals on used and new phones, clothes, furniture, computers , and more. Sell online in kabale . Buy and sell in kabale . Buy and sell online in kabale . Kabale Online shop . Sell your items for free today!">
-    <meta name="keywords" content="shop online in kabale , shop in kabale , sell in kabale , buy and sell in uganda , kabale , buy and sell in kabale, kabale marketplace, used items uganda, second-hand kabale, kigezi online market , buy and sell online in kabale , sell anything in kabale , Top online shop in kabale , number one online shop in kabale , Kabale , Uganda , Kabale online market ">
-
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* CSS for skeleton loaders */
-        .skeleton-card { background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: pulse 1.5s infinite ease-in-out; }
-        .skeleton-card .image { width: 100%; padding-top: 100%; background-color: #e0e0e0; }
-        .skeleton-card .text { height: 1.2em; margin: 15px; background-color: #e0e0e0; border-radius: 4px; }
-        .skeleton-card .text.short { width: 60%; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
         /* --- CSS FOR HEADER LAYOUT --- */
         .site-header .header-content {
             display: flex;
@@ -48,10 +31,6 @@
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            transition: background-color 0.2s;
-        }
-         .header-actions .nav-link:hover {
-            background-color: #e0e0e0;
         }
     </style>
 </head>
@@ -105,13 +84,14 @@
         </section>
 
         <main>
-            <h2>All Listings</h2>
+            <h2 id="listings-title">All Listings</h2>
             <div id="product-grid" class="product-grid">
-                </div>
+                <p>Loading listings...</p>
+            </div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
-        </main>
+        main>
     </div>
 
     <footer>
