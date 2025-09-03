@@ -1,15 +1,32 @@
-import { db } from './firebase.js';
-import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+const productGrid = document.getElementById('product-grid');
+const searchInput = document.getElementById('search-input');
+const loadMoreBtn = document.getElementById('load-more-btn');
+const searchBtn = document.getElementById('search-btn');
+const categoryFilter = document.getElementById('category-filter');
+const minPriceInput = document.getElementById('min-price');
+const maxPriceInput = document.getElementById('max-price');
+const applyFiltersBtn = document.getElementById('apply-filters-btn');
+const listingsTitle = document.getElementById('listings-title');
 
+const PRODUCTS_PER_PAGE = 30;
+let lastVisibleProductId = null;
+let fetching = false;
+let currentQuery = { searchTerm: "", category: "", minPrice: "", maxPrice: "" };
+
+const urlParams = new URLSearchParams(window.location.search);
+const listingTypeFilter = urlParams.get('type');
+
+// This function fetches the "Featured Listings"
 async function fetchAndDisplayDeals() {
     const dealsSection = document.getElementById('quick-deals-section');
+    if (!dealsSection) return; // Exit if the HTML section doesn't exist
     const dealsGrid = document.getElementById('quick-deals-grid');
+
     try {
-        const productsRef = collection(db, 'products');
-        const q = query(productsRef, where('isDeal', '==', true), orderBy('createdAt', 'desc'), limit(8));
-        const querySnapshot = await getDocs(q);
-        const deals = [];
-        querySnapshot.forEach(doc => deals.push({ id: doc.id, ...doc.data() }));
+        const response = await fetch('/.netlify/functions/fetch-deals');
+        if (!response.ok) throw new Error('Failed to fetch deals');
+        const deals = await response.json();
+
         if (deals.length > 0) {
             dealsGrid.innerHTML = '';
             deals.forEach(product => {
@@ -30,33 +47,7 @@ async function fetchAndDisplayDeals() {
     }
 }
 
-const productGrid = document.getElementById('product-grid');
-const searchInput = document.getElementById('search-input');
-const loadMoreBtn = document.getElementById('load-more-btn');
-const searchBtn = document.getElementById('search-btn');
-const categoryFilter = document.getElementById('category-filter');
-const minPriceInput = document.getElementById('min-price');
-const maxPriceInput = document.getElementById('max-price');
-const applyFiltersBtn = document.getElementById('apply-filters-btn');
-const listingsTitle = document.querySelector('main h2');
-
-const PRODUCTS_PER_PAGE = 30;
-let lastVisibleProductId = null;
-let fetching = false;
-let currentQuery = { searchTerm: "", category: "", minPrice: "", maxPrice: "" };
-
-const urlParams = new URLSearchParams(window.location.search);
-const listingTypeFilter = urlParams.get('type');
-
-function showSkeletonLoaders() {
-    productGrid.innerHTML = '';
-    let skeletons = '';
-    for (let i = 0; i < 8; i++) {
-        skeletons += `<div class="skeleton-card"><div class="image"></div><div class="text"></div><div class="text short"></div></div>`;
-    }
-    productGrid.innerHTML = skeletons;
-}
-
+// This function fetches the main list of products or services
 async function fetchProducts(isNewSearch = false) {
     if (fetching) return;
     fetching = true;
@@ -64,7 +55,7 @@ async function fetchProducts(isNewSearch = false) {
 
     if (isNewSearch) {
         lastVisibleProductId = null;
-        showSkeletonLoaders();
+        productGrid.innerHTML = '<p>Loading listings...</p>';
     }
 
     let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
@@ -126,6 +117,7 @@ function handleNewSearch() {
     fetchProducts(true);
 }
 
+// Event Listeners
 applyFiltersBtn.addEventListener('click', handleNewSearch);
 searchBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
@@ -138,7 +130,7 @@ if (listingTypeFilter === 'service') {
     if (dealsSection) dealsSection.style.display = 'none';
 } else {
     listingsTitle.textContent = 'All Listings';
-    fetchAndDisplayDeals();
+    fetchAndDisplayDeals(); // This line re-enables the deals section
 }
 
 fetchProducts(true);
