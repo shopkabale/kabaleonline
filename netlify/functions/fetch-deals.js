@@ -17,8 +17,7 @@ exports.handler = async (event) => {
   try {
     const dealsQuery = db.collection("products")
       .where("isDeal", "==", true) 
-      .orderBy("createdAt", "desc") // CORRECTED to use 'createdAt'
-      .limit(10);
+      .limit(10); // Sorting has been removed for stability
 
     const snapshot = await dealsQuery.get();
     const deals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -30,12 +29,9 @@ exports.handler = async (event) => {
     };
   } catch (error) {
     console.error("Fetch-deals function error:", error);
-    const errorMessage = error.message.includes("indexes")
-      ? "Query requires a Firestore index for 'createdAt'. Please check your Firebase console."
-      : "Failed to fetch deals.";
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: errorMessage, details: error.message }),
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ error: "Failed to fetch deals." }) 
     };
   }
 };
