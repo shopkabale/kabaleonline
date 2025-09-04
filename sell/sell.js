@@ -72,11 +72,11 @@ document.addEventListener('DOMContentLoaded', updateCategoryOptions);
 const showMessage = (element, message, isError = true) => {
     element.textContent = message;
     element.style.display = 'block';
-    element.className = isError ? 'error-message' : 'success-message'; // Simplified class assignment
+    element.className = isError ? 'error-message' : 'success-message';
     if (isError) {
         setTimeout(() => {
             element.style.display = 'none';
-        }, 5000); // Increased time for better readability
+        }, 5000);
     }
 };
 
@@ -155,7 +155,6 @@ googleLoginBtn.addEventListener('click', () => {
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
-                // No need to send verification for Google sign-in
                 await setDoc(userDocRef, { email: user.email, role: 'seller' });
             }
         }).catch((error) => {
@@ -181,24 +180,39 @@ tabs.forEach(tab => {
     });
 });
 
+// --- MODIFIED BLOCK ---
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     hideAuthMessages();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    const loginButton = loginForm.querySelector('button[type="submit"]');
+
+    // Provide immediate feedback
+    loginButton.disabled = true;
+    loginButton.textContent = 'Logging In...';
+    showMessage(authSuccessElement, "Logging into your account, please be patient...", false);
+
     signInWithEmailAndPassword(auth, email, password)
         .catch(error => {
             let friendlyMessage = 'Invalid email or password. Please try again.';
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                 friendlyMessage = 'Invalid email or password. Please check and try again.';
             } else if (error.code === 'auth/too-many-requests') {
-                friendlyMessage = 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.';
+                friendlyMessage = 'Access to this account has been temporarily disabled. Please reset your password or try again later.';
             } else {
                 console.error('Login error:', error);
             }
             showMessage(loginErrorElement, friendlyMessage);
+            authSuccessElement.style.display = 'none'; // Hide the "logging in" message on error
+        })
+        .finally(() => {
+            // Reset button state regardless of success or failure
+            loginButton.disabled = false;
+            loginButton.textContent = 'Login';
         });
 });
+// --- END OF MODIFIED BLOCK ---
 
 signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -207,7 +221,6 @@ signupForm.addEventListener('submit', async (e) => {
     const password = document.getElementById('signup-password').value;
     const signupButton = signupForm.querySelector('button[type="submit"]');
 
-    // Show creating account message and disable button
     signupButton.disabled = true;
     signupButton.textContent = 'Creating Account...';
     showMessage(authSuccessElement, "Just a moment, creating your account...", false);
@@ -237,9 +250,8 @@ signupForm.addEventListener('submit', async (e) => {
                 console.error('Signup error:', error);
         }
         showMessage(signupErrorElement, friendlyMessage);
-        authSuccessElement.style.display = 'none'; // Hide the "creating account" message
+        authSuccessElement.style.display = 'none';
     } finally {
-        // Re-enable the button
         signupButton.disabled = false;
         signupButton.textContent = 'Create Account';
     }
@@ -307,7 +319,7 @@ productForm.addEventListener('submit', async (e) => {
         if (filesToUpload.length > 0) {
             const uploadPromises = filesToUpload.map(file => uploadImageToCloudinary(file));
             const newImageUrls = await Promise.all(uploadPromises);
-            finalImageUrls = newImageUrls.filter(url => url); // Keep existing if new uploads fail
+            finalImageUrls = newImageUrls.filter(url => url);
         }
 
         if (finalImageUrls.length === 0 && !editingProductId) {
@@ -333,7 +345,7 @@ productForm.addEventListener('submit', async (e) => {
             alert('Product updated successfully!');
         } else {
             productData.createdAt = new Date();
-            productData.isDeal = false; // **FIX: Ensure new products are not deals by default**
+            productData.isDeal = false;
             await addDoc(collection(db, 'products'), productData);
             alert('Product added successfully!');
         }
@@ -363,7 +375,6 @@ async function uploadImageToCloudinary(file) {
     formData.append('api_key', apikey);
     formData.append('timestamp', timestamp);
     formData.append('signature', signature);
-    // **FIX: Corrected the URL syntax**
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
     const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
     if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
@@ -377,7 +388,7 @@ async function fetchSellerProducts(uid) {
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
     if (querySnapshot.empty) {
-        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell an Item' to get started!</p>";
+        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Post Something' to get started!</p>";
         return;
     }
     querySnapshot.forEach((doc) => {
@@ -386,7 +397,6 @@ async function fetchSellerProducts(uid) {
         const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
-        // **FIX: Corrected the template literal syntax**
         productCard.innerHTML = `
             <img src="${primaryImage}" alt="${product.name}">
             <h3>${product.name}</h3>
@@ -441,5 +451,5 @@ function normalizeWhatsAppNumber(phone) {
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
     if (cleaned.startsWith('256')) return cleaned;
     if (cleaned.length === 9) return '256' + cleaned;
-    return cleaned; // Return cleaned number even if it doesn't match patterns
+    return cleaned;
 }
