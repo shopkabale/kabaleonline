@@ -1,3 +1,6 @@
+import { auth } from './firebase.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const loadMoreBtn = document.getElementById('load-more-btn');
@@ -80,7 +83,7 @@ async function fetchProducts(isNewSearch = false) {
     if (listingTypeFilter) {
         url += `&type=${listingTypeFilter}`;
     } else {
-        url += `&type=item`; 
+        url += `&type=item`;
     }
     if (lastVisibleProductId) {
         url += `&lastVisible=${lastVisibleProductId}`;
@@ -147,7 +150,20 @@ if (listingTypeFilter === 'service') {
 } else {
     listingsTitle.textContent = 'All Items';
     itemsBtn.classList.add('active');
-    fetchAndDisplayDeals(); // This is now active
+    fetchAndDisplayDeals();
 }
 
 fetchProducts(true);
+
+// --- NEW: Dynamic Header Logic ---
+const postOrDashboardBtn = document.getElementById('sell-btn'); // Using the ID from your HTML
+
+onAuthStateChanged(auth, user => {
+    if (user) {
+        // User is signed in
+        postOrDashboardBtn.textContent = 'Seller Dashboard';
+    } else {
+        // User is signed out
+        postOrDashboardBtn.textContent = 'Post something';
+    }
+});
