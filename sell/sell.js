@@ -32,28 +32,23 @@ const authSuccessElement = document.getElementById('auth-success');
 const referralSection = document.getElementById('referral-section');
 const userReferralCode = document.getElementById('user-referral-code');
 const userReferralCount = document.getElementById('user-referral-count');
+const completeProfileSection = document.getElementById('complete-profile-section');
+const completeProfileForm = document.getElementById('complete-profile-form');
 
 // Logic for dynamic categories
 const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
 const categorySelect = document.getElementById('product-category');
 
 const itemCategories = {
-    "Electronics": "Electronics",
-    "Clothing & Apparel": "Clothing & Apparel",
-    "Home & Furniture": "Home & Furniture",
-    "Health & Beauty": "Health & Beauty",
-    "Vehicles": "Vehicles",
-    "Property": "Property",
-    "Other": "Other"
+    "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel",
+    "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty",
+    "Vehicles": "Vehicles", "Property": "Property", "Other": "Other"
 };
 
 const serviceCategories = {
-    "Tutoring & Academics": "Tutoring & Academics",
-    "Printing & Design": "Printing & Design",
-    "Tech & Repair": "Tech & Repair",
-    "Personal & Beauty": "Personal & Beauty",
-    "Events & Creative": "Events & Creative",
-    "Other Services": "Other Services"
+    "Tutoring & Academics": "Tutoring & Academics", "Printing & Design": "Printing & Design",
+    "Tech & Repair": "Tech & Repair", "Personal & Beauty": "Personal & Beauty",
+    "Events & Creative": "Events & Creative", "Other Services": "Other Services"
 };
 
 function updateCategoryOptions() {
@@ -68,7 +63,6 @@ function updateCategoryOptions() {
         categorySelect.appendChild(option);
     }
 }
-
 listingTypeRadios.forEach(radio => radio.addEventListener('change', updateCategoryOptions));
 document.addEventListener('DOMContentLoaded', updateCategoryOptions);
 
@@ -76,17 +70,13 @@ const showMessage = (element, message, isError = true) => {
     element.textContent = message;
     element.style.display = 'block';
     element.className = isError ? 'error-message' : 'success-message';
-    if (isError) {
-        setTimeout(() => { element.style.display = 'none'; }, 5000);
-    }
+    if (isError) { setTimeout(() => { element.style.display = 'none'; }, 5000); }
 };
-
 const hideAuthMessages = () => {
     loginErrorElement.style.display = 'none';
     signupErrorElement.style.display = 'none';
     authSuccessElement.style.display = 'none';
 };
-
 const clearAuthForms = () => {
     if (loginForm) loginForm.reset();
     if (signupForm) signupForm.reset();
@@ -97,26 +87,22 @@ if (forgotPasswordLink) {
         e.preventDefault();
         hideAuthMessages();
         const email = document.getElementById('login-email').value;
-        if (!email) { return showMessage(loginErrorElement, "Please enter your email below to reset your password."); }
+        if (!email) { return showMessage(loginErrorElement, "Please enter your email to reset your password."); }
         try {
             await sendPasswordResetEmail(auth, email);
-            showMessage(authSuccessElement, "Password reset email sent. Please check your inbox.", false);
-        } catch (error) {
-            showMessage(loginErrorElement, "Could not send reset email. Make sure the email is correct.");
-        }
+            showMessage(authSuccessElement, "Password reset email sent. Check your inbox.", false);
+        } catch (error) { showMessage(loginErrorElement, "Could not send reset email."); }
     });
 }
 
 if (resetPasswordBtn) {
     resetPasswordBtn.addEventListener('click', async () => {
-        const email = prompt("Please enter your email address to receive a password reset link:");
+        const email = prompt("Enter your email for a password reset link:");
         if (email) {
             try {
                 await sendPasswordResetEmail(auth, email);
-                alert("If an account exists for '" + email + "', a password reset email has been sent.");
-            } catch (error) {
-                alert("Could not send reset email. Please ensure the email address is valid.");
-            }
+                alert("Password reset email has been sent to '" + email + "'.");
+            } catch (error) { alert("Could not send reset email."); }
         }
     });
 }
@@ -132,25 +118,26 @@ onAuthStateChanged(auth, async (user) => {
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-            // This user exists in Authentication, but not in our database.
-            // This happens for all "previous users". Let's create their document now.
             const newRefCode = user.uid.substring(0, 6).toUpperCase();
             const newUserDocData = {
-                email: user.email,
-                role: 'seller',
-                isVerified: false,
-                referralCount: 0,
-                createdAt: serverTimestamp(),
-                referralCode: newRefCode
+                email: user.email, role: 'seller', isVerified: false, referralCount: 0,
+                createdAt: serverTimestamp(), referralCode: newRefCode
             };
             await setDoc(userDocRef, newUserDocData);
             displayDashboardInfo(newUserDocData, newRefCode);
+            completeProfileSection.style.display = 'block';
         } else {
-            // This is for all normal users who already have a database document.
             const userData = userDoc.data();
+            if (!userData.name || !userData.location) {
+                completeProfileSection.style.display = 'block';
+                if (userData.name) document.getElementById('profile-name').value = userData.name;
+                if (userData.location) document.getElementById('profile-location').value = userData.location;
+            } else {
+                completeProfileSection.style.display = 'none';
+            }
+
             let refCode = userData.referralCode;
             if (!refCode) {
-                // Fallback for any user who might still be missing just the code
                 refCode = user.uid.substring(0, 6).toUpperCase();
                 await updateDoc(userDocRef, { referralCode: refCode });
             }
@@ -159,8 +146,6 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         authContainer.style.display = 'block';
         dashboardContainer.style.display = 'none';
-        sellerProductsList.innerHTML = '';
-        referralSection.style.display = 'none';
     }
 });
 
@@ -171,44 +156,35 @@ function displayDashboardInfo(userData, refCode) {
 }
 
 userReferralCode.addEventListener('click', () => {
-    if(userReferralCode.textContent && userReferralCode.textContent !== 'Loading...'){
-        navigator.clipboard.writeText(userReferralCode.textContent).then(() => {
-            alert('Referral code copied to clipboard!');
-        });
+    if (userReferralCode.textContent && userReferralCode.textContent !== 'Loading...') {
+        navigator.clipboard.writeText(userReferralCode.textContent).then(() => { alert('Referral code copied!'); });
     }
 });
-
-logoutBtn.addEventListener('click', () => {
-    signOut(auth).catch(error => { console.error("Logout Error:", error); });
-});
+logoutBtn.addEventListener('click', () => { signOut(auth); });
 
 googleLoginBtn.addEventListener('click', () => {
-    hideAuthMessages();
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-        .then(async (result) => {
-            const user = result.user;
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (!userDoc.exists()) {
-                await setDoc(userDocRef, {
-                    email: user.email,
-                    role: 'seller',
-                    isVerified: false,
-                    referralCount: 0,
-                    createdAt: serverTimestamp(),
-                    referralCode: user.uid.substring(0, 6).toUpperCase()
-                });
-            }
-        }).catch((error) => { showMessage(loginErrorElement, "Could not sign in with Google. Please try again."); });
+    signInWithPopup(auth, provider).then(async (result) => {
+        const user = result.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+                name: user.displayName, email: user.email,
+                profilePhotoUrl: user.photoURL, role: 'seller',
+                isVerified: false, referralCount: 0,
+                createdAt: serverTimestamp(),
+                referralCode: user.uid.substring(0, 6).toUpperCase()
+            });
+        }
+    });
 });
 
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-        hideAuthMessages();
-        clearAuthForms();
+        hideAuthMessages(); clearAuthForms();
         tabs.forEach(t => t.classList.remove('active'));
         contents.forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
@@ -222,83 +198,96 @@ loginForm.addEventListener('submit', (e) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const loginButton = loginForm.querySelector('button[type="submit"]');
-    loginButton.disabled = true;
-    loginButton.textContent = 'Logging In...';
+    loginButton.disabled = true; loginButton.textContent = 'Logging In...';
     signInWithEmailAndPassword(auth, email, password)
-        .catch(error => { showMessage(loginErrorElement, 'Invalid email or password. Please try again.'); })
-        .finally(() => {
-            loginButton.disabled = false;
-            loginButton.textContent = 'Login';
-        });
+        .catch(error => { showMessage(loginErrorElement, 'Invalid email or password.'); })
+        .finally(() => { loginButton.disabled = false; loginButton.textContent = 'Login'; });
 });
 
 signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAuthMessages();
+    const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
+    const whatsapp = document.getElementById('signup-whatsapp').value;
+    const location = document.getElementById('signup-location').value;
+    const institution = document.getElementById('signup-institution').value;
     const password = document.getElementById('signup-password').value;
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
     const signupButton = signupForm.querySelector('button[type="submit"]');
 
-    signupButton.disabled = true;
-    signupButton.textContent = 'Creating Account...';
+    if (!name || !location || !whatsapp) { return showMessage(signupErrorElement, "Please fill out all required fields."); }
+    signupButton.disabled = true; signupButton.textContent = 'Creating Account...';
 
-    let referrerId = null;
-    let referrerRef = null;
+    let referrerId = null, referrerRef = null;
     if (referralCode) {
         const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
             const referrerDoc = querySnapshot.docs[0];
-            referrerId = referrerDoc.id;
-            referrerRef = referrerDoc.ref;
+            referrerId = referrerDoc.id; referrerRef = referrerDoc.ref;
         } else {
-            showMessage(signupErrorElement, "Invalid referral code. Please check it or sign up without one.");
-            signupButton.disabled = false;
-            signupButton.textContent = 'Create Account';
+            showMessage(signupErrorElement, "Invalid referral code.");
+            signupButton.disabled = false; signupButton.textContent = 'Create Account';
             return;
         }
     }
-
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         const newUserRef = doc(db, "users", user.uid);
-        
         await runTransaction(db, async (transaction) => {
             transaction.set(newUserRef, {
-                email: user.email,
-                role: 'seller',
-                isVerified: false,
-                createdAt: serverTimestamp(),
-                referralCount: 0,
-                referrerId: referrerId,
+                name, email, whatsapp: normalizeWhatsAppNumber(whatsapp), location, institution,
+                role: 'seller', isVerified: false, createdAt: serverTimestamp(),
+                referralCount: 0, referrerId: referrerId,
                 referralCode: user.uid.substring(0, 6).toUpperCase()
             });
-            if (referrerRef) {
-                transaction.update(referrerRef, { referralCount: increment(1) });
-            }
+            if (referrerRef) { transaction.update(referrerRef, { referralCount: increment(1) }); }
         });
-        
         await sendEmailVerification(user);
-        showMessage(authSuccessElement, "Success! Please check your email inbox to verify your account.", false);
+        showMessage(authSuccessElement, "Success! Please check your email to verify your account.", false);
         clearAuthForms();
     } catch (error) {
-        let friendlyMessage = 'An error occurred during signup.';
-        if (error.code === 'auth/email-already-in-use') friendlyMessage = 'This email is already registered. Go to Login.';
-        if (error.code === 'auth/weak-password') friendlyMessage = 'Password must be at least 6 characters long.';
-        showMessage(signupErrorElement, friendlyMessage);
+        let msg = 'An error occurred during signup.';
+        if (error.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+        if (error.code === 'auth/weak-password') msg = 'Password must be at least 6 characters.';
+        showMessage(signupErrorElement, msg);
     } finally {
-        signupButton.disabled = false;
-        signupButton.textContent = 'Create Account';
+        signupButton.disabled = false; signupButton.textContent = 'Create Account';
+    }
+});
+
+completeProfileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) return;
+    const updateBtn = document.getElementById('update-profile-btn');
+    updateBtn.disabled = true; updateBtn.textContent = 'Saving...';
+    try {
+        const name = document.getElementById('profile-name').value;
+        const location = document.getElementById('profile-location').value;
+        const bio = document.getElementById('profile-bio').value;
+        const photoFile = document.getElementById('profile-photo').files[0];
+        const dataToUpdate = { name, location, bio };
+        if (photoFile) {
+            dataToUpdate.profilePhotoUrl = await uploadImageToCloudinary(photoFile);
+        }
+        await updateDoc(doc(db, 'users', user.uid), dataToUpdate);
+        alert('Profile updated successfully!');
+        completeProfileSection.style.display = 'none';
+    } catch (error) {
+        alert("Failed to update profile.");
+    } finally {
+        updateBtn.disabled = false; updateBtn.textContent = 'Save and Update Profile';
     }
 });
 
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
-        const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
-        passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-        e.target.textContent = passwordInput.type === 'password' ? '👁️' : '🙈';
+        const input = e.target.closest('.password-wrapper').querySelector('input');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        e.target.textContent = input.type === 'password' ? '👁️' : '🙈';
     });
 });
 
@@ -306,25 +295,16 @@ showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     productFormContainer.style.display = isVisible ? 'none' : 'block';
     showProductFormBtn.textContent = isVisible ? 'Post Something' : 'Close Form';
-    if (!isVisible) {
-        productForm.reset();
-        productIdInput.value = '';
-        submitBtn.textContent = 'Add Product';
-        updateCategoryOptions();
-    }
+    if (!isVisible) { productForm.reset(); productIdInput.value = ''; submitBtn.textContent = 'Add Product'; updateCategoryOptions(); }
 });
 
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return alert('You must be logged in!');
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
-
+    submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
     try {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
         const isVerified = userDoc.exists() ? (userDoc.data().isVerified || false) : false;
 
         const productName = document.getElementById('product-name').value;
@@ -342,51 +322,36 @@ productForm.addEventListener('submit', async (e) => {
             const docSnap = await getDoc(doc(db, 'products', editingProductId));
             if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
         }
-
         const filesToUpload = [imageFile1, imageFile2].filter(f => f);
         if (filesToUpload.length > 0) {
-            const uploadPromises = filesToUpload.map(file => uploadImageToCloudinary(file));
-            finalImageUrls = await Promise.all(uploadPromises);
+            finalImageUrls = await Promise.all(filesToUpload.map(file => uploadImageToCloudinary(file)));
         }
-
         if (finalImageUrls.length === 0 && !editingProductId) throw new Error('At least one image is required.');
 
         const productData = {
             listing_type: document.querySelector('input[name="listing_type"]:checked').value,
-            name: productName,
-            name_lowercase: productName.toLowerCase(),
-            price: Number(productPrice),
-            category: productCategory,
-            description: productDescription,
-            story: productStory,
+            name: productName, name_lowercase: productName.toLowerCase(),
+            price: Number(productPrice), category: productCategory,
+            description: productDescription, story: productStory,
             whatsapp: normalizeWhatsAppNumber(whatsappNumber),
-            sellerId: user.uid,
-            sellerEmail: user.email,
-            sellerIsVerified: isVerified
+            sellerId: user.uid, sellerEmail: user.email, sellerIsVerified: isVerified
         };
-
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
 
         if (editingProductId) {
-            productData.updatedAt = serverTimestamp();
-            await updateDoc(doc(db, 'products', editingProductId), productData);
-            alert('Product updated successfully!');
+            await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
+            alert('Product updated!');
         } else {
-            productData.createdAt = serverTimestamp();
-            productData.isDeal = false;
-            await addDoc(collection(db, 'products'), productData);
-            alert('Product added successfully!');
+            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false });
+            alert('Product added!');
         }
-
-        productForm.reset();
-        productFormContainer.style.display = 'none';
+        productForm.reset(); productFormContainer.style.display = 'none';
         showProductFormBtn.textContent = 'Post Another Listing';
         fetchSellerProducts(user.uid);
     } catch (error) {
-        alert('Failed to submit product. ' + error.message);
+        alert('Failed to submit product: ' + error.message);
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = productIdInput.value ? 'Update Product' : 'Add Product';
+        submitBtn.disabled = false; submitBtn.textContent = productIdInput.value ? 'Update Product' : 'Add Product';
     }
 });
 
