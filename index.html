@@ -22,9 +22,13 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding-top: 50px;
+            /* padding-top: 50px; <-- REMOVED */
             background-color: var(--bg-color);
             color: var(--text-dark);
+            /* --- THIS IS THE FIX --- */
+            /* This ensures vertical scrolling is allowed, which position:sticky needs to work. */
+            overflow-y: auto; 
+            overflow-x: hidden; /* This still prevents unwanted side-scrolling. */
         }
 
         .container {
@@ -168,6 +172,19 @@
         }
         @media (min-width: 992px) {
             .product-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* --- ADDED FOR MOBILE STICKY HEADER --- */
+        @media (max-width: 767px) {
+            /* 1. Hide the main site title to save space */
+            .site-header-main {
+                display: none;
+            }
+
+            /* 2. Add padding to the body so content doesn't hide under the sticky bar */
+            body {
+                padding-top: 45px; /* Adjust this value to match the exact height of your button bar */
+            }
         }
     </style>
 </head>
