@@ -22,9 +22,9 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding-top: 50px;
             background-color: var(--bg-color);
             color: var(--text-dark);
+            overflow-x: hidden; /* Prevents horizontal scroll on the body */
         }
 
         .container {
@@ -50,19 +50,22 @@
         .header-actions-sticky {
             position: sticky; top: 0; background-color: white; z-index: 1000;
             padding: 6px 10px; display: flex; justify-content: flex-start; gap: 10px;
-            align-items: center; border-bottom: 1px solid #eee; flex-wrap: nowrap;
-            overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
+            align-items: center; border-bottom: 1px solid #eee;
+            /* --- THIS MAKES IT SCROLLABLE --- */
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
         }
+        /* Hide scrollbar for Chrome, Safari and Opera */
         .header-actions-sticky::-webkit-scrollbar { display: none; }
+        
         .action-btn {
-            padding: 8px 16px; /* Slightly more padding for emojis */
-            border-radius: 20px; text-decoration: none;
+            padding: 8px 16px; border-radius: 20px; text-decoration: none;
             font-weight: bold; font-size: 0.9em; border: none; cursor: pointer;
             transition: all 0.2s ease-in-out; background-color: #f0f2f5; color: #333;
-            flex-shrink: 0;
-            display: flex; /* To align emoji and text */
-            align-items: center;
-            gap: 6px; /* Space between emoji and text */
+            flex-shrink: 0; /* Prevents buttons from shrinking */
+            display: flex; align-items: center; gap: 6px;
         }
         .action-btn:hover { background-color: #e2e6ea; }
         .nav-link.active {
@@ -122,36 +125,16 @@
         .seller-info { font-size: 0.8em; color: grey; margin: 0 15px 10px; }
         .seller-info a { color: grey; text-decoration: underline; }
         
-        /* --- MODIFICATION START: Redesigned CTA & Blog Section Styles --- */
+        /* --- CTA & Blog Section Styles --- */
         .request-cta-section, .blog-section-container {
-            text-align: center;
-            margin: 40px 0;
-            padding: 40px 20px;
-            border-radius: var(--border-radius);
-            color: white;
+            text-align: center; margin: 40px 0; padding: 40px 20px;
+            border-radius: var(--border-radius); color: white;
             background-image: linear-gradient(145deg, #007bff, #0056b3);
         }
-        .request-cta-section h3, .blog-section-container h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-        }
-        .request-cta-section p, .blog-section-container p {
-            margin-bottom: 25px;
-            opacity: 0.9;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .request-cta-section .cta-button, .blog-section-container .cta-button {
-            background-color: var(--accent-color);
-            color: var(--text-dark);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .request-cta-section .cta-button:hover, .blog-section-container .cta-button:hover {
-             background-color: #fff;
-        }
-        /* MODIFICATION END */
+        .request-cta-section h3, .blog-section-container h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.8em; }
+        .request-cta-section p, .blog-section-container p { margin-bottom: 25px; opacity: 0.9; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .request-cta-section .cta-button, .blog-section-container .cta-button { background-color: var(--accent-color); color: var(--text-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .request-cta-section .cta-button:hover, .blog-section-container .cta-button:hover { background-color: #fff; }
 
         /* --- Footer --- */
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
@@ -169,6 +152,25 @@
         @media (min-width: 992px) {
             .product-grid { grid-template-columns: repeat(4, 1fr); }
         }
+
+        /* --- MOBILE STYLES --- */
+        @media (max-width: 767px) {
+            .site-header-main {
+                display: none; /* Hide main title on mobile */
+            }
+            body {
+                padding-top: 45px; /* Prevent content from hiding under sticky header */
+            }
+        }
+        
+        /* --- NEW: Compact price filters for very small screens --- */
+        @media (max-width: 480px) {
+            .price-filter-group input[type="number"],
+            #apply-filters-btn {
+                font-size: 14px; /* Make the text slightly smaller */
+                padding: 10px 8px; /* Reduce padding to make boxes smaller */
+            }
+        }
     </style>
 </head>
 <body>
@@ -183,6 +185,7 @@
         <a href="/requests/view.html" class="action-btn nav-link" id="request-btn">📝 Requests</a>
         <a href="/blog/" class="action-btn nav-link" id="stories-btn">📚 Campus Stories</a>
     </div>
+    
     <div class="container page-container">
         <section class="hero-section">
             <h1>Discover. Buy. Sell.</h1>
@@ -206,8 +209,8 @@
                     </select>
                 </div>
                 <div class="filter-row price-filter-group">
-                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
-                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <input type="number" id="min-price" placeholder="Min Price">
+                    <input type="number" id="max-price" placeholder="Max Price">
                     <button id="apply-filters-btn" class="cta-button">Filter</button>
                 </div>
             </div>
@@ -225,14 +228,14 @@
                 <p>Let our community of sellers and hustlers know what you need by posting a public request.</p>
                 <a href="/requests/" class="cta-button">Request an Item or Service</a>
             </div>
-            </main>
+        </main>
 
         <div class="blog-section-container">
             <h3>From Campus Stories</h3>
             <p>Read our guides on how to buy safely and sell your items faster on Kabale Online.</p>
             <a href="/blog/" class="cta-button">Read All Articles</a>
         </div>
-        </div>
+    </div>
 
     <footer>
         <div class="kabale-contact-info-section">
