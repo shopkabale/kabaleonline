@@ -28,23 +28,46 @@
             font-size: 1.1em;
             text-align: center;
         }
+        
+        /* MODIFICATION START: Updated Request Card Styles */
         .request-card {
-            background: #fff;
-            border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .request-card h3 { margin-top: 0; color: #0056b3; }
+        .request-card h3 { margin-top: 0; }
         .request-card p { margin: 10px 0; }
         .request-card-meta {
             font-size: 0.85em;
             color: #777;
-            border-top: 1px solid #eee;
             padding-top: 10px;
             margin-top: 15px;
         }
+
+        /* This CSS automatically cycles through different background colors */
+        .request-card:nth-child(4n+1) {
+            background-color: #eef5fa; /* Light Blue */
+            border-left: 5px solid #007bff;
+            border-top: 1px solid #d4e8f7;
+        }
+        .request-card:nth-child(4n+2) {
+            background-color: #fff9e6; /* Light Yellow */
+            border-left: 5px solid #ffc107;
+            border-top: 1px solid #fff0c2;
+        }
+        .request-card:nth-child(4n+3) {
+            background-color: #f0faf0; /* Light Green */
+            border-left: 5px solid #28a745;
+            border-top: 1px solid #d4f0d4;
+        }
+        .request-card:nth-child(4n+4) {
+            background-color: #f5f0fa; /* Light Purple */
+            border-left: 5px solid #6f42c1;
+            border-top: 1px solid #e5d9f5;
+        }
+        /* MODIFICATION END */
+
         footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #eee; background-color: white; }
     </style>
 </head>
