@@ -130,17 +130,27 @@ onAuthStateChanged(auth, async (user) => {
 
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
+
         if (userDoc.exists()) {
             const userData = userDoc.data();
+            // This logic now serves as a fallback for any older users who might be missing a code
             if (!userData.referralCode) {
                 const newRefCode = user.uid.substring(0, 6).toUpperCase();
-                await updateDoc(userDocRef, { referralCode: newRefCode });
-                userReferralCode.textContent = newRefCode;
+                try {
+                    await updateDoc(userDocRef, { referralCode: newRefCode });
+                    userReferralCode.textContent = newRefCode; // Display the new code
+                } catch (error) {
+                    console.error("Error adding referral code:", error);
+                }
             } else {
                 userReferralCode.textContent = userData.referralCode;
             }
             userReferralCount.textContent = userData.referralCount || 0;
             referralSection.style.display = 'block';
+        } else {
+            // This case can happen if auth succeeds but Firestore user doc creation fails
+            console.error("User is authenticated, but no user document found in Firestore!");
+            referralSection.style.display = 'none';
         }
     } else {
         authContainer.style.display = 'block';
@@ -151,11 +161,11 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 userReferralCode.addEventListener('click', () => {
-    navigator.clipboard.writeText(userReferralCode.textContent).then(() => {
-        alert('Referral code copied to clipboard!');
-    }, (err) => {
-        alert('Could not copy code.');
-    });
+    if(userReferralCode.textContent && userReferralCode.textContent !== 'Loading...'){
+        navigator.clipboard.writeText(userReferralCode.textContent).then(() => {
+            alert('Referral code copied to clipboard!');
+        });
+    }
 });
 
 logoutBtn.addEventListener('click', () => {
@@ -176,7 +186,8 @@ googleLoginBtn.addEventListener('click', () => {
                     role: 'seller',
                     isVerified: false,
                     referralCount: 0,
-                    createdAt: serverTimestamp()
+                    createdAt: serverTimestamp(),
+                    referralCode: user.uid.substring(0, 6).toUpperCase() // Create code on signup
                 });
             }
         }).catch((error) => { showMessage(loginErrorElement, "Could not sign in with Google. Please try again."); });
@@ -251,7 +262,8 @@ signupForm.addEventListener('submit', async (e) => {
                 isVerified: false,
                 createdAt: serverTimestamp(),
                 referralCount: 0,
-                referrerId: referrerId
+                referrerId: referrerId,
+                referralCode: user.uid.substring(0, 6).toUpperCase()
             });
             if (referrerRef) {
                 transaction.update(referrerRef, { referralCount: increment(1) });
