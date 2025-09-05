@@ -5,34 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Profile | Kabale Online</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .profile-header-flex {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .profile-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #eee;
+            background-color: #f0f0f0;
+        }
+        .profile-details h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .profile-details p {
+            margin: 2px 0;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .profile-bio {
+            margin-top: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #007bff;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
     <header class="site-header-main">
-        <a href="/" class="site-title">Kabale <span>Online</span></a>
+         <a href="/" class="site-title">Kabale <span>Online</span></a>
     </header>
 
     <div class="container page-content">
-        <a href="/" class="back-home-btn" style="margin-bottom: 20px; display: inline-block;">⬅ Back to All Listings</a>
-        <div id="profile-header" class="page-welcome" style="text-align: left; padding-left: 0;">
-            </div>
+        <a href="/" class="back-home-btn" style="margin-bottom: 20px; display: inline-block;">⬅ Back to Home</a>
+        <div id="profile-header">
+            <p>Loading profile...</p>
+        </div>
         
         <h2 id="listings-title">Listings from this Seller</h2>
-        <div id="seller-product-grid" class="product-grid">
-            <p>Loading listings...</p>
-        </div>
+        <div id="seller-product-grid" class="product-grid"></div>
     </div>
     
     <footer>
-        <div class="kabale-contact-info-section">
-            <h3 class="kabale-contact-title">Get in Touch</h3>
-            <div class="kabale-contact-details">
-                <p class="kabale-contact-item">📞 +256 784655792</p> <p class="kabale-contact-item">📧 shopkabale@gmail.com</p> </div>
-            <div class="kabale-footer-links">
-                <a href="/about.html" class="kabale-footer-link">About Us</a>
-                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
+        </footer>
 
     <script type="module" src="profile.js"></script>
 </body>
