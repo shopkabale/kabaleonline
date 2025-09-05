@@ -6,6 +6,16 @@
     <title>Super Admin Panel | Kabale Online</title>
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .admin-section { margin-top: 40px; }
+        .user-list { list-style-type: none; padding: 0; }
+        .user-list-item { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+        .user-info { font-family: monospace; }
+        .verified-badge { color: green; font-weight: bold; }
+        .verify-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; }
+        .verify-btn.verified { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
+        .verify-btn.not-verified { background-color: #28a745; color: white; border: 1px solid #28a745; }
+    </style>
 </head>
 <body>
 
@@ -32,8 +42,19 @@
                 <h1>Super Admin Panel</h1>
                 <p>Here you can see all products from all sellers and moderate content.</p>
             </div>
-            <div id="all-products-list" class="product-grid">
+            
+            <div class="admin-section">
+                <h2>User Management</h2>
+                <p>Verify trusted sellers to give them a badge on their listings.</p>
+                <ul id="user-list" class="user-list">
+                    </ul>
+            </div>
+            
+            <div class="admin-section">
+                <h2>All Products</h2>
+                <div id="all-products-list" class="product-grid">
                 </div>
+            </div>
         </div>
     </div>
 
