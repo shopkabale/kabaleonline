@@ -51,20 +51,18 @@
             position: sticky; top: 0; background-color: white; z-index: 1000;
             padding: 6px 10px; display: flex; justify-content: flex-start; gap: 10px;
             align-items: center; border-bottom: 1px solid #eee;
-            /* --- THIS MAKES IT SCROLLABLE --- */
             flex-wrap: nowrap;
             overflow-x: auto;
-            -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        /* Hide scrollbar for Chrome, Safari and Opera */
         .header-actions-sticky::-webkit-scrollbar { display: none; }
         
         .action-btn {
             padding: 8px 16px; border-radius: 20px; text-decoration: none;
             font-weight: bold; font-size: 0.9em; border: none; cursor: pointer;
             transition: all 0.2s ease-in-out; background-color: #f0f2f5; color: #333;
-            flex-shrink: 0; /* Prevents buttons from shrinking */
+            flex-shrink: 0;
             display: flex; align-items: center; gap: 6px;
         }
         .action-btn:hover { background-color: #e2e6ea; }
@@ -156,19 +154,36 @@
         /* --- MOBILE STYLES --- */
         @media (max-width: 767px) {
             .site-header-main {
-                display: none; /* Hide main title on mobile */
+                display: none;
             }
             body {
-                padding-top: 45px; /* Prevent content from hiding under sticky header */
+                padding-top: 45px;
             }
         }
         
-        /* --- NEW: Compact price filters for very small screens --- */
+        /* --- FINAL FIX: Compact price filters for very small screens --- */
         @media (max-width: 480px) {
+            /* 1. Reduce the gap between the filter items */
+            .price-filter-group {
+                gap: 6px; 
+            }
+
+            /* 2. More aggressively shrink the inputs and button */
             .price-filter-group input[type="number"],
             #apply-filters-btn {
-                font-size: 14px; /* Make the text slightly smaller */
-                padding: 10px 8px; /* Reduce padding to make boxes smaller */
+                font-size: 14px;
+                padding: 8px 6px; /* Reduced padding even more */
+            }
+            
+            /* 3. This is a flexbox trick to allow inputs to shrink further */
+            .price-filter-group input[type="number"] {
+                min-width: 0;
+            }
+
+            /* 4. Tweak the filter button specifically */
+            #apply-filters-btn {
+                padding-left: 10px;
+                padding-right: 10px;
             }
         }
     </style>
