@@ -9,21 +9,83 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* CSS FOR STICKY HEADER AND ACTIVE BUTTON */
-        body { padding-top: 60px; }
+        /* MODIFICATION START: Updated Sticky Header Styles */
+        body { padding-top: 50px; } /* Reduced padding for smaller header */
         .site-header-main { text-align: center; padding: 15px 0; }
-        .header-actions-sticky { position: sticky; top: 0; background-color: white; z-index: 1000; padding: 10px 0; display: flex; justify-content: center; gap: 15px; align-items: center; border-bottom: 1px solid #eee; }
+        .header-actions-sticky {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 1000;
+            padding: 6px 0; /* Reduced padding */
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Reduced gap */
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        .action-btn {
+            padding: 6px 14px; /* Reduced padding */
+            border-radius: 20px; /* Rounded borders */
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em; /* Reduced font size */
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #f0f2f5; /* Default gray background */
+            color: #333; /* Default dark text */
+        }
+        .action-btn:hover {
+            background-color: #e2e6ea; /* Slightly darker gray on hover */
+        }
+        /* Active state now turns the button blue */
+        .nav-link.active {
+            background-color: #007bff;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        /* MODIFICATION END */
+
         .page-container { padding-top: 20px; }
-        .action-btn { padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; color: white; cursor: pointer; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .action-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        #items-btn { background-color: #007bff; }
-        #services-btn { background-color: #28a745; }
-        #header-action-btn { background-color: #ffc107; color: #212529; } /* Changed from #sell-btn */
-        .nav-link.active { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        
-        /* CSS for Motion Layout (Scroll Animation) */
         .product-card-link { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
         .product-card-link.visible { opacity: 1; transform: translateY(0); }
+
+        /* MODIFICATION START: New Styles for Blog Section */
+        .blog-section-container {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .blog-preview-card {
+            display: block;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .blog-preview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .blog-preview-card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .blog-preview-card p {
+            font-size: 0.9em;
+            color: #666;
+        }
+        /* MODIFICATION END */
     </style>
 </head>
 <body>
@@ -34,9 +96,9 @@
     <div class="header-actions-sticky">
         <a href="/" class="action-btn nav-link" id="items-btn">All Items</a>
         <a href="/?type=service" class="action-btn nav-link" id="services-btn">Student Hustles</a>
+        <a href="/blog/" class="action-btn nav-link" id="blog-btn">Campus News</a>
         <a href="/sell/" class="action-btn" id="header-action-btn">Login / Sell</a>
     </div>
-
     <div class="container page-container">
         <section class="hero-section">
             <h1>Discover. Buy. Sell.</h1>
@@ -47,24 +109,7 @@
         </section>
 
         <div class="search-and-filter-container">
-            <div class="search-bar">
-                <input type="search" id="search-input" placeholder="Search for items or services...">
-                <button id="search-btn" class="cta-button">Search</button>
-            </div>
-            <div class="filters">
-                <div class="filter-row">
-                    <select id="category-filter">
-                        <option value="">All Categories</option>
-                        <option value="Electronics">Electronics</option>
-                    </select>
-                </div>
-                <div class="filter-row price-filter-group">
-                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
-                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
-                    <button id="apply-filters-btn" class="cta-button">Filter</button>
-                </div>
-            </div>
-        </div>
+           </div>
         
         <main>
             <h2 id="listings-title">All Listings</h2>
@@ -74,7 +119,21 @@
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
         </main>
-    </div>
+
+        <section class="blog-section-container">
+            <h2 style="text-align: center; margin-bottom: 20px;">From Campus News</h2>
+            <div class="blog-grid">
+                <a href="/blog/how-to-sell-fast.html" class="blog-preview-card">
+                    <h3>5 Tips to Sell Your Item Fast on Kabale Online</h3>
+                    <p>Learn how to take better photos, write great descriptions, and price your items to sell quickly to fellow students and residents.</p>
+                </a>
+                <a href="/blog/how-to-spot-a-scam.html" class="blog-preview-card">
+                    <h3>How to Spot a Scam: A Buyer's Safety Guide</h3>
+                    <p>Your safety is our priority. Here are some common red flags to look out for when buying second-hand items online to ensure you shop safely.</p>
+                </a>
+            </div>
+        </section>
+        </div>
 
     <footer>
         <div class="kabale-contact-info-section">
