@@ -10,8 +10,9 @@
         .admin-section { margin-top: 40px; }
         .user-list { list-style-type: none; padding: 0; }
         .user-list-item { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
-        .user-info { font-family: monospace; }
+        .user-info { font-family: monospace; flex-grow: 1; }
         .verified-badge { color: green; font-weight: bold; }
+        .referral-info { font-size: 0.9em; color: #555; font-style: italic; font-family: sans-serif; }
         .verify-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; }
         .verify-btn.verified { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
         .verify-btn.not-verified { background-color: #28a745; color: white; border: 1px solid #28a745; }
@@ -45,7 +46,7 @@
             
             <div class="admin-section">
                 <h2>User Management</h2>
-                <p>Verify trusted sellers to give them a badge on their listings.</p>
+                <p>Verify trusted sellers and view community referrers.</p>
                 <ul id="user-list" class="user-list">
                     </ul>
             </div>
