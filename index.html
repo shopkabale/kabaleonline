@@ -9,50 +9,54 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* MODIFICATION START: Updated Sticky Header Styles */
-        body { padding-top: 50px; } /* Reduced padding for smaller header */
+        body { padding-top: 50px; }
         .site-header-main { text-align: center; padding: 15px 0; }
         .header-actions-sticky {
             position: sticky;
             top: 0;
             background-color: white;
             z-index: 1000;
-            padding: 6px 0; /* Reduced padding */
+            padding: 6px 10px;
             display: flex;
-            justify-content: center;
-            gap: 10px; /* Reduced gap */
+            justify-content: flex-start;
+            gap: 10px;
             align-items: center;
             border-bottom: 1px solid #eee;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .header-actions-sticky::-webkit-scrollbar {
+            display: none;
         }
         .action-btn {
-            padding: 6px 14px; /* Reduced padding */
-            border-radius: 20px; /* Rounded borders */
+            padding: 6px 14px;
+            border-radius: 20px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 0.9em; /* Reduced font size */
+            font-size: 0.9em;
             border: none;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
-            background-color: #f0f2f5; /* Default gray background */
-            color: #333; /* Default dark text */
+            background-color: #f0f2f5;
+            color: #333;
+            flex-shrink: 0; /* Prevents buttons from shrinking */
         }
         .action-btn:hover {
-            background-color: #e2e6ea; /* Slightly darker gray on hover */
+            background-color: #e2e6ea;
         }
-        /* Active state now turns the button blue */
         .nav-link.active {
             background-color: #007bff;
             color: white;
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
         }
-        /* MODIFICATION END */
-
+        
         .page-container { padding-top: 20px; }
         .product-card-link { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
         .product-card-link.visible { opacity: 1; transform: translateY(0); }
 
-        /* MODIFICATION START: New Styles for Blog Section */
         .blog-section-container {
             margin-top: 50px;
             padding-top: 30px;
@@ -85,7 +89,6 @@
             font-size: 0.9em;
             color: #666;
         }
-        /* MODIFICATION END */
     </style>
 </head>
 <body>
@@ -99,6 +102,7 @@
         <a href="/blog/" class="action-btn nav-link" id="blog-btn">Campus News</a>
         <a href="/sell/" class="action-btn" id="header-action-btn">Login / Sell</a>
     </div>
+
     <div class="container page-container">
         <section class="hero-section">
             <h1>Discover. Buy. Sell.</h1>
@@ -109,7 +113,24 @@
         </section>
 
         <div class="search-and-filter-container">
-           </div>
+            <div class="search-bar">
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+                <button id="search-btn" class="cta-button">Search</button>
+            </div>
+            <div class="filters">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                    </select>
+                </div>
+                <div class="filter-row price-filter-group">
+                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <button id="apply-filters-btn" class="cta-button">Filter</button>
+                </div>
+            </div>
+        </div>
         
         <main>
             <h2 id="listings-title">All Listings</h2>
@@ -133,7 +154,8 @@
                 </a>
             </div>
         </section>
-        </div>
+
+    </div>
 
     <footer>
         <div class="kabale-contact-info-section">
