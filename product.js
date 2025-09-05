@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
             const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hi, I'm interested in your '${product.name}' listing on Kabale Online.`;
+            
+            const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️ Verified Seller</span>' : '';
 
             productDetailContent.innerHTML = `
                 <div class="product-detail-container">
@@ -49,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="seller-card">
                             <h3>Seller Information</h3>
                             <p>Contact the seller directly to arrange purchase and pickup.</p>
-                            <p><strong>Seller:</strong> <a href="profile.html?sellerId=${product.sellerId}">${product.sellerEmail || 'View Profile'}</a></p>
+                            <p><strong>Seller:</strong> <a href="profile.html?sellerId=${product.sellerId}">${product.sellerEmail || 'View Profile'}</a> ${verifiedBadge}</p>
                             <a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
                         </div>
                     </div>
