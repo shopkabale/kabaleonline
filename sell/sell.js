@@ -131,26 +131,30 @@ onAuthStateChanged(auth, async (user) => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // This logic now serves as a fallback for any older users who might be missing a code
-            if (!userData.referralCode) {
-                const newRefCode = user.uid.substring(0, 6).toUpperCase();
-                try {
-                    await updateDoc(userDocRef, { referralCode: newRefCode });
-                    userReferralCode.textContent = newRefCode; // Display the new code
-                } catch (error) {
-                    console.error("Error adding referral code:", error);
-                }
-            } else {
-                userReferralCode.textContent = userData.referralCode;
-            }
-            userReferralCount.textContent = userData.referralCount || 0;
-            referralSection.style.display = 'block';
+        if (!userDoc.exists()) {
+            // This user exists in Authentication, but not in our database.
+            // This happens for all "previous users". Let's create their document now.
+            const newRefCode = user.uid.substring(0, 6).toUpperCase();
+            const newUserDocData = {
+                email: user.email,
+                role: 'seller',
+                isVerified: false,
+                referralCount: 0,
+                createdAt: serverTimestamp(),
+                referralCode: newRefCode
+            };
+            await setDoc(userDocRef, newUserDocData);
+            displayDashboardInfo(newUserDocData, newRefCode);
         } else {
-            // This case can happen if auth succeeds but Firestore user doc creation fails
-            console.error("User is authenticated, but no user document found in Firestore!");
-            referralSection.style.display = 'none';
+            // This is for all normal users who already have a database document.
+            const userData = userDoc.data();
+            let refCode = userData.referralCode;
+            if (!refCode) {
+                // Fallback for any user who might still be missing just the code
+                refCode = user.uid.substring(0, 6).toUpperCase();
+                await updateDoc(userDocRef, { referralCode: refCode });
+            }
+            displayDashboardInfo(userData, refCode);
         }
     } else {
         authContainer.style.display = 'block';
@@ -159,6 +163,12 @@ onAuthStateChanged(auth, async (user) => {
         referralSection.style.display = 'none';
     }
 });
+
+function displayDashboardInfo(userData, refCode) {
+    userReferralCode.textContent = refCode;
+    userReferralCount.textContent = userData.referralCount || 0;
+    referralSection.style.display = 'block';
+}
 
 userReferralCode.addEventListener('click', () => {
     if(userReferralCode.textContent && userReferralCode.textContent !== 'Loading...'){
@@ -187,7 +197,7 @@ googleLoginBtn.addEventListener('click', () => {
                     isVerified: false,
                     referralCount: 0,
                     createdAt: serverTimestamp(),
-                    referralCode: user.uid.substring(0, 6).toUpperCase() // Create code on signup
+                    referralCode: user.uid.substring(0, 6).toUpperCase()
                 });
             }
         }).catch((error) => { showMessage(loginErrorElement, "Could not sign in with Google. Please try again."); });
