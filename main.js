@@ -7,8 +7,6 @@ const minPriceInput = document.getElementById('min-price');
 const maxPriceInput = document.getElementById('max-price');
 const applyFiltersBtn = document.getElementById('apply-filters-btn');
 const listingsTitle = document.getElementById('listings-title');
-const itemsBtn = document.getElementById('items-btn');
-const servicesBtn = document.getElementById('services-btn');
 
 const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
@@ -107,13 +105,13 @@ searchBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
+// MODIFICATION: Set the page title based on the filter
 if (listingTypeFilter === 'service') {
     listingsTitle.textContent = 'Student Hustles';
-    servicesBtn.classList.add('active');
 } else {
     listingsTitle.textContent = 'All Items';
-    itemsBtn.classList.add('active');
 }
+// The active class is now handled by shared.js, so we removed it from here.
 
 fetchProducts(true);
 
