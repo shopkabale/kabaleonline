@@ -72,11 +72,10 @@ function renderProducts(productsToDisplay) {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
-        productLink.className = 'product-card-link'; // Class for animation
+        productLink.className = 'product-card-link';
         productLink.innerHTML = `<div class="product-card"><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
         productGrid.appendChild(productLink);
     });
-    // After rendering, apply the animation observer
     observeElementsForAnimation();
 }
 
@@ -95,7 +94,6 @@ searchBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-// --- Initial Page Load Logic ---
 if (listingTypeFilter === 'service') {
     listingsTitle.textContent = 'All Services';
     servicesBtn.classList.add('active');
@@ -106,21 +104,18 @@ if (listingTypeFilter === 'service') {
 
 fetchProducts(true);
 
-
-// --- NEW: Function for Motion Layout (Scroll Animation) ---
 function observeElementsForAnimation() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                observer.unobserve(entry.target); // Stop observing once it's visible
+                observer.unobserve(entry.target);
             }
         });
     }, {
-        threshold: 0.1 // Trigger when 10% of the item is visible
+        threshold: 0.1
     });
 
-    // Find all product cards that are not yet visible and start observing them
     const elementsToAnimate = document.querySelectorAll('.product-card-link:not(.visible)');
     elementsToAnimate.forEach(el => {
         observer.observe(el);
