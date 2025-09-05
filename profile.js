@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const profileHeader = document.getElementById('profile-header');
 const sellerProductGrid = document.getElementById('seller-product-grid');
@@ -11,44 +11,67 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!sellerId) {
         profileHeader.innerHTML = '<h1>Seller not found.</h1>';
-        sellerProductGrid.innerHTML = '';
         return;
     }
 
     try {
-        const q = query(
-            collection(db, "products"), 
-            where("sellerId", "==", sellerId), 
-            orderBy("createdAt", "desc")
-        );
+        const userDocRef = doc(db, 'users', sellerId);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const sellerName = userData.name || 'Seller';
+            const sellerEmail = userData.email;
+            const sellerLocation = userData.location;
+            const sellerInstitution = userData.institution;
+            const sellerBio = userData.bio;
+            const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp'; // Use a default placeholder
+            const isVerified = userData.isVerified || false;
 
+            let detailsHTML = `<p>📧 ${sellerEmail}</p>`;
+            if (sellerLocation) detailsHTML += `<p style="margin-top: -10px;">📍 From ${sellerLocation}</p>`;
+            if (sellerInstitution) detailsHTML += `<p style="margin-top: -10px;">🎓 ${sellerInstitution}</p>`;
+            
+            let bioHTML = '';
+            if (sellerBio) bioHTML = `<p class="profile-bio">"${sellerBio}"</p>`;
+
+            const verifiedBadge = isVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️</span>' : '';
+
+            profileHeader.innerHTML = `
+                <div class="profile-header-flex">
+                    <img src="${profilePhotoUrl}" alt="${sellerName}" class="profile-photo">
+                    <div class="profile-details">
+                        <h1 style="display: flex; align-items: center; gap: 10px;">${sellerName} ${verifiedBadge}</h1>
+                        ${detailsHTML}
+                    </div>
+                </div>
+                ${bioHTML}
+            `;
+            document.title = `Profile for ${sellerName} | Kabale Online`;
+        } else {
+            profileHeader.innerHTML = `<h1>Seller Profile</h1><p>Could not find this seller's details.</p>`;
+        }
+    } catch (error) {
+        console.error("Error fetching user details:", error);
+        profileHeader.innerHTML = `<h1>Seller Profile</h1><p>Error loading seller details.</p>`;
+    }
+
+    try {
+        const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
-        sellerProductGrid.innerHTML = ''; // Clear loading message
-
+        sellerProductGrid.innerHTML = '';
         if (querySnapshot.empty) {
-            profileHeader.innerHTML = '<h1>Seller Profile</h1>';
-            listingsTitle.textContent = 'No active listings';
-            sellerProductGrid.innerHTML = '<p>This user does not have any items or services listed for sale at the moment.</p>';
+            listingsTitle.textContent = 'This seller has no active listings.';
             return;
         }
-        
-        const firstProduct = querySnapshot.docs[0].data();
-        const sellerEmail = firstProduct.sellerEmail || 'this seller';
-        profileHeader.innerHTML = `<h1>Seller Profile</h1><p>Viewing all listings from <strong>${sellerEmail}</strong></p>`;
-        document.title = `Profile for ${sellerEmail} | Kabale Online`;
-
         querySnapshot.forEach((doc) => {
             const product = doc.data();
-            const productId = doc.id;
-            
-            const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
-            
             const productLink = document.createElement('a');
-            productLink.href = `product.html?id=${productId}`;
+            productLink.href = `product.html?id=${doc.id}`;
             productLink.className = 'product-card-link';
             productLink.innerHTML = `
                 <div class="product-card">
-                    <img src="${primaryImage}" alt="${product.name}">
+                    <img src="${(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p class="price">UGX ${product.price.toLocaleString()}</p>
                 </div>
@@ -56,8 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             sellerProductGrid.appendChild(productLink);
         });
     } catch (error) {
-        console.error("Error fetching seller profile:", error);
-        profileHeader.innerHTML = '<h1>Error</h1>';
-        sellerProductGrid.innerHTML = '<p>Could not load this seller\'s profile. Please try again.</p>';
+        listingsTitle.textContent = 'Could not load listings.';
     }
 });
