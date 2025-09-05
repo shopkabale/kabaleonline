@@ -1,6 +1,3 @@
-import { auth } from './firebase.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const loadMoreBtn = document.getElementById('load-more-btn');
@@ -21,51 +18,6 @@ let currentQuery = { searchTerm: "", category: "", minPrice: "", maxPrice: "" };
 const urlParams = new URLSearchParams(window.location.search);
 const listingTypeFilter = urlParams.get('type');
 
-function showSkeletonLoaders() {
-    productGrid.innerHTML = ''; // Clear previous results
-    let skeletons = '';
-    for (let i = 0; i < 8; i++) { // Show 8 skeletons
-        skeletons += `
-            <div class="skeleton-card">
-                <div class="image"></div>
-                <div class="text"></div>
-                <div class="text short"></div>
-            </div>
-        `;
-    }
-    productGrid.innerHTML = skeletons;
-}
-
-async function fetchAndDisplayDeals() {
-    const dealsSection = document.getElementById('quick-deals-section');
-    if (!dealsSection) return;
-    const dealsGrid = document.getElementById('quick-deals-grid');
-
-    try {
-        const response = await fetch('/.netlify/functions/fetch-deals');
-        if (!response.ok) throw new Error('Failed to fetch deals');
-        const deals = await response.json();
-
-        if (deals.length > 0) {
-            dealsGrid.innerHTML = '';
-            deals.forEach(product => {
-                const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
-                const productLink = document.createElement('a');
-                productLink.href = `product.html?id=${product.id}`;
-                productLink.className = 'product-card-link';
-                productLink.innerHTML = `<div class="product-card"><div class="deal-badge">DEAL</div><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
-                dealsGrid.appendChild(productLink);
-            });
-            dealsSection.style.display = 'block';
-        } else {
-            dealsSection.style.display = 'none';
-        }
-    } catch (error) {
-        console.error("Could not fetch featured listings:", error);
-        dealsSection.style.display = 'none';
-    }
-}
-
 async function fetchProducts(isNewSearch = false) {
     if (fetching) return;
     fetching = true;
@@ -73,7 +25,7 @@ async function fetchProducts(isNewSearch = false) {
 
     if (isNewSearch) {
         lastVisibleProductId = null;
-        showSkeletonLoaders();
+        productGrid.innerHTML = '<p>Loading listings...</p>';
     }
 
     let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
@@ -83,7 +35,7 @@ async function fetchProducts(isNewSearch = false) {
     if (listingTypeFilter) {
         url += `&type=${listingTypeFilter}`;
     } else {
-        url += `&type=item`;
+        url += `&type=item`; 
     }
     if (lastVisibleProductId) {
         url += `&lastVisible=${lastVisibleProductId}`;
@@ -120,10 +72,12 @@ function renderProducts(productsToDisplay) {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
-        productLink.className = 'product-card-link';
+        productLink.className = 'product-card-link'; // Class for animation
         productLink.innerHTML = `<div class="product-card"><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
         productGrid.appendChild(productLink);
     });
+    // After rendering, apply the animation observer
+    observeElementsForAnimation();
 }
 
 function handleNewSearch() {
@@ -145,25 +99,30 @@ loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 if (listingTypeFilter === 'service') {
     listingsTitle.textContent = 'All Services';
     servicesBtn.classList.add('active');
-    const dealsSection = document.getElementById('quick-deals-section');
-    if (dealsSection) dealsSection.style.display = 'none';
 } else {
     listingsTitle.textContent = 'All Items';
     itemsBtn.classList.add('active');
-    fetchAndDisplayDeals();
 }
 
 fetchProducts(true);
 
-// --- NEW: Dynamic Header Logic ---
-const postOrDashboardBtn = document.getElementById('sell-btn'); // Using the ID from your HTML
 
-onAuthStateChanged(auth, user => {
-    if (user) {
-        // User is signed in
-        postOrDashboardBtn.textContent = 'Seller Dashboard';
-    } else {
-        // User is signed out
-        postOrDashboardBtn.textContent = 'Post something';
-    }
-});
+// --- NEW: Function for Motion Layout (Scroll Animation) ---
+function observeElementsForAnimation() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // Stop observing once it's visible
+            }
+        });
+    }, {
+        threshold: 0.1 // Trigger when 10% of the item is visible
+    });
+
+    // Find all product cards that are not yet visible and start observing them
+    const elementsToAnimate = document.querySelectorAll('.product-card-link:not(.visible)');
+    elementsToAnimate.forEach(el => {
+        observer.observe(el);
+    });
+}
