@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kabale Online | Buy and Sell Online in Kabale , Kigezi</title>
-    <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -12,83 +11,34 @@
         body { padding-top: 50px; }
         .site-header-main { text-align: center; padding: 15px 0; }
         .header-actions-sticky {
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 1000;
-            padding: 6px 10px;
-            display: flex;
-            justify-content: flex-start;
-            gap: 10px;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            position: sticky; top: 0; background-color: white; z-index: 1000;
+            padding: 6px 10px; display: flex; justify-content: flex-start; gap: 10px;
+            align-items: center; border-bottom: 1px solid #eee; flex-wrap: nowrap;
+            overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
         }
-        .header-actions-sticky::-webkit-scrollbar {
-            display: none;
-        }
+        .header-actions-sticky::-webkit-scrollbar { display: none; }
         .action-btn {
-            padding: 6px 14px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9em;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            background-color: #f0f2f5;
-            color: #333;
-            flex-shrink: 0; /* Prevents buttons from shrinking */
+            padding: 6px 14px; border-radius: 20px; text-decoration: none;
+            font-weight: bold; font-size: 0.9em; border: none; cursor: pointer;
+            transition: all 0.2s ease-in-out; background-color: #f0f2f5; color: #333;
+            flex-shrink: 0;
         }
-        .action-btn:hover {
-            background-color: #e2e6ea;
-        }
+        .action-btn:hover { background-color: #e2e6ea; }
         .nav-link.active {
-            background-color: #007bff;
-            color: white;
-            transform: scale(1.05);
+            background-color: #007bff; color: white; transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
         }
-        
+        #header-action-btn { background-color: #ffc107; color: #212529; } /* Special color for Post Something */
         .page-container { padding-top: 20px; }
-        .product-card-link { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
-        .product-card-link.visible { opacity: 1; transform: translateY(0); }
-
-        .blog-section-container {
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 1px solid #eee;
-        }
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .blog-preview-card {
-            display: block;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            text-decoration: none;
-            color: #333;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .blog-preview-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .blog-preview-card h3 {
-            margin-top: 0;
-            color: #007bff;
-        }
-        .blog-preview-card p {
-            font-size: 0.9em;
-            color: #666;
-        }
+        
+        .blog-section-container, .request-cta-section { text-align: center; margin: 40px 0; padding: 30px 20px; background-color: #f9f9f9; border-radius: 8px; border: 1px solid #eee; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: left; }
+        .blog-preview-card { display: block; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; text-decoration: none; color: #333; transition: transform 0.2s, box-shadow 0.2s; }
+        .blog-preview-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .blog-preview-card h3 { margin-top: 0; color: #007bff; }
+        .blog-preview-card p { font-size: 0.9em; color: #666; }
+        .request-cta-section h3 { margin-top: 0; margin-bottom: 10px; }
+        .request-cta-section p { margin-bottom: 20px; color: #666; }
     </style>
 </head>
 <body>
@@ -99,11 +49,9 @@
     <div class="header-actions-sticky">
         <a href="/" class="action-btn nav-link" id="items-btn">All Items</a>
         <a href="/?type=service" class="action-btn nav-link" id="services-btn">Student Hustles</a>
-        
-        <a href="/sell/" class="action-btn" id="header-action-btn">Login / Sell</a>
-<a href="/requests/" class="cta-button">Post a New Request</a>
-<a href="/blog/" class="action-btn nav-link" id="blog-btn">Campus News</a>
-
+        <a href="/sell/" class="action-btn" id="header-action-btn">Post Something</a>
+        <a href="/requests/view.html" class="action-btn nav-link" id="request-btn">Requests</a>
+        <a href="/blog/" class="action-btn nav-link" id="stories-btn">Campus Stories</a>
     </div>
 
     <div class="container page-container">
@@ -153,15 +101,20 @@
         
         <main>
             <h2 id="listings-title">All Listings</h2>
-            <div id="product-grid" class="product-grid">
-                </div>
+            <div id="product-grid" class="product-grid"></div>
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
+            </div>
+
+            <div id="request-cta" class="request-cta-section">
+                <h3>Didn't find what you're looking for?</h3>
+                <p>Let the community know what you need by posting a public request.</p>
+                <a href="/requests/" class="cta-button">Request an Item or Service</a>
             </div>
         </main>
 
         <section class="blog-section-container">
-            <h2 style="text-align: center; margin-bottom: 20px;">From Campus News</h2>
+            <h2>From Campus Stories</h2>
             <div class="blog-grid">
                 <a href="/blog/how-to-sell-fast.html" class="blog-preview-card">
                     <h3>5 Tips to Sell Your Item Fast on Kabale Online</h3>
@@ -173,7 +126,6 @@
                 </a>
             </div>
         </section>
-
     </div>
 
     <footer>
