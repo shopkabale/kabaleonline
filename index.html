@@ -9,65 +9,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* HEADER STYLES */
+        /* CSS FOR STICKY HEADER AND ACTIVE BUTTON */
         body { padding-top: 60px; }
         .site-header-main { text-align: center; padding: 15px 0; }
         .header-actions-sticky { position: sticky; top: 0; background-color: white; z-index: 1000; padding: 10px 0; display: flex; justify-content: center; gap: 15px; align-items: center; border-bottom: 1px solid #eee; }
-        .page-container { padding-top: 0; } /* Remove top padding to connect with hero */
+        .page-container { padding-top: 20px; }
         .action-btn { padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; color: white; cursor: pointer; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .action-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         #items-btn { background-color: #007bff; }
         #services-btn { background-color: #28a745; }
         #sell-btn { background-color: #ffc107; color: #212529; }
         .nav-link.active { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-        /* --- NEW: CSS for Competitive Hero Section --- */
-        .hero-section {
-            background-color: #0056b3;
-            background-image: linear-gradient(145deg, #007bff, #003d7a);
-            color: white;
-            text-align: center;
-            padding: 50px 20px;
-        }
-        .hero-section h1 {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .hero-section p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            opacity: 0.9;
-        }
-        .hero-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        .hero-buttons a {
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-        .hero-buttons a:hover {
-            transform: scale(1.05);
-        }
-        .hero-browse {
-            background-color: white;
-            color: #007bff;
-        }
-
-        /* --- NEW: CSS for Motion Layout (Scroll Animation) --- */
-        .product-card-link {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        }
-        .product-card-link.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        
+        /* CSS for Motion Layout (Scroll Animation) */
+        .product-card-link { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
+        .product-card-link.visible { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -82,7 +38,6 @@
     </div>
 
     <div class="container page-container">
-        
         <section class="hero-section">
             <h1>Discover. Buy. Sell.</h1>
             <p>Your student marketplace for everything you need in Kabale.</p>
@@ -92,7 +47,24 @@
         </section>
 
         <div class="search-and-filter-container">
+            <div class="search-bar">
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+                <button id="search-btn" class="cta-button">Search</button>
             </div>
+            <div class="filters">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                    </select>
+                </div>
+                <div class="filter-row price-filter-group">
+                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <button id="apply-filters-btn" class="cta-button">Filter</button>
+                </div>
+            </div>
+        </div>
         
         <main>
             <h2 id="listings-title">All Listings</h2>
@@ -105,18 +77,6 @@
     </div>
 
     <footer>
-<div class="kabale-contact-info-section">
-    <h3 class="kabale-contact-title">Get in Touch</h3>
-    <div class="kabale-contact-details">
-        <p class="kabale-contact-item">📞 +256 784655792</p> <p class="kabale-contact-item">📧 shopkabale@gmail.com</p> </div>
-    <div class="kabale-footer-links">
-        <a href="/about.html" class="kabale-footer-link">About Us</a>
-        <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-    </div>
-
-
-
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </footer>
 
     <script type="module" src="shared.js"></script>
