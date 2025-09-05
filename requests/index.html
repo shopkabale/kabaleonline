@@ -4,8 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request an Item or Service | Kabale Online</title>
-    <link rel="stylesheet" href="/styles.css"> <style>
-        .success-message { display: none; color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; }
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f8f9fa; color: #333; }
+        .container { max-width: 960px; margin: 0 auto; padding: 0 15px; }
+        .page-content { padding-top: 20px; padding-bottom: 40px; }
+        .site-header-main { text-align: center; padding: 15px 0; background-color: white; border-bottom: 1px solid #eee; }
+        .site-title { text-decoration: none; color: #333; font-size: 1.8em; font-weight: bold; }
+        .site-title span { color: #007bff; }
+        .page-welcome { text-align: center; margin-bottom: 30px; }
+        .page-welcome h1 { margin-bottom: 10px; }
+        .page-welcome p { color: #666; }
+        .back-home-btn { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; font-weight: bold; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="tel"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        .cta-button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .success-message { display: none; color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; }
+        footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #eee; background-color: white; }
     </style>
 </head>
 <body>
@@ -39,7 +75,8 @@
     </div>
 
     <footer>
-        </footer>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
 
     <script type="module" src="requests.js"></script>
 </body>
