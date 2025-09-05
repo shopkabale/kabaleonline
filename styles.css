@@ -769,3 +769,52 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     background-color: white;
     color: #007bff;
 }
+/* --- STICKY ACTION HEADER --- */
+.header-actions-sticky {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1000;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: flex-start; /* Default for mobile scrolling */
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.header-actions-sticky::-webkit-scrollbar {
+    display: none;
+}
+.action-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-color: #f0f2f5;
+    color: #333;
+    flex-shrink: 0;
+}
+.action-btn:hover {
+    background-color: #e2e6ea;
+}
+.nav-link.active {
+    background-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* This rule centers the buttons on screens wider than 768px */
+@media (min-width: 768px) {
+    .header-actions-sticky {
+        justify-content: center;
+    }
+}
