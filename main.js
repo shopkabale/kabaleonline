@@ -67,17 +67,30 @@ async function fetchProducts(isNewSearch = false) {
     }
 }
 
+// MODIFICATION START
 function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
+        
+        const sellerInfo = product.sellerEmail 
+            ? `<p class="seller-info" style="font-size: 0.8em; color: grey; margin: 5px 0;">By: <a href="profile.html?sellerId=${product.sellerId}" style="color: grey; text-decoration: underline;">${product.sellerEmail}</a></p>`
+            : '';
+
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
         productLink.className = 'product-card-link';
-        productLink.innerHTML = `<div class="product-card"><img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p></div>`;
+        productLink.innerHTML = `
+            <div class="product-card">
+                <img src="${primaryImage}" alt="${product.name}">
+                <h3>${product.name}</h3>
+                <p class="price">UGX ${product.price.toLocaleString()}</p>
+                ${sellerInfo}
+            </div>`;
         productGrid.appendChild(productLink);
     });
     observeElementsForAnimation();
 }
+// MODIFICATION END
 
 function handleNewSearch() {
     currentQuery = {
@@ -94,13 +107,15 @@ searchBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
+// MODIFICATION START
 if (listingTypeFilter === 'service') {
-    listingsTitle.textContent = 'All Services';
+    listingsTitle.textContent = 'Student Hustles';
     servicesBtn.classList.add('active');
 } else {
     listingsTitle.textContent = 'All Items';
     itemsBtn.classList.add('active');
 }
+// MODIFICATION END
 
 fetchProducts(true);
 
