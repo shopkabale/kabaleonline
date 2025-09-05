@@ -67,13 +67,14 @@ async function fetchProducts(isNewSearch = false) {
     }
 }
 
-// MODIFICATION START
 function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
         
+        const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️</span>' : '';
+        
         const sellerInfo = product.sellerEmail 
-            ? `<p class="seller-info" style="font-size: 0.8em; color: grey; margin: 5px 0;">By: <a href="profile.html?sellerId=${product.sellerId}" style="color: grey; text-decoration: underline;">${product.sellerEmail}</a></p>`
+            ? `<p class="seller-info" style="font-size: 0.8em; color: grey; margin: 5px 0;">By: <a href="profile.html?sellerId=${product.sellerId}" style="color: grey; text-decoration: underline;">${product.sellerEmail}</a> ${verifiedBadge}</p>`
             : '';
 
         const productLink = document.createElement('a');
@@ -90,7 +91,6 @@ function renderProducts(productsToDisplay) {
     });
     observeElementsForAnimation();
 }
-// MODIFICATION END
 
 function handleNewSearch() {
     currentQuery = {
@@ -107,7 +107,6 @@ searchBtn.addEventListener('click', handleNewSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleNewSearch(); });
 loadMoreBtn.addEventListener('click', () => fetchProducts(false));
 
-// MODIFICATION START
 if (listingTypeFilter === 'service') {
     listingsTitle.textContent = 'Student Hustles';
     servicesBtn.classList.add('active');
@@ -115,7 +114,6 @@ if (listingTypeFilter === 'service') {
     listingsTitle.textContent = 'All Items';
     itemsBtn.classList.add('active');
 }
-// MODIFICATION END
 
 fetchProducts(true);
 
