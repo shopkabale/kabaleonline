@@ -1,60 +1,63 @@
 import { db } from './firebase.js';
-import { collection, query, where, getDocs, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-const sellerUsernameElement = document.getElementById('seller-username');
-const sellerProductsGrid = document.getElementById('seller-products-grid');
+const profileHeader = document.getElementById('profile-header');
+const sellerProductGrid = document.getElementById('seller-product-grid');
+const listingsTitle = document.getElementById('listings-title');
 
-const urlParams = new URLSearchParams(window.location.search);
-const sellerId = urlParams.get('id');
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sellerId = urlParams.get('sellerId');
 
-async function fetchSellerInfo() {
     if (!sellerId) {
-        sellerUsernameElement.textContent = "Seller not found.";
+        profileHeader.innerHTML = '<h1>Seller not found.</h1>';
+        sellerProductGrid.innerHTML = '';
         return;
     }
-    const userDocRef = doc(db, 'users', sellerId);
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const displayName = userData.username || "Anonymous Seller";
-        sellerUsernameElement.textContent = `${displayName}'s Profile`;
-        document.title = `${displayName}'s Profile | Kabale Online`;
-    } else {
-        sellerUsernameElement.textContent = "Seller does not exist.";
-    }
-}
 
-async function fetchSellerProducts() {
-    if (!sellerId) {
-        sellerProductsGrid.innerHTML = "<p>Could not find seller's listings.</p>";
-        return;
-    }
-    const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    sellerProductsGrid.innerHTML = '';
-    if (querySnapshot.empty) {
-        sellerProductsGrid.innerHTML = "<p>This seller has no active listings.</p>";
-        return;
-    }
-    querySnapshot.forEach((doc) => {
-        const product = doc.data();
-        const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
-        const productCardContainer = document.createElement('div');
-        productCardContainer.className = 'product-card-link'; // Use same class for styling
-        productCardContainer.innerHTML = `
-            <a href="product.html?id=${doc.id}">
+    try {
+        const q = query(
+            collection(db, "products"), 
+            where("sellerId", "==", sellerId), 
+            orderBy("createdAt", "desc")
+        );
+
+        const querySnapshot = await getDocs(q);
+        sellerProductGrid.innerHTML = ''; // Clear loading message
+
+        if (querySnapshot.empty) {
+            profileHeader.innerHTML = '<h1>Seller Profile</h1>';
+            listingsTitle.textContent = 'No active listings';
+            sellerProductGrid.innerHTML = '<p>This user does not have any items or services listed for sale at the moment.</p>';
+            return;
+        }
+        
+        const firstProduct = querySnapshot.docs[0].data();
+        const sellerEmail = firstProduct.sellerEmail || 'this seller';
+        profileHeader.innerHTML = `<h1>Seller Profile</h1><p>Viewing all listings from <strong>${sellerEmail}</strong></p>`;
+        document.title = `Profile for ${sellerEmail} | Kabale Online`;
+
+        querySnapshot.forEach((doc) => {
+            const product = doc.data();
+            const productId = doc.id;
+            
+            const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
+            
+            const productLink = document.createElement('a');
+            productLink.href = `product.html?id=${productId}`;
+            productLink.className = 'product-card-link';
+            productLink.innerHTML = `
                 <div class="product-card">
                     <img src="${primaryImage}" alt="${product.name}">
-                    <div class="product-card-content">
-                        <h3>${product.name}</h3>
-                        <p class="price">UGX ${product.price.toLocaleString()}</p>
-                    </div>
+                    <h3>${product.name}</h3>
+                    <p class="price">UGX ${product.price.toLocaleString()}</p>
                 </div>
-            </a>
-        `;
-        sellerProductsGrid.appendChild(productCardContainer);
-    });
-}
-
-fetchSellerInfo();
-fetchSellerProducts();
+            `;
+            sellerProductGrid.appendChild(productLink);
+        });
+    } catch (error) {
+        console.error("Error fetching seller profile:", error);
+        profileHeader.innerHTML = '<h1>Error</h1>';
+        sellerProductGrid.innerHTML = '<p>Could not load this seller\'s profile. Please try again.</p>';
+    }
+});
