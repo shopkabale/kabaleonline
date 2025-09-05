@@ -18,8 +18,9 @@
         .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
         .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
         .referral-count { font-weight: bold; color: #28a745; }
-        #complete-profile-section { background-color: #fffbe6; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        #complete-profile-section h2 { margin-top: 0; color: #856404; }
+        #complete-profile-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 25px; margin: 25px 0; }
+        #complete-profile-section h2 { margin-top: 0; color: #0056b3; text-align: center; }
+        #complete-profile-section p { text-align: center; margin-top: -10px; color: #666; margin-bottom: 25px; }
     </style>
 </head>
 <body>
@@ -41,7 +42,7 @@
         <div id="auth-container">
             <div class="login-card">
                 <h1 class="auth-title">Welcome Back!</h1>
-                <p class="auth-subtitle">Log in or create an account to access the seller dashboard and start selling your item or service.</p>
+                <p class="auth-subtitle">Log in or create an account to access the seller dashboard.</p>
 
                 <p id="auth-success" class="success-message"></p>
                 <div class="auth-tabs">
@@ -87,8 +88,8 @@
             </div>
             
             <div id="complete-profile-section" style="display: none;">
-                <h2>Complete Your Profile to Build More Trust!</h2>
-                <p>Add your details to help other members of the Kabale Online community get to know you.</p>
+                <h2>Complete Your Profile!</h2>
+                <p>Build more trust with buyers by adding your details.</p>
                 <form id="complete-profile-form">
                     <div class="form-group"><label for="profile-name">Your Full Name or Business Name</label><input type="text" id="profile-name" required></div>
                     <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" placeholder="e.g., Kikungiri or Kab University" required></div>
@@ -113,7 +114,22 @@
             <button id="reset-password-btn">Change Password</button>
 
             <div id="product-form-container" style="display: none;">
-                </div>
+                <h2>Add/Edit Listing</h2>
+                <form id="product-form">
+                    <input type="hidden" id="productId">
+                    <div class="form-group"><label>What are you listing?</label><div class="listing-type-selector"><input type="radio" id="type-item" name="listing_type" value="item" checked><label for="type-item">An Item</label><input type="radio" id="type-service" name="listing_type" value="service"><label for="type-service">A Service</label></div></div>
+                    <div class="form-group"><label for="product-name">Name of Item/Service</label><input type="text" id="product-name" required></div>
+                    <div class="form-group"><label for="product-price">Price (UGX)</label><input type="number" id="product-price" required></div>
+                    <div class="form-group"><label for="product-category">Category</label><select id="product-category" required></select></div>
+                    <div class="form-group"><label for="product-description">Description</label><textarea id="product-description" required rows="5"></textarea></div>
+                    <div class="form-group"><label for="product-story">Your Story (Optional)</label><textarea id="product-story" rows="3"></textarea></div>
+                    <div class="form-group"><label for="whatsapp-number">WhatsApp Number</label><input type="tel" id="whatsapp-number" required></div>
+                    <div class="form-group"><label for="product-image-1">Main Image (Required)</label><input type="file" id="product-image-1" accept="image/*"></div>
+                    <div class="form-group"><label for="product-image-2">Optional Second Image</label><input type="file" id="product-image-2" accept="image/*"></div>
+                    <p id="submission-message" style="display: none; font-weight: bold; text-align: center; color: #333;">Submitting may take a minute...</p>
+                    <button type="submit" id="submit-btn">Add Product</button>
+                </form>
+            </div>
 
             <h2>Your Listings</h2>
             <div id="seller-products-list" class="product-grid"></div>
