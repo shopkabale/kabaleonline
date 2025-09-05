@@ -6,43 +6,41 @@
     <title>Product Details | Kabale Online</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .product-detail-container { display: flex; flex-wrap: wrap; gap: 30px; margin-top: 20px; }
+        .product-images { flex: 1; min-width: 300px; }
+        .product-images img { width: 100%; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .product-info { flex: 1; min-width: 300px; }
+        .product-story { background-color: #f0f8ff; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; font-style: italic; border-radius: 0 8px 8px 0; }
+        .seller-card { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #eee; }
+        .seller-card h3 { margin-top: 0; }
+        .back-home-btn { margin-bottom: 20px; display: inline-block; }
+    </style>
 </head>
 <body>
+    <header class="site-header-main">
+         <a href="/" class="site-title">Kabale <span>Online</span></a>
+    </header>
 
-    <header class="site-header">
-    <div class="container header-content">
-        <a href="/" class="site-title">Kabale <span>Online</span></a>
-        <nav class="header-nav">
-            <a href="/sell/" id="header-action-btn" class="cta-button">Sell an Item</a>
-        </nav>
-    </div>
-</header>
-
-
-
-    <div class="container">
+    <div class="container page-content">
+        <a href="/" class="back-home-btn">⬅ Back to All Listings</a>
         <div id="product-detail-content">
-            <p>Loading product...</p>
+            <p>Loading product details...</p>
         </div>
     </div>
     
     <footer>
-        <section id="contact-us-section">
-            <h2>Get in Touch</h2>
-            <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank"><i class="fa-solid fa-envelope"></i> Send an Email</a>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Get in Touch</h3>
+            <div class="kabale-contact-details">
+                <p class="kabale-contact-item">📞 +256 784655792</p> <p class="kabale-contact-item">📧 shopkabale@gmail.com</p> </div>
+            <div class="kabale-footer-links">
+                <a href="/about.html" class="kabale-footer-link">About Us</a>
+                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
             </div>
-        </section>
-        <div class="footer-links">
-            <a href="about.html" class="footer-link">About Us</a>
-            <a href="terms.html" class="footer-link">Terms of Service</a>
-        </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
     <script type="module" src="product.js"></script>
-<script src="/nav.js" defer></script>
-
 </body>
 </html>
