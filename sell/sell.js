@@ -26,6 +26,8 @@ const resetPasswordBtn = document.getElementById('reset-password-btn');
 const loginErrorElement = document.getElementById('login-error');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
+
+// Logic for dynamic categories
 const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
 const categorySelect = document.getElementById('product-category');
 
@@ -52,7 +54,9 @@ function updateCategoryOptions() {
     if (!document.querySelector('input[name="listing_type"]:checked')) return;
     const selectedType = document.querySelector('input[name="listing_type"]:checked').value;
     const categories = (selectedType === 'item') ? itemCategories : serviceCategories;
-    categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
+
+    categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>'; // Reset
+
     for (const key in categories) {
         const option = document.createElement('option');
         option.value = key;
@@ -64,7 +68,220 @@ function updateCategoryOptions() {
 listingTypeRadios.forEach(radio => radio.addEventListener('change', updateCategoryOptions));
 document.addEventListener('DOMContentLoaded', updateCategoryOptions);
 
-// MODIFICATION START: Product form submission
+// Helper function to show messages
+const showMessage = (element, message, isError = true) => {
+    element.textContent = message;
+    element.style.display = 'block';
+    element.className = isError ? 'error-message' : 'success-message';
+    if (isError) {
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
+    }
+};
+
+const hideAuthMessages = () => {
+    loginErrorElement.style.display = 'none';
+    signupErrorElement.style.display = 'none';
+    authSuccessElement.style.display = 'none';
+};
+
+const clearAuthForms = () => {
+    if (loginForm) loginForm.reset();
+    if (signupForm) signupForm.reset();
+};
+
+// Forgot Password Logic
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        hideAuthMessages();
+        const email = document.getElementById('login-email').value;
+        if (!email) {
+            return showMessage(loginErrorElement, "Please enter your email below to reset your password.");
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showMessage(authSuccessElement, "Password reset email sent. Please check your inbox.", false);
+        } catch (error) {
+            showMessage(loginErrorElement, "Could not send reset email. Make sure the email is correct.");
+            console.error("Forgot password error:", error);
+        }
+    });
+}
+
+if (resetPasswordBtn) {
+    resetPasswordBtn.addEventListener('click', async () => {
+        const email = prompt("Please enter your email address to receive a password reset link:");
+        if (email) {
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("If an account exists for '" + email + "', a password reset email has been sent.");
+            } catch (error) {
+                console.error("Password reset error from dashboard:", error);
+                alert("Could not send reset email. Please ensure the email address is valid.");
+            }
+        }
+    });
+}
+
+// Core Authentication Logic
+onAuthStateChanged(auth, user => {
+    if (user) {
+        authContainer.style.display = 'none';
+        dashboardContainer.style.display = 'block';
+        sellerEmailSpan.textContent = user.email;
+        fetchSellerProducts(user.uid);
+    } else {
+        authContainer.style.display = 'block';
+        dashboardContainer.style.display = 'none';
+        sellerProductsList.innerHTML = '';
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    signOut(auth).catch(error => {
+        console.error("Logout Error:", error);
+        alert("Could not log out. Please try again.");
+    });
+});
+
+googleLoginBtn.addEventListener('click', () => {
+    hideAuthMessages();
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then(async (result) => {
+            const user = result.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+                await setDoc(userDocRef, { email: user.email, role: 'seller', isVerified: false });
+            }
+        }).catch((error) => {
+            console.error("Google Sign-In Error:", error);
+            showMessage(loginErrorElement, "Could not sign in with Google. Please try again.");
+        });
+});
+
+// Tab Switching Logic
+const tabs = document.querySelectorAll('.tab-link');
+const contents = document.querySelectorAll('.tab-content');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        hideAuthMessages();
+        clearAuthForms();
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const activeContent = document.getElementById(tab.dataset.tab);
+        if (activeContent) {
+            activeContent.classList.add('active');
+        }
+    });
+});
+
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    hideAuthMessages();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const loginButton = loginForm.querySelector('button[type="submit"]');
+
+    loginButton.disabled = true;
+    loginButton.textContent = 'Logging In...';
+    showMessage(authSuccessElement, "Logging into your account, please be patient...", false);
+
+    signInWithEmailAndPassword(auth, email, password)
+        .catch(error => {
+            let friendlyMessage = 'Invalid email or password. Please try again.';
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                friendlyMessage = 'Invalid email or password. Please check and try again.';
+            } else if (error.code === 'auth/too-many-requests') {
+                friendlyMessage = 'Access to this account has been temporarily disabled. Please reset your password or try again later.';
+            } else {
+                console.error('Login error:', error);
+            }
+            showMessage(loginErrorElement, friendlyMessage);
+            authSuccessElement.style.display = 'none';
+        })
+        .finally(() => {
+            loginButton.disabled = false;
+            loginButton.textContent = 'Login';
+        });
+});
+
+signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAuthMessages();
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const signupButton = signupForm.querySelector('button[type="submit"]');
+
+    signupButton.disabled = true;
+    signupButton.textContent = 'Creating Account...';
+    showMessage(authSuccessElement, "Just a moment, creating your account...", false);
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await sendEmailVerification(user);
+        await setDoc(doc(db, 'users', user.uid), { email: user.email, role: 'seller', isVerified: false });
+
+        showMessage(authSuccessElement, "Success! Please check your email inbox to verify your account.", false);
+        clearAuthForms();
+    } catch (error) {
+        let friendlyMessage = 'An error occurred during signup. Please try again later.';
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                friendlyMessage = 'This email is already registered. Please go to the Login tab.';
+                break;
+            case 'auth/weak-password':
+                friendlyMessage = 'Password is too weak. It must be at least 6 characters long.';
+                break;
+            case 'auth/invalid-email':
+                friendlyMessage = 'The email address is not valid. Please enter a correct email.';
+                break;
+            default:
+                console.error('Signup error:', error);
+        }
+        showMessage(signupErrorElement, friendlyMessage);
+        authSuccessElement.style.display = 'none';
+    } finally {
+        signupButton.disabled = false;
+        signupButton.textContent = 'Create Account';
+    }
+});
+
+
+document.querySelectorAll('.toggle-password').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+        const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            e.target.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            e.target.textContent = '👁️';
+        }
+    });
+});
+
+showProductFormBtn.addEventListener('click', () => {
+    const isVisible = productFormContainer.style.display === 'block';
+    if (isVisible) {
+        productFormContainer.style.display = 'none';
+        showProductFormBtn.textContent = 'Post Something';
+    } else {
+        productFormContainer.style.display = 'block';
+        showProductFormBtn.textContent = 'Close Form';
+        productForm.reset();
+        productIdInput.value = '';
+        submitBtn.textContent = 'Add Product';
+        updateCategoryOptions();
+    }
+});
+
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -76,11 +293,16 @@ productForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Submitting...';
 
     try {
+        // Get the seller's verification status first
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const isVerified = userDoc.exists() ? (userDoc.data().isVerified || false) : false;
+
         const productName = document.getElementById('product-name').value;
         const productPrice = document.getElementById('product-price').value;
         const productCategory = document.getElementById('product-category').value;
         const productDescription = document.getElementById('product-description').value;
-        const productStory = document.getElementById('product-story').value; // Get the story
+        const productStory = document.getElementById('product-story').value;
         const whatsappNumber = document.getElementById('whatsapp-number').value;
         const imageFile1 = document.getElementById('product-image-1').files[0];
         const imageFile2 = document.getElementById('product-image-2').files[0];
@@ -113,10 +335,11 @@ productForm.addEventListener('submit', async (e) => {
             price: Number(productPrice),
             category: productCategory,
             description: productDescription,
-            story: productStory, // Add story to the data object
+            story: productStory,
             whatsapp: normalizeWhatsAppNumber(whatsappNumber),
             sellerId: user.uid,
-            sellerEmail: user.email // Add seller email for easier display
+            sellerEmail: user.email,
+            sellerIsVerified: isVerified
         };
 
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
@@ -149,216 +372,6 @@ productForm.addEventListener('submit', async (e) => {
     }
 });
 
-// MODIFICATION START: Populate form for editing
-function populateFormForEdit(id, product) {
-    productFormContainer.style.display = 'block';
-    showProductFormBtn.textContent = 'Close Form';
-
-    const type = product.listing_type || 'item';
-    document.getElementById(`type-${type}`).checked = true;
-    updateCategoryOptions();
-
-    productIdInput.value = id;
-    document.getElementById('product-name').value = product.name;
-    document.getElementById('product-price').value = product.price;
-    document.getElementById('product-category').value = product.category || '';
-    document.getElementById('product-description').value = product.description;
-    document.getElementById('product-story').value = product.story || ''; // Populate story field
-    const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
-    document.getElementById('whatsapp-number').value = localNumber;
-    submitBtn.textContent = 'Update Product';
-    document.getElementById('product-image-1').value = '';
-    document.getElementById('product-image-2').value = '';
-    window.scrollTo(0, 0);
-}
-// MODIFICATION END
-
-// The rest of the sell.js file is unchanged. I am including it all for completeness.
-// ... (All helper functions, auth logic, etc., from your original file)
-
-const showMessage = (element, message, isError = true) => {
-    element.textContent = message;
-    element.style.display = 'block';
-    element.className = isError ? 'error-message' : 'success-message';
-    if (isError) {
-        setTimeout(() => {
-            element.style.display = 'none';
-        }, 5000);
-    }
-};
-const hideAuthMessages = () => {
-    loginErrorElement.style.display = 'none';
-    signupErrorElement.style.display = 'none';
-    authSuccessElement.style.display = 'none';
-};
-const clearAuthForms = () => {
-    if (loginForm) loginForm.reset();
-    if (signupForm) signupForm.reset();
-};
-if (forgotPasswordLink) {
-    forgotPasswordLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        hideAuthMessages();
-        const email = document.getElementById('login-email').value;
-        if (!email) {
-            return showMessage(loginErrorElement, "Please enter your email below to reset your password.");
-        }
-        try {
-            await sendPasswordResetEmail(auth, email);
-            showMessage(authSuccessElement, "Password reset email sent. Please check your inbox.", false);
-        } catch (error) {
-            showMessage(loginErrorElement, "Could not send reset email. Make sure the email is correct.");
-            console.error("Forgot password error:", error);
-        }
-    });
-}
-if (resetPasswordBtn) {
-    resetPasswordBtn.addEventListener('click', async () => {
-        const email = prompt("Please enter your email address to receive a password reset link:");
-        if (email) {
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("If an account exists for '" + email + "', a password reset email has been sent.");
-            } catch (error) {
-                console.error("Password reset error from dashboard:", error);
-                alert("Could not send reset email. Please ensure the email address is valid.");
-            }
-        }
-    });
-}
-onAuthStateChanged(auth, user => {
-    if (user) {
-        authContainer.style.display = 'none';
-        dashboardContainer.style.display = 'block';
-        sellerEmailSpan.textContent = user.email;
-        fetchSellerProducts(user.uid);
-    } else {
-        authContainer.style.display = 'block';
-        dashboardContainer.style.display = 'none';
-        sellerProductsList.innerHTML = '';
-    }
-});
-logoutBtn.addEventListener('click', () => {
-    signOut(auth).catch(error => {
-        console.error("Logout Error:", error);
-        alert("Could not log out. Please try again.");
-    });
-});
-googleLoginBtn.addEventListener('click', () => {
-    hideAuthMessages();
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-        .then(async (result) => {
-            const user = result.user;
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (!userDoc.exists()) {
-                await setDoc(userDocRef, { email: user.email, role: 'seller' });
-            }
-        }).catch((error) => {
-            console.error("Google Sign-In Error:", error);
-            showMessage(loginErrorElement, "Could not sign in with Google. Please try again.");
-        });
-});
-const tabs = document.querySelectorAll('.tab-link');
-const contents = document.querySelectorAll('.tab-content');
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        hideAuthMessages();
-        clearAuthForms();
-        tabs.forEach(t => t.classList.remove('active'));
-        contents.forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const activeContent = document.getElementById(tab.dataset.tab);
-        if (activeContent) {
-            activeContent.classList.add('active');
-        }
-    });
-});
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    hideAuthMessages();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const loginButton = loginForm.querySelector('button[type="submit"]');
-    loginButton.disabled = true;
-    loginButton.textContent = 'Logging In...';
-    showMessage(authSuccessElement, "Logging into your account, please be patient...", false);
-    signInWithEmailAndPassword(auth, email, password)
-        .catch(error => {
-            let friendlyMessage = 'Invalid email or password. Please try again.';
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                friendlyMessage = 'Invalid email or password. Please check and try again.';
-            } else if (error.code === 'auth/too-many-requests') {
-                friendlyMessage = 'Access to this account has been temporarily disabled. Please reset your password or try again later.';
-            } else {
-                console.error('Login error:', error);
-            }
-            showMessage(loginErrorElement, friendlyMessage);
-            authSuccessElement.style.display = 'none';
-        })
-        .finally(() => {
-            loginButton.disabled = false;
-            loginButton.textContent = 'Login';
-        });
-});
-signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideAuthMessages();
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    const signupButton = signupForm.querySelector('button[type="submit"]');
-    signupButton.disabled = true;
-    signupButton.textContent = 'Creating Account...';
-    showMessage(authSuccessElement, "Just a moment, creating your account...", false);
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await sendEmailVerification(user);
-        await setDoc(doc(db, 'users', user.uid), { email: user.email, role: 'seller' });
-        showMessage(authSuccessElement, "Success! Please check your email inbox to verify your account.", false);
-        clearAuthForms();
-    } catch (error) {
-        let friendlyMessage = 'An error occurred during signup. Please try again later.';
-        switch (error.code) {
-            case 'auth/email-already-in-use': friendlyMessage = 'This email is already registered. Please go to the Login tab.'; break;
-            case 'auth/weak-password': friendlyMessage = 'Password is too weak. It must be at least 6 characters long.'; break;
-            case 'auth/invalid-email': friendlyMessage = 'The email address is not valid. Please enter a correct email.'; break;
-            default: console.error('Signup error:', error);
-        }
-        showMessage(signupErrorElement, friendlyMessage);
-        authSuccessElement.style.display = 'none';
-    } finally {
-        signupButton.disabled = false;
-        signupButton.textContent = 'Create Account';
-    }
-});
-document.querySelectorAll('.toggle-password').forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-        const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            e.target.textContent = '🙈';
-        } else {
-            passwordInput.type = 'password';
-            e.target.textContent = '👁️';
-        }
-    });
-});
-showProductFormBtn.addEventListener('click', () => {
-    const isVisible = productFormContainer.style.display === 'block';
-    if (isVisible) {
-        productFormContainer.style.display = 'none';
-        showProductFormBtn.textContent = 'Post Something';
-    } else {
-        productFormContainer.style.display = 'block';
-        showProductFormBtn.textContent = 'Close Form';
-        productForm.reset();
-        productIdInput.value = '';
-        submitBtn.textContent = 'Add Product';
-        updateCategoryOptions();
-    }
-});
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
@@ -373,6 +386,7 @@ async function uploadImageToCloudinary(file) {
     const uploadData = await uploadResponse.json();
     return uploadData.secure_url;
 }
+
 async function fetchSellerProducts(uid) {
     if (!uid) return;
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
@@ -402,6 +416,29 @@ async function fetchSellerProducts(uid) {
         sellerProductsList.appendChild(productCard);
     });
 }
+
+function populateFormForEdit(id, product) {
+    productFormContainer.style.display = 'block';
+    showProductFormBtn.textContent = 'Close Form';
+
+    const type = product.listing_type || 'item';
+    document.getElementById(`type-${type}`).checked = true;
+    updateCategoryOptions();
+
+    productIdInput.value = id;
+    document.getElementById('product-name').value = product.name;
+    document.getElementById('product-price').value = product.price;
+    document.getElementById('product-category').value = product.category || '';
+    document.getElementById('product-description').value = product.description;
+    document.getElementById('product-story').value = product.story || '';
+    const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
+    document.getElementById('whatsapp-number').value = localNumber;
+    submitBtn.textContent = 'Update Product';
+    document.getElementById('product-image-1').value = '';
+    document.getElementById('product-image-2').value = '';
+    window.scrollTo(0, 0);
+}
+
 async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
@@ -414,6 +451,7 @@ async function deleteProduct(productId) {
         }
     }
 }
+
 function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
