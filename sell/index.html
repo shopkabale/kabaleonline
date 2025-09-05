@@ -18,6 +18,8 @@
         .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
         .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
         .referral-count { font-weight: bold; color: #28a745; }
+        #complete-profile-section { background-color: #fffbe6; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        #complete-profile-section h2 { margin-top: 0; color: #856404; }
     </style>
 </head>
 <body>
@@ -50,17 +52,8 @@
                 <div id="login-tab" class="tab-content active">
                     <form id="login-form">
                         <p id="login-error" class="error-message"></p>
-                        <div class="form-group">
-                            <label for="login-email">Email</label>
-                            <input type="email" id="login-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="login-password">Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="login-password" required>
-                                <span class="toggle-password">👁️</span>
-                            </div>
-                        </div>
+                        <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
+                        <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div>
                         <button type="submit" class="auth-button">Login</button>
                         <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
                     </form>
@@ -69,21 +62,13 @@
                 <div id="signup-tab" class="tab-content">
                     <form id="signup-form">
                         <p id="signup-error" class="error-message"></p>
-                        <div class="form-group">
-                            <label for="signup-email">Email</label>
-                            <input type="email" id="signup-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="signup-password">Password</label>
-                             <div class="password-wrapper">
-                                <input type="password" id="signup-password" required>
-                                <span class="toggle-password">👁️</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="referral-code">Referral Code (Optional)</label>
-                            <input type="text" id="referral-code" placeholder="Enter code from a friend">
-                        </div>
+                        <div class="form-group"><label for="signup-name">Your Full Name</label><input type="text" id="signup-name" placeholder="e.g., John Doe" required></div>
+                        <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
+                        <div class="form-group"><label for="signup-whatsapp">Your WhatsApp Number</label><input type="tel" id="signup-whatsapp" placeholder="e.g., 0771234567" required></div>
+                        <div class="form-group"><label for="signup-location">Your Location</label><input type="text" id="signup-location" placeholder="e.g., Kikungiri or Kab University" required></div>
+                        <div class="form-group"><label for="signup-institution">Your Institution / Affiliation (Optional)</label><input type="text" id="signup-institution" placeholder="e.g., Kabale University, Local Resident"></div>
+                        <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
+                        <div class="form-group"><label for="referral-code">Referral Code (Optional)</label><input type="text" id="referral-code" placeholder="Enter code from a friend"></div>
                         <button type="submit" class="auth-button">Create Account</button>
                     </form>
                 </div>
@@ -101,6 +86,18 @@
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
             
+            <div id="complete-profile-section" style="display: none;">
+                <h2>Complete Your Profile to Build More Trust!</h2>
+                <p>Add your details to help other members of the Kabale Online community get to know you.</p>
+                <form id="complete-profile-form">
+                    <div class="form-group"><label for="profile-name">Your Full Name or Business Name</label><input type="text" id="profile-name" required></div>
+                    <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" placeholder="e.g., Kikungiri or Kab University" required></div>
+                    <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3" placeholder="e.g., Final year IT student at KAB."></textarea></div>
+                    <div class="form-group"><label for="profile-photo">Profile Photo (Optional)</label><input type="file" id="profile-photo" accept="image/*"></div>
+                    <button type="submit" id="update-profile-btn" class="cta-button">Save and Update Profile</button>
+                </form>
+            </div>
+
             <div id="referral-section" class="referral-section" style="display: none;">
                 <h2>Grow the Community!</h2>
                 <p>Share your unique referral code with friends. You help them join a trusted marketplace, and you build your reputation as a key community member.</p>
@@ -116,57 +113,7 @@
             <button id="reset-password-btn">Change Password</button>
 
             <div id="product-form-container" style="display: none;">
-                <h2>Add/Edit Listing</h2>
-                <form id="product-form">
-                    <input type="hidden" id="productId">
-
-                    <div class="form-group">
-                        <label>What are you listing?</label>
-                        <div class="listing-type-selector">
-                            <input type="radio" id="type-item" name="listing_type" value="item" checked>
-                            <label for="type-item">An Item</label>
-                            <input type="radio" id="type-service" name="listing_type" value="service">
-                            <label for="type-service">A Service (Student Hustle)</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-name">Name of Item/Service</label>
-                        <input type="text" id="product-name" placeholder="e.g., Scarlett Electric Kettle or Mathematics Tutoring" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-price">Price (UGX)</label>
-                        <input type="number" id="product-price" placeholder="e.g., 30000" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-category">Category</label>
-                        <select id="product-category" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-description">Description</label>
-                        <textarea id="product-description" placeholder="Describe the item's condition or the service you offer." required rows="5"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-story">Your Story (Optional)</label>
-                        <textarea id="product-story" placeholder="e.g., Selling this phone to raise tuition fees. Help a student out!" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="whatsapp-number">WhatsApp Number</label>
-                        <input type="tel" id="whatsapp-number" placeholder="e.g., 0771234567" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-image-1">Main Image (Required)</label>
-                        <input type="file" id="product-image-1" accept="image/*">
-                    </div>
-                    <div class="form-group">
-                        <label for="product-image-2">Optional Second Image</label>
-                        <input type="file" id="product-image-2" accept="image/*">
-                    </div>
-                     <p id="submission-message" style="display: none; font-weight: bold; text-align: center; color: #333; margin-top: 15px;">
-                        Submitting may take up to a minute, please be patient.
-                    </p>
-                     <button type="submit" id="submit-btn">Add Product</button>
-                </form>
-            </div>
+                </div>
 
             <h2>Your Listings</h2>
             <div id="seller-products-list" class="product-grid"></div>
@@ -177,12 +124,8 @@
         <section id="contact-us-section">
             <h2>Get in Touch</h2>
             <div class="contact-buttons-container">
-                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </a>
-                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank">
-                    <i class="fa-solid fa-envelope"></i> Send an Email
-                </a>
+                <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+                <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank"><i class="fa-solid fa-envelope"></i> Send an Email</a>
             </div>
         </section>
         <div class="footer-links">
@@ -194,6 +137,5 @@
 
     <script type="module" src="sell.js"></script>
     <script type="module" src="../shared.js"></script>
-
 </body>
 </html>
