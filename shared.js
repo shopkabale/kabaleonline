@@ -7,13 +7,8 @@ const setupDynamicHeader = () => {
     // --- Login/Logout Button Logic ---
     if (headerActionButton) {
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                headerActionButton.textContent = 'Your Dashboard';
-                headerActionButton.href = '/sell/';
-            } else {
-                headerActionButton.textContent = 'Login / Sell';
-                headerActionButton.href = '/sell/';
-            }
+            headerActionButton.textContent = user ? 'Your Dashboard' : 'Post Something';
+            headerActionButton.href = '/sell/';
         });
     }
 
@@ -22,9 +17,7 @@ const setupDynamicHeader = () => {
     const listingType = urlParams.get('type');
     const path = window.location.pathname;
 
-    // Find all navigation buttons
     const navLinks = document.querySelectorAll('.nav-link');
-    // Remove 'active' from all buttons first to reset
     navLinks.forEach(link => link.classList.remove('active'));
 
     if (path === '/' || path === '/index.html') {
@@ -33,8 +26,10 @@ const setupDynamicHeader = () => {
         } else {
             document.getElementById('items-btn')?.classList.add('active');
         }
+    } else if (path.startsWith('/requests')) {
+        document.getElementById('request-btn')?.classList.add('active');
     } else if (path.startsWith('/blog')) {
-        document.getElementById('blog-btn')?.classList.add('active');
+        document.getElementById('stories-btn')?.classList.add('active'); // MODIFIED ID
     }
 };
 
