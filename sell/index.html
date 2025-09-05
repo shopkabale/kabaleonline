@@ -15,6 +15,9 @@
         .success-message { display: none; color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
         .listing-type-selector { display: flex; gap: 20px; align-items: center; margin-bottom: 15px; }
         .listing-type-selector input[type="radio"] { margin-right: 5px; }
+        .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
+        .referral-count { font-weight: bold; color: #28a745; }
     </style>
 </head>
 <body>
@@ -77,6 +80,10 @@
                                 <span class="toggle-password">👁️</span>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="referral-code">Referral Code (Optional)</label>
+                            <input type="text" id="referral-code" placeholder="Enter code from a friend">
+                        </div>
                         <button type="submit" class="auth-button">Create Account</button>
                     </form>
                 </div>
@@ -93,6 +100,15 @@
                  <h1>Your Dashboard</h1>
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
+            
+            <div id="referral-section" class="referral-section" style="display: none;">
+                <h2>Grow the Community!</h2>
+                <p>Share your unique referral code with friends. You help them join a trusted marketplace, and you build your reputation as a key community member.</p>
+                <p>Your Referral Code (Click to copy):</p>
+                <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
+                <p style="margin-top: 15px;">You have successfully referred <span id="user-referral-count" class="referral-count">0</span> new members.</p>
+            </div>
+            
             <p class="instruction-text"><b>To sell:</b> 1. Click 'Sell'. 2. Choose 'Item' or 'Service'. 3. Fill details & upload a photo. 4. Click 'Add'.</p>
 
             <button id="show-product-form-btn" class="cta-button">Sell</button>
@@ -113,7 +129,6 @@
                             <label for="type-service">A Service (Student Hustle)</label>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="product-name">Name of Item/Service</label>
                         <input type="text" id="product-name" placeholder="e.g., Scarlett Electric Kettle or Mathematics Tutoring" required>
@@ -124,8 +139,7 @@
                     </div>
                     <div class="form-group">
                         <label for="product-category">Category</label>
-                        <select id="product-category" required>
-                            </select>
+                        <select id="product-category" required></select>
                     </div>
                     <div class="form-group">
                         <label for="product-description">Description</label>
@@ -135,7 +149,7 @@
                         <label for="product-story">Your Story (Optional)</label>
                         <textarea id="product-story" placeholder="e.g., Selling this phone to raise tuition fees. Help a student out!" rows="3"></textarea>
                     </div>
-                     <div class="form-group">
+                    <div class="form-group">
                         <label for="whatsapp-number">WhatsApp Number</label>
                         <input type="tel" id="whatsapp-number" placeholder="e.g., 0771234567" required>
                     </div>
