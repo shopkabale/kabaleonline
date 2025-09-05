@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request an Item or Service | Kabale Online</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .success-message { display: none; color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header class="site-header-main">
+         <a href="/" class="site-title">Kabale <span>Online</span></a>
+    </header>
+
+    <div class="container page-content">
+        <a href="/" class="back-home-btn">⬅ Back to Home</a>
+        <div class="page-welcome">
+            <h1>Request an Item or Service</h1>
+            <p>Can't find what you're looking for? Post a request and let the community know what you need.</p>
+        </div>
+
+        <form id="request-form">
+            <div id="success-message" class="success-message">Your request has been posted successfully!</div>
+            <div class="form-group">
+                <label for="request-item">What item or service do you need?</label>
+                <input type="text" id="request-item" placeholder="e.g., A used HP laptop charger" required>
+            </div>
+            <div class="form-group">
+                <label for="request-details">Details (Optional)</label>
+                <textarea id="request-details" rows="4" placeholder="e.g., Must be the small pin charger, my budget is around UGX 25,000."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="request-nickname">Your Nickname</label>
+                <input type="text" id="request-nickname" placeholder="This will be displayed publicly with your request" required>
+            </div>
+            <button type="submit" id="submit-request-btn" class="cta-button">Post Your Request</button>
+        </form>
+    </div>
+
+    <footer>
+        </footer>
+
+    <script type="module" src="requests.js"></script>
+</body>
+</html>
