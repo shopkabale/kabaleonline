@@ -45,15 +45,18 @@ async function fetchAllUsers() {
         const userData = doc.data();
         const userId = doc.id;
 
-        if (userData.role === 'admin') return; // Don't show other admins
+        if (userData.role === 'admin') return;
 
         const isVerified = userData.isVerified || false;
+        const referralCount = userData.referralCount || 0;
 
         const listItem = document.createElement('li');
         listItem.className = 'user-list-item';
         listItem.innerHTML = `
             <span class="user-info">
                 ${userData.email} ${isVerified ? '<span class="verified-badge">✔️ Verified</span>' : ''}
+                <br>
+                <span class="referral-info">Referrals: ${referralCount}</span>
             </span>
             <button class="verify-btn ${isVerified ? 'verified' : 'not-verified'}" data-uid="${userId}" data-status="${isVerified}">
                 ${isVerified ? 'Un-verify' : 'Verify'}
