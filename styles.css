@@ -721,3 +721,51 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
         margin: 10px 0;
     }
 }
+/* --- CSS for Competitive Hero Section --- */
+.hero-section {
+    background-color: #0056b3; /* A nice shade of blue */
+    background-image: linear-gradient(145deg, #007bff, #003d7a);
+    color: white;
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.hero-section h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.hero-section p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.hero-buttons a {
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.hero-buttons a:hover {
+    transform: scale(1.05);
+}
+
+.hero-start-selling {
+    background-color: #ffc107; /* Yellow */
+    color: #212529;
+}
+
+.hero-browse {
+    background-color: white;
+    color: #007bff;
+}
