@@ -1,23 +1,23 @@
-import { auth, db } from './firebase.js';
+import { auth } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-const headerActionBtn = document.getElementById('header-action-btn');
+// This is the new function for dynamic headers
+const setupDynamicHeader = () => {
+    const headerActionButton = document.getElementById('header-action-btn');
+    if (!headerActionButton) return; // Do nothing if the button isn't on the page
 
-onAuthStateChanged(auth, async (user) => {
-    if (!headerActionBtn) return;
-    if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-            headerActionBtn.textContent = 'Admin Panel';
-            headerActionBtn.href = '/admin/';
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // User is signed in
+            headerActionButton.textContent = 'Your Dashboard';
+            headerActionButton.href = '/sell/';
         } else {
-            headerActionBtn.textContent = 'My Dashboard';
-            headerActionBtn.href = '/sell/';
+            // User is signed out
+            headerActionButton.textContent = 'Login / Sell';
+            headerActionButton.href = '/sell/';
         }
-    } else {
-        headerActionBtn.textContent = 'Sell an Item';
-        headerActionBtn.href = '/sell/';
-    }
-});
+    });
+};
+
+// Run the function when the page loads
+document.addEventListener('DOMContentLoaded', setupDynamicHeader);
