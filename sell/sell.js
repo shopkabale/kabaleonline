@@ -79,28 +79,36 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         dashboardMessage.style.display = 'none'; authContainer.style.display = 'none'; dashboardContainer.style.display = 'block';
         sellerEmailSpan.textContent = user.email; fetchSellerProducts(user.uid);
-        const userDocRef = doc(db, 'users', user.uid); const userDoc = await getDoc(userDocRef);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        let userData, refCode;
+
         if (!userDoc.exists()) {
-            const newRefCode = user.uid.substring(0, 6).toUpperCase();
-            const newUserDocData = { email: user.email, role: 'seller', isVerified: false, referralCount: 0, createdAt: serverTimestamp(), referralCode: newRefCode };
-            await setDoc(userDocRef, newUserDocData);
-            displayDashboardInfo(newUserDocData, newRefCode);
+            refCode = user.uid.substring(0, 6).toUpperCase();
+            userData = { email: user.email, role: 'seller', isVerified: false, referralCount: 0, createdAt: serverTimestamp(), referralCode: refCode };
+            await setDoc(userDocRef, userData);
             completeProfileSection.style.display = 'block';
         } else {
-            const userData = userDoc.data();
+            userData = userDoc.data();
             if (!userData.name || !userData.location) {
                 completeProfileSection.style.display = 'block';
                 if (userData.name) document.getElementById('profile-name').value = userData.name;
                 if (userData.location) document.getElementById('profile-location').value = userData.location;
             } else { completeProfileSection.style.display = 'none'; }
-            let refCode = userData.referralCode;
+            refCode = userData.referralCode;
             if (!refCode) { refCode = user.uid.substring(0, 6).toUpperCase(); await updateDoc(userDocRef, { referralCode: refCode }); }
-            displayDashboardInfo(userData, refCode);
         }
+        const referralsQuery = query(collection(db, 'users'), where('referrerId', '==', user.uid));
+        const referralsSnapshot = await getDocs(referralsQuery);
+        const actualReferralCount = referralsSnapshot.size;
+        if (userData.referralCount !== actualReferralCount) {
+            await updateDoc(userDocRef, { referralCount: actualReferralCount });
+        }
+        displayDashboardInfo(userData, refCode, actualReferralCount);
     } else { authContainer.style.display = 'block'; dashboardContainer.style.display = 'none'; }
 });
 
-function displayDashboardInfo(userData, refCode) { userReferralCode.textContent = refCode; userReferralCount.textContent = userData.referralCount || 0; referralSection.style.display = 'block'; }
+function displayDashboardInfo(userData, refCode, count) { userReferralCode.textContent = refCode; userReferralCount.textContent = count; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
 logoutBtn.addEventListener('click', () => signOut(auth));
 
@@ -150,6 +158,19 @@ tabs.forEach(tab => {
     });
 });
 
+document.querySelectorAll('.toggle-password').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+        const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            e.target.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            e.target.textContent = '👁️';
+        }
+    });
+});
+
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault(); hideAuthMessages();
     const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
@@ -174,7 +195,7 @@ signupForm.addEventListener('submit', async (e) => {
     if (!name || !location || !whatsapp) { return showMessage(signupErrorElement, "Please fill out all required fields."); }
     toggleLoading(signupButton, true, 'Creating Account'); signupPatienceMessage.style.display = 'block';
     
-    let referrerId = null, referrerRef = null;
+    let referrerId = null;
     if (referralCode) {
         const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
         const querySnapshot = await getDocs(q);
@@ -183,14 +204,17 @@ signupForm.addEventListener('submit', async (e) => {
             toggleLoading(signupButton, false, 'Create Account'); signupPatienceMessage.style.display = 'none';
             return;
         }
-        const referrerDoc = querySnapshot.docs[0]; referrerId = referrerDoc.id; referrerRef = referrerDoc.ref;
+        const referrerDoc = querySnapshot.docs[0]; referrerId = referrerDoc.id;
     }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password); const user = userCredential.user;
         const newUserRef = doc(db, "users", user.uid);
-        await runTransaction(db, async (transaction) => {
-            transaction.set(newUserRef, { name, email, whatsapp: normalizeWhatsAppNumber(whatsapp), location, institution, role: 'seller', isVerified: false, createdAt: serverTimestamp(), referralCount: 0, referrerId, referralCode: user.uid.substring(0, 6).toUpperCase() });
-            if (referrerRef) { transaction.update(referrerRef, { referralCount: increment(1) }); }
+        await setDoc(newUserRef, { 
+            name, email, whatsapp: normalizeWhatsAppNumber(whatsapp), location, institution, 
+            role: 'seller', isVerified: false, createdAt: serverTimestamp(), 
+            referralCount: 0, 
+            referrerId: referrerId,
+            referralCode: user.uid.substring(0, 6).toUpperCase() 
         });
         await sendEmailVerification(user);
         showMessage(authSuccessElement, "Success! Please check your email to verify your account.", false); signupForm.reset();
