@@ -26,58 +26,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
-            // In product.js -> DOMContentLoaded listener
-const verifiedBadge = product.sellerIsVerified 
-    ? `<svg class="verified-badge-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>` 
-    : '';
-
-            
             let sellerName = product.sellerName || 'A Seller';
             let whatsappNumber = product.whatsapp;
-
             if (product.sellerId) {
                  const userRef = doc(db, 'users', product.sellerId);
                  const userSnap = await getDoc(userRef);
                  if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    sellerName = userData.name || 'A Seller';
-                    // Use profile WhatsApp number if it exists, otherwise use product's number
-                    whatsappNumber = userData.whatsapp || product.whatsapp;
+                    sellerName = userSnap.data().name || 'A Seller';
+                    whatsappNumber = userSnap.data().whatsapp || product.whatsapp;
                  }
             }
-            
             const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your listing for '${product.name}' on Kabale Online.`;
 
             productDetailContent.innerHTML = `
                 <div class="product-detail-container">
                     <div class="product-images">${imagesHTML}</div>
                     <div class="product-info">
-                        <h1>${product.name}</h1>
-                        <p class="price">UGX ${product.price.toLocaleString()}</p>
+                        <div class="product-title-header">
+                            <h1>${product.name}</h1>
+                            <button id="share-btn" title="Share Product"><i class="fa-solid fa-share-nodes"></i></button>
+                        </div>
+                        <p class="price" style="font-size: 1.8em; color: #007bff; font-weight: bold;">UGX ${product.price.toLocaleString()}</p>
                         ${storyHTML}
                         <h3>Description</h3>
                         <p>${product.description.replace(/\n/g, '<br>')}</p>
                         <div class="seller-card">
                             <h3>About the Seller</h3>
-                            <p><strong>Sold by:</strong> ${sellerName} ${verifiedBadge}</p>
                             <div class="contact-buttons">
-                                <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
-                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn">See Seller Profile</a>
+                                <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank" style="background-color: #25D366;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn" style="background-color: #6c757d;">See Seller Profile</a>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            // Add some simple styling for the new buttons
-            const style = document.createElement('style');
-            style.innerHTML = `
-                .seller-card .contact-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-                .seller-card .cta-button { width: 100%; text-align: center; box-sizing: border-box; }
-                .whatsapp-btn { background-color: #25D366; }
-                .profile-btn { background-color: #6c757d; }
-            `;
-            document.head.appendChild(style);
+                </div>`;
 
+            // --- NEW SHARE BUTTON LOGIC START ---
+            const shareBtn = document.getElementById('share-btn');
+            shareBtn.addEventListener('click', async () => {
+                const shareData = {
+                    title: product.name,
+                    text: `Check out this listing on Kabale Online: ${product.name}`,
+                    url: window.location.href
+                };
+                try {
+                    if (navigator.share) {
+                        // Use the modern Web Share API on mobile
+                        await navigator.share(shareData);
+                    } else {
+                        // Fallback for desktop: copy link to clipboard
+                        await navigator.clipboard.writeText(window.location.href);
+                        alert('Product link copied to clipboard!');
+                    }
+                } catch (err) {
+                    console.error('Error sharing:', err);
+                    alert('Could not share or copy link.');
+                }
+            });
+            // --- NEW SHARE BUTTON LOGIC END ---
+            
         } else {
             productDetailContent.innerHTML = '<p>Sorry, this product could not be found.</p>';
         }
