@@ -51,8 +51,7 @@ function updateCategoryOptions() {
     categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
     for (const key in categories) {
         const option = document.createElement('option');
-        option.value = key;
-        option.textContent = categories[key];
+        option.value = key; option.textContent = categories[key];
         categorySelect.appendChild(option);
     }
 }
@@ -69,12 +68,10 @@ const hideAuthMessages = () => { loginErrorElement.style.display = 'none'; signu
 const clearAuthForms = () => { if (loginForm) loginForm.reset(); if (signupForm) signupForm.reset(); };
 const toggleLoading = (button, isLoading, originalText) => {
     if (isLoading) {
-        button.disabled = true;
-        button.classList.add('loading');
+        button.disabled = true; button.classList.add('loading');
         button.innerHTML = `<span class="loader"></span> ${originalText}...`;
     } else {
-        button.disabled = false;
-        button.classList.remove('loading');
+        button.disabled = false; button.classList.remove('loading');
         button.innerHTML = originalText;
     }
 };
@@ -107,13 +104,11 @@ onAuthStateChanged(auth, async (user) => {
 function displayDashboardInfo(userData, refCode) { userReferralCode.textContent = refCode; userReferralCount.textContent = userData.referralCount || 0; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
 logoutBtn.addEventListener('click', () => signOut(auth));
-
 if (forgotPasswordLink) { forgotPasswordLink.addEventListener('click', async (e) => { e.preventDefault(); /* ... logic ... */ }); }
 if (resetPasswordBtn) { resetPasswordBtn.addEventListener('click', async () => { /* ... logic ... */ }); }
-
 googleLoginBtn.addEventListener('click', () => { /* ... google login logic ... */ });
 const tabs = document.querySelectorAll('.tab-link');
-tabs.forEach(tab => { tab.addEventListener('click', () => { /* ... tab switching logic ... */ }); });
+tabs.forEach(tab => { tab.addEventListener('click', () => { hideAuthMessages(); clearAuthForms(); tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); contents.forEach(c => c.classList.remove('active')); document.getElementById(tab.dataset.tab).classList.add('active'); }); });
 
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault(); hideAuthMessages();
@@ -132,7 +127,6 @@ signupForm.addEventListener('submit', async (e) => {
     const institution = document.getElementById('signup-institution').value; const password = document.getElementById('signup-password').value;
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
     const signupButton = signupForm.querySelector('button[type="submit"]');
-
     if (!name || !location || !whatsapp) { return showMessage(signupErrorElement, "Please fill out all required fields."); }
     toggleLoading(signupButton, true, 'Creating Account'); signupPatienceMessage.style.display = 'block';
     let referrerId = null, referrerRef = null;
@@ -178,6 +172,13 @@ completeProfileForm.addEventListener('submit', async (e) => {
     finally { toggleLoading(updateBtn, false, 'Save and Update Profile'); }
 });
 
+showProductFormBtn.addEventListener('click', () => {
+    const isVisible = productFormContainer.style.display === 'block';
+    productFormContainer.style.display = isVisible ? 'none' : 'block';
+    showProductFormBtn.textContent = isVisible ? 'Sell' : 'Close Form';
+    if (!isVisible) { productForm.reset(); productIdInput.value = ''; submitBtn.textContent = 'Add Product'; updateCategoryOptions(); }
+});
+
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault(); const user = auth.currentUser; if (!user) return;
     const productSubmitBtn = document.getElementById('submit-btn');
@@ -186,14 +187,10 @@ productForm.addEventListener('submit', async (e) => {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
         const isVerified = userData.isVerified || false; const sellerName = userData.name || user.email;
-        const productName = document.getElementById('product-name').value;
-        const productPrice = document.getElementById('product-price').value;
-        const productCategory = document.getElementById('product-category').value;
-        const productDescription = document.getElementById('product-description').value;
-        const productStory = document.getElementById('product-story').value;
-        const whatsappNumber = document.getElementById('whatsapp-number').value;
-        const imageFile1 = document.getElementById('product-image-1').files[0];
-        const imageFile2 = document.getElementById('product-image-2').files[0];
+        const productName = document.getElementById('product-name').value; const productPrice = document.getElementById('product-price').value;
+        const productCategory = document.getElementById('product-category').value; const productDescription = document.getElementById('product-description').value;
+        const productStory = document.getElementById('product-story').value; const whatsappNumber = document.getElementById('whatsapp-number').value;
+        const imageFile1 = document.getElementById('product-image-1').files[0]; const imageFile2 = document.getElementById('product-image-2').files[0];
         const editingProductId = productIdInput.value;
         let finalImageUrls = [];
         if (editingProductId) { const docSnap = await getDoc(doc(db, 'products', editingProductId)); if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || []; }
@@ -203,27 +200,22 @@ productForm.addEventListener('submit', async (e) => {
         const productData = { listing_type: document.querySelector('[name=listing_type]:checked').value, name: productName, name_lowercase: productName.toLowerCase(), price: Number(productPrice), category: productCategory, description: productDescription, story: productStory, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, sellerEmail: user.email, sellerName, sellerIsVerified: isVerified };
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
         if (editingProductId) { await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() }); } else { await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false }); }
-        showMessage(productFormMessage, 'Listing submitted successfully!', false);
-        productForm.reset();
+        showMessage(productFormMessage, 'Listing submitted successfully!', false); productForm.reset();
         setTimeout(() => { productFormContainer.style.display = 'none'; productFormMessage.style.display = 'none'; fetchSellerProducts(user.uid); }, 2000);
-    } catch (error) {
-        showMessage(productFormMessage, 'Failed to submit listing: ' + error.message);
-    } finally { toggleLoading(productSubmitBtn, false, productIdInput.value ? 'Update Product' : 'Add Product'); }
+    } catch (error) { showMessage(productFormMessage, 'Failed to submit listing: ' + error.message); } 
+    finally { toggleLoading(productSubmitBtn, false, productIdInput.value ? 'Update Product' : 'Add Product'); }
 });
 
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', apikey);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
+    formData.append('file', file); formData.append('api_key', apikey);
+    formData.append('timestamp', timestamp); formData.append('signature', signature);
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
     const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
     if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-    const uploadData = await uploadResponse.json();
-    return uploadData.secure_url;
+    const uploadData = await uploadResponse.json(); return uploadData.secure_url;
 }
 
 async function fetchSellerProducts(uid) {
@@ -231,24 +223,12 @@ async function fetchSellerProducts(uid) {
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
-    if (querySnapshot.empty) {
-        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Post Something' to get started!</p>";
-        return;
-    }
+    if (querySnapshot.empty) { sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell' to get started!</p>"; return; }
     querySnapshot.forEach((doc) => {
         const product = doc.data(); const productId = doc.id;
         const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <img src="${primaryImage}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <p class="price">UGX ${product.price.toLocaleString()}</p>
-            <div class="seller-controls">
-                <button class="edit-btn">Edit</button>
-                <button class="delete-btn">Delete</button>
-            </div>
-        `;
+        const productCard = document.createElement('div'); productCard.className = 'product-card';
+        productCard.innerHTML = `<img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
         productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
         sellerProductsList.appendChild(productCard);
@@ -256,21 +236,15 @@ async function fetchSellerProducts(uid) {
 }
 
 function populateFormForEdit(id, product) {
-    productFormContainer.style.display = 'block';
-    showProductFormBtn.textContent = 'Close Form';
-    document.getElementById(`type-${product.listing_type || 'item'}`).checked = true;
-    updateCategoryOptions();
-    productIdInput.value = id;
-    document.getElementById('product-name').value = product.name;
-    document.getElementById('product-price').value = product.price;
-    document.getElementById('product-category').value = product.category || '';
-    document.getElementById('product-description').value = product.description;
-    document.getElementById('product-story').value = product.story || '';
+    productFormContainer.style.display = 'block'; showProductFormBtn.textContent = 'Close Form';
+    document.getElementById(`type-${product.listing_type || 'item'}`).checked = true; updateCategoryOptions();
+    productIdInput.value = id; document.getElementById('product-name').value = product.name;
+    document.getElementById('product-price').value = product.price; document.getElementById('product-category').value = product.category || '';
+    document.getElementById('product-description').value = product.description; document.getElementById('product-story').value = product.story || '';
     const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
     document.getElementById('whatsapp-number').value = localNumber;
     submitBtn.textContent = 'Update Product';
-    document.getElementById('product-image-1').value = '';
-    document.getElementById('product-image-2').value = '';
+    document.getElementById('product-image-1').value = ''; document.getElementById('product-image-2').value = '';
     window.scrollTo(0, 0);
 }
 
