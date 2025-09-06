@@ -69,10 +69,10 @@ function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
         const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️</span>' : '';
-        const displayName = product.sellerName || 'A Seller'; // Use name, fallback to generic text
+        const displayName = product.sellerName || 'A Seller';
 
         const sellerInfo = product.sellerId 
-            ? `<p class="seller-info" style="font-size: 0.8em; color: grey; margin: 5px 15px 10px;">By: <a href="profile.html?sellerId=${product.sellerId}" style="color: grey; text-decoration: underline;">${displayName}</a> ${verifiedBadge}</p>`
+            ? `<p class="seller-info">By: <a href="profile.html?sellerId=${product.sellerId}">${displayName}</a> ${verifiedBadge}</p>`
             : '';
 
         const productLink = document.createElement('a');
@@ -87,7 +87,6 @@ function renderProducts(productsToDisplay) {
             </div>`;
         productGrid.appendChild(productLink);
     });
-    observeElementsForAnimation();
 }
 
 function handleNewSearch() {
@@ -112,21 +111,3 @@ if (listingTypeFilter === 'service') {
 }
 
 fetchProducts(true);
-
-function observeElementsForAnimation() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.1
-    });
-
-    const elementsToAnimate = document.querySelectorAll('.product-card-link:not(.visible)');
-    elementsToAnimate.forEach(el => {
-        observer.observe(el);
-    });
-}
