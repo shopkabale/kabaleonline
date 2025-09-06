@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!sellerId) {
         profileHeader.innerHTML = '<h1>Seller not found.</h1>';
+        listingsTitle.style.display = 'none';
         return;
     }
 
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sellerLocation = userData.location;
             const sellerInstitution = userData.institution;
             const sellerBio = userData.bio;
-            const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp'; // Use a default placeholder
+            const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp';
             const isVerified = userData.isVerified || false;
 
             let detailsHTML = `<p>📧 ${sellerEmail}</p>`;
@@ -49,36 +50,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             document.title = `Profile for ${sellerName} | Kabale Online`;
         } else {
-            profileHeader.innerHTML = `<h1>Seller Profile</h1><p>Could not find this seller's details.</p>`;
+            // This message is clearer than a generic error.
+            profileHeader.innerHTML = `<h1>Profile Not Found</h1><p>This seller does not seem to exist.</p>`;
+            listingsTitle.style.display = 'none';
         }
     } catch (error) {
         console.error("Error fetching user details:", error);
-        profileHeader.innerHTML = `<h1>Seller Profile</h1><p>Error loading seller details.</p>`;
+        profileHeader.innerHTML = `<h1>Error</h1><p>There was a problem loading this profile.</p>`;
+        listingsTitle.style.display = 'none';
     }
 
-    try {
-        const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        sellerProductGrid.innerHTML = '';
-        if (querySnapshot.empty) {
-            listingsTitle.textContent = 'This seller has no active listings.';
-            return;
+    // This part now only runs if the profile was found
+    if(document.getElementById('profile-details')) {
+        try {
+            const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+            sellerProductGrid.innerHTML = '';
+            if (querySnapshot.empty) {
+                listingsTitle.textContent = 'This seller has no active listings.';
+                return;
+            }
+            querySnapshot.forEach((doc) => {
+                const product = doc.data();
+                const productLink = document.createElement('a');
+                productLink.href = `product.html?id=${doc.id}`;
+                productLink.className = 'product-card-link';
+                productLink.innerHTML = `
+                    <div class="product-card">
+                        <img src="${(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
+                        <h3>${product.name}</h3>
+                        <p class="price">UGX ${product.price.toLocaleString()}</p>
+                    </div>
+                `;
+                sellerProductGrid.appendChild(productLink);
+            });
+        } catch (error) {
+            listingsTitle.textContent = 'Could not load listings.';
         }
-        querySnapshot.forEach((doc) => {
-            const product = doc.data();
-            const productLink = document.createElement('a');
-            productLink.href = `product.html?id=${doc.id}`;
-            productLink.className = 'product-card-link';
-            productLink.innerHTML = `
-                <div class="product-card">
-                    <img src="${(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p class="price">UGX ${product.price.toLocaleString()}</p>
-                </div>
-            `;
-            sellerProductGrid.appendChild(productLink);
-        });
-    } catch (error) {
-        listingsTitle.textContent = 'Could not load listings.';
     }
 });
+
