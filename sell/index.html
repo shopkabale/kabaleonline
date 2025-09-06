@@ -11,7 +11,9 @@
         .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
         .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
         .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
-        .listing-type-selector { display: flex; gap: 20px; align-items: center; margin-bottom: 15px; }
+        #email-verification-prompt { text-align: center; padding: 30px; background-color: #fffbe6; border: 1px solid #ffeeba; border-radius: 8px; margin-top: 40px; }
+        #email-verification-prompt h2 { margin-top: 0; color: #856404; }
+        #email-verification-prompt .user-email { font-weight: bold; color: #333; }
         .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
         .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
         #complete-profile-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 25px; margin: 25px 0; }
@@ -57,8 +59,8 @@
                         <p id="signup-error" class="error-message"></p>
                         <div class="form-group"><label for="signup-name">Your Full Name</label><input type="text" id="signup-name" required></div>
                         <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
-                        <div class="form-group"><label for="signup-whatsapp">Your WhatsApp Number</label><input type="tel" id="signup-whatsapp" required></div>
-                        <div class="form-group"><label for="signup-location">Your Location</label><input type="text" id="signup-location" required></div>
+                        <div class="form-group"><label for="signup-whatsapp">WhatsApp Number</label><input type="tel" id="signup-whatsapp" required></div>
+                        <div class="form-group"><label for="signup-location">Location</label><input type="text" id="signup-location" required></div>
                         <div class="form-group"><label for="signup-institution">Institution (Optional)</label><input type="text" id="signup-institution"></div>
                         <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
                         <div class="form-group"><label for="referral-code">Referral Code (Optional)</label><input type="text" id="referral-code"></div>
@@ -69,6 +71,15 @@
                 <p class="or-divider"><span>OR</span></p>
                 <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
                 <p class="auth-footer-text">Kabale <span>Online</span></p>
+            </div>
+        </div>
+        <div id="email-verification-prompt" class="container" style="display: none;">
+            <h2>Please Verify Your Email</h2>
+            <p>We've sent a verification link to <span class="user-email">your email</span>.</p>
+            <p>Please check your inbox (and spam folder) and click the link to activate your seller dashboard.</p>
+            <div style="margin-top: 20px;">
+                <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
+                <button id="verification-logout-btn" class="auth-button" style="background-color: #6c757d; margin-top: 10px;">Logout</button>
             </div>
         </div>
         <div id="dashboard-container" style="display: none;">
