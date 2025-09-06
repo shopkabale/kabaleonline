@@ -4,25 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard | Kabale Online</title>
-    <meta name="description" content="Log in or create a free account on Kabale Online to sell your new and second-hand items. Manage your products, edit listings, and connect with buyers in Kabale, Uganda.">
     <meta name="robots" content="noindex">
-
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
         .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
         .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
         .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
         .listing-type-selector { display: flex; gap: 20px; align-items: center; margin-bottom: 15px; }
-        .listing-type-selector input[type="radio"] { margin-right: 5px; }
         .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
         .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
         #complete-profile-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 25px; margin: 25px 0; }
         #complete-profile-section h2 { margin-top: 0; color: #0056b3; text-align: center; }
         #complete-profile-section p { text-align: center; margin-top: -10px; color: #666; margin-bottom: 25px; }
         #complete-profile-form label { font-weight: bold; display: block; margin-bottom: 5px; text-align: left; }
-        #complete-profile-form input, #complete-profile-form textarea { width: 100%; box-sizing: border-box; }
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
@@ -32,13 +27,12 @@
     <header class="site-header">
         <div class="container header-content">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <nav class="header-nav"><a href="/sell/" id="header-action-btn" class="cta-button">Post Something</a></nav>
+            <nav class="header-nav"><a href="/sell/" class="cta-button">Post Something</a></nav>
         </div>
     </header>
     <div style="text-align: center; margin: 10px 0;">
       <a href="../index.html" class="back-home-btn">⬅ Back to Home</a>
     </div>
-
     <div class="container page-content">
         <div id="auth-container">
             <div class="login-card">
@@ -74,9 +68,9 @@
                 </div>
                 <p class="or-divider"><span>OR</span></p>
                 <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+                <p class="auth-footer-text">Kabale <span>Online</span></p>
             </div>
         </div>
-
         <div id="dashboard-container" style="display: none;">
             <a href="/" class="home-link">&larr; Back to Home</a>
             <div class="page-welcome">
@@ -98,7 +92,7 @@
             </div>
             <div id="referral-section" class="referral-section" style="display: none;">
                 <h2>Grow the Community!</h2>
-                <p> “🤝 Share your code with friends, strengthen your reputation in the community, and enjoy cool prizes along the way.” </p>
+                <p>Share your code with friends to build your reputation.</p>
                 <p>Your Referral Code (Click to copy):</p>
                 <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
                 <p style="margin-top: 15px;">You have referred <span id="user-referral-count" style="font-weight: bold; color: #28a745;">0</span> new members.</p>
