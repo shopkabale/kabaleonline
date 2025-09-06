@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard | Kabale Online</title>
     <meta name="description" content="Log in or create a free account on Kabale Online to sell your new and second-hand items. Manage your products, edit listings, and connect with buyers in Kabale, Uganda.">
     <meta name="robots" content="noindex">
@@ -22,6 +22,7 @@
         #complete-profile-section h2 { margin-top: 0; color: #0056b3; text-align: center; }
         #complete-profile-section p { text-align: center; margin-top: -10px; color: #666; margin-bottom: 25px; }
         #complete-profile-form label { font-weight: bold; display: block; margin-bottom: 5px; text-align: left; }
+        #complete-profile-form input, #complete-profile-form textarea { width: 100%; box-sizing: border-box; }
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
@@ -34,7 +35,6 @@
             <nav class="header-nav"><a href="/sell/" id="header-action-btn" class="cta-button">Post Something</a></nav>
         </div>
     </header>
-
     <div style="text-align: center; margin: 10px 0;">
       <a href="../index.html" class="back-home-btn">⬅ Back to Home</a>
     </div>
@@ -69,7 +69,7 @@
                         <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
                         <div class="form-group"><label for="referral-code">Referral Code (Optional)</label><input type="text" id="referral-code"></div>
                         <button type="submit" class="auth-button">Create Account</button>
-                        <p id="signup-patience-message" class="instruction-text" style="display: none; margin-top: 15px; text-align: center;">This may take a moment, please be patient...</p>
+                        <p id="signup-patience-message" class="instruction-text" style="display: none; margin-top: 15px; text-align: center;">This may take a moment...</p>
                     </form>
                 </div>
                 <p class="or-divider"><span>OR</span></p>
@@ -89,7 +89,7 @@
                 <p>Build more trust with buyers by adding your details.</p>
                 <form id="complete-profile-form">
                     <p id="profile-update-message" class="success-message" style="display: none;"></p>
-                    <div class="form-group"><label for="profile-name">Your Full Name or Business Name</label><input type="text" id="profile-name" required></div>
+                    <div class="form-group"><label for="profile-name">Your Full Name</label><input type="text" id="profile-name" required></div>
                     <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" required></div>
                     <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3"></textarea></div>
                     <div class="form-group"><label for="profile-photo">Profile Photo (Optional)</label><input type="file" id="profile-photo" accept="image/*"></div>
@@ -98,10 +98,10 @@
             </div>
             <div id="referral-section" class="referral-section" style="display: none;">
                 <h2>Grow the Community!</h2>
-                <p>Share your unique referral code with friends.</p>
+                <p>Share your code with friends to build your reputation.</p>
                 <p>Your Referral Code (Click to copy):</p>
                 <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
-                <p style="margin-top: 15px;">You have referred <span id="user-referral-count">0</span> new members.</p>
+                <p style="margin-top: 15px;">You have referred <span id="user-referral-count" style="font-weight: bold; color: #28a745;">0</span> new members.</p>
             </div>
             <p class="instruction-text"><b>To sell:</b> Click 'Sell', fill in the details, and add your item!</p>
             <button id="show-product-form-btn" class="cta-button">Sell</button>
@@ -136,12 +136,9 @@
                 <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank"><i class="fa-solid fa-envelope"></i> Send an Email</a>
             </div>
         </section>
-        <div class="footer-links">
-            <a href="/about.html" class="footer-link">About Us</a>
-            <a href="/terms.html" class="footer-link">Terms of Service</a>
-        </div>
+        <div class="footer-links"><a href="/about.html" class="footer-link">About Us</a><a href="/terms.html" class="footer-link">Terms of Service</a></div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-        </footer>
+    </footer>
     <script type="module" src="sell.js"></script>
     <script type="module" src="../shared.js"></script>
 </body>
