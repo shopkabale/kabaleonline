@@ -2,13 +2,25 @@ import { auth } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 const setupDynamicHeader = () => {
-    const headerActionButton = document.getElementById('header-action-btn');
+    // Select all the new buttons
+    const loginBtn = document.getElementById('login-btn');
+    const postBtn = document.getElementById('post-btn');
+    const dashboardBtn = document.getElementById('dashboard-btn');
 
     // --- Login/Logout Button Logic ---
-    if (headerActionButton) {
+    if (loginBtn && postBtn && dashboardBtn) {
         onAuthStateChanged(auth, (user) => {
-            headerActionButton.textContent = user ? 'Your Dashboard' : 'Post Something';
-            headerActionButton.href = '/sell/';
+            if (user) {
+                // User is signed in
+                loginBtn.style.display = 'none';
+                postBtn.style.display = 'none';
+                dashboardBtn.style.display = 'flex';
+            } else {
+                // User is signed out
+                loginBtn.style.display = 'flex';
+                postBtn.style.display = 'flex';
+                dashboardBtn.style.display = 'none';
+            }
         });
     }
 
@@ -29,7 +41,7 @@ const setupDynamicHeader = () => {
     } else if (path.startsWith('/requests')) {
         document.getElementById('request-btn')?.classList.add('active');
     } else if (path.startsWith('/blog')) {
-        document.getElementById('stories-btn')?.classList.add('active'); // MODIFIED ID
+        document.getElementById('tips-btn')?.classList.add('active');
     }
 };
 
