@@ -22,19 +22,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             const sellerName = userData.name || 'Seller';
-            const sellerEmail = userData.email;
             const sellerLocation = userData.location;
             const sellerInstitution = userData.institution;
             const sellerBio = userData.bio;
             const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp';
+            const whatsappNumber = userData.whatsapp;
             const isVerified = userData.isVerified || false;
 
-            let detailsHTML = `<p>📧 ${sellerEmail}</p>`;
+            let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p style="margin-top: -10px;">📍 From ${sellerLocation}</p>`;
             if (sellerInstitution) detailsHTML += `<p style="margin-top: -10px;">🎓 ${sellerInstitution}</p>`;
             
             let bioHTML = '';
             if (sellerBio) bioHTML = `<p class="profile-bio">"${sellerBio}"</p>`;
+            
+            let contactHTML = '';
+            if (whatsappNumber) {
+                const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your profile on Kabale Online.`;
+                contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank" style="margin-top: 15px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
+            }
 
             const verifiedBadge = isVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️</span>' : '';
 
@@ -47,10 +53,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
                 ${bioHTML}
+                ${contactHTML}
             `;
             document.title = `Profile for ${sellerName} | Kabale Online`;
         } else {
-            // This message is clearer than a generic error.
             profileHeader.innerHTML = `<h1>Profile Not Found</h1><p>This seller does not seem to exist.</p>`;
             listingsTitle.style.display = 'none';
         }
@@ -61,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // This part now only runs if the profile was found
-    if(document.getElementById('profile-details')) {
+    if (document.querySelector('.profile-details')) {
         try {
             const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
             const querySnapshot = await getDocs(q);
@@ -89,4 +95,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
-
