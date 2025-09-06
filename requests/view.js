@@ -1,11 +1,22 @@
 import { db } from '../firebase.js';
-import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, orderBy, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const requestsList = document.getElementById('requests-list');
 
 async function fetchRequests() {
     try {
-        const q = query(collection(db, "requests"), orderBy("createdAt", "desc"));
+        // This is the new logic that makes requests disappear
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const thirtyDaysAgoTimestamp = Timestamp.fromDate(thirtyDaysAgo);
+
+        const q = query(
+            collection(db, "requests"), 
+            where("createdAt", ">", thirtyDaysAgoTimestamp), // Only gets recent requests
+            orderBy("createdAt", "desc")
+        );
+        // End of new logic
+
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -13,14 +24,13 @@ async function fetchRequests() {
             return;
         }
 
-        requestsList.innerHTML = ''; // Clear loading message
+        requestsList.innerHTML = '';
 
         querySnapshot.forEach(doc => {
             const request = doc.data();
             const card = document.createElement('div');
             card.className = 'request-card';
 
-            // Format the date nicely
             const date = request.createdAt ? request.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'a few moments ago';
 
             card.innerHTML = `
@@ -35,7 +45,7 @@ async function fetchRequests() {
 
     } catch (error) {
         console.error("Error fetching requests:", error);
-        requestsList.innerHTML = '<p>Sorry, could not load requests. Please try again later.</p>';
+        requestsList.innerHTML = '<p>Sorry, could not load requests. Please check the console for a missing index error.</p>';
     }
 }
 
