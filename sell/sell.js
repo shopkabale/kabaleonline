@@ -10,7 +10,6 @@ import {
     orderBy, getDoc, setDoc, runTransaction, serverTimestamp, increment 
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// DOM Element Selections
 const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
@@ -69,7 +68,7 @@ const clearAuthForms = () => { if (loginForm) loginForm.reset(); if (signupForm)
 const toggleLoading = (button, isLoading, originalText) => {
     if (isLoading) {
         button.disabled = true; button.classList.add('loading');
-        button.innerHTML = `<span class="loader"></span> ${originalText}...`;
+        button.innerHTML = `<span class="loader"></span> ${originalText}`;
     } else {
         button.disabled = false; button.classList.remove('loading');
         button.innerHTML = originalText;
@@ -104,11 +103,52 @@ onAuthStateChanged(auth, async (user) => {
 function displayDashboardInfo(userData, refCode) { userReferralCode.textContent = refCode; userReferralCount.textContent = userData.referralCount || 0; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
 logoutBtn.addEventListener('click', () => signOut(auth));
-if (forgotPasswordLink) { forgotPasswordLink.addEventListener('click', async (e) => { e.preventDefault(); /* ... logic ... */ }); }
-if (resetPasswordBtn) { resetPasswordBtn.addEventListener('click', async () => { /* ... logic ... */ }); }
-googleLoginBtn.addEventListener('click', () => { /* ... google login logic ... */ });
+
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', async (e) => {
+        e.preventDefault(); hideAuthMessages();
+        const email = document.getElementById('login-email').value;
+        if (!email) { return showMessage(loginErrorElement, "Please enter your email to reset your password."); }
+        try { await sendPasswordResetEmail(auth, email); showMessage(authSuccessElement, "Password reset email sent. Please check your inbox.", false); }
+        catch (error) { showMessage(loginErrorElement, "Could not send reset email. Make sure the email is correct."); }
+    });
+}
+if (resetPasswordBtn) {
+    resetPasswordBtn.addEventListener('click', async () => {
+        const email = prompt("Please enter your email address to receive a password reset link:");
+        if (email) {
+            try { await sendPasswordResetEmail(auth, email); alert("If an account exists for '" + email + "', a password reset email has been sent."); }
+            catch (error) { alert("Could not send reset email. Please ensure the email address is valid."); }
+        }
+    });
+}
+googleLoginBtn.addEventListener('click', () => {
+    hideAuthMessages();
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider).then(async (result) => {
+        const user = result.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+                name: user.displayName, email: user.email, profilePhotoUrl: user.photoURL,
+                role: 'seller', isVerified: false, referralCount: 0,
+                createdAt: serverTimestamp(), referralCode: user.uid.substring(0, 6).toUpperCase()
+            });
+        }
+    }).catch((error) => { showMessage(loginErrorElement, "Could not sign in with Google. Please try again."); });
+});
 const tabs = document.querySelectorAll('.tab-link');
-tabs.forEach(tab => { tab.addEventListener('click', () => { hideAuthMessages(); clearAuthForms(); tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); contents.forEach(c => c.classList.remove('active')); document.getElementById(tab.dataset.tab).classList.add('active'); }); });
+const contents = document.querySelectorAll('.tab-content');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        hideAuthMessages(); clearAuthForms();
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+});
 
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault(); hideAuthMessages();
@@ -122,13 +162,18 @@ loginForm.addEventListener('submit', (e) => {
 
 signupForm.addEventListener('submit', async (e) => {
     e.preventDefault(); hideAuthMessages();
-    const name = document.getElementById('signup-name').value; const email = document.getElementById('signup-email').value;
-    const whatsapp = document.getElementById('signup-whatsapp').value; const location = document.getElementById('signup-location').value;
-    const institution = document.getElementById('signup-institution').value; const password = document.getElementById('signup-password').value;
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const whatsapp = document.getElementById('signup-whatsapp').value;
+    const location = document.getElementById('signup-location').value;
+    const institution = document.getElementById('signup-institution').value;
+    const password = document.getElementById('signup-password').value;
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
     const signupButton = signupForm.querySelector('button[type="submit"]');
+
     if (!name || !location || !whatsapp) { return showMessage(signupErrorElement, "Please fill out all required fields."); }
     toggleLoading(signupButton, true, 'Creating Account'); signupPatienceMessage.style.display = 'block';
+    
     let referrerId = null, referrerRef = null;
     if (referralCode) {
         const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
@@ -152,8 +197,11 @@ signupForm.addEventListener('submit', async (e) => {
     } catch (error) {
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+        if (error.code === 'auth/weak-password') msg = 'Password must be at least 6 characters.';
         showMessage(signupErrorElement, msg);
-    } finally { toggleLoading(signupButton, false, 'Create Account'); signupPatienceMessage.style.display = 'none'; }
+    } finally {
+        toggleLoading(signupButton, false, 'Create Account'); signupPatienceMessage.style.display = 'none';
+    }
 });
 
 completeProfileForm.addEventListener('submit', async (e) => {
@@ -175,7 +223,7 @@ completeProfileForm.addEventListener('submit', async (e) => {
 showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     productFormContainer.style.display = isVisible ? 'none' : 'block';
-    showProductFormBtn.textContent = isVisible ? 'Sell' : 'Close Form';
+    showProductFormBtn.textContent = isVisible ? 'Close Form' : 'Sell';
     if (!isVisible) { productForm.reset(); productIdInput.value = ''; submitBtn.textContent = 'Add Product'; updateCategoryOptions(); }
 });
 
@@ -191,8 +239,7 @@ productForm.addEventListener('submit', async (e) => {
         const productCategory = document.getElementById('product-category').value; const productDescription = document.getElementById('product-description').value;
         const productStory = document.getElementById('product-story').value; const whatsappNumber = document.getElementById('whatsapp-number').value;
         const imageFile1 = document.getElementById('product-image-1').files[0]; const imageFile2 = document.getElementById('product-image-2').files[0];
-        const editingProductId = productIdInput.value;
-        let finalImageUrls = [];
+        const editingProductId = productIdInput.value; let finalImageUrls = [];
         if (editingProductId) { const docSnap = await getDoc(doc(db, 'products', editingProductId)); if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || []; }
         const filesToUpload = [imageFile1, imageFile2].filter(f => f);
         if (filesToUpload.length > 0) { finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f))); }
@@ -257,7 +304,6 @@ async function deleteProduct(productId) {
         } catch (error) { showMessage(dashboardMessage, 'Failed to delete product.'); }
     }
 }
-
 function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
