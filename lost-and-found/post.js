@@ -1,9 +1,18 @@
-import { db } from '../firebase.js';
+import { auth, db } from '../firebase.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const postForm = document.getElementById('post-form');
 const successMessage = document.getElementById('success-message');
 const submitBtn = document.getElementById('submit-btn');
+let currentUserId = null;
+
+// Check if a user is logged in to automatically attach their ID
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUserId = user.uid;
+    }
+});
 
 postForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -16,9 +25,12 @@ postForm.addEventListener('submit', async (e) => {
         const description = document.getElementById('description').value;
         const location = document.getElementById('location').value;
         const nickname = document.getElementById('nickname').value;
+        const contactInfo = document.getElementById('contact-info').value;
 
         await addDoc(collection(db, 'lost_and_found'), {
             status, itemName, description, location, nickname,
+            contactInfo: contactInfo,
+            posterId: currentUserId,
             createdAt: serverTimestamp()
         });
 
