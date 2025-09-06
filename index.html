@@ -340,6 +340,13 @@
             margin-top: 20px;
         }
         
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* This adds 15px of space between buttons, both horizontally and vertically */
+    flex-wrap: wrap; /* This allows them to stack on small screens */
+}
+
         /* --- Responsive Grid --- */
         @media (min-width: 768px) {
             .product-grid {
@@ -376,6 +383,7 @@
             <div class="hero-buttons">
                 
     <a href="#listings-title" class="hero-browse">🛍️ Browse Products</a>
+
     <a href="/sell/" class="hero-start-selling">➕ Post Something</a>
 </div>
 
