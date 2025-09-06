@@ -10,7 +10,6 @@ import {
     orderBy, getDoc, setDoc, runTransaction, serverTimestamp, increment 
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// DOM Element Selections
 const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
@@ -38,6 +37,9 @@ const completeProfileMessage = document.getElementById('profile-update-message')
 const productFormMessage = document.getElementById('product-form-message');
 const dashboardMessage = document.getElementById('dashboard-message');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
+const emailVerificationPrompt = document.getElementById('email-verification-prompt');
+const resendVerificationBtn = document.getElementById('resend-verification-btn');
+const verificationLogoutBtn = document.getElementById('verification-logout-btn');
 const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
 const categorySelect = document.getElementById('product-category');
 
@@ -80,7 +82,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         await user.reload();
         if (user.emailVerified) {
-            dashboardMessage.style.display = 'none'; authContainer.style.display = 'none'; dashboardContainer.style.display = 'block';
+            authContainer.style.display = 'none'; emailVerificationPrompt.style.display = 'none'; dashboardContainer.style.display = 'block';
             sellerEmailSpan.textContent = user.email; fetchSellerProducts(user.uid);
             const userDocRef = doc(db, 'users', user.uid); let userDoc = await getDoc(userDocRef);
             let userData, refCode;
@@ -117,6 +119,15 @@ onAuthStateChanged(auth, async (user) => {
 function displayDashboardInfo(userData, refCode, count) { userReferralCode.textContent = refCode; userReferralCount.textContent = count; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
 logoutBtn.addEventListener('click', () => signOut(auth));
+resendVerificationBtn.addEventListener('click', async () => {
+    toggleLoading(resendVerificationBtn, true, 'Sending');
+    try {
+        await sendEmailVerification(auth.currentUser);
+        showMessage(authSuccessElement, "A new verification email has been sent.", false);
+    } catch (error) { showMessage(authSuccessElement, "Failed to send email. Please try again soon.", true); } 
+    finally { toggleLoading(resendVerificationBtn, false, 'Resend Verification Email'); }
+});
+verificationLogoutBtn.addEventListener('click', () => signOut(auth));
 
 if (forgotPasswordLink) {
     forgotPasswordLink.addEventListener('click', async (e) => {
@@ -207,19 +218,21 @@ signupForm.addEventListener('submit', async (e) => {
             const querySnapshot = await getDocs(q);
             if (querySnapshot.empty) {
                 showMessage(signupErrorElement, "Account created, but referral code was invalid.");
-            } else { referrerId = querySnapshot.docs[0].id; }
+            } else { 
+                referrerId = querySnapshot.docs[0].id;
+                const referrerRef = doc(db, 'users', referrerId);
+                await updateDoc(referrerRef, { referralCount: increment(1) });
+            }
         }
         const newUserRef = doc(db, "users", user.uid);
         await setDoc(newUserRef, { 
             name, email, whatsapp: normalizeWhatsAppNumber(whatsapp), location, institution, 
             role: 'seller', isVerified: false, createdAt: serverTimestamp(), 
-            referralCount: 0, referrerId: referrerId,
+            referralCount: 0, 
+            referrerId: referrerId,
             referralCode: user.uid.substring(0, 6).toUpperCase() 
         });
-        if (referrerId) {
-            const referrerRef = doc(db, 'users', referrerId);
-            await updateDoc(referrerRef, { referralCount: increment(1) });
-        }
+        
         await sendEmailVerification(user);
         showMessage(authSuccessElement, "Success! Please check your email to verify your account.", false); signupForm.reset();
     } catch (error) {
