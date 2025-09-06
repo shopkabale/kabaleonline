@@ -18,21 +18,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (docSnap.exists()) {
             const product = docSnap.data();
-            document.title = `${product.name} | Kabale Online`; 
+            document.title = `${product.name} | Kabale Online`;
 
             let imagesHTML = '';
             if (product.imageUrls && product.imageUrls.length > 0) {
                 product.imageUrls.forEach(url => {
                     imagesHTML += `<img src="${url}" alt="${product.name}">`;
                 });
-            } else {
-                imagesHTML = '<img src="placeholder.webp" alt="No image available">';
             }
 
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
-            const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hi, I'm interested in your '${product.name}' listing on Kabale Online.`;
+            const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️</span>' : '';
             
-            const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller" style="color: green; font-weight: bold;">✔️ Verified Seller</span>' : '';
+            // Fetch the seller's name as a fallback
+            let sellerName = product.sellerName || 'A Seller';
+            if (!product.sellerName && product.sellerId) {
+                 const userRef = doc(db, 'users', product.sellerId);
+                 const userSnap = await getDoc(userRef);
+                 if (userSnap.exists()) {
+                    sellerName = userSnap.data().name || 'A Seller';
+                 }
+            }
 
             productDetailContent.innerHTML = `
                 <div class="product-detail-container">
@@ -49,10 +55,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <p>${product.description.replace(/\n/g, '<br>')}</p>
                         
                         <div class="seller-card">
-                            <h3>Seller Information</h3>
-                            <p>Contact the seller directly to arrange purchase and pickup.</p>
-                            <p><strong>Seller:</strong> <a href="profile.html?sellerId=${product.sellerId}">${product.sellerEmail || 'View Profile'}</a> ${verifiedBadge}</p>
-                            <a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+                            <h3>About the Seller</h3>
+                            <p><strong>Sold by:</strong> ${sellerName} ${verifiedBadge}</p>
+                            <a href="profile.html?sellerId=${product.sellerId}" class="cta-button" style="width:100%; text-align:center;">See Seller Profile to Contact</a>
                         </div>
                     </div>
                 </div>
