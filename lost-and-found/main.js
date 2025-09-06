@@ -26,9 +26,22 @@ async function fetchItems(status, element) {
             card.className = `item-card ${item.status}`;
             const date = item.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short'});
 
+            let contactHTML = '';
+            // Only show contact info for FOUND items
+            if (item.status === 'found') {
+                // Prioritize the secure profile link for logged-in posters
+                if (item.posterId) {
+                    contactHTML = `<a href="/profile.html?sellerId=${item.posterId}" class="contact-button">View Profile to Contact</a>`;
+                } else if (item.contactInfo) {
+                    // Show public number only if poster was not logged in
+                    contactHTML = `<p style="margin-top: 10px;"><strong>Contact:</strong> ${item.contactInfo}</p>`;
+                }
+            }
+
             card.innerHTML = `
                 <h3>${item.itemName}</h3>
                 <p>${item.description}</p>
+                ${contactHTML}
                 <div class="item-card-meta">
                     <strong>Area:</strong> ${item.location}<br>
                     <strong>Posted by:</strong> ${item.nickname} on ${date}
