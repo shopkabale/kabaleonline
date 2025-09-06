@@ -32,20 +32,17 @@
             align-items: center; gap: 6px;
         }
         .action-btn:hover { background-color: #e2e6ea; }
-        .nav-link.active {
-            background-color: var(--primary-color); color: white; transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
-        }
+        .nav-link.active { background-color: var(--primary-color); color: white; transform: scale(1.05); }
         @media (min-width: 992px) { .header-actions-sticky { justify-content: center; } }
         .hero-section { background-image: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 50px 20px; border-radius: var(--border-radius); }
         .hero-section h1 { font-size: 2.5em; margin-bottom: 10px; }
         .hero-section p { font-size: 1.2em; margin-bottom: 30px; opacity: 0.9; }
-        .hero-buttons a { padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: transform 0.2s; display: inline-block; }
+        .hero-buttons a { padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; }
         .hero-browse { background-color: white; color: #007bff; }
         .search-and-filter-container { margin-top: 30px; }
         .search-bar { display: flex; gap: 10px; align-items: center; }
         .search-bar input { flex-grow: 1; padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
-        .cta-button { background-color: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; transition: background-color 0.3s ease; }
+        .cta-button { background-color: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; }
         .filters { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .filter-row { display: flex; gap: 10px; }
         #category-filter, .price-filter-group { width: 100%; }
@@ -61,13 +58,14 @@
         .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
         .product-card h3 { margin: 15px; font-size: 1rem; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); margin-top: auto; }
+        .seller-info { font-size: 0.8em; color: grey; margin: 0 15px 10px; }
+        .seller-info a { color: grey; text-decoration: underline; }
         .request-cta-section, .blog-section-container { text-align: center; margin: 40px 0; padding: 40px 20px; border-radius: var(--border-radius); color: white; background-image: linear-gradient(145deg, #007bff, #0056b3); }
         .request-cta-section h3, .blog-section-container h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.8em; }
         .request-cta-section p, .blog-section-container p { margin-bottom: 25px; opacity: 0.9; max-width: 500px; margin-left: auto; margin-right: auto; }
         .request-cta-section .cta-button, .blog-section-container .cta-button { background-color: var(--accent-color); color: var(--text-dark); }
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
         @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 992px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
     </style>
 </head>
 <body>
@@ -78,12 +76,9 @@
     <div class="header-actions-sticky">
         <a href="/" class="action-btn nav-link" id="items-btn">🛍️ All Items</a>
         <a href="/?type=service" class="action-btn nav-link" id="services-btn">🛠️ Services</a>
-        
-        <!-- Login/Post/Dashboard Buttons -->
         <a href="/sell/" class="action-btn" id="login-btn" style="display: none;">🔑 Login</a>
         <a href="/sell/" class="action-btn" id="post-btn" style="display: none;">➕ Post Something</a>
         <a href="/sell/" class="action-btn" id="dashboard-btn" style="display: none;">👤 Your Dashboard</a>
-
         <a href="/requests/view.html" class="action-btn nav-link" id="request-btn">📝 User Requests</a>
         <a href="/blog/" class="action-btn nav-link" id="tips-btn">📚 Tips</a>
     </div>
@@ -98,7 +93,24 @@
         </section>
 
         <div class="search-and-filter-container">
-            <!-- Full search and filter content here -->
+            <div class="search-bar">
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+                <button id="search-btn" class="cta-button">Search</button>
+            </div>
+            <div class="filters">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <optgroup label="Items"><option value="Electronics">Electronics</option><option value="Clothing & Apparel">Clothing & Apparel</option><option value="Home & Furniture">Home & Furniture</option><option value="Health & Beauty">Health & Beauty</option><option value="Vehicles">Vehicles</option><option value="Property">Property</option><option value="Other">Other (Items)</option></optgroup>
+                        <optgroup label="Services / Student Hustles"><option value="Tutoring & Academics">Tutoring & Academics</option><option value="Printing & Design">Printing & Design</option><option value="Tech & Repair">Tech & Repair</option><option value="Personal & Beauty">Personal & Beauty</option><option value="Events & Creative">Events & Creative</option><option value="Other Services">Other (Services)</option></optgroup>
+                    </select>
+                </div>
+                <div class="filter-row price-filter-group">
+                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
+                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
+                    <button id="apply-filters-btn" class="cta-button">Filter</button>
+                </div>
+            </div>
         </div>
         
         <main>
@@ -107,10 +119,9 @@
             <div id="load-more-container" style="text-align: center; margin-top: 30px;">
                 <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
             </div>
-
             <div class="request-cta-section">
                 <h3>Didn't find what you're looking for?</h3>
-                <p>Let our community of sellers and hustlers know what you need by posting a public request.</p>
+                <p>Let our community of sellers know what you need by posting a public request.</p>
                 <a href="/requests/" class="cta-button">Request an Item or Service</a>
             </div>
         </main>
@@ -123,7 +134,7 @@
     </div>
 
     <footer>
-                <div class="kabale-contact-info-section">
+        <div class="kabale-contact-info-section">
             <h3 class="kabale-contact-title">Get in Touch</h3>
             <div class="kabale-contact-details">
                 <p class="kabale-contact-item">📞 +256 784655792</p>
@@ -136,7 +147,7 @@
             </div>
         </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
+        </footer>
 
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
