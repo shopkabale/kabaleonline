@@ -105,30 +105,30 @@ footer {
 </head>
 <body>
 
-    <header class="site-header">
-        <div class="header-container">
-            <button class="hamburger-menu"><i class="fa-solid fa-bars"></i></button>
-            <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <div class="header-icons">
-                <a href="/sell/" title="My Account"><i class="fa-regular fa-user"></i></a>
-                <a href="/sell/" title="Post Something"><i class="fa-solid fa-plus"></i></a>
-            </div>
+    <header class="sticky-header">
+    <div class="header-top-bar">
+        <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+        <a href="/" class="site-title">Kabale <span>Online</span></a>
+        <nav class="desktop-nav">
+            </nav>
+        <div class="header-icons">
+            <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
         </div>
-    </header>
-
+    </div>
     <nav class="mobile-nav">
-        <ul>
-            <li><a href="/"><i class="fa-solid fa-store"></i> All Items</a></li>
-            <li><a href="/?type=service"><i class="fa-solid fa-wrench"></i> Services</a></li>
-            <li><a href="/rentals/"><i class="fa-solid fa-hotel"></i> Hostels & Rentals</a></li>
-            <li><a href="/requests/view.html"><i class="fa-solid fa-file-pen"></i> User Requests</a></li>
-            <li><a href="/lost-and-found/"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a></li>
-            <li><a href="/blog/"><i class="fa-solid fa-book-open"></i> Tips</a></li>
-            <li class="nav-separator"></li>
-            <li><a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a></li>
-            <li><a href="/sell/"><i class="fa-solid fa-key"></i> Login</a></li>
-        </ul>
+        <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/stories/stories.html" class="nav-link"><i class="fa-solid fa-book"></i>Campus Stories</a>
+        <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+        <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+        <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+        <hr>
+        <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+        <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
     </nav>
+</header>
+
     
     <div class="container">
         <div class="page-welcome">
