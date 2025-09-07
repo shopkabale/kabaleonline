@@ -1,7 +1,6 @@
 const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const listingsTitle = document.getElementById('listings-title');
-// RE-ADDED the search button element
 const searchBtn = document.getElementById('search-btn');
 
 const PRODUCTS_PER_PAGE = 30;
@@ -74,9 +73,12 @@ async function fetchProducts(isNewSearch = false) {
 function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
-        const verifiedBadge = product.sellerIsVerified 
+        
+        // Check if the seller has a 'verified' badge
+        const verifiedBadge = product.sellerBadges?.includes('verified')
             ? `<svg class="verified-badge-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>` 
             : '';
+        
         const displayName = product.sellerName || 'A Seller';
         const sellerInfo = product.sellerId 
             ? `<p class="seller-info">By: <a href="profile.html?sellerId=${product.sellerId}">${displayName}</a> ${verifiedBadge}</p>`
@@ -103,7 +105,6 @@ function handleNewSearch() {
     fetchProducts(true);
 }
 
-// RE-ADDED the click listener for the search button
 searchBtn.addEventListener('click', handleNewSearch);
 
 searchInput.addEventListener('keydown', (e) => { 
