@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Stories | Kabale Online</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Add your header and footer styles here */
+        .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 25px; }
+        .story-card { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s ease-in-out; }
+        .story-card:hover { transform: translateY(-5px); }
+        .story-card h2 { color: #007bff; font-size: 1.5em; margin-top: 0; }
+        .story-content { margin: 15px 0; font-size: 0.95em; color: #555; }
+        .story-content h1, h2, h3 { color: #34495e; font-family: "Georgia", serif; }
+        .story-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px auto; display: block; }
+        .story-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
+        .like-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #ccc; transition: color 0.2s; }
+        .like-btn.liked { color: #e74c3c; } /* A color for a "liked" state */
+        .likes-count { font-weight: bold; color: #333; margin-left: 5px; }
+    </style>
+</head>
+<body>
+    <header>
+        </header>
+
+    <div class="container page-content">
+        <h1>Community Stories</h1>
+        <p>A collection of knowledge and experiences shared by our community.</p>
+        <div class="stories-grid" id="stories-list">
+            <p>Loading stories...</p>
+        </div>
+    </div>
+
+    <footer>
+        </footer>
+
+    <script type="module" src="../firebase.js"></script>
+    <script type="module" src="../ui.js"></script>
+    <script type="module" src="displayStories.js"></script>
+</body>
+</html>
