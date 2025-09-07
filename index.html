@@ -147,6 +147,29 @@
             color: #007bff;
         }
         
+/* Extra rules to improve spacing for hero buttons */
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;          /* Horizontal spacing on big screens */
+    flex-wrap: wrap;    /* Allows vertical stacking on small screens */
+}
+
+.hero-buttons a {
+    margin: 8px 0;      /* Vertical spacing when stacked */
+}
+
+/* WhatsApp special styling */
+.hero-community-btn {
+    background-color: #25D366; /* WhatsApp green */
+    color: white;
+    padding: 14px 28px;
+    font-size: 1.2em;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    flex-shrink: 0; /* Prevent shrinking on smaller screens */
+}
+
         /* --- Search & Filter --- */
         .search-and-filter-container {
             margin-top: 30px;
