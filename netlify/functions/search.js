@@ -19,33 +19,25 @@ exports.handler = async (event) => {
         const { searchTerm, category, minPrice, maxPrice, lastVisible, type } = event.queryStringParameters;
         let query = db.collection("products");
 
-        // Step 1: Apply filters based on query parameters.
         if (type) query = query.where("listing_type", "==", type);
         if (category) query = query.where("category", "==", category);
         if (minPrice) query = query.where("price", ">=", Number(minPrice));
         if (maxPrice) query = query.where("price", "<=", Number(maxPrice));
 
+        // Use a single where clause for search term
         if (searchTerm) {
-            const lowercasedTerm = searchTerm.toLowerCase();
-            query = query.where("name_lowercase", ">=", lowercasedTerm)
-                         .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff');
+            query = query.where("name", "==", searchTerm);
         }
 
-        // Step 2: IMPORTANT - Add an orderBy clause. This is required for `startAfter`.
-        // It must match a field used in a `where` clause if you have one.
-        // For example, if you have a `where` on `price`, you must `orderBy` `price`.
-        // Since you don't always use price, `createdAt` is a safe bet for a consistent sort.
+        // Always order by creation date for consistent pagination
         query = query.orderBy("createdAt", "desc");
 
-        // Step 3: Implement pagination using startAfter.
         if (lastVisible) {
             const lastDoc = await db.collection("products").doc(lastVisible).get();
             if (lastDoc.exists) query = query.startAfter(lastDoc);
         }
 
-        // Step 4: Add a limit.
         query = query.limit(PRODUCTS_PER_PAGE);
-
         const snapshot = await query.get();
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
