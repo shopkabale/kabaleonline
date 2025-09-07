@@ -1,10 +1,20 @@
 import { auth, db } from '../firebase.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import {
+    createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
-    collection, addDoc, query, getDocs, serverTimestamp, orderBy, where, doc, getDoc, updateDoc, deleteDoc 
+    collection, addDoc, query, getDocs, serverTimestamp, orderBy, where, doc, getDoc, updateDoc, deleteDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// --- DOM ELEMENTS ---
+// --- ELEMENT SELECTION (All elements for this page) ---
+const authContainer = document.getElementById('auth-container');
+const dashboardContainer = document.getElementById('dashboard-container');
+const sellerEmailSpan = document.getElementById('seller-email');
+const logoutBtn = document.getElementById('logout-btn');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const loginErrorElement = document.getElementById('login-error');
+const signupErrorElement = document.getElementById('signup-error');
 const hostelPostForm = document.getElementById('hostel-post-form');
 const publicHostelGrid = document.getElementById('hostel-grid-public');
 const myHostelsGrid = document.getElementById('my-hostels-grid');
@@ -14,9 +24,54 @@ const formMessage = document.getElementById('hostel-form-message');
 
 let currentEditingHostelId = null;
 
-// --- PAGE-SPECIFIC LOGIC ---
+// --- HELPER FUNCTIONS ---
+const showMessage = (element, message, isError = true) => {
+    if (!element) return;
+    element.textContent = message;
+    element.className = isError ? 'error-message' : 'success-message';
+    element.style.display = 'block';
+    setTimeout(() => { element.style.display = 'none'; }, 5000);
+};
+const toggleLoading = (button, isLoading, originalText) => {
+    if(!button) return;
+    if (isLoading) {
+        button.disabled = true; button.classList.add('loading');
+        button.innerHTML = `<span class="loader"></span> ${originalText}`;
+    } else {
+        button.disabled = false; button.classList.remove('loading');
+        button.innerHTML = originalText;
+    }
+};
+function normalizeWhatsAppNumber(phone) {
+    if(!phone) return '';
+    let cleaned = ('' + phone).replace(/\D/g, '');
+    if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
+    if (cleaned.startsWith('256')) return cleaned;
+    if (cleaned.length === 9) return '256' + cleaned;
+    return cleaned;
+}
+async function uploadImageToCloudinary(file) {
+    const response = await fetch('/.netlify/functions/generate-signature');
+    if (!response.ok) throw new Error('Could not get upload signature.');
+    const { signature, timestamp, cloudname, apikey } = await response.json();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', apikey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+    if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
+    const uploadData = await uploadResponse.json();
+    return uploadData.secure_url;
+}
+
+// --- AUTHENTICATION LOGIC (Self-Contained for this page) ---
 onAuthStateChanged(auth, async (user) => {
     if (user && user.emailVerified) {
+        if (authContainer) authContainer.style.display = 'none';
+        if (dashboardContainer) dashboardContainer.style.display = 'block';
+        if (sellerEmailSpan) sellerEmailSpan.textContent = user.email;
         const contactDisplay = document.getElementById('landlord-contact-display');
         if (contactDisplay) {
             try {
@@ -26,7 +81,7 @@ onAuthStateChanged(auth, async (user) => {
                     const localNumber = `0${userDoc.data().whatsapp.substring(3)}`;
                     contactDisplay.textContent = `📞 ${localNumber}`;
                 } else {
-                    contactDisplay.textContent = "No contact number found. Please update your profile.";
+                    contactDisplay.textContent = "No contact number found. Please update profile on sell page.";
                     contactDisplay.style.color = 'red';
                 }
             } catch (err) {
@@ -34,22 +89,75 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
         fetchMyHostels(user.uid);
+    } else {
+        if (authContainer) authContainer.style.display = 'block';
+        if (dashboardContainer) dashboardContainer.style.display = 'none';
     }
 });
 
-// --- HELPER FUNCTIONS ---
-const showMessage = (element, message, isError = true) => { /* ... full function from auth.js ... */ };
-async function uploadImageToCloudinary(file) { /* ... full function from sell.js ... */ }
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const loginButton = loginForm.querySelector('button[type="submit"]');
+        toggleLoading(loginButton, true, 'Logging In');
+        signInWithEmailAndPassword(auth, email, password)
+            .catch(error => { showMessage(loginErrorElement, 'Invalid email or password.'); })
+            .finally(() => { toggleLoading(loginButton, false, 'Login'); });
+    });
+}
 
-// --- EVENT LISTENERS ---
+if (signupForm) {
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const whatsapp = document.getElementById('signup-whatsapp').value;
+        const password = document.getElementById('signup-password').value;
+        const signupButton = signupForm.querySelector('button[type="submit"]');
+        toggleLoading(signupButton, true, 'Creating Account');
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await setDoc(doc(db, "users", user.uid), {
+                name, email, whatsapp: normalizeWhatsAppNumber(whatsapp),
+                role: 'seller', createdAt: serverTimestamp()
+            });
+            await sendEmailVerification(user);
+            alert("Success! Please check your email to verify your account.");
+            signupForm.reset();
+        } catch (error) {
+            let msg = 'An error occurred.';
+            if (error.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+            showMessage(signupErrorElement, msg);
+        } finally {
+            toggleLoading(signupButton, false, 'Create Account');
+        }
+    });
+}
+
+if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
+
+const tabs = document.querySelectorAll('.tab-link');
+if (tabs.length > 0) {
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+}
+
+// --- HOSTEL-SPECIFIC DASHBOARD LOGIC ---
 if (showFormBtn) {
     showFormBtn.addEventListener('click', () => {
         const isVisible = formContainer.style.display === 'block';
         formContainer.style.display = isVisible ? 'none' : 'block';
         showFormBtn.textContent = isVisible ? 'Post New Hostel/Rental' : 'Close Form';
-        if (isVisible) {
-            resetHostelForm();
-        }
+        if (isVisible) resetHostelForm();
     });
 }
 
@@ -57,15 +165,13 @@ if (hostelPostForm) {
     hostelPostForm.addEventListener('submit', handleHostelSubmit);
 }
 
-// --- CORE FUNCTIONS ---
 async function handleHostelSubmit(e) {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return showMessage(formMessage, "You must be logged in to post.");
     
     const submitBtn = hostelPostForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
+    toggleLoading(submitBtn, true, 'Submitting...');
 
     try {
         const name = document.getElementById('hostel-name').value;
@@ -105,8 +211,7 @@ async function handleHostelSubmit(e) {
         console.error("Error submitting hostel: ", error);
         showMessage(formMessage, `Error: ${error.message}`);
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = currentEditingHostelId ? "Update Listing" : "Submit Listing";
+        toggleLoading(submitBtn, false, currentEditingHostelId ? "Update Listing" : "Submit Listing");
     }
 }
 
@@ -209,12 +314,12 @@ async function deleteHostel(id) {
     
     try {
         await deleteDoc(doc(db, "hostels", id));
-        showMessage(document.getElementById('dashboard-message'), "Hostel deleted successfully.", false); // A general message area might be needed
+        showMessage(formMessage, "Hostel deleted successfully.", false);
         fetchMyHostels(auth.currentUser.uid);
         fetchPublicHostels();
     } catch (error) {
         console.error("Error deleting hostel: ", error);
-        showMessage(document.getElementById('dashboard-message'), "Could not delete hostel. Please try again.");
+        showMessage(formMessage, "Could not delete hostel. Please try again.");
     }
 }
 
