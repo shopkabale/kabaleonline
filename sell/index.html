@@ -71,16 +71,17 @@
         .desktop-nav { display: none; }
         
         .mobile-nav {
-            display: none;
-            background-color: #ffffff;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-top: 1px solid var(--border-color);
-        }
+    display: none;
+    background-color: #f0f5fa; /* This is the only line that changed */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-top: 1px solid var(--border-color);
+}
+
         .mobile-nav.active { display: block; }
         .mobile-nav a {
             display: block;
