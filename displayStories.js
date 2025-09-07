@@ -10,6 +10,19 @@ onAuthStateChanged(auth, (user) => {
     fetchAndDisplayStories();
 });
 
+// Centralized message handler for the stories page
+const showMessage = (message, isError = false) => {
+    const messageEl = document.getElementById('stories-message') || document.createElement('p');
+    if (!document.getElementById('stories-message')) {
+        messageEl.id = 'stories-message';
+        storiesList.parentNode.insertBefore(messageEl, storiesList);
+    }
+    messageEl.textContent = message;
+    messageEl.className = isError ? 'error-message' : 'success-message';
+    messageEl.style.display = 'block';
+    setTimeout(() => { messageEl.style.display = 'none'; }, 5000);
+};
+
 async function fetchAndDisplayStories() {
     storiesList.innerHTML = '<p>Loading stories...</p>';
     
@@ -28,11 +41,9 @@ async function fetchAndDisplayStories() {
             const story = docSnapshot.data();
             const storyId = docSnapshot.id;
             
-            // Get author's name
             const authorDoc = await getDoc(doc(db, 'users', story.authorId));
             const authorName = authorDoc.exists() ? authorDoc.data().name : 'Anonymous';
             
-            // Check if current user has already liked this story
             let isLiked = false;
             if (currentUserId) {
                 const likeDoc = await getDoc(doc(db, `stories/${storyId}/likes`, currentUserId));
@@ -57,33 +68,31 @@ async function fetchAndDisplayStories() {
 
         await Promise.all(storiesPromises);
         
-        // Attach event listeners after all elements are on the page
         document.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', handleLike);
         });
 
     } catch (error) {
         console.error("Error fetching stories:", error);
-        storiesList.innerHTML = '<p>Failed to load stories.</p>';
+        showMessage('Failed to load stories. Please try refreshing the page.', true);
     }
 }
 
 async function handleLike(e) {
     const btn = e.target;
     if (!currentUserId) {
-        alert("Please log in to like a story.");
+        showMessage('You must be logged in to like a story.', true);
         return;
     }
     
     if (btn.classList.contains('liked')) {
-        alert("You've already liked this story.");
+        showMessage('You have already liked this story.', true);
         return;
     }
 
     const storyId = btn.dataset.storyId;
     const authorId = btn.dataset.authorId;
     
-    // Use a transaction for safe, atomic updates
     const storyRef = doc(db, 'stories', storyId);
     const likeRef = doc(db, `stories/${storyId}/likes`, currentUserId);
     const authorProfileRef = doc(db, 'users', authorId);
@@ -97,27 +106,26 @@ async function handleLike(e) {
 
             const newLikeCount = (storyDoc.data().likeCount || 0) + 1;
             
-            // 1. Add the like document
             transaction.set(likeRef, { likedAt: serverTimestamp() });
             
-            // 2. Increment the like count on the story
             transaction.update(storyRef, { likeCount: newLikeCount });
 
-            // 3. Increment the author's reputation score on their user profile
-            transaction.update(authorProfileRef, { reputation: newLikeCount });
-            
-            // Note: The reputation score here is just the like count of a single story.
-            // For a total reputation, you would need to sum likes from all stories.
-            // A Cloud Function is a better approach for this to avoid race conditions.
+            // Ensure the 'reputation' field exists on the user document.
+            // This is a simple fix. A more robust solution might use a Cloud Function.
+            const authorProfileDoc = await transaction.get(authorProfileRef);
+            if (authorProfileDoc.exists()) {
+                const currentReputation = authorProfileDoc.data().reputation || 0;
+                transaction.update(authorProfileRef, { reputation: currentReputation + 1 });
+            }
         });
         
-        // Update UI after successful transaction
         btn.classList.add('liked');
         const countEl = btn.nextElementSibling;
         countEl.textContent = (parseInt(countEl.textContent) || 0) + 1;
+        showMessage('You liked this story! ❤️', false);
 
     } catch (e) {
         console.error("Transaction failed: ", e);
-        alert("Failed to like the story. Please try again.");
+        showMessage('Failed to like the story. Please check your network and try again.', true);
     }
 }
