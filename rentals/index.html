@@ -4,28 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hostels & Rentals in Kabale | Kabale Online</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; 
+            --text-muted: #6c757d; --bg-light: #f8f9fa; --card-bg: #ffffff;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-light); padding-top: 60px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
+
+        /* --- NEW HEADER STYLES --- */
+        .site-header { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--card-bg); z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 60px; }
+        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.5em; font-weight: bold; }
+        .site-title span { color: var(--accent-color); }
+        .header-icons { display: flex; align-items: center; gap: 15px; }
+        .header-icons a { text-decoration: none; color: var(--text-dark); font-size: 22px; }
+        
+        /* --- NEW MOBILE NAV MENU STYLES (TAILORED FOR YOUR SCRIPT) --- */
+        .mobile-nav {
+            position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+            background-color: var(--card-bg); z-index: 3000;
+            transform: translateX(-100%); transition: transform 0.3s ease-in-out;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1); padding-top: 20px;
+        }
+        /* Your ui.js script adds this .active class to show the menu */
+        .mobile-nav.active { transform: translateX(0); }
+        
+        .mobile-nav ul { list-style: none; padding: 0; margin: 0; }
+        .mobile-nav li a {
+            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
+            text-decoration: none; color: var(--text-dark); font-weight: bold;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .mobile-nav li a:hover { background-color: #f8f9fa; }
+        .mobile-nav i { width: 20px; text-align: center; color: var(--primary-color); }
+        .mobile-nav .nav-separator { height: 1px; background-color: #e0e0e0; margin: 10px 0; }
+/* --- Footer Styles --- */
+:root {
+    --text-dark: #34495e;
+    --text-muted: #6c757d;
+}
+
+footer {
+    background-color: var(--text-dark);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.kabale-contact-title {
+    font-size: 1.8em;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.kabale-contact-details p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+.kabale-footer-links {
+    margin: 30px 0;
+}
+
+.kabale-footer-link {
+    color: #bdc3c7; /* A lighter grey for links */
+    margin: 0 10px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.kabale-footer-link:hover {
+    color: white;
+}
+
+.copyright {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-top: 20px;
+}
+
+        /* --- Page Specific Styles --- */
+        .page-welcome { text-align: center; margin-bottom: 30px; }
         .filter-bar { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: flex-end; }
         .filter-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
-        .filter-group select, .filter-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .filter-group select, .filter-group input, .filter-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
         .rental-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (min-width: 768px) { .rental-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 992px) { .rental-grid { grid-template-columns: repeat(3, 1fr); } }
-        .rental-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; color: inherit; display: flex; flex-direction: column; }
-        .rental-card:hover { transform: translateY(-5px); }
+        .rental-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; color: inherit; }
         .rental-card img { width: 100%; height: 200px; object-fit: cover; }
         .rental-card-content { padding: 15px; }
-        .rental-card-title { font-size: 1.2em; font-weight: bold; margin: 0 0 10px; }
-        .rental-card-price { font-size: 1.1em; font-weight: bold; color: #007bff; }
-        .rental-card-location { color: #6c757d; margin: 10px 0; }
+
+        /* --- Footer Styles --- */
+        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
     </style>
 </head>
 <body>
-    <header class="site-header-main">
-        <a href="/" class="site-title">Kabale <span>Online</span></a>
+
+    <header class="site-header">
+        <div class="header-container">
+            <button class="hamburger-menu"><i class="fa-solid fa-bars"></i></button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-icons">
+                <a href="/sell/" title="My Account"><i class="fa-regular fa-user"></i></a>
+                <a href="/sell/" title="Post Something"><i class="fa-solid fa-plus"></i></a>
+            </div>
+        </div>
     </header>
+
+    <nav class="mobile-nav">
+        <ul>
+            <li><a href="/"><i class="fa-solid fa-store"></i> All Items</a></li>
+            <li><a href="/?type=service"><i class="fa-solid fa-wrench"></i> Services</a></li>
+            <li><a href="/rentals/"><i class="fa-solid fa-hotel"></i> Hostels & Rentals</a></li>
+            <li><a href="/requests/view.html"><i class="fa-solid fa-file-pen"></i> User Requests</a></li>
+            <li><a href="/lost-and-found/"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a></li>
+            <li><a href="/blog/"><i class="fa-solid fa-book-open"></i> Tips</a></li>
+            <li class="nav-separator"></li>
+            <li><a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a></li>
+            <li><a href="/sell/"><i class="fa-solid fa-key"></i> Login</a></li>
+        </ul>
+    </nav>
+    
     <div class="container">
         <div class="page-welcome">
             <h1>Hostels & Rentals in Kabale</h1>
@@ -33,13 +137,30 @@
             <a href="/rentals/post.html" class="cta-button">Post a Rental (Free)</a>
         </div>
         <div class="filter-bar">
-            <div class="filter-grid">
-                <div class="filter-group"><label for="filter-type">Listing Type</label><select id="filter-type"><option value="">All Types</option><option value="Hostel">Student Hostel</option><option value="Rental">House/Apartment</option></select></div>
-                <div class="filter-group"><label for="filter-location">Location</label><input type="text" id="filter-location" placeholder="e.g., Kikungiri"></div>
-                <div class="filter-group"><label for="filter-sort">Sort By</label><select id="filter-sort"><option value="newest">Newest First</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option></select></div>
             </div>
-        </div>
         <div id="rental-grid" class="rental-grid"><p>Loading listings...</p></div>
     </div>
+
+    <footer>
+    <div class="kabale-contact-info-section">
+        <h3 class="kabale-contact-title">Get in Touch</h3>
+        <div class="kabale-contact-details">
+            <p>📞 +256 784655792</p>
+            <p>📧 shopkabale@gmail.com</p>
+        </div>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/lost-and-found/" class="kabale-footer-link">Lost & Found</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+        </div>
+    </div>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
+
+
+    <script type="module" src="../ui.js"></script>
+    <script type="module" src="main.js"></script>
+
 </body>
 </html>
