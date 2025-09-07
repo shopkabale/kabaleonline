@@ -80,9 +80,11 @@
         .delete-btn { background-color: #dc3545; color: white; border-color: #dc3545; }
 
         /* --- FOOTER --- */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
-        .kabale-footer-links { margin: 20px 0; }
-        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
+        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 30px; }
+        .kabale-footer-links { margin-bottom: 20px; }
+        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; transition: color 0.2s; }
+        .kabale-footer-link:hover { color: white; }
+        .copyright { font-size: 0.9em; color: #6c757d; margin-top: 20px; }
         
         /* --- RESPONSIVE STYLES --- */
         @media (min-width: 768px) {
@@ -135,8 +137,13 @@
                         </div>
                     </div>
                     <div class="form-grid">
-                        <div class="form-group"><label for="hostel-image-1">Main Image</label><input type="file" id="hostel-image-1" accept="image/*" required></div>
+                        <div class="form-group"><label for="hostel-image-1">Main Image</label><input type="file" id="hostel-image-1" accept="image/*"></div>
                         <div class="form-group"><label for="hostel-image-2">Optional Second Image</label><input type="file" id="hostel-image-2" accept="image/*"></div>
+                    </div>
+                    <div class="form-group" style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <label style="margin-bottom: 10px;">Contact Information</label>
+                        <p style="font-size: 0.9em; margin: 0;">This listing will use the phone number from your user profile.</p>
+                        <p style="font-size: 1.1em; font-weight: bold; margin-top: 10px;" id="landlord-contact-display">Loading your contact number...</p>
                     </div>
                     <p id="hostel-form-message" class="success-message" style="display: none;"></p>
                     <button type="submit" class="cta-button">Submit Listing</button>
@@ -192,8 +199,8 @@
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
     
+    <!-- This setup ensures no script conflicts -->
     <script type="module" src="../ui.js"></script>
-    <script type="module" src="../sell/sell.js"></script> 
     <script type="module" src="hostels.js"></script>
 </body>
 </html>
