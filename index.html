@@ -118,7 +118,7 @@
     color: white;
     text-align: center;
     padding: 50px 20px;
-    border-radius: 12px; /* Rounded corners on the whole hero box */
+    border-radius: 12px;
     margin-bottom: 30px;
 }
 
@@ -136,19 +136,23 @@
 /* --- Hero Buttons --- */
 .hero-buttons {
     display: flex;
-    justify-content: center;
-    gap: 15px;          /* Horizontal spacing */
-    flex-wrap: wrap;    /* Allows stacking on small screens */
+    flex-direction: column;  /* Stack vertically like in your image */
+    align-items: center;
+    gap: 18px;
 }
 
-.hero-buttons a {
-    padding: 12px 24px;
-    text-decoration: none;
+.hero-btn {
+    width: 260px;          /* Fixed same width */
+    padding: 16px 24px;    /* Same height */
+    font-size: 1.1em;      /* Consistent font size */
     font-weight: bold;
-    border-radius: 30px; /* Rounded corners on all buttons */
-    display: inline-flex;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 40px;   /* Rounded pill shape */
+    display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
     transition: all 0.2s ease-in-out;
 }
 
@@ -164,29 +168,16 @@
 }
 
 .hero-community-btn {
-    background-color: #25D366; /* WhatsApp green */
+    background-color: #25D366;
     color: white;
-    font-size: 1.1em;
-    padding: 14px 28px;
-    border-radius: 50px; /* More rounded, pill shape */
+    font-size: 1.15em;  /* Slightly larger text */
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    flex-shrink: 0;
 }
 
-.hero-buttons a:hover {
+/* Hover effect */
+.hero-btn:hover {
     transform: translateY(-2px);
-    opacity: 0.9;
-}
-
-/* WhatsApp special styling */
-.hero-community-btn {
-    background-color: #25D366; /* WhatsApp green */
-    color: white;
-    padding: 14px 28px;
-    font-size: 1.2em;
-    border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    flex-shrink: 0; /* Prevent shrinking on smaller screens */
+    opacity: 0.95;
 }
 
         /* --- Search & Filter --- */
@@ -438,11 +429,15 @@
   <p>The #1 community platform for items, services, rentals, lost & found, and more in Kabale.</p>
 
   <div class="hero-buttons">
-    <a href="#listings-title" class="hero-browse">🛍️ Browse Products</a>
-    <a href="/sell/" class="hero-start-selling">➕ Post Something</a>
+    <a href="#listings-title" class="hero-btn hero-browse">
+      🛍️ Browse Products
+    </a>
+    <a href="/sell/" class="hero-btn hero-start-selling">
+      ➕ Post Something
+    </a>
     <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" 
-       class="hero-community-btn" target="_blank">
-       <i class="fa-brands fa-whatsapp"></i> Join Our Community
+       class="hero-btn hero-community-btn" target="_blank">
+      <i class="fa-brands fa-whatsapp"></i> Join Our Community
     </a>
   </div>
 </section>
