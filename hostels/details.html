@@ -68,6 +68,36 @@
         .landlord-info p { margin: 5px 0; }
         
         #loading-state, #error-state { text-align: center; padding: 50px; font-size: 1.2em; }
+/* --- FOOTER --- */
+footer {
+    background-color: var(--text-dark); /* Uses the dark color from your theme */
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 30px; /* Adds some space above the footer */
+}
+
+.kabale-footer-links {
+    margin-bottom: 20px;
+}
+
+.kabale-footer-link {
+    color: #bdc3c7; /* Light grey text for links */
+    margin: 0 10px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.kabale-footer-link:hover {
+    color: white; /* Links become white on hover */
+}
+
+.copyright {
+    font-size: 0.9em;
+    color: #6c757d; /* Muted text color for the copyright */
+    margin-top: 20px;
+}
+
     </style>
 </head>
 <body>
@@ -119,7 +149,16 @@
             </div>
         </div>
     </div>
-    
+    <!-- Paste this block before the closing </body> tag -->
+<footer>
+    <div class="kabale-footer-links">
+        <a href="/about.html" class="kabale-footer-link">About Us</a>
+        <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+        <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+    </div>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
+
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="details.js"></script>
 </body>
