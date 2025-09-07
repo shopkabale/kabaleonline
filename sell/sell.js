@@ -42,6 +42,11 @@ const resendVerificationBtn = document.getElementById('resend-verification-btn')
 const verificationLogoutBtn = document.getElementById('verification-logout-btn');
 const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
 const categorySelect = document.getElementById('product-category');
+const userProfilePhoto = document.getElementById('user-profile-photo');
+const userDisplayName = document.getElementById('user-display-name');
+const userBadgesContainer = document.getElementById('user-badges');
+const userProfileBio = document.getElementById('user-profile-bio');
+const viewPublicProfileBtn = document.getElementById('view-public-profile-btn');
 
 const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
 const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Printing & Design": "Printing & Design", "Tech & Repair": "Tech & Repair", "Personal & Beauty": "Personal & Beauty", "Events & Creative": "Events & Creative", "Other Services": "Other Services" };
@@ -105,6 +110,13 @@ onAuthStateChanged(auth, async (user) => {
             const referralsSnapshot = await getDocs(referralsQuery); const actualReferralCount = referralsSnapshot.size;
             if (userData.referralCount !== actualReferralCount) { await updateDoc(userDocRef, { referralCount: actualReferralCount }); }
             displayDashboardInfo(userData, refCode, actualReferralCount);
+            
+            // NEW: Fetch and display the user's profile info
+            const profileData = await getDoc(userDocRef);
+            if (profileData.exists()) {
+                displayProfileOnDashboard(profileData.data(), user.uid);
+            }
+
         } else {
             authContainer.style.display = 'none'; dashboardContainer.style.display = 'none';
             emailVerificationPrompt.style.display = 'block';
@@ -115,6 +127,32 @@ onAuthStateChanged(auth, async (user) => {
         emailVerificationPrompt.style.display = 'none';
     }
 });
+
+// NEW: Function to display the profile on the dashboard
+function displayProfileOnDashboard(userData, userId) {
+    const defaultPhoto = 'placeholder.webp';
+    userProfilePhoto.src = userData.profilePhotoUrl || defaultPhoto;
+    userDisplayName.textContent = userData.name || 'Set your name';
+    userProfileBio.textContent = userData.bio || '';
+    userProfileBio.style.display = userData.bio ? 'block' : 'none';
+    
+    // Set the public profile link
+    viewPublicProfileBtn.href = `/profile.html?sellerId=${userId}`;
+
+    // Display badges
+    userBadgesContainer.innerHTML = '';
+    if (userData.badges && userData.badges.length > 0) {
+        userData.badges.forEach(badge => {
+            const badgeEl = document.createElement('span');
+            badgeEl.className = 'badge-icon ' + badge;
+            if (badge === 'verified') {
+                badgeEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Verified Seller`;
+            }
+            userBadgesContainer.appendChild(badgeEl);
+        });
+    }
+}
+
 
 function displayDashboardInfo(userData, refCode, count) { userReferralCode.textContent = refCode; userReferralCount.textContent = count; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
@@ -258,7 +296,6 @@ completeProfileForm.addEventListener('submit', async (e) => {
         if (photoFile) { dataToUpdate.profilePhotoUrl = await uploadImageToCloudinary(photoFile); }
         await updateDoc(doc(db, 'users', user.uid), dataToUpdate);
 
-        // Check if the user has a bio and photo to award the 'verified' badge
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.data();
         if (userData.bio && userData.profilePhotoUrl && !userData.badges.includes('verified')) {
