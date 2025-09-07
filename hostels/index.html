@@ -29,29 +29,25 @@
         .mobile-nav a { display: block; padding: 15px; text-decoration: none; color: var(--text-dark); border-bottom: 1px solid var(--border-color); }
 
         /* GENERAL LAYOUT */
-        .section-box { background-color: var(--card-bg); padding: 25px; margin-bottom: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+        .section-box { background-color: var(--card-bg); padding: 25px; margin-bottom: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); text-align: center; }
         .back-to-home-link { display: inline-block; margin-bottom: 20px; padding: 8px 16px; background-color: #e9ecef; color: var(--text-dark); text-decoration: none; font-weight: 600; border-radius: 20px; }
         .back-to-home-link i { margin-right: 8px; }
         
-        /* FORMS */
-        .form-group { margin-bottom: 18px; }
+        /* FORMS & AUTH */
+        .form-group { margin-bottom: 18px; text-align: left; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #495057; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; }
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px; }
         .amenities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; background-color: #f8f9fa; padding: 15px; border-radius: 6px; }
-        
-        /* AUTH & MESSAGES */
-        .login-card { text-align: center; }
         .auth-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .tab-link { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-size: 1em; font-weight: 600; color: #6c757d; border-bottom: 3px solid transparent; transition: all 0.2s ease-in-out; }
         .tab-link.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .auth-container[data-active-tab="login"] .login-card { border-top: 4px solid var(--primary-color); }
-        .auth-container[data-active-tab="signup"] .login-card { border-top: 4px solid var(--accent-color); }
-        .error-message, .success-message { display: none; border-radius: 5px; padding: 12px; text-align: center; margin: 15px 0; font-weight: bold; font-size: 0.95em; border: 1px solid; }
-        .error-message { color: #D8000C; background-color: #FFD2D2; border-color: #D8000C; }
-        .success-message { color: #270; background-color: #DFF2BF; border-color: #4F8A10; }
+        .auth-container { border-top: 4px solid transparent; transition: border-color 0.3s; }
+        .auth-container[data-active-tab="login"] { border-top-color: var(--primary-color); }
+        .auth-container[data-active-tab="signup"] { border-top-color: var(--accent-color); }
+        .error-message, .success-message { text-align: center; }
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button:disabled { display: flex; align-items: center; justify-content: center; opacity: 0.7; cursor: not-allowed; }
@@ -60,10 +56,15 @@
         .hostel-grid { display: grid; gap: 20px; grid-template-columns: 1fr; margin-top: 20px; }
         .hostel-card { background-color: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); color: inherit; }
         .hostel-card-image { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background-color: #eee; }
-        .hostel-card-content { padding: 15px; }
+        .hostel-card-content { padding: 15px; text-align: left; }
+        .hostel-card-content h3, .hostel-card-content p { margin: 0 0 10px 0; }
+        .hostel-card-price { font-size: 1.1em; font-weight: bold; color: var(--primary-color); }
+        .hostel-card-amenities { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; }
         .hostel-card-footer { padding: 15px; background-color: #f8f9fa; border-top: 1px solid var(--border-color); text-align: center; }
         .contact-link { font-size: 1.1em; font-weight: bold; color: var(--primary-color); text-decoration: none; cursor: pointer; }
-        .contact-link:hover { text-decoration: underline; }
+        #logout-btn.secondary-button { background-color: #6c757d; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 15px; }
+        .hostel-card-controls { padding: 10px 15px; background-color: #f8f9fa; border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
+        .edit-btn, .delete-btn { flex: 1; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); cursor: pointer; font-weight: bold; }
         
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 30px; }
         .kabale-footer-links { margin-bottom: 20px; }
@@ -95,27 +96,38 @@
         </div>
 
         <div id="initial-view">
-            <div class="section-box" style="text-align: center;">
+            <div class="section-box">
                  <h2>Landlords & Agents</h2>
                  <p>Post your vacant rentals and hostels here to reach students and residents in Kabale.</p>
                  <button id="show-auth-btn" class="cta-button">Post a Rental (Login/Sign Up)</button>
+                 <div id="auth-container" style="display: none; margin-top: 25px; border-top: 4px solid var(--primary-color);" data-active-tab="login">
+                    <div class="auth-tabs">
+                        <button class="tab-link active" data-tab="login-tab">Login</button>
+                        <button class="tab-link" data-tab="signup-tab">Sign Up</button>
+                    </div>
+                    <div id="login-tab" class="tab-content active">
+                        <form id="login-form">
+                            <p id="login-error" class="error-message"></p>
+                            <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
+                            <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div>
+                            <button type="submit" class="auth-button">Login</button>
+                        </form>
+                    </div>
+                    <div id="signup-tab" class="tab-content">
+                        <form id="signup-form">
+                            <p id="signup-error" class="error-message"></p>
+                            <div class="form-group"><label for="signup-name">Your Full Name</label><input type="text" id="signup-name" required></div>
+                            <div class="form-group"><label for="signup-whatsapp">Contact Phone</label><input type="tel" id="signup-whatsapp" required></div>
+                            <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
+                            <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
+                            <button type="submit" class="auth-button">Create Account</button>
+                        </form>
+                    </div>
+                 </div>
             </div>
-             <h2 id="public-listings-title" style="text-align:center; margin-top:30px;">Available Hostels & Rentals</h2>
         </div>
 
-        <div id="auth-container" class="section-box" style="display: none;" data-active-tab="login">
-            <div class="login-card">
-                <h1 class="auth-title">Landlord & Agent Portal</h1>
-                <p class="auth-subtitle">Log in or create your Kabale Online account to post a rental.</p>
-                <div class="auth-tabs">
-                    <button class="tab-link active" data-tab="login-tab">Login</button>
-                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
-                </div>
-                <div id="login-tab" class="tab-content active"><form id="login-form">...</form></div>
-                <div id="signup-tab" class="tab-content"><form id="signup-form">...</form></div>
-            </div>
-        </div>
-
+        <h2 id="public-listings-title" style="text-align:center; margin-top:40px;">Available Hostels & Rentals</h2>
         <div id="hostel-grid-public" class="hostel-grid"></div>
     </div>
     
