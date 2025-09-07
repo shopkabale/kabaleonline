@@ -1,6 +1,7 @@
 # netlify.toml
 [build]
   functions = "netlify/functions/"
+  publish = "." # This tells Netlify to publish the contents of the root folder
 # redirect rule 
 
 [[redirects]]
