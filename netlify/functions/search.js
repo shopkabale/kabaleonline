@@ -16,28 +16,36 @@ const PRODUCTS_PER_PAGE = 30;
 
 exports.handler = async (event) => {
     try {
-        const { searchTerm, category, minPrice, maxPrice, lastVisible, type } = event.queryStringParameters;
+        const { searchTerm, lastVisible, type } = event.queryStringParameters;
         let query = db.collection("products");
 
-        if (type) query = query.where("listing_type", "==", type);
-        if (category) query = query.where("category", "==", category);
-        if (minPrice) query = query.where("price", ">=", Number(minPrice));
-        if (maxPrice) query = query.where("price", "<=", Number(maxPrice));
-
-        // Use a single where clause for search term
-        if (searchTerm) {
-            query = query.where("name", "==", searchTerm);
+        // Filter by listing type if specified in the URL
+        if (type) {
+            query = query.where("listing_type", "==", type);
         }
-
-        // Always order by creation date for consistent pagination
-        query = query.orderBy("createdAt", "desc");
-
+        
+        // Filter by search term
+        if (searchTerm) {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            query = query.where("name_lowercase", ">=", lowercasedTerm)
+                         .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff')
+                         .orderBy("name_lowercase");
+        } else {
+            // Default query for the homepage: order by creation date
+            query = query.orderBy("createdAt", "desc");
+        }
+       
+        // Implement pagination using a cursor
         if (lastVisible) {
             const lastDoc = await db.collection("products").doc(lastVisible).get();
-            if (lastDoc.exists) query = query.startAfter(lastDoc);
+            if (lastDoc.exists) {
+                query = query.startAfter(lastDoc);
+            }
         }
 
+        // Limit the number of products returned
         query = query.limit(PRODUCTS_PER_PAGE);
+
         const snapshot = await query.get();
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
