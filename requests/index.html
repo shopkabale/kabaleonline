@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Requests | Kabale Online</title>
+    
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
+        /* All page-specific styles will go here */
         :root {
             --primary-blue: #007bff;
             --dark-blue: #0056b3;
@@ -117,6 +122,26 @@
             background-color: var(--dark-blue);
         }
 
+        .error-message, .success-message { 
+            display: none; 
+            border-radius: 5px; 
+            padding: 10px; 
+            text-align: center; 
+            margin: 10px 0; 
+            font-weight: bold; 
+            font-size: 0.9em; 
+        }
+        .error-message { 
+            color: #D8000C; 
+            background-color: #FFD2D2; 
+            border: 1px solid #D8000C; 
+        }
+        .success-message { 
+            color: #270; 
+            background-color: #DFF2BF; 
+            border: 1px solid #4F8A10; 
+        }
+        
         /* --- HEADER & NAVIGATION STYLES --- */
         .sticky-header {
             position: fixed;
@@ -162,7 +187,7 @@
             gap: 25px;
             align-items: center;
         }
-        
+
         .desktop-nav a {
             text-decoration: none;
             color: var(--text-dark);
@@ -247,51 +272,67 @@
     </style>
 </head>
 <body>
-     <header class="sticky-header">
-    <div class="header-top-bar">
-        <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-        <a href="/" class="site-title">Kabale <span>Online</span></a>
-        <nav class="desktop-nav">
-            </nav>
-        <div class="header-icons">
-            <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-            <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                </nav>
+            <div class="header-icons">
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+            </div>
         </div>
-    </div>
-    <nav class="mobile-nav">
-        <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-        <a href="/stories/stories.html" class="nav-link"><i class="fa-solid fa-book"></i>Campus Stories</a>
-        <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-        <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-        <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
-        <hr>
-        <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
-        <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
-    </nav>
-</header>
+        <nav class="mobile-nav">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/stories/stories.html" class="nav-link"><i class="fa-solid fa-book"></i> Campus Stories</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+            <hr>
+            <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+            <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
+        </nav>
+    </header>
     <div class="container page-content">
+        <p id="success-message" class="success-message">Your request has been posted!</p>
         <a href="view.html" class="back-home-btn">⬅ Back to Requests</a>
         <div class="form-card">
             <h1>Post a New Request</h1>
-            <form action="#" method="post">
+            <form id="request-form">
                 <div class="form-group">
-                    <label for="title">What are you looking for?</label>
-                    <input type="text" id="title" name="title" placeholder="E.g., Second-hand laptop, Plumber" required>
+                    <label for="request-item">What are you looking for?</label>
+                    <input type="text" id="request-item" name="title" placeholder="E.g., Second-hand laptop, Plumber" required>
                 </div>
                 <div class="form-group">
-                    <label for="description">Describe what you need:</label>
-                    <textarea id="description" name="description" placeholder="Provide more details about the item or service you need." required></textarea>
+                    <label for="request-details">Describe what you need:</label>
+                    <textarea id="request-details" name="description" placeholder="Provide more details about the item or service you need." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="contact">How can people contact you?</label>
-                    <input type="text" id="contact" name="contact" placeholder="E.g., Call/WhatsApp 077... or email..." required>
+                    <label for="request-nickname">How can people contact you?</label>
+                    <input type="text" id="request-nickname" name="contact" placeholder="E.g., Call/WhatsApp 077... or email..." required>
                 </div>
-                <button type="submit" class="form-submit-btn">Submit Request</button>
+                <button type="submit" id="submit-request-btn" class="form-submit-btn">Submit Request</button>
             </form>
         </div>
     </div>
-    <script type="module" src="ui.js"></script>
-    <script type="module" src="form.js"></script>
+    <footer>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Get in Touch</h3>
+            <div class="kabale-contact-details">
+                <p class="kabale-contact-item">📞 +256 784655792</p>
+                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+            </div>
+            <div class="kabale-footer-links">
+                <a href="/about.html" class="kabale-footer-link">About Us</a>
+                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+    <script type="module" src="../ui.js"></script>
+    <script type="module" src="requests.js"></script>
 </body>
 </html>
