@@ -1,11 +1,24 @@
-import { db } from './firebase.js';
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { db, auth } from './firebase.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productDetailContent = document.getElementById('product-detail-content');
+const qaList = document.getElementById('qa-list');
+const qaFormContainer = document.getElementById('qa-form-container');
+
+let currentProductId = null;
+let currentUserId = null;
+
+// Listen for authentication state changes
+onAuthStateChanged(auth, (user) => {
+    currentUserId = user ? user.uid : null;
+    renderQaForm();
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
+    currentProductId = productId;
 
     if (!productId) {
         productDetailContent.innerHTML = '<p>Product not found.</p>';
@@ -60,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>`;
 
-            // --- NEW SHARE BUTTON LOGIC START ---
+            // Handle the share button logic
             const shareBtn = document.getElementById('share-btn');
             shareBtn.addEventListener('click', async () => {
                 const shareData = {
@@ -70,10 +83,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
                 try {
                     if (navigator.share) {
-                        // Use the modern Web Share API on mobile
                         await navigator.share(shareData);
                     } else {
-                        // Fallback for desktop: copy link to clipboard
                         await navigator.clipboard.writeText(window.location.href);
                         alert('Product link copied to clipboard!');
                     }
@@ -82,8 +93,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     alert('Could not share or copy link.');
                 }
             });
-            // --- NEW SHARE BUTTON LOGIC END ---
-            
+
+            // Start fetching and displaying Q&A for this product
+            fetchQuestions();
+
         } else {
             productDetailContent.innerHTML = '<p>Sorry, this product could not be found.</p>';
         }
@@ -92,3 +105,91 @@ document.addEventListener('DOMContentLoaded', async () => {
         productDetailContent.innerHTML = '<p>There was an error loading this product.</p>';
     }
 });
+
+// Function to render the Q&A form based on user login status
+function renderQaForm() {
+    if (currentUserId) {
+        qaFormContainer.innerHTML = `
+            <form id="qa-form" class="qa-form">
+                <p id="qa-message" style="display:none;"></p>
+                <textarea id="qa-input" placeholder="Ask a public question..." required></textarea>
+                <button type="submit" class="cta-button">Post Question</button>
+            </form>
+        `;
+        document.getElementById('qa-form').addEventListener('submit', handleQuestionSubmit);
+    } else {
+        qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>`;
+    }
+}
+
+// Function to handle question submission
+async function handleQuestionSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('qa-input');
+    const messageEl = document.getElementById('qa-message');
+    const question = input.value.trim();
+
+    if (!question) {
+        messageEl.textContent = 'Please type a question.';
+        messageEl.style.display = 'block';
+        messageEl.style.color = 'red';
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, `products/${currentProductId}/qanda`), {
+            question: question,
+            askerId: currentUserId,
+            createdAt: new Date()
+        });
+        
+        input.value = '';
+        messageEl.textContent = 'Question submitted successfully!';
+        messageEl.style.display = 'block';
+        messageEl.style.color = 'green';
+    } catch (error) {
+        console.error("Error adding question:", error);
+        messageEl.textContent = 'Failed to submit question. Please try again.';
+        messageEl.style.display = 'block';
+        messageEl.style.color = 'red';
+    }
+}
+
+// Function to fetch and display questions in real-time
+function fetchQuestions() {
+    if (!currentProductId) return;
+
+    const q = query(collection(db, `products/${currentProductId}/qanda`), orderBy('createdAt', 'desc'));
+    
+    // onSnapshot provides a real-time listener
+    onSnapshot(q, async (querySnapshot) => {
+        qaList.innerHTML = '';
+        if (querySnapshot.empty) {
+            qaList.innerHTML = '<p>No questions yet. Be the first to ask!</p>';
+            return;
+        }
+
+        const questionsPromises = querySnapshot.docs.map(async docSnapshot => {
+            const qaData = docSnapshot.data();
+            // Fetch the user's name to display
+            const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
+            const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
+
+            let answerHtml = '';
+            if (qaData.answer) {
+                answerHtml = `<div class="answer-item"><strong>Seller's Answer:</strong> ${qaData.answer}</div>`;
+            }
+
+            return `
+                <div class="question-item">
+                    <strong>${askerName} asked:</strong> ${qaData.question}
+                    ${answerHtml}
+                </div>
+            `;
+        });
+        
+        // Wait for all user names to be fetched
+        const questionsHtmlArray = await Promise.all(questionsPromises);
+        qaList.innerHTML = questionsHtmlArray.join('');
+    });
+}
