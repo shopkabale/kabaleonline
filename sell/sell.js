@@ -1,297 +1,258 @@
-import { auth, db } from '../firebase.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { 
-    collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, 
-    orderBy, getDoc, setDoc, serverTimestamp, increment 
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-// --- ELEMENT SELECTION (Unique to this page) ---
-const sellerProductsList = document.getElementById('seller-products-list');
-const productForm = document.getElementById('product-form');
-const submitBtn = document.getElementById('submit-btn');
-const productIdInput = document.getElementById('productId');
-const showProductFormBtn = document.getElementById('show-product-form-btn');
-const productFormContainer = document.getElementById('product-form-container');
-const resetPasswordBtn = document.getElementById('reset-password-btn');
-const referralSection = document.getElementById('referral-section');
-const userReferralCode = document.getElementById('user-referral-code');
-const userReferralCount = document.getElementById('user-referral-count');
-const completeProfileSection = document.getElementById('complete-profile-section');
-const completeProfileForm = document.getElementById('complete-profile-form');
-const productFormMessage = document.getElementById('product-form-message');
-const dashboardMessage = document.getElementById('dashboard-message');
-const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
-const categorySelect = document.getElementById('product-category');
-
-// --- HELPER FUNCTIONS ---
-const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
-const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Printing & Design": "Printing & Design", "Tech & Repair": "Tech & Repair", "Personal & Beauty": "Personal & Beauty", "Events & Creative": "Events & Creative", "Other Services": "Other Services" };
-
-function updateCategoryOptions() {
-    if (!categorySelect || !listingTypeRadios || listingTypeRadios.length === 0) return;
-    const selectedTypeInput = document.querySelector('input[name="listing_type"]:checked');
-    if (!selectedTypeInput) return;
-    const selectedType = selectedTypeInput.value;
-    const categories = (selectedType === 'item') ? itemCategories : serviceCategories;
-    categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
-    for (const key in categories) {
-        const option = document.createElement('option');
-        option.value = key; option.textContent = categories[key];
-        categorySelect.appendChild(option);
-    }
-}
-const showMessage = (element, message, isError = true) => {
-    if (!element) return;
-    element.textContent = message;
-    element.className = isError ? 'error-message' : 'success-message';
-    element.style.display = 'block';
-    setTimeout(() => { element.style.display = 'none'; }, 5000);
-};
-const toggleLoading = (button, isLoading, originalText) => {
-    if(!button) return;
-    if (isLoading) {
-        button.disabled = true; button.classList.add('loading');
-        button.innerHTML = `<span class="loader"></span> ${originalText}`;
-    } else {
-        button.disabled = false; button.classList.remove('loading');
-        button.innerHTML = originalText;
-    }
-};
-function normalizeWhatsAppNumber(phone) {
-    if(!phone) return '';
-    let cleaned = ('' + phone).replace(/\D/g, '');
-    if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
-    if (cleaned.startsWith('256')) return cleaned;
-    if (cleaned.length === 9) return '256' + cleaned;
-    return cleaned;
-}
-
-// --- PAGE-SPECIFIC LOGIC ---
-onAuthStateChanged(auth, async (user) => {
-    if (user && user.emailVerified) {
-        fetchSellerProducts(user.uid);
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const refCode = userData.referralCode;
-            const referralsQuery = query(collection(db, 'users'), where('referrerId', '==', user.uid));
-            const referralsSnapshot = await getDocs(referralsQuery);
-            const actualReferralCount = referralsSnapshot.size;
-            if (userData.referralCount !== actualReferralCount) {
-                await updateDoc(userDocRef, { referralCount: actualReferralCount });
-            }
-            displayDashboardInfo(userData, refCode, actualReferralCount);
-            if (completeProfileSection && (!userData.name || !userData.location)) {
-                completeProfileSection.style.display = 'block';
-                if (userData.name) document.getElementById('profile-name').value = userData.name;
-                if (userData.location) document.getElementById('profile-location').value = userData.location;
-            } else if (completeProfileSection) {
-                completeProfileSection.style.display = 'none';
-            }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard | Kabale Online</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- NEW HEADER & NAV STYLES --- */
+        :root {
+            --primary-color: #007bff;
+            --accent-color: #ffc107;
+            --text-dark: #34495e;
+            --border-color: #e9ecef;
         }
-    }
-});
-
-function displayDashboardInfo(userData, refCode, count) {
-    if (userReferralCode) userReferralCode.textContent = refCode;
-    if (userReferralCount) userReferralCount.textContent = count;
-    if (referralSection) referralSection.style.display = 'block';
-}
-
-if (listingTypeRadios) listingTypeRadios.forEach(radio => radio.addEventListener('change', updateCategoryOptions));
-document.addEventListener('DOMContentLoaded', updateCategoryOptions);
-
-if (userReferralCode) {
-    userReferralCode.addEventListener('click', () => {
-        navigator.clipboard.writeText(userReferralCode.textContent).then(() => {
-            showMessage(dashboardMessage, "Referral code copied!", false);
-        });
-    });
-}
-
-if (resetPasswordBtn) {
-    resetPasswordBtn.addEventListener('click', async () => {
-        const email = prompt("Please enter your email address to receive a password reset link:");
-        if (email) {
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("If an account exists for '" + email + "', a password reset email has been sent.");
-            } catch (error) {
-                alert("Could not send reset email. Please ensure the email address is valid.");
-            }
+        
+        body {
+            /* Added padding-top to prevent content from hiding under the fixed header */
+            padding-top: 70px;
         }
-    });
-}
 
-if (completeProfileForm) {
-    completeProfileForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); const user = auth.currentUser; if (!user) return;
-        const updateBtn = document.getElementById('update-profile-btn');
-        toggleLoading(updateBtn, true, 'Saving');
-        try {
-            const name = document.getElementById('profile-name').value;
-            const location = document.getElementById('profile-location').value;
-            const bio = document.getElementById('profile-bio').value;
-            const photoFile = document.getElementById('profile-photo').files[0];
-            const dataToUpdate = { name, location, bio };
-            if (photoFile) { dataToUpdate.profilePhotoUrl = await uploadImageToCloudinary(photoFile); }
-            await updateDoc(doc(db, 'users', user.uid), dataToUpdate);
-            showMessage(document.getElementById('profile-update-message'), 'Profile updated successfully!', false);
-            setTimeout(() => {
-                completeProfileSection.style.display = 'none';
-                document.getElementById('profile-update-message').style.display = 'none';
-            }, 2000);
-        } catch (error) {
-            showMessage(document.getElementById('profile-update-message'), "Failed to update profile.");
-        } finally {
-            toggleLoading(updateBtn, false, 'Save and Update Profile');
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-    });
-}
 
-if (showProductFormBtn) {
-    showProductFormBtn.addEventListener('click', () => {
-        const isVisible = productFormContainer.style.display === 'block';
-        productFormContainer.style.display = isVisible ? 'none' : 'block';
-        showProductFormBtn.textContent = isVisible ? 'Sell' : 'Close Form';
-        if (!isVisible) {
-            productForm.reset();
-            productIdInput.value = '';
-            submitBtn.textContent = 'Add Product';
-            updateCategoryOptions();
+        .header-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
         }
-    });
-}
 
-if (productForm) {
-    productForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); const user = auth.currentUser; if (!user) return;
-        const productSubmitBtn = document.getElementById('submit-btn');
-        toggleLoading(productSubmitBtn, true, 'Submitting');
-        try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.exists() ? userDoc.data() : {};
-            const isVerified = userData.isVerified || false;
-            const sellerName = userData.name || user.email;
-            const productName = document.getElementById('product-name').value;
-            const productPrice = document.getElementById('product-price').value;
-            const productCategory = document.getElementById('product-category').value;
-            const productDescription = document.getElementById('product-description').value;
-            const productStory = document.getElementById('product-story').value;
-            const whatsappNumber = document.getElementById('whatsapp-number').value;
-            const imageFile1 = document.getElementById('product-image-1').files[0];
-            const imageFile2 = document.getElementById('product-image-2').files[0];
-            const editingProductId = productIdInput.value;
-            let finalImageUrls = [];
-            if (editingProductId) {
-                const docSnap = await getDoc(doc(db, 'products', editingProductId));
-                if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
-            }
-            const filesToUpload = [imageFile1, imageFile2].filter(f => f);
-            if (filesToUpload.length > 0) {
-                finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f)));
-            }
-            if (finalImageUrls.length === 0 && !editingProductId) throw new Error('At least one image is required.');
-            const productData = {
-                listing_type: document.querySelector('[name=listing_type]:checked').value,
-                name: productName,
-                name_lowercase: productName.toLowerCase(),
-                price: Number(productPrice),
-                category: productCategory,
-                description: productDescription,
-                story: productStory,
-                whatsapp: normalizeWhatsAppNumber(whatsappNumber),
-                sellerId: user.uid,
-                sellerEmail: user.email,
-                sellerName,
-                sellerIsVerified: isVerified
-            };
-            if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
-            if (editingProductId) {
-                await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
-            } else {
-                await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false });
-            }
-            showMessage(productFormMessage, 'Listing submitted successfully!', false);
-            productForm.reset();
-            setTimeout(() => {
-                productFormContainer.style.display = 'none';
-                productFormMessage.style.display = 'none';
-                fetchSellerProducts(user.uid);
-            }, 2000);
-        } catch (error) {
-            showMessage(productFormMessage, 'Failed to submit listing: ' + error.message);
-        } finally {
-            toggleLoading(productSubmitBtn, false, productIdInput.value ? 'Update Product' : 'Add Product');
+        .hamburger-menu {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dark);
         }
-    });
-}
 
-async function uploadImageToCloudinary(file) {
-    const response = await fetch('/.netlify/functions/generate-signature');
-    const { signature, timestamp, cloudname, apikey } = await response.json();
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', apikey);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
-    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-    if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-    const uploadData = await uploadResponse.json();
-    return uploadData.secure_url;
-}
-
-async function fetchSellerProducts(uid) {
-    if (!uid || !sellerProductsList) return;
-    const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    sellerProductsList.innerHTML = '';
-    if (querySnapshot.empty) {
-        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell' to get started!</p>";
-        return;
-    }
-    querySnapshot.forEach((doc) => {
-        const product = doc.data();
-        const productId = doc.id;
-        const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `<img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
-        productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
-        productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
-        sellerProductsList.appendChild(productCard);
-    });
-}
-
-function populateFormForEdit(id, product) {
-    productFormContainer.style.display = 'block';
-    showProductFormBtn.textContent = 'Close Form';
-    document.getElementById(`type-${product.listing_type || 'item'}`).checked = true;
-    updateCategoryOptions();
-    productIdInput.value = id;
-    document.getElementById('product-name').value = product.name;
-    document.getElementById('product-price').value = product.price;
-    document.getElementById('product-category').value = product.category || '';
-    document.getElementById('product-description').value = product.description;
-    document.getElementById('product-story').value = product.story || '';
-    const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
-    document.getElementById('whatsapp-number').value = localNumber;
-    submitBtn.textContent = 'Update Product';
-    document.getElementById('product-image-1').value = '';
-    document.getElementById('product-image-2').value = '';
-    window.scrollTo(0, 0);
-}
-
-async function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
-        try {
-            await deleteDoc(doc(db, 'products', productId));
-            showMessage(dashboardMessage, 'Product deleted successfully.', false);
-            fetchSellerProducts(auth.currentUser.uid);
-        } catch (error) {
-            showMessage(dashboardMessage, 'Failed to delete product.');
+        .site-title {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 1.6em;
+            font-weight: bold;
         }
-    }
-}
+        .site-title span {
+            color: var(--accent-color);
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .header-icons a {
+            color: var(--text-dark);
+            font-size: 22px;
+            text-decoration: none;
+        }
+        
+        .desktop-nav { display: none; }
+        
+        .mobile-nav {
+            display: none;
+            background-color: #ffffff;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-top: 1px solid var(--border-color);
+        }
+        .mobile-nav.active { display: block; }
+        .mobile-nav a {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        @media (min-width: 992px) {
+            body { padding-top: 85px; }
+            .hamburger-menu { display: none; }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; }
+            .desktop-nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; }
+            .header-top-bar { height: 65px; }
+        }
+        /* --- END OF NEW HEADER STYLES --- */
+
+        /* Existing styles for the sell page */
+        .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
+        .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
+        .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
+        #email-verification-prompt { text-align: center; padding: 30px; background-color: #fffbe6; border: 1px solid #ffeeba; border-radius: 8px; margin-top: 40px; }
+        #email-verification-prompt h2 { margin-top: 0; color: #856404; }
+        #email-verification-prompt .user-email { font-weight: bold; color: #333; }
+        .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
+        #complete-profile-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 25px; margin: 25px 0; }
+        #complete-profile-section h2 { margin-top: 0; color: #0056b3; text-align: center; }
+        #complete-profile-section p { text-align: center; margin-top: -10px; color: #666; margin-bottom: 25px; }
+        #complete-profile-form label { font-weight: bold; display: block; margin-bottom: 5px; text-align: left; }
+        .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                </nav>
+            <div class="header-icons">
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+            <a href="/" class="nav-link">🛍️ All Items</a>
+            <a href="/?type=service" class="nav-link">🛠️ Services</a>
+            <a href="/requests/view.html" class="nav-link">📝 User Requests</a>
+            <a href="/lost-and-found/" class="nav-link">🔦 Lost & Found</a>
+            <a href="/blog/" class="nav-link">📚 Tips</a>
+        </nav>
+    </header>
+
+    <div class="container page-content">
+        <div id="auth-container">
+            <div class="login-card">
+                <h1 class="auth-title">Welcome Back!</h1>
+                <p class="auth-subtitle">Log in or create an account to access the seller dashboard.</p>
+                <p id="auth-success" class="success-message" style="display: none;"></p>
+                <div class="auth-tabs">
+                    <button class="tab-link active" data-tab="login-tab">Login</button>
+                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
+                </div>
+                <div id="login-tab" class="tab-content active">
+                    <form id="login-form">
+                        <p id="login-error" class="error-message"></p>
+                        <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
+                        <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div>
+                        <button type="submit" class="auth-button">Login</button>
+                        <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
+                    </form>
+                </div>
+                <div id="signup-tab" class="tab-content">
+                    <form id="signup-form">
+                        <p id="signup-error" class="error-message"></p>
+                        <div class="form-group"><label for="signup-name">Your Full Name</label><input type="text" id="signup-name" required></div>
+                        <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
+                        <div class="form-group"><label for="signup-whatsapp">WhatsApp Number</label><input type="tel" id="signup-whatsapp" required></div>
+                        <div class="form-group"><label for="signup-location">Location</label><input type="text" id="signup-location" required></div>
+                        <div class="form-group"><label for="signup-institution">Institution (Optional)</label><input type="text" id="signup-institution"></div>
+                        <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
+                        <div class="form-group"><label for="referral-code">Referral Code (Optional)</label><input type="text" id="referral-code"></div>
+                        <button type="submit" class="auth-button">Create Account</button>
+                        <p id="signup-patience-message" class="instruction-text" style="display: none; margin-top: 15px; text-align: center;">This may take a moment...</p>
+                    </form>
+                </div>
+                <p class="or-divider"><span>OR</span></p>
+                <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+                <p class="auth-footer-text">Kabale <span>Online</span></p>
+            </div>
+        </div>
+        <div id="email-verification-prompt" class="container" style="display: none;">
+            <h2>Please Verify Your Email</h2>
+            <p>We've sent a verification link to <span class="user-email">your email</span>.</p>
+            <p>Please check your inbox (and spam folder) and click the link to activate your seller dashboard.</p>
+            <div style="margin-top: 20px;">
+                <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
+                <button id="verification-logout-btn" class="auth-button" style="background-color: #6c757d; margin-top: 10px;">Logout</button>
+            </div>
+        </div>
+        <div id="dashboard-container" style="display: none;">
+            <a href="/" class="home-link">&larr; Back to Home</a>
+            <div class="page-welcome">
+                 <h1>Your Dashboard</h1>
+                 <p>Welcome, <strong id="seller-email"></strong>!</p>
+            </div>
+            <p id="dashboard-message" class="success-message" style="display: none;"></p>
+            <div id="complete-profile-section" style="display: none;">
+                <h2>Complete Your Profile!</h2>
+                <p>Build more trust with buyers by adding your details.</p>
+                <form id="complete-profile-form">
+                    <p id="profile-update-message" class="success-message" style="display: none;"></p>
+                    <div class="form-group"><label for="profile-name">Your Full Name</label><input type="text" id="profile-name" required></div>
+                    <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" required></div>
+                    <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3"></textarea></div>
+                    <div class="form-group"><label for="profile-photo">Profile Photo (Optional)</label><input type="file" id="profile-photo" accept="image/*"></div>
+                    <button type="submit" id="update-profile-btn" class="cta-button">Save and Update Profile</button>
+                </form>
+            </div>
+            <div id="referral-section" class="referral-section" style="display: none;">
+                <h2>Grow the Community!</h2>
+                <p>Share your code with friends to build your reputation.</p>
+                <p>Your Referral Code (Click to copy):</p>
+                <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
+                <p style="margin-top: 15px;">You have referred <span id="user-referral-count" style="font-weight: bold; color: #28a745;">0</span> new members.</p>
+            </div>
+            <p class="instruction-text"><b>To sell:</b> Click 'Sell', fill in the details, and add your item!</p>
+            <button id="show-product-form-btn" class="cta-button">Sell</button>
+            <button id="logout-btn">Logout</button>
+            <button id="reset-password-btn">Change Password</button>
+            <div id="product-form-container" style="display: none;">
+                <h2>Add/Edit Listing</h2>
+                <form id="product-form">
+                    <p id="product-form-message" class="success-message" style="display: none;"></p>
+                    <input type="hidden" id="productId">
+                    <div class="form-group"><label>What are you listing?</label><div class="listing-type-selector"><input type="radio" id="type-item" name="listing_type" value="item" checked><label for="type-item">An Item</label><input type="radio" id="type-service" name="listing_type" value="service"><label for="type-service">A Service</label></div></div>
+                    <div class="form-group"><label for="product-name">Name</label><input type="text" id="product-name" required></div>
+                    <div class="form-group"><label for="product-price">Price (UGX)</label><input type="number" id="product-price" required></div>
+                    <div class="form-group"><label for="product-category">Category</label><select id="product-category" required></select></div>
+                    <div class="form-group"><label for="product-description">Description</label><textarea id="product-description" required rows="5"></textarea></div>
+                    <div class="form-group"><label for="product-story">Your Story (Optional)</label><textarea id="product-story" rows="3"></textarea></div>
+                    <div class="form-group"><label for="whatsapp-number">WhatsApp Number</label><input type="tel" id="whatsapp-number" required></div>
+                    <div class="form-group"><label for="product-image-1">Main Image</label><input type="file" id="product-image-1" accept="image/*"></div>
+                    <div class="form-group"><label for="product-image-2">Optional Second Image</label><input type="file" id="product-image-2" accept="image/*"></div>
+                    <button type="submit" id="submit-btn" class="cta-button">Add Product</button>
+                </form>
+            </div>
+            <h2>Your Listings</h2>
+            <div id="seller-products-list" class="product-grid"></div>
+        </div>
+    </div>
+    <footer>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Get in Touch</h3>
+            <div class="kabale-contact-details">
+                <p class="kabale-contact-item">📞 +256 784655792</p>
+                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+            </div>
+            <div class="kabale-footer-links">
+                <a href="/about.html" class="kabale-footer-link">About Us</a>
+                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+    <script type="module" src="sell.js"></script>
+    <script type="module" src="../shared.js"></script>
+    <script type="module" src="../ui.js"></script>
+</body>
+</html>
