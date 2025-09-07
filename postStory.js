@@ -12,7 +12,6 @@ let currentUserId = null;
 onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
     if (!currentUserId) {
-        // Redirect to login or hide form if not authenticated
         storyForm.innerHTML = `<p style="text-align: center;">Please <a href="/sell/">login</a> to post a story.</p>`;
     }
 });
@@ -22,17 +21,18 @@ const quill = new Quill('#editor-container', {
     theme: 'snow'
 });
 
-const showMessage = (element, message, isError = false) => {
-    element.textContent = message;
-    element.className = isError ? 'error-message' : 'success-message';
-    element.style.display = 'block';
-    setTimeout(() => { element.style.display = 'none'; }, 5000);
+// A single, reusable function for showing messages
+const showMessage = (message, isError = false) => {
+    storyMessageEl.textContent = message;
+    storyMessageEl.className = isError ? 'error-message' : 'success-message';
+    storyMessageEl.style.display = 'block';
+    setTimeout(() => { storyMessageEl.style.display = 'none'; }, 5000);
 };
 
 storyForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentUserId) {
-        showMessage(storyMessageEl, 'You must be logged in to post.', true);
+        showMessage('You must be logged in to post a story.', true);
         return;
     }
 
@@ -40,7 +40,7 @@ storyForm.addEventListener('submit', async (e) => {
     const content = quill.root.innerHTML.trim();
 
     if (!title || quill.getText().trim() === '') {
-        showMessage(storyMessageEl, 'Please fill in all fields.', true);
+        showMessage('Please provide a title and content for your story.', true);
         return;
     }
 
@@ -56,12 +56,12 @@ storyForm.addEventListener('submit', async (e) => {
             createdAt: serverTimestamp()
         });
 
-        showMessage(storyMessageEl, 'Your story has been published!', false);
+        showMessage('Your story has been published successfully! 🎉', false);
         storyTitleInput.value = '';
         quill.root.innerHTML = ''; // Clear the editor
     } catch (error) {
         console.error("Error adding story:", error);
-        showMessage(storyMessageEl, 'Failed to publish story. Please try again.', true);
+        showMessage('Failed to publish story. Please check your network and try again.', true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Publish Story';
