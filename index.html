@@ -132,16 +132,17 @@
         }
         
         .mobile-nav {
-            display: none;
-            background-color: var(--card-bg);
-            position: absolute;
-            top: 100%; /* Positions it correctly below the header */
-            left: 0;
-            right: 0;
-            z-index: 999;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-top: 1px solid var(--border-color);
-        }
+    display: none;
+    background-color: #f0f5fa !important; /* Added !important to force the change */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-top: 1px solid var(--border-color);
+}
+
         .mobile-nav.active {
             display: block;
         }
