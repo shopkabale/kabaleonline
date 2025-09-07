@@ -1,0 +1,9 @@
+{
+  "name": "kabale-online-backend",
+  "version": "1.0.0",
+  "dependencies": {
+    "cloudinary": "^1.41.0",
+    "firebase-admin": "^11.10.1",
+    "algoliasearch": "^4.20.0"  <-- Add this line
+  }
+}
