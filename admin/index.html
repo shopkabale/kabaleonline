@@ -16,18 +16,10 @@
         .verify-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; }
         .verify-btn.verified { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
         .verify-btn.not-verified { background-color: #28a745; color: white; border: 1px solid #28a745; }
-/* --- Unfakeable Verified Badge --- */
-.verified-badge-svg {
-    width: 1em;
-    height: 1em;
-    vertical-align: -0.15em; /* Aligns it nicely with text */
-    fill: var(--primary-color);
-}
-
+        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
     </style>
 </head>
 <body>
-
     <header class="site-header">
         <div class="container header-content">
             <a href="/" class="site-title">Kabale Online</a>
@@ -41,7 +33,7 @@
         <div id="access-denied" style="display: none;">
             <div class="page-welcome">
                 <h1>Access Denied</h1>
-                <p class="instruction-text">You do not have permission to view this page. Please log in with an admin account.</p>
+                <p class="instruction-text">You do not have permission to view this page.</p>
                 <a href="/sell/" class="cta-button">Go to Login Page</a>
             </div>
         </div>
@@ -49,19 +41,20 @@
         <div id="admin-content" style="display: none;">
             <div class="page-welcome">
                 <h1>Super Admin Panel</h1>
-                <p>Here you can see all products from all sellers and moderate content.</p>
+                <p>Here you can moderate all content on the site.</p>
             </div>
-            
+
             <div class="admin-section">
                 <h2>User Management</h2>
                 <p>Verify trusted sellers and view community referrers.</p>
                 <ul id="user-list" class="user-list">
                     </ul>
             </div>
-            
+
             <div class="admin-section">
                 <h2>All Products</h2>
                 <div id="all-products-list" class="product-grid">
+                    <p>Loading products...</p>
                 </div>
             </div>
         </div>
