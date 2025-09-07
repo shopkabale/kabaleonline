@@ -71,17 +71,16 @@
         .desktop-nav { display: none; }
         
         .mobile-nav {
-    display: none;
-    background-color: #f0f5fa; /* This is the only line that changed */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border-top: 1px solid var(--border-color);
-}
-
+            display: none;
+            background-color: #ffffff;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-top: 1px solid var(--border-color);
+        }
         .mobile-nav.active { display: block; }
         .mobile-nav a {
             display: block;
@@ -133,7 +132,6 @@
         <nav class="mobile-nav">
             <a href="/" class="nav-link">🛍️ All Items</a>
             <a href="/?type=service" class="nav-link">🛠️ Services</a>
-<a href="/hostels/" class="nav-link">🏨 Hostels & Rentals</a> 
             <a href="/requests/view.html" class="nav-link">📝 User Requests</a>
             <a href="/lost-and-found/" class="nav-link">🔦 Lost & Found</a>
             <a href="/blog/" class="nav-link">📚 Tips</a>
@@ -256,6 +254,5 @@
     <script type="module" src="sell.js"></script>
     <script type="module" src="../shared.js"></script>
     <script type="module" src="../ui.js"></script>
-<script type="module" src="../auth.js"></script>
 </body>
 </html>
