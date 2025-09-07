@@ -8,6 +8,7 @@ const qaFormContainer = document.getElementById('qa-form-container');
 
 let currentProductId = null;
 let currentUserId = null;
+let currentProductSellerId = null; // New variable to store the seller's ID
 
 // Listen for authentication state changes and render the Q&A form accordingly
 onAuthStateChanged(auth, (user) => {
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (docSnap.exists()) {
             const product = docSnap.data();
+            currentProductSellerId = product.sellerId; // Store the seller's ID
             document.title = `${product.name} | Kabale Online`;
 
             let imagesHTML = '';
@@ -130,8 +132,8 @@ async function handleQuestionSubmit(e) {
     const question = input.value.trim();
 
     // Check for a valid user ID as a failsafe
-    if (!currentUserId) {
-        messageEl.textContent = 'You must be logged in to ask a question.';
+    if (!currentUserId || !currentProductSellerId) {
+        messageEl.textContent = 'Failed to submit question. Please try again.';
         messageEl.style.display = 'block';
         messageEl.style.color = 'red';
         return;
@@ -148,6 +150,7 @@ async function handleQuestionSubmit(e) {
         await addDoc(collection(db, `products/${currentProductId}/qanda`), {
             question: question,
             askerId: currentUserId,
+            sellerId: currentProductSellerId, // Add this crucial field
             createdAt: new Date()
         });
 
