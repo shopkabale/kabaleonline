@@ -47,6 +47,8 @@ const userDisplayName = document.getElementById('user-display-name');
 const userBadgesContainer = document.getElementById('user-badges');
 const userProfileBio = document.getElementById('user-profile-bio');
 const viewPublicProfileBtn = document.getElementById('view-public-profile-btn');
+const qaList = document.getElementById('qa-list');
+const qaCount = document.getElementById('qa-count');
 
 const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
 const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Printing & Design": "Printing & Design", "Tech & Repair": "Tech & Repair", "Personal & Beauty": "Personal & Beauty", "Events & Creative": "Events & Creative", "Other Services": "Other Services" };
@@ -110,12 +112,12 @@ onAuthStateChanged(auth, async (user) => {
             const referralsSnapshot = await getDocs(referralsQuery); const actualReferralCount = referralsSnapshot.size;
             if (userData.referralCount !== actualReferralCount) { await updateDoc(userDocRef, { referralCount: actualReferralCount }); }
             displayDashboardInfo(userData, refCode, actualReferralCount);
-            
-            // NEW: Fetch and display the user's profile info
+
             const profileData = await getDoc(userDocRef);
             if (profileData.exists()) {
                 displayProfileOnDashboard(profileData.data(), user.uid);
             }
+            fetchUnansweredQuestions(user.uid);
 
         } else {
             authContainer.style.display = 'none'; dashboardContainer.style.display = 'none';
@@ -128,18 +130,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// NEW: Function to display the profile on the dashboard
 function displayProfileOnDashboard(userData, userId) {
     const defaultPhoto = 'placeholder.webp';
     userProfilePhoto.src = userData.profilePhotoUrl || defaultPhoto;
     userDisplayName.textContent = userData.name || 'Set your name';
     userProfileBio.textContent = userData.bio || '';
     userProfileBio.style.display = userData.bio ? 'block' : 'none';
-    
-    // Set the public profile link
+
     viewPublicProfileBtn.href = `/profile.html?sellerId=${userId}`;
 
-    // Display badges
     userBadgesContainer.innerHTML = '';
     if (userData.badges && userData.badges.length > 0) {
         userData.badges.forEach(badge => {
@@ -152,7 +151,6 @@ function displayProfileOnDashboard(userData, userId) {
         });
     }
 }
-
 
 function displayDashboardInfo(userData, refCode, count) { userReferralCode.textContent = refCode; userReferralCount.textContent = count; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
