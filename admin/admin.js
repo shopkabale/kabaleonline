@@ -39,7 +39,7 @@ async function fetchAllUsers() {
             userList.innerHTML = '<li>No users found.</li>';
             return;
         }
-        
+
         const referralCounts = {};
         userSnapshot.forEach(doc => {
             const userData = doc.data();
@@ -51,7 +51,7 @@ async function fetchAllUsers() {
                 }
             }
         });
-        
+
         userList.innerHTML = '';
         userSnapshot.forEach(doc => {
             const userData = doc.data();
@@ -108,20 +108,56 @@ async function toggleUserVerification(uid, newStatus) {
     }
 }
 
+// THIS IS THE CORRECTED FUNCTION
 async function fetchAllProducts() {
+    allProductsList.innerHTML = ''; // Clear previous listings
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
-    allProductsList.innerHTML = '';
-     if (querySnapshot.empty) {
-        allProductsList.innerHTML = "<p>No products found.</p>";
+    
+    if (querySnapshot.empty) {
+        allProductsList.innerHTML = "<p>No products found on the site.</p>";
         return;
     }
+
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
+        const isDeal = product.isDeal || false;
+        
+        const primaryImage = (product.imageUrls && product.imageUrls.length > 0) 
+            ? product.imageUrls[0] 
+            : 'placeholder.webp';
+
+        const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller">✔️</span>' : '';
+        const sellerName = product.sellerName || product.sellerEmail;
+
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
-        productCard.innerHTML = ``;
+        
+        // THIS IS THE CORRECT HTML THAT WAS MISSING
+        productCard.innerHTML = `
+            <img src="${primaryImage}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p class="price">UGX ${product.price.toLocaleString()}</p>
+            <p style="font-size: 0.8em; color: grey; padding: 0 15px;">
+                Seller: ${sellerName} ${verifiedBadge}
+            </p>
+            <div class="seller-controls">
+                <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-id="${productId}">
+                    ${isDeal ? 'Remove from Deals' : 'Add to Deals'}
+                </button>
+                <button class="delete-btn admin-delete" data-id="${productId}" data-name="${product.name}">Delete (Admin)</button>
+            </div>
+        `;
+
+        productCard.querySelector('.deal-btn').addEventListener('click', (e) => {
+            toggleDealStatusAsAdmin(e.target.dataset.id, isDeal);
+        });
+
+        productCard.querySelector('.admin-delete').addEventListener('click', (e) => {
+            deleteProductAsAdmin(e.target.dataset.id, e.target.dataset.name);
+        });
+        
         allProductsList.appendChild(productCard);
     });
 }
@@ -130,18 +166,18 @@ async function toggleDealStatusAsAdmin(productId, currentStatus) {
     const productRef = doc(db, 'products', productId);
     try {
         await updateDoc(productRef, { isDeal: !currentStatus });
-        fetchAllProducts();
+        fetchAllProducts(); // Refresh the list
     } catch (error) {
         alert("Failed to update deal status.");
     }
 }
 
 async function deleteProductAsAdmin(productId, productName) {
-    if (confirm(`ADMIN: Delete "${productName}"? This cannot be undone.`)) {
+    if (confirm(`ADMIN: Are you sure you want to delete "${productName}"? This cannot be undone.`)) {
         try {
             await deleteDoc(doc(db, 'products', productId));
             alert('Product deleted by admin.');
-            fetchAllProducts();
+            fetchAllProducts(); // Refresh the list
         } catch (error) {
             alert("Failed to delete product.");
         }
