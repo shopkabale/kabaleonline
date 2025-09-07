@@ -1,61 +1,42 @@
-const { initializeApp, cert } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const algoliasearch = require("algoliasearch");
 
-const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
-};
-
-if (!global._firebaseApp) {
-    global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
-}
-
-const db = getFirestore();
-const PRODUCTS_PER_PAGE = 30;
+const algoliaClient = algoliasearch(
+    process.env.ALGOLIA_APP_ID, 
+    process.env.ALGOLIA_SEARCH_API_KEY // Use the SEARCH key for reading
+);
+const index = algoliaClient.initIndex('products'); // Ensure this matches your Algolia index name
 
 exports.handler = async (event) => {
-    try {
-        const { searchTerm, lastVisible, type } = event.queryStringParameters;
-        let query = db.collection("products");
+    const { searchTerm, type } = event.queryStringParameters;
 
-        // Filter by listing type if specified in the URL
+    try {
+        const searchOptions = {
+            hitsPerPage: 30 // This corresponds to your PRODUCTS_PER_PAGE
+        };
+
         if (type) {
-            query = query.where("listing_type", "==", type);
+            // This is how you filter by type in Algolia
+            searchOptions.filters = `listing_type:"${type}"`;
         }
         
-        // Filter by search term
-        if (searchTerm) {
-            const lowercasedTerm = searchTerm.toLowerCase();
-            query = query.where("name_lowercase", ">=", lowercasedTerm)
-                         .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff')
-                         .orderBy("name_lowercase");
-        } else {
-            // Default query for the homepage: order by creation date
-            query = query.orderBy("createdAt", "desc");
-        }
-       
-        // Implement pagination using a cursor
-        if (lastVisible) {
-            const lastDoc = await db.collection("products").doc(lastVisible).get();
-            if (lastDoc.exists) {
-                query = query.startAfter(lastDoc);
-            }
-        }
-
-        // Limit the number of products returned
-        query = query.limit(PRODUCTS_PER_PAGE);
-
-        const snapshot = await query.get();
-        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // This is the main Algolia search call
+        const { hits } = await index.search(searchTerm, searchOptions);
+        
+        // Algolia results come with an 'objectID'. We need to map it to 'id'
+        const products = hits.map(hit => {
+            const { objectID, ...data } = hit;
+            return { id: objectID, ...data };
+        });
 
         return {
             statusCode: 200,
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(products),
         };
     } catch (error) {
-        console.error("Search function error:", error);
-        return { statusCode: 500, body: JSON.stringify({ error: "Failed to fetch products." })};
+        console.error("Algolia search error:", error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Failed to perform search." }),
+        };
     }
 };
