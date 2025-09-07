@@ -70,9 +70,10 @@
         
         .desktop-nav { display: none; }
         
-        .mobile-nav {
+          /* Style for the mobile navigation menu to match the image */
+.mobile-nav {
     display: none;
-    background-color: #f0f5fa !important; /* Added !important to force the change */
+    background-color: #ffffff; /* Use a clean white background */
     position: absolute;
     top: 100%;
     left: 0;
@@ -80,25 +81,39 @@
     z-index: 999;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     border-top: 1px solid var(--border-color);
+    padding: 10px 0; /* Add some vertical padding */
 }
 
-        .mobile-nav.active { display: block; }
-        .mobile-nav a {
-            display: block;
-            padding: 15px;
-            text-decoration: none;
-            color: var(--text-dark);
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        @media (min-width: 992px) {
-            body { padding-top: 85px; }
-            .hamburger-menu { display: none; }
-            .desktop-nav { display: flex; align-items: center; gap: 25px; }
-            .desktop-nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; }
-            .header-top-bar { height: 65px; }
-        }
-        /* --- END OF NEW HEADER STYLES --- */
+.mobile-nav.active {
+    display: block;
+}
+
+/* Style for each list item in the mobile navigation */
+.mobile-nav a {
+    display: flex; /* Use flexbox for horizontal alignment */
+    align-items: center; /* Vertically center the icon and text */
+    padding: 15px 20px; /* Generous padding for a cleaner look */
+    text-decoration: none;
+    color: var(--text-dark);
+    border-bottom: 1px solid var(--border-color); /* Add the separator line */
+    font-size: 1rem;
+    gap: 15px; /* Add space between the icon and the text */
+}
+
+/* Style for the icons within the menu links */
+.mobile-nav a i {
+    font-size: 20px; /* Match the icon size from the image */
+    color: var(--primary-color); /* Use the primary blue color for icons */
+    width: 24px; /* Fix the icon width to keep text aligned */
+    text-align: center;
+}
+
+/* Style for the "Post Something" and "Login" links */
+.mobile-nav .post-button,
+.mobile-nav .login-button {
+    font-weight: bold; /* Make the text bold */
+}
+     /* --- END OF NEW HEADER STYLES --- */
 
         /* Existing styles for the sell page */
         .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
