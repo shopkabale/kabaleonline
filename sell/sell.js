@@ -55,7 +55,7 @@ const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Pri
 
 function updateCategoryOptions() {
     if (!document.querySelector('input[name="listing_type"]:checked')) return;
-    const selectedType = document.querySelector('input[name="listing_type"]:checked').value;
+    const selectedType = document.querySelector('input[name="listing_type']:checked').value;
     const categories = (selectedType === 'item') ? itemCategories : serviceCategories;
     categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
     for (const key in categories) {
@@ -152,6 +152,97 @@ function displayProfileOnDashboard(userData, userId) {
     }
 }
 
+// Function to fetch and display unanswered questions
+async function fetchUnansweredQuestions(uid) {
+    qaList.innerHTML = '<p>Loading questions...</p>';
+    const q = query(collection(db, 'products'), where('sellerId', '==', uid));
+    const productsSnapshot = await getDocs(q);
+    const questions = [];
+
+    for (const productDoc of productsSnapshot.docs) {
+        const productData = productDoc.data();
+        const qaQuery = query(collection(db, `products/${productDoc.id}/qanda`), where('answer', '==', null), orderBy('createdAt', 'desc'));
+        const qaSnapshot = await getDocs(qaQuery);
+
+        if (!qaSnapshot.empty) {
+            for (const qaDoc of qaSnapshot.docs) {
+                const qaData = qaDoc.data();
+                const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
+                const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
+                questions.push({
+                    id: qaDoc.id,
+                    question: qaData.question,
+                    askerName: askerName,
+                    productName: productData.name,
+                    productId: productDoc.id
+                });
+            }
+        }
+    }
+
+    qaCount.textContent = questions.length;
+    qaList.innerHTML = '';
+
+    if (questions.length === 0) {
+        qaList.innerHTML = '<p>No unanswered questions for your listings.</p>';
+        return;
+    }
+
+    questions.forEach(q => {
+        const qaItem = document.createElement('div');
+        qaItem.className = 'qa-item';
+        qaItem.innerHTML = `
+            <div class="qa-question">Question on "${q.productName}":</div>
+            <p>"${q.question}"</p>
+            <form class="qa-form" data-product-id="${q.productId}" data-qa-id="${q.id}">
+                <textarea placeholder="Type your answer here..." required></textarea>
+                <button type="submit" class="cta-button">Submit Answer</button>
+            </form>
+        `;
+        qaList.appendChild(qaItem);
+    });
+
+    // Add event listeners for the new forms
+    document.querySelectorAll('.qa-form').forEach(form => {
+        form.addEventListener('submit', handleAnswerSubmission);
+    });
+}
+
+// Function to handle answer submission
+async function handleAnswerSubmission(e) {
+    e.preventDefault();
+    const form = e.target;
+    const productId = form.dataset.productId;
+    const qaId = form.dataset.qaId;
+    const answer = form.querySelector('textarea').value;
+    const submitBtn = form.querySelector('button');
+
+    if (!answer) {
+        alert("Please type an answer.");
+        return;
+    }
+
+    toggleLoading(submitBtn, true, 'Submitting');
+
+    try {
+        const qaRef = doc(db, `products/${productId}/qanda`, qaId);
+        await updateDoc(qaRef, {
+            answer: answer,
+            answeredAt: serverTimestamp()
+        });
+
+        showMessage(dashboardMessage, 'Answer submitted successfully!', false);
+        form.reset();
+        await fetchUnansweredQuestions(auth.currentUser.uid);
+    } catch (error) {
+        console.error("Error submitting answer:", error);
+        showMessage(dashboardMessage, 'Failed to submit answer. Please try again.');
+    } finally {
+        toggleLoading(submitBtn, false, 'Submit Answer');
+    }
+}
+
+// Re-using existing functions below
 function displayDashboardInfo(userData, refCode, count) { userReferralCode.textContent = refCode; userReferralCount.textContent = count; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
 logoutBtn.addEventListener('click', () => signOut(auth));
