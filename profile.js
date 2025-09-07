@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const userDocRef = doc(db, 'users', sellerId);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (userDoc.exists()) {
             const userData = userDoc.data();
             const sellerName = userData.name || 'Seller';
@@ -27,26 +27,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sellerBio = userData.bio;
             const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp';
             const whatsappNumber = userData.whatsapp;
-            const isVerified = userData.isVerified || false;
+            const isVerified = userData.badges?.includes('verified') || false;
 
             let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p style="margin-top: -10px;">📍 From ${sellerLocation}</p>`;
             if (sellerInstitution) detailsHTML += `<p style="margin-top: -10px;">🎓 ${sellerInstitution}</p>`;
-            
+
             let bioHTML = '';
             if (sellerBio) bioHTML = `<p class="profile-bio">"${sellerBio}"</p>`;
-            
+
             let contactHTML = '';
             if (whatsappNumber) {
                 const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your profile on Kabale Online.`;
                 contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank" style="margin-top: 15px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
 
-            // In profile.js -> DOMContentLoaded listener
-const verifiedBadge = isVerified 
-    ? `<svg class="verified-badge-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>` 
-    : '';
-
+            const verifiedBadge = isVerified 
+                ? `<svg class="verified-badge-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>` 
+                : '';
 
             profileHeader.innerHTML = `
                 <div class="profile-header-flex">
@@ -70,7 +68,6 @@ const verifiedBadge = isVerified
         listingsTitle.style.display = 'none';
     }
 
-    // This part now only runs if the profile was found
     if (document.querySelector('.profile-details')) {
         try {
             const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
