@@ -7,7 +7,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
     collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, 
-    orderBy, getDoc, setDoc, runTransaction, serverTimestamp, increment 
+    orderBy, getDoc, setDoc, runTransaction, serverTimestamp, increment,
+    collectionGroup // <-- IMPORTANT: Added this import
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const authContainer = document.getElementById('auth-container');
@@ -155,28 +156,36 @@ function displayProfileOnDashboard(userData, userId) {
 // Function to fetch and display unanswered questions
 async function fetchUnansweredQuestions(uid) {
     qaList.innerHTML = '<p>Loading questions...</p>';
-    const q = query(collection(db, 'products'), where('sellerId', '==', uid));
-    const productsSnapshot = await getDocs(q);
+    
+    // Use a Collection Group Query to find all unanswered questions across all 'qanda' subcollections
+    // where the 'sellerId' matches the current user's UID.
+    const q = query(
+        collectionGroup(db, 'qanda'), 
+        where('answer', '==', null),
+        where('sellerId', '==', uid) 
+    );
+
+    const questionsSnapshot = await getDocs(q);
     const questions = [];
 
-    for (const productDoc of productsSnapshot.docs) {
-        const productData = productDoc.data();
-        const qaQuery = query(collection(db, `products/${productDoc.id}/qanda`), where('answer', '==', null));
-        const qaSnapshot = await getDocs(qaQuery);
+    if (!questionsSnapshot.empty) {
+        for (const qaDoc of questionsSnapshot.docs) {
+            const qaData = qaDoc.data();
+            const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
+            const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
+            
+            // Extract the product ID from the document reference path
+            const productId = qaDoc.ref.parent.parent.id;
+            const productDoc = await getDoc(doc(db, 'products', productId));
+            const productName = productDoc.exists() ? productDoc.data().name : 'Unknown Product';
 
-        if (!qaSnapshot.empty) {
-            for (const qaDoc of qaSnapshot.docs) {
-                const qaData = qaDoc.data();
-                const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
-                const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
-                questions.push({
-                    id: qaDoc.id,
-                    question: qaData.question,
-                    askerName: askerName,
-                    productName: productData.name,
-                    productId: productDoc.id
-                });
-            }
+            questions.push({
+                id: qaDoc.id,
+                question: qaData.question,
+                askerName: askerName,
+                productName: productName,
+                productId: productId
+            });
         }
     }
 
@@ -386,9 +395,9 @@ completeProfileForm.addEventListener('submit', async (e) => {
         await updateDoc(doc(db, 'users', user.uid), dataToUpdate);
 
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userData = userDoc.data();
+        const userData = userDoc.exists() ? userDoc.data() : {};
         if (userData.bio && userData.profilePhotoUrl && !userData.badges.includes('verified')) {
-            const newBadges = [...userData.badges, 'verified'];
+            const newBadges = [...(userData.badges || []), 'verified'];
             await updateDoc(doc(db, 'users', user.uid), { badges: newBadges });
         }
 
