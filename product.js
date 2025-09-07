@@ -1,16 +1,19 @@
 import { db, auth } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productDetailContent = document.getElementById('product-detail-content');
 const qaList = document.getElementById('qa-list');
 const qaFormContainer = document.getElementById('qa-form-container');
+const productForm = document.getElementById('product-form');
+const productFormMessage = document.getElementById('product-form-message');
+const productIdInput = document.getElementById('productId');
+const submitBtn = document.getElementById('submit-btn');
 
 let currentProductId = null;
 let currentUserId = null;
-let currentProductSellerId = null; // New variable to store the seller's ID
+let currentProductSellerId = null;
 
-// Listen for authentication state changes and render the Q&A form accordingly
 onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
     renderQaForm();
@@ -32,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (docSnap.exists()) {
             const product = docSnap.data();
-            currentProductSellerId = product.sellerId; // Store the seller's ID
+            currentProductSellerId = product.sellerId;
             document.title = `${product.name} | Kabale Online`;
 
             let imagesHTML = '';
@@ -75,7 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>`;
 
-            // Handle the share button logic
             const shareBtn = document.getElementById('share-btn');
             shareBtn.addEventListener('click', async () => {
                 const shareData = {
@@ -96,7 +98,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Start fetching and displaying Q&A for this product
             fetchQuestions();
 
         } else {
@@ -108,7 +109,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Function to render the Q&A form based on user login status
 function renderQaForm() {
     if (currentUserId) {
         qaFormContainer.innerHTML = `
@@ -124,14 +124,12 @@ function renderQaForm() {
     }
 }
 
-// Function to handle question submission
 async function handleQuestionSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('qa-input');
     const messageEl = document.getElementById('qa-message');
     const question = input.value.trim();
 
-    // Check for a valid user ID as a failsafe
     if (!currentUserId || !currentProductSellerId) {
         messageEl.textContent = 'Failed to submit question. Please try again.';
         messageEl.style.display = 'block';
@@ -150,7 +148,7 @@ async function handleQuestionSubmit(e) {
         await addDoc(collection(db, `products/${currentProductId}/qanda`), {
             question: question,
             askerId: currentUserId,
-            sellerId: currentProductSellerId, // Add this crucial field
+            sellerId: currentProductSellerId,
             createdAt: new Date()
         });
 
@@ -166,13 +164,11 @@ async function handleQuestionSubmit(e) {
     }
 }
 
-// Function to fetch and display questions in real-time
 function fetchQuestions() {
     if (!currentProductId) return;
 
     const q = query(collection(db, `products/${currentProductId}/qanda`), orderBy('createdAt', 'desc'));
 
-    // onSnapshot provides a real-time listener
     onSnapshot(q, async (querySnapshot) => {
         qaList.innerHTML = '';
         if (querySnapshot.empty) {
@@ -182,7 +178,6 @@ function fetchQuestions() {
 
         const questionsPromises = querySnapshot.docs.map(async docSnapshot => {
             const qaData = docSnapshot.data();
-            // Fetch the user's name to display
             const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
             const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
 
@@ -199,7 +194,6 @@ function fetchQuestions() {
             `;
         });
 
-        // Wait for all user names to be fetched
         const questionsHtmlArray = await Promise.all(questionsPromises);
         qaList.innerHTML = questionsHtmlArray.join('');
     });
