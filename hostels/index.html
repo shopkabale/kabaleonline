@@ -31,7 +31,6 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; }
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px; }
         .amenities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; background-color: #f8f9fa; padding: 15px; border-radius: 6px; }
-        .amenity-checkbox { display: flex; align-items: center; gap: 8px; }
         .login-card { text-align: center; }
         .auth-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .tab-link { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-size: 1em; font-weight: 600; color: #6c757d; border-bottom: 3px solid transparent; }
@@ -45,20 +44,41 @@
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button:disabled { display: flex; align-items: center; justify-content: center; opacity: 0.7; cursor: not-allowed; }
         .hostel-grid { display: grid; gap: 20px; grid-template-columns: 1fr; margin-top: 20px; }
-        .hostel-card { background-color: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.2s; }
-        .hostel-card:hover { transform: translateY(-5px); }
+        .hostel-card { background-color: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); color: inherit; }
         .hostel-card-image { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background-color: #eee; }
         .hostel-card-content { padding: 15px; }
+        .hostel-card-footer { padding: 15px; background-color: #f8f9fa; border-top: 1px solid var(--border-color); text-align: center; }
+        .contact-link { font-size: 1.1em; font-weight: bold; color: var(--primary-color); text-decoration: none; }
         #logout-btn.secondary-button { background-color: #6c757d; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 15px; }
         .hostel-card-controls { padding: 10px 15px; background-color: #f8f9fa; border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
-        .hostel-card-controls button { flex: 1; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); cursor: pointer; font-weight: bold; }
-        .edit-btn { background-color: var(--accent-color); color: var(--text-dark); }
-        .delete-btn { background-color: #dc3545; color: white; border-color: #dc3545; }
+        .edit-btn, .delete-btn { flex: 1; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); cursor: pointer; font-weight: bold; }
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 30px; }
         .kabale-footer-links { margin-bottom: 20px; }
-        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; transition: color 0.2s; }
-        @media (min-width: 768px) { body { padding-top: 65px; } .page-container { padding-top: 30px; } .hamburger-menu { display: none; } .header-top-bar { height: 65px; } .hostel-grid { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr 1fr; } }
-        @media (min-width: 992px) { .hostel-grid { grid-template-columns: repeat(3, 1fr); } }
+        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
+        @media (min-width: 768px) { body { padding-top: 65px; } .hostel-grid { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr 1fr; } }
+/* Add this CSS inside your <style> tag in hostels/index.html */
+
+/* --- Back to Home Button --- */
+.back-to-home-link {
+    display: inline-block;
+    margin-bottom: 20px; /* Adds space below the button */
+    padding: 8px 16px;
+    background-color: #e9ecef; /* A light grey that matches your theme */
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 20px; /* Pill shape */
+    transition: background-color 0.2s ease;
+}
+
+.back-to-home-link:hover {
+    background-color: #dee2e6; /* A slightly darker grey on hover */
+}
+
+.back-to-home-link i {
+    margin-right: 8px; /* Space between the arrow icon and the text */
+}
+
     </style>
 </head>
 <body>
@@ -72,27 +92,65 @@
             </nav>
         </div>
     </header>
-
     <div class="container page-container">
         <div id="dashboard-container" class="section-box" style="display: none;">
-            <!-- Landlord Dashboard -->
+<a href="/" class="back-to-home-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Home
+    </a>
+            <h2>Landlord Dashboard</h2>
+            <p>Welcome, <strong id="seller-email"></strong>! <button id="logout-btn" class="secondary-button">Logout</button></p>
+            <button id="show-hostel-form-btn" class="cta-button" style="margin-bottom: 20px;">Post New Hostel/Rental</button>
+            <div id="hostel-form-container" style="display:none;">
+                <form id="hostel-post-form">
+                    <div class="form-grid">
+                        <div class="form-group"><label for="hostel-name">Hostel/Rental Name</label><input type="text" id="hostel-name" required></div>
+                        <div class="form-group"><label for="hostel-location">Location</label><input type="text" id="hostel-location" required></div>
+                        <div class="form-group"><label for="hostel-price">Price (UGX)</label><input type="number" id="hostel-price" required></div>
+                        <div class="form-group"><label for="hostel-term">Payment Term</label><select id="hostel-term"><option value="Semester">per Semester</option><option value="Month">per Month</option></select></div>
+                    </div>
+                    <!-- NEW PHONE NUMBER FIELD -->
+                    <div class="form-group">
+                        <label for="hostel-phone">Contact Phone Number</label>
+                        <input type="tel" id="hostel-phone" placeholder="e.g., 07..." required>
+                    </div>
+                    <div class="form-group"><label for="hostel-description">Description</label><textarea id="hostel-description" rows="3" required></textarea></div>
+                    <div class="form-group"><label>Amenities</label><div class="amenities-grid">
+                        <div class="amenity-checkbox"><input type="checkbox" id="amenity-gate"><label for="amenity-gate">Gate</label></div>
+                        <div class="amenity-checkbox"><input type="checkbox" id="amenity-fence"><label for="amenity-fence">Fence</label></div>
+                        <div class="amenity-checkbox"><input type="checkbox" id="amenity-electricity"><label for="amenity-electricity">Electricity Paid</label></div>
+                        <div class="amenity-checkbox"><input type="checkbox" id="amenity-tiles"><label for="amenity-tiles">Tiled Floor</label></div>
+                        <div class="amenity-checkbox"><input type="checkbox" id="amenity-cement"><label for="amenity-cement">Cement Floor</label></div>
+                        <div class="amenity-checkbox"><input type="checkbox" id="amenity-cameras"><label for="amenity-cameras">Security Cameras</label></div>
+                    </div></div>
+                    <div class="form-grid">
+                        <div class="form-group"><label for="hostel-image-1">Main Image</label><input type="file" id="hostel-image-1" accept="image/*"></div>
+                        <div class="form-group"><label for="hostel-image-2">Optional Second Image</label><input type="file" id="hostel-image-2" accept="image/*"></div>
+                    </div>
+                    <p id="hostel-form-message" class="success-message" style="display: none;"></p>
+                    <button type="submit" class="cta-button">Submit Listing</button>
+                </form>
+            </div>
+            <div id="my-hostels-section"><hr style="margin: 30px 0;"><h3>My Hostel Listings</h3><div id="my-hostels-grid" class="hostel-grid"></div></div>
         </div>
         <div id="auth-container" class="section-box">
-            <!-- Login/Signup Forms -->
+            <div class="login-card">
+                <h1 class="auth-title">Landlord & Agent Portal</h1>
+                <p class="auth-subtitle">Log in or create an account to post your rental.</p>
+                <div class="auth-tabs">
+                    <button class="tab-link active" data-tab="login-tab">Login</button>
+                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
+                </div>
+                <div id="login-tab" class="tab-content active"><form id="login-form"><p id="login-error" class="error-message"></p><div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div><div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div><button type="submit" class="auth-button">Login</button></form></div>
+                <div id="signup-tab" class="tab-content"><form id="signup-form"><p id="signup-error" class="error-message"></p><div class="form-group"><label for="signup-name">Your Full Name</label><input type="text" id="signup-name" required></div><div class="form-group"><label for="signup-whatsapp">Contact Phone</label><input type="tel" id="signup-whatsapp" required></div><div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div><div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div><button type="submit" class="auth-button">Create Account</button></form></div>
+            </div>
         </div>
         <h2 style="text-align:center; margin-top:30px;">Available Hostels & Rentals</h2>
         <div id="hostel-grid-public" class="hostel-grid"></div>
     </div>
-    
     <footer>
-        <div class="kabale-footer-links">
-            <a href="/about.html" class="kabale-footer-link">About Us</a>
-            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-        </div>
+        <div class="kabale-footer-links"><a href="/about.html" class="kabale-footer-link">About Us</a><a href="/blog/" class="kabale-footer-link">Blog & Tips</a><a href="/terms.html" class="kabale-footer-link">Terms of Service</a></div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
-    
     <script type="module" src="../ui.js"></script>
     <script type="module" src="hostels.js"></script>
 </body>
