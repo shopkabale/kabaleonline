@@ -8,7 +8,6 @@ const detailsContainer = document.getElementById('hostel-details-container');
 
 // --- MAIN FUNCTION ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Get Hostel ID from URL
     const params = new URLSearchParams(window.location.search);
     const hostelId = params.get('id');
 
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        // 2. Fetch Hostel Data
         const hostelRef = doc(db, 'hostels', hostelId);
         const hostelSnap = await getDoc(hostelRef);
 
@@ -29,7 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const hostelData = hostelSnap.data();
 
-        // 3. Fetch Landlord Data (using landlordId from hostel data)
         let landlordData = { name: 'A Kabale Online User', whatsapp: '' }; // Default values
         if (hostelData.landlordId) {
             const landlordRef = doc(db, 'users', hostelData.landlordId);
@@ -39,7 +36,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // 4. Populate the Page with Data
         populatePage(hostelData, landlordData);
         showContent();
 
@@ -48,7 +44,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showError();
     }
 });
-
 
 function populatePage(hostel, landlord) {
     // Set basic info
@@ -71,28 +66,41 @@ function populatePage(hostel, landlord) {
 
     // Populate amenities
     const amenitiesList = document.getElementById('amenities-list');
-    amenitiesList.innerHTML = ''; // Clear any placeholders
-    for (const key in hostel.amenities) {
-        if (hostel.amenities[key] === true) {
-            const li = document.createElement('li');
-            // Capitalize the first letter of the amenity name
-            const amenityName = key.charAt(0).toUpperCase() + key.slice(1);
-            li.innerHTML = `<i class="fa-solid fa-check"></i> ${amenityName}`;
-            amenitiesList.appendChild(li);
+    amenitiesList.innerHTML = '';
+    if (hostel.amenities) {
+        for (const key in hostel.amenities) {
+            if (hostel.amenities[key] === true) {
+                const li = document.createElement('li');
+                const amenityName = key.charAt(0).toUpperCase() + key.slice(1);
+                li.innerHTML = `<i class="fa-solid fa-check"></i> ${amenityName}`;
+                amenitiesList.appendChild(li);
+            }
         }
     }
-
-    // Set up WhatsApp contact button
+    
+    // Set up contact buttons and phone link
     const contactBtn = document.getElementById('contact-landlord-btn');
+    const phoneLink = document.getElementById('landlord-phone-link');
+    const landlordInfoBox = document.getElementById('landlord-info');
+
     if (landlord.whatsapp) {
-        // Assumes whatsapp number is stored correctly
-        const whatsappNumber = landlord.whatsapp.startsWith('256') ? landlord.whatsapp : `256${landlord.whatsapp.substring(1)}`;
-        contactBtn.href = `https://wa.me/${whatsappNumber}`;
+        // Format number for international calling links (e.g., +256...)
+        const fullNumber = landlord.whatsapp.startsWith('256') ? landlord.whatsapp : `256${landlord.whatsapp.substring(1)}`;
+        
+        // Set up WhatsApp button
+        contactBtn.href = `https://wa.me/${fullNumber}`;
+        
+        // Set up the visible, clickable phone number
+        phoneLink.href = `tel:+${fullNumber}`;
+        // Display as a local number (e.g., 07...)
+        phoneLink.textContent = `0${fullNumber.substring(3)}`;
+
     } else {
-        contactBtn.style.display = 'none'; // Hide button if no number
+        // If no number is available, hide both the WhatsApp button and the entire landlord info box
+        contactBtn.style.display = 'none';
+        landlordInfoBox.style.display = 'none';
     }
 }
-
 
 // --- UI STATE FUNCTIONS ---
 function showError() {
