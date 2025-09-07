@@ -153,12 +153,9 @@ function displayProfileOnDashboard(userData, userId) {
     }
 }
 
-// Function to fetch and display unanswered questions
 async function fetchUnansweredQuestions(uid) {
     qaList.innerHTML = '<p>Loading questions...</p>';
     
-    // Use a Collection Group Query to find all unanswered questions across all 'qanda' subcollections
-    // where the 'sellerId' matches the current user's UID.
     const q = query(
         collectionGroup(db, 'qanda'), 
         where('answer', '==', null),
@@ -174,7 +171,6 @@ async function fetchUnansweredQuestions(uid) {
             const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
             const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
             
-            // Extract the product ID from the document reference path
             const productId = qaDoc.ref.parent.parent.id;
             const productDoc = await getDoc(doc(db, 'products', productId));
             const productName = productDoc.exists() ? productDoc.data().name : 'Unknown Product';
@@ -211,13 +207,11 @@ async function fetchUnansweredQuestions(uid) {
         qaList.appendChild(qaItem);
     });
 
-    // Add event listeners for the new forms
     document.querySelectorAll('.qa-form').forEach(form => {
         form.addEventListener('submit', handleAnswerSubmission);
     });
 }
 
-// Function to handle answer submission
 async function handleAnswerSubmission(e) {
     e.preventDefault();
     const form = e.target;
@@ -251,7 +245,6 @@ async function handleAnswerSubmission(e) {
     }
 }
 
-// Re-using existing functions below
 function displayDashboardInfo(userData, refCode, count) { userReferralCode.textContent = refCode; userReferralCount.textContent = count; referralSection.style.display = 'block'; }
 userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
 logoutBtn.addEventListener('click', () => signOut(auth));
@@ -415,29 +408,79 @@ showProductFormBtn.addEventListener('click', () => {
 });
 
 productForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); const user = auth.currentUser; if (!user) return;
+    e.preventDefault(); 
+    const user = auth.currentUser; 
+    if (!user) return;
     const productSubmitBtn = document.getElementById('submit-btn');
     toggleLoading(productSubmitBtn, true, 'Submitting');
     try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
-        const isVerified = userData.isVerified || false; const sellerName = userData.name || user.email;
-        const productName = document.getElementById('product-name').value; const productPrice = document.getElementById('product-price').value;
-        const productCategory = document.getElementById('product-category').value; const productDescription = document.getElementById('product-description').value;
-        const productStory = document.getElementById('product-story').value; const whatsappNumber = document.getElementById('whatsapp-number').value;
-        const imageFile1 = document.getElementById('product-image-1').files[0]; const imageFile2 = document.getElementById('product-image-2').files[0];
-        const editingProductId = productIdInput.value; let finalImageUrls = [];
-        if (editingProductId) { const docSnap = await getDoc(doc(db, 'products', editingProductId)); if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || []; }
+        const isVerified = userData.isVerified || false; 
+        const sellerName = userData.name || user.email;
+        const productName = document.getElementById('product-name').value; 
+        const productPrice = document.getElementById('product-price').value;
+        const productCategory = document.getElementById('product-category').value; 
+        const productDescription = document.getElementById('product-description').value;
+        const productStory = document.getElementById('product-story').value; 
+        const whatsappNumber = document.getElementById('whatsapp-number').value;
+        const imageFile1 = document.getElementById('product-image-1').files[0]; 
+        const imageFile2 = document.getElementById('product-image-2').files[0];
+        const editingProductId = productIdInput.value; 
+        let finalImageUrls = [];
+        if (editingProductId) { 
+            const docSnap = await getDoc(doc(db, 'products', editingProductId)); 
+            if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || []; 
+        }
         const filesToUpload = [imageFile1, imageFile2].filter(f => f);
-        if (filesToUpload.length > 0) { finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f))); }
+        if (filesToUpload.length > 0) { 
+            finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f))); 
+        }
         if (finalImageUrls.length === 0 && !editingProductId) throw new Error('At least one image is required.');
-        const productData = { listing_type: document.querySelector('[name=listing_type]:checked').value, name: productName, name_lowercase: productName.toLowerCase(), price: Number(productPrice), category: productCategory, description: productDescription, story: productStory, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, sellerEmail: user.email, sellerName, sellerIsVerified: isVerified, sellerBadges: userData.badges || [] };
+        const productData = { 
+            listing_type: document.querySelector('[name=listing_type]:checked').value, 
+            name: productName, 
+            name_lowercase: productName.toLowerCase(), 
+            price: Number(productPrice), 
+            category: productCategory, 
+            description: productDescription, 
+            story: productStory, 
+            whatsapp: normalizeWhatsAppNumber(whatsappNumber), 
+            sellerId: user.uid, 
+            sellerEmail: user.email, 
+            sellerName, 
+            sellerIsVerified: isVerified, 
+            sellerBadges: userData.badges || [] 
+        };
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
-        if (editingProductId) { await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() }); } else { await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false }); }
-        showMessage(productFormMessage, 'Listing submitted successfully!', false); productForm.reset();
+
+        if (editingProductId) { 
+            await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() }); 
+        } else { 
+            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false }); 
+        }
+        
+        // This is the automated sync trigger
+        fetch('/.netlify/functions/syncToAlgolia')
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Failed to trigger Algolia sync.");
+                } else {
+                    console.log("Algolia sync triggered successfully.");
+                }
+            })
+            .catch(err => {
+                console.error("Error triggering Algolia sync:", err);
+            });
+        
+        showMessage(productFormMessage, 'Listing submitted successfully!', false); 
+        productForm.reset();
         setTimeout(() => { productFormContainer.style.display = 'none'; productFormMessage.style.display = 'none'; fetchSellerProducts(user.uid); }, 2000);
-    } catch (error) { showMessage(productFormMessage, 'Failed to submit listing: ' + error.message); } 
-    finally { toggleLoading(productSubmitBtn, false, productIdInput.value ? 'Update Product' : 'Add Product'); }
+    } catch (error) { 
+        showMessage(productFormMessage, 'Failed to submit listing: ' + error.message); 
+    } finally { 
+        toggleLoading(productSubmitBtn, false, productIdInput.value ? 'Update Product' : 'Add Product'); 
+    }
 });
 
 async function uploadImageToCloudinary(file) {
