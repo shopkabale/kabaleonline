@@ -103,6 +103,53 @@
 @media (min-width: 992px) {
     .desktop-nav { display: flex; }
 }
+
+        /* NEW Q&A Section Styles */
+        .qa-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .qa-form {
+            margin-top: 20px;
+        }
+
+        .qa-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .qa-form-message {
+            margin-top: 10px;
+        }
+
+        .question-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .question-item:last-child {
+            border-bottom: none;
+        }
+
+        .question-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #007bff;
+        }
+
+        .answer-item {
+            margin-top: 10px;
+            padding-left: 20px;
+            border-left: 3px solid #f0f0f0;
+        }
+
     </style>
 </head>
 <body>
@@ -121,7 +168,6 @@
         </nav>
     </div>
 
-    <!-- Mobile Sidebar -->
     <nav class="mobile-nav">
         <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
         <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
@@ -138,7 +184,17 @@
     <div class="container page-content">
         <a href="/" class="back-home-btn">⬅ Back to All Listings</a>
         <div id="product-detail-content"><p>Loading product...</p></div>
-    </div>
+        
+        <div class="qa-section">
+            <h2>Questions & Answers</h2>
+            <div id="qa-list">
+                <p>No questions yet. Be the first to ask!</p>
+            </div>
+            <div id="qa-form-container">
+                <p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>
+            </div>
+        </div>
+        </div>
     <footer>
         <div class="kabale-contact-info-section">
             <h3 class="kabale-contact-title">Get in Touch</h3>
