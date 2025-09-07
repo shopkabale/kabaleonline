@@ -233,13 +233,42 @@
             .product-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
-        @media (min-width: 992px) {
-            .page-container { padding-top: 85px; }
-            .hamburger-menu, .header-search-bar { display: none; }
-            .desktop-nav { display: flex; align-items: center; gap: 25px; }
-            .desktop-nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; }
-            .header-top-bar { height: 65px; }
-        }
+       @media (min-width: 992px) {
+    .page-container { padding-top: 85px; }
+
+    /* Keep hamburger menu visible and adjust size */
+    .hamburger-menu { 
+        display: inline-block; 
+        font-size: 20px;  /* slightly smaller on desktop */
+        margin-right: 15px; /* space before desktop nav */
+    }
+
+    /* Keep search bar visible with spacing */
+    .header-search-bar { 
+        display: block; 
+        margin-left: 20px;
+        flex-grow: 1; /* optional: stretch search bar */
+    }
+
+    /* Desktop navigation */
+    .desktop-nav { 
+        display: flex; 
+        align-items: center; 
+        gap: 30px;  /* more spacing between nav links */
+    }
+    .desktop-nav a { 
+        text-decoration: none; 
+        color: var(--text-dark); 
+        font-weight: 500; 
+    }
+
+    /* Header height */
+    .header-top-bar { 
+        height: 65px; 
+        justify-content: space-between; /* evenly space items */
+        gap: 20px; /* spacing between groups */
+    }
+} 
     </style>
 </head>
 <body>
