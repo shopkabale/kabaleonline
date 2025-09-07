@@ -55,7 +55,7 @@ const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Pri
 
 function updateCategoryOptions() {
     if (!document.querySelector('input[name="listing_type"]:checked')) return;
-    const selectedType = document.querySelector('input[name="listing_type']:checked').value;
+    const selectedType = document.querySelector('input[name="listing_type"]:checked').value;
     const categories = (selectedType === 'item') ? itemCategories : serviceCategories;
     categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
     for (const key in categories) {
@@ -161,7 +161,7 @@ async function fetchUnansweredQuestions(uid) {
 
     for (const productDoc of productsSnapshot.docs) {
         const productData = productDoc.data();
-        const qaQuery = query(collection(db, `products/${productDoc.id}/qanda`), where('answer', '==', null), orderBy('createdAt', 'desc'));
+        const qaQuery = query(collection(db, `products/${productDoc.id}/qanda`), where('answer', '==', null));
         const qaSnapshot = await getDocs(qaQuery);
 
         if (!qaSnapshot.empty) {
@@ -192,7 +192,7 @@ async function fetchUnansweredQuestions(uid) {
         const qaItem = document.createElement('div');
         qaItem.className = 'qa-item';
         qaItem.innerHTML = `
-            <div class="qa-question">Question on "${q.productName}":</div>
+            <div class="qa-question">Question on "<a href="/product.html?id=${q.productId}">${q.productName}</a>":</div>
             <p>"${q.question}"</p>
             <form class="qa-form" data-product-id="${q.productId}" data-qa-id="${q.id}">
                 <textarea placeholder="Type your answer here..." required></textarea>
