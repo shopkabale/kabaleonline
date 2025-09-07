@@ -1,4 +1,3 @@
-
 import { auth, db } from '../firebase.js';
 import {
     GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword,
@@ -89,7 +88,7 @@ onAuthStateChanged(auth, async (user) => {
             let userData, refCode;
             if (!userDoc.exists()) {
                 refCode = user.uid.substring(0, 6).toUpperCase();
-                userData = { email: user.email, role: 'seller', isVerified: false, referralCount: 0, createdAt: serverTimestamp(), referralCode: refCode };
+                userData = { email: user.email, role: 'seller', isVerified: false, referralCount: 0, createdAt: serverTimestamp(), referralCode: refCode, badges: [] };
                 await setDoc(userDocRef, userData); userDoc = await getDoc(userDocRef); userData = userDoc.data();
                 completeProfileSection.style.display = 'block';
             } else {
@@ -159,7 +158,8 @@ googleLoginBtn.addEventListener('click', () => {
             await setDoc(userDocRef, {
                 name: user.displayName, email: user.email, profilePhotoUrl: user.photoURL,
                 role: 'seller', isVerified: false, referralCount: 0,
-                createdAt: serverTimestamp(), referralCode: user.uid.substring(0, 6).toUpperCase()
+                createdAt: serverTimestamp(), referralCode: user.uid.substring(0, 6).toUpperCase(),
+                badges: []
             });
         }
     }).catch((error) => { showMessage(loginErrorElement, "Could not sign in with Google. Please try again."); });
@@ -231,7 +231,8 @@ signupForm.addEventListener('submit', async (e) => {
             role: 'seller', isVerified: false, createdAt: serverTimestamp(), 
             referralCount: 0, 
             referrerId: referrerId,
-            referralCode: user.uid.substring(0, 6).toUpperCase() 
+            referralCode: user.uid.substring(0, 6).toUpperCase(),
+            badges: []
         });
 
         await sendEmailVerification(user);
@@ -256,6 +257,15 @@ completeProfileForm.addEventListener('submit', async (e) => {
         const dataToUpdate = { name, location, bio };
         if (photoFile) { dataToUpdate.profilePhotoUrl = await uploadImageToCloudinary(photoFile); }
         await updateDoc(doc(db, 'users', user.uid), dataToUpdate);
+
+        // Check if the user has a bio and photo to award the 'verified' badge
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userData = userDoc.data();
+        if (userData.bio && userData.profilePhotoUrl && !userData.badges.includes('verified')) {
+            const newBadges = [...userData.badges, 'verified'];
+            await updateDoc(doc(db, 'users', user.uid), { badges: newBadges });
+        }
+
         showMessage(completeProfileMessage, 'Profile updated successfully!', false);
         setTimeout(() => { completeProfileSection.style.display = 'none'; completeProfileMessage.style.display = 'none'; }, 2000);
     } catch (error) { showMessage(completeProfileMessage, "Failed to update profile."); } 
@@ -286,7 +296,7 @@ productForm.addEventListener('submit', async (e) => {
         const filesToUpload = [imageFile1, imageFile2].filter(f => f);
         if (filesToUpload.length > 0) { finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f))); }
         if (finalImageUrls.length === 0 && !editingProductId) throw new Error('At least one image is required.');
-        const productData = { listing_type: document.querySelector('[name=listing_type]:checked').value, name: productName, name_lowercase: productName.toLowerCase(), price: Number(productPrice), category: productCategory, description: productDescription, story: productStory, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, sellerEmail: user.email, sellerName, sellerIsVerified: isVerified };
+        const productData = { listing_type: document.querySelector('[name=listing_type]:checked').value, name: productName, name_lowercase: productName.toLowerCase(), price: Number(productPrice), category: productCategory, description: productDescription, story: productStory, whatsapp: normalizeWhatsAppNumber(whatsappNumber), sellerId: user.uid, sellerEmail: user.email, sellerName, sellerIsVerified: isVerified, sellerBadges: userData.badges || [] };
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
         if (editingProductId) { await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() }); } else { await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false }); }
         showMessage(productFormMessage, 'Listing submitted successfully!', false); productForm.reset();
@@ -353,5 +363,3 @@ function normalizeWhatsAppNumber(phone) {
     if (cleaned.length === 9) return '256' + cleaned;
     return cleaned;
 }
-
-
