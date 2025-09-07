@@ -15,7 +15,7 @@
             --text-dark: #34495e;
             --border-color: #e9ecef;
         }
-        
+
         body {
             /* Added padding-top to prevent content from hiding under the fixed header */
             padding-top: 70px;
@@ -67,9 +67,9 @@
             font-size: 22px;
             text-decoration: none;
         }
-        
+
         .desktop-nav { display: none; }
-        
+
           /* Style for the mobile navigation menu to match the image */
 /* Mobile nav sidebar */
 .mobile-nav {
@@ -136,6 +136,63 @@
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+
+        /* New styles for the dashboard profile section */
+        #user-profile-info {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #user-profile-info .profile-header-flex {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #user-profile-info .profile-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #007bff;
+        }
+
+        .verified-badge-svg {
+            width: 20px;
+            height: 20px;
+            fill: #28a745;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        .badges-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge-icon {
+            padding: 4px 8px;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-icon.verified {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
     </style>
 </head>
 <body>
@@ -215,6 +272,18 @@
             <div class="page-welcome">
                  <h1>Your Dashboard</h1>
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
+            </div>
+
+            <div id="user-profile-info">
+                <div class="profile-header-flex">
+                    <img id="user-profile-photo" src="placeholder.webp" alt="Profile Photo" class="profile-photo">
+                    <div class="profile-details-text">
+                        <h2 id="user-display-name">Loading...</h2>
+                        <div id="user-badges" class="badges-container"></div>
+                    </div>
+                </div>
+                <p id="user-profile-bio" class="profile-bio" style="display:none;"></p>
+                <a href="/profile.html?sellerId=" id="view-public-profile-btn" class="cta-button" style="margin-top: 15px;">View Public Profile</a>
             </div>
             <p id="dashboard-message" class="success-message" style="display: none;"></p>
             <div id="complete-profile-section" style="display: none;">
