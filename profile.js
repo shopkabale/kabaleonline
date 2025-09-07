@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sellerBio = userData.bio;
             const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp';
             const whatsappNumber = userData.whatsapp;
-            const isVerified = userData.badges?.includes('verified') || false;
+            const badges = userData.badges || [];
 
             let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p style="margin-top: -10px;">📍 From ${sellerLocation}</p>`;
@@ -42,15 +42,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank" style="margin-top: 15px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
 
-            const verifiedBadge = isVerified 
-                ? `<svg class="verified-badge-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>` 
-                : '';
+            let badgesHTML = '';
+            if (badges.length > 0) {
+                badges.forEach(badge => {
+                    if (badge === 'verified') {
+                        badgesHTML += `<span class="badge-icon verified"><i class="fa-solid fa-circle-check"></i> Verified Seller</span>`;
+                    }
+                });
+            }
 
             profileHeader.innerHTML = `
                 <div class="profile-header-flex">
                     <img src="${profilePhotoUrl}" alt="${sellerName}" class="profile-photo">
                     <div class="profile-details">
-                        <h1 style="display: flex; align-items: center; gap: 10px;">${sellerName} ${verifiedBadge}</h1>
+                        <h1 style="display: flex; align-items: center; gap: 10px;">${sellerName}</h1>
+                        ${badgesHTML}
                         ${detailsHTML}
                     </div>
                 </div>
