@@ -1,5 +1,5 @@
 import { db, auth } from '../firebase.js';
-import { collection, query, orderBy, getDocs, doc, getDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, orderBy, getDocs, doc, getDoc, runTransaction, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 const storiesList = document.getElementById('stories-list');
@@ -50,6 +50,10 @@ async function fetchAndDisplayStories() {
                 isLiked = likeDoc.exists();
             }
 
+            // Check if the current user is the author to show the delete button
+            const isAuthor = currentUserId === story.authorId;
+            const deleteButtonHTML = isAuthor ? `<button class="delete-btn" data-story-id="${storyId}">Delete</button>` : '';
+
             const storyElement = document.createElement('div');
             storyElement.className = 'story-card';
             storyElement.innerHTML = `
@@ -62,14 +66,25 @@ async function fetchAndDisplayStories() {
                         <span class="likes-count">${story.likeCount || 0}</span>
                     </div>
                 </div>
+                ${deleteButtonHTML}
             `;
             storiesList.appendChild(storyElement);
         });
 
         await Promise.all(storiesPromises);
         
+        // Attach event listeners for both like and delete buttons
         document.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', handleLike);
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const storyId = e.target.dataset.storyId;
+                if (confirm("Are you sure you want to delete this story? This action cannot be undone.")) {
+                    await deleteStory(storyId);
+                }
+            });
         });
 
     } catch (error) {
@@ -110,8 +125,6 @@ async function handleLike(e) {
             
             transaction.update(storyRef, { likeCount: newLikeCount });
 
-            // Ensure the 'reputation' field exists on the user document.
-            // This is a simple fix. A more robust solution might use a Cloud Function.
             const authorProfileDoc = await transaction.get(authorProfileRef);
             if (authorProfileDoc.exists()) {
                 const currentReputation = authorProfileDoc.data().reputation || 0;
@@ -127,5 +140,23 @@ async function handleLike(e) {
     } catch (e) {
         console.error("Transaction failed: ", e);
         showMessage('Failed to like the story. Please check your network and try again.', true);
+    }
+}
+
+async function deleteStory(storyId) {
+    if (!currentUserId) {
+        showMessage("You must be logged in to delete a story.", true);
+        return;
+    }
+    
+    try {
+        const storyRef = doc(db, 'stories', storyId);
+        await deleteDoc(storyRef);
+        showMessage("Story deleted successfully.", false);
+        // Refresh the stories list to reflect the change
+        fetchAndDisplayStories(); 
+    } catch (error) {
+        console.error("Error deleting story:", error);
+        showMessage("Failed to delete story. Please try again.", true);
     }
 }
