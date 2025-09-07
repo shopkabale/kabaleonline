@@ -131,52 +131,53 @@
     display: none;
 }
 
+/* Mobile nav sidebar */
 .mobile-nav {
-    display: none;
-    background-color: var(--card-bg) !important; /* Change to white */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border-top: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: -260px; /* hidden by default */
+    width: 260px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 1100;
+    padding-top: 60px; /* space for header */
+    transition: left 0.3s ease;
 }
 
+/* Show when .active is toggled by ui.js */
 .mobile-nav.active {
-    display: block;
+    left: 0;
 }
 
-/* Style for each link in the mobile nav to create the list look */
+/* Links inside sidebar */
 .mobile-nav a {
-    display: flex; /* Use flexbox for icon and text alignment */
-    align-items: center; /* Vertically align items */
-    gap: 15px; /* Space between icon and text */
-    padding: 15px 20px; /* Adjust padding for better spacing */
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: #333;
     text-decoration: none;
-    color: var(--text-dark);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1em;
 }
 
-/* Style for the icons within the links */
 .mobile-nav a i {
-    font-size: 20px; /* Adjust icon size */
-    color: var(--primary-color); /* Set icon color */
-    width: 24px; /* Maintain consistent icon width for alignment */
-    text-align: center;
+    margin-right: 15px;
+    font-size: 18px;
+    color: #007bff; /* blue icons */
 }
 
-/* Style for the "Post Something" and "Login" buttons at the bottom */
+/* Special buttons */
 .mobile-nav a.post-button,
 .mobile-nav a.login-button {
     font-weight: bold;
+    color: #007bff;
 }
 
-/* Add a hover effect for user feedback */
+/* Hover effect */
 .mobile-nav a:hover {
     background-color: #f8f9fa;
 }
-
         
         /* --- HERO SECTION --- */
         .hero-section {
@@ -262,17 +263,16 @@
         </div>
         
         <nav class="mobile-nav">
-            <a href="/" class="nav-link" id="items-btn">🛍️ All Items</a>
-            <a href="/?type=service" class="nav-link" id="services-btn">🛠️ Services</a>
-<a href="/rentals/" class="nav-link">🏨 Hostels & Rentals</a> 
-            <a href="/requests/view.html" class="nav-link" id="request-btn">📝 User Requests</a>
-            <a href="/lost-and-found/" class="nav-link" id="lost-found-btn">🔦 Lost & Found</a>
-            <a href="/blog/" class="nav-link" id="tips-btn">📚 Tips</a>
-            <hr>
-            <a href="/sell/" id="dashboard-btn" style="display: none;">👤 Your Dashboard</a>
-            <a href="/sell/" id="post-btn" style="display: none;">➕ Post Something</a>
-            <a href="/sell/" id="login-btn" style="display: none;">🔑 Login</a>
-        </nav>
+    <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+    <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+    <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+    <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+    <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+    <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
+    <hr>
+    <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+    <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
+</nav>
     </header>
     
     <div class="container page-container">
