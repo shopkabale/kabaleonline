@@ -10,12 +10,109 @@
         .blog-post-link:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .blog-post-link h2 { margin-top: 0; color: #007bff; }
         .post-excerpt { color: #666; }
+        /* --- FOOTER --- */
+        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
+        .kabale-footer-links { margin: 20px 0; }
+        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
+/* Sticky header */
+.sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.header-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+    height: 65px;
+    gap: 15px;
+}
+
+.hamburger-menu {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+/* Desktop nav */
+.desktop-nav {
+    display: none;
+    gap: 25px;
+    align-items: center;
+}
+.desktop-nav a {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+/* Mobile nav sidebar */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 1100;
+    padding-top: 65px;
+    transition: left 0.3s ease;
+}
+.mobile-nav.active { left: 0; }
+.mobile-nav a {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #f0f0f0;
+}
+.mobile-nav a i { margin-right: 15px; color: #007bff; }
+
+/* Desktop media query */
+@media (min-width: 992px) {
+    .desktop-nav { display: flex; }
+}
     </style>
 </head>
 <body>
-    <header class="site-header-main">
-         <a href="/" class="site-title">Kabale <span>Online</span></a>
-    </header>
+    <header class="sticky-header">
+    <div class="header-top-bar">
+        <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+        <a href="/" class="site-title">Kabale <span>Online</span></a>
+        <nav class="desktop-nav">
+            <a href="/">All Items</a>
+            <a href="/?type=service">Services</a>
+            <a href="/rentals/">Hostels & Rentals</a>
+            <a href="/requests/view.html">User Requests</a>
+            <a href="/lost-and-found/">Lost & Found</a>
+            <a href="/blog/">Tips</a>
+            <a href="/sell/">Post Something</a>
+        </nav>
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <nav class="mobile-nav">
+        <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+        <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+        <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+        <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
+        <hr>
+        <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+        <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
+    </nav>
+</header>
 
     <div class="container page-content">
         <div class="page-welcome">
@@ -47,6 +144,7 @@
             </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
+    <script type="module" src="ui.js"></script>
     <script type="module" src="../shared.js"></script>
 </body>
 </html>
