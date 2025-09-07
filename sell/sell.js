@@ -7,9 +7,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
     collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, 
-    orderBy, getDoc, setDoc, runTransaction, serverTimestamp, increment 
+    orderBy, getDoc, setDoc, serverTimestamp, increment 
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// --- ELEMENT SELECTION (SAFE FOR ALL PAGES) ---
 const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
@@ -43,11 +44,11 @@ const verificationLogoutBtn = document.getElementById('verification-logout-btn')
 const listingTypeRadios = document.querySelectorAll('input[name="listing_type"]');
 const categorySelect = document.getElementById('product-category');
 
+// --- HELPER FUNCTIONS ---
 const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
 const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Printing & Design": "Printing & Design", "Tech & Repair": "Tech & Repair", "Personal & Beauty": "Personal & Beauty", "Events & Creative": "Events & Creative", "Other Services": "Other Services" };
 
 function updateCategoryOptions() {
-    // Make this function safe to run on any page
     if (!categorySelect || !listingTypeRadios || listingTypeRadios.length === 0) return;
     const selectedTypeInput = document.querySelector('input[name="listing_type"]:checked');
     if (!selectedTypeInput) return;
@@ -60,12 +61,6 @@ function updateCategoryOptions() {
         categorySelect.appendChild(option);
     }
 }
-
-if (listingTypeRadios) {
-    listingTypeRadios.forEach(radio => radio.addEventListener('change', updateCategoryOptions));
-}
-document.addEventListener('DOMContentLoaded', updateCategoryOptions);
-
 const showMessage = (element, message, isError = true) => {
     if (!element) return;
     element.textContent = message;
@@ -73,7 +68,6 @@ const showMessage = (element, message, isError = true) => {
     element.style.display = 'block';
     setTimeout(() => { element.style.display = 'none'; }, 5000);
 };
-
 const hideAuthMessages = () => { if(loginErrorElement) loginErrorElement.style.display = 'none'; if(signupErrorElement) signupErrorElement.style.display = 'none'; if(authSuccessElement) authSuccessElement.style.display = 'none'; };
 const clearAuthForms = () => { if (loginForm) loginForm.reset(); if (signupForm) signupForm.reset(); };
 const toggleLoading = (button, isLoading, originalText) => {
@@ -86,7 +80,16 @@ const toggleLoading = (button, isLoading, originalText) => {
         button.innerHTML = originalText;
     }
 };
+function normalizeWhatsAppNumber(phone) {
+    if(!phone) return '';
+    let cleaned = ('' + phone).replace(/\D/g, '');
+    if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
+    if (cleaned.startsWith('256')) return cleaned;
+    if (cleaned.length === 9) return '256' + cleaned;
+    return cleaned;
+}
 
+// --- MAIN AUTH LOGIC ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         await user.reload();
@@ -96,7 +99,6 @@ onAuthStateChanged(auth, async (user) => {
             if (dashboardContainer) dashboardContainer.style.display = 'block';
             if (sellerEmailSpan) sellerEmailSpan.textContent = user.email;
 
-            // Run dashboard-specific logic only if on the sell page
             if (document.getElementById('seller-products-list')) {
                 fetchSellerProducts(user.uid);
                 const userDocRef = doc(db, 'users', user.uid); let userDoc = await getDoc(userDocRef);
@@ -137,9 +139,11 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function displayDashboardInfo(userData, refCode, count) { if(userReferralCode) userReferralCode.textContent = refCode; if(userReferralCount) userReferralCount.textContent = count; if(referralSection) referralSection.style.display = 'block'; }
-if(userReferralCode) userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
-if(logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
-if(resendVerificationBtn) resendVerificationBtn.addEventListener('click', async () => {
+
+// --- EVENT LISTENERS ---
+if (userReferralCode) userReferralCode.addEventListener('click', () => { navigator.clipboard.writeText(userReferralCode.textContent).then(() => { showMessage(dashboardMessage, "Referral code copied!", false); }); });
+if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
+if (resendVerificationBtn) resendVerificationBtn.addEventListener('click', async () => {
     toggleLoading(resendVerificationBtn, true, 'Sending');
     try {
         await sendEmailVerification(auth.currentUser);
@@ -147,22 +151,22 @@ if(resendVerificationBtn) resendVerificationBtn.addEventListener('click', async 
     } catch (error) { showMessage(authSuccessElement, "Failed to send email. Please try again soon.", true); } 
     finally { toggleLoading(resendVerificationBtn, false, 'Resend Verification Email'); }
 });
-if(verificationLogoutBtn) verificationLogoutBtn.addEventListener('click', () => signOut(auth));
-if(forgotPasswordLink) forgotPasswordLink.addEventListener('click', async (e) => {
+if (verificationLogoutBtn) verificationLogoutBtn.addEventListener('click', () => signOut(auth));
+if (forgotPasswordLink) forgotPasswordLink.addEventListener('click', async (e) => {
     e.preventDefault(); hideAuthMessages();
     const email = document.getElementById('login-email').value;
     if (!email) { return showMessage(loginErrorElement, "Please enter your email to reset your password."); }
     try { await sendPasswordResetEmail(auth, email); showMessage(authSuccessElement, "Password reset email sent. Please check your inbox.", false); }
     catch (error) { showMessage(loginErrorElement, "Could not send reset email. Make sure the email is correct."); }
 });
-if(resetPasswordBtn) resetPasswordBtn.addEventListener('click', async () => {
+if (resetPasswordBtn) resetPasswordBtn.addEventListener('click', async () => {
     const email = prompt("Please enter your email address to receive a password reset link:");
     if (email) {
         try { await sendPasswordResetEmail(auth, email); alert("If an account exists for '" + email + "', a password reset email has been sent."); }
         catch (error) { alert("Could not send reset email. Please ensure the email address is valid."); }
     }
 });
-if(googleLoginBtn) googleLoginBtn.addEventListener('click', () => {
+if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => {
     hideAuthMessages();
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider).then(async (result) => {
@@ -178,10 +182,9 @@ if(googleLoginBtn) googleLoginBtn.addEventListener('click', () => {
         }
     }).catch((error) => { showMessage(loginErrorElement, "Could not sign in with Google. Please try again."); });
 });
-
 const tabs = document.querySelectorAll('.tab-link');
 const contents = document.querySelectorAll('.tab-content');
-if(tabs && contents) {
+if (tabs && contents) {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             hideAuthMessages(); clearAuthForms();
@@ -192,7 +195,6 @@ if(tabs && contents) {
         });
     });
 }
-
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
         const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
@@ -200,7 +202,7 @@ document.querySelectorAll('.toggle-password').forEach(toggle => {
         else { passwordInput.type = 'password'; e.target.textContent = '👁️'; }
     });
 });
-if(loginForm) loginForm.addEventListener('submit', (e) => {
+if (loginForm) loginForm.addEventListener('submit', (e) => {
     e.preventDefault(); hideAuthMessages();
     const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
     const loginButton = loginForm.querySelector('button[type="submit"]');
@@ -209,25 +211,19 @@ if(loginForm) loginForm.addEventListener('submit', (e) => {
         .catch(error => { showMessage(loginErrorElement, 'Invalid email or password.'); })
         .finally(() => { toggleLoading(loginButton, false, 'Login'); });
 });
-if(signupForm) signupForm.addEventListener('submit', async (e) => {
+if (signupForm) signupForm.addEventListener('submit', async (e) => {
     e.preventDefault(); hideAuthMessages();
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
-    // Safely check for optional fields
-    const whatsappInput = document.getElementById('signup-whatsapp');
-    const whatsapp = whatsappInput ? whatsappInput.value : '';
-    const locationInput = document.getElementById('signup-location');
-    const location = locationInput ? locationInput.value : '';
-    const institutionInput = document.getElementById('signup-institution');
-    const institution = institutionInput ? institutionInput.value : '';
+    const whatsapp = document.getElementById('signup-whatsapp')?.value;
+    const location = document.getElementById('signup-location')?.value;
+    const institution = document.getElementById('signup-institution')?.value;
     const password = document.getElementById('signup-password').value;
-    const referralCodeInput = document.getElementById('referral-code');
-    const referralCode = referralCodeInput ? referralCodeInput.value.trim().toUpperCase() : '';
+    const referralCode = document.getElementById('referral-code')?.value.trim().toUpperCase();
     const signupButton = signupForm.querySelector('button[type="submit"]');
 
-    if (!name || (locationInput && !location) || (whatsappInput && !whatsapp)) { return showMessage(signupErrorElement, "Please fill out all required fields."); }
-    toggleLoading(signupButton, true, 'Creating Account'); 
-    if(signupPatienceMessage) signupPatienceMessage.style.display = 'block';
+    if (!name || (document.getElementById('signup-location') && !location) || (document.getElementById('signup-whatsapp') && !whatsapp)) { return showMessage(signupErrorElement, "Please fill out all required fields."); }
+    toggleLoading(signupButton, true, 'Creating Account'); if(signupPatienceMessage) signupPatienceMessage.style.display = 'block';
     
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password); const user = userCredential.user;
@@ -242,15 +238,10 @@ if(signupForm) signupForm.addEventListener('submit', async (e) => {
             }
         }
         const newUserRef = doc(db, "users", user.uid);
-        const userData = { 
-            name, email, role: 'seller', isVerified: false, createdAt: serverTimestamp(), 
-            referralCount: 0, referrerId: referrerId,
-            referralCode: user.uid.substring(0, 6).toUpperCase() 
-        };
+        const userData = { name, email, role: 'seller', isVerified: false, createdAt: serverTimestamp(), referralCount: 0, referrerId: referrerId, referralCode: user.uid.substring(0, 6).toUpperCase() };
         if(whatsapp) userData.whatsapp = normalizeWhatsAppNumber(whatsapp);
         if(location) userData.location = location;
         if(institution) userData.institution = institution;
-
         await setDoc(newUserRef, userData);
         
         await sendEmailVerification(user);
@@ -261,11 +252,10 @@ if(signupForm) signupForm.addEventListener('submit', async (e) => {
         if (error.code === 'auth/weak-password') msg = 'Password must be at least 6 characters.';
         showMessage(signupErrorElement, msg);
     } finally {
-        toggleLoading(signupButton, false, 'Create Account'); 
-        if(signupPatienceMessage) signupPatienceMessage.style.display = 'none';
+        toggleLoading(signupButton, false, 'Create Account'); if(signupPatienceMessage) signupPatienceMessage.style.display = 'none';
     }
 });
-if(completeProfileForm) completeProfileForm.addEventListener('submit', async (e) => {
+if (completeProfileForm) completeProfileForm.addEventListener('submit', async (e) => {
     e.preventDefault(); const user = auth.currentUser; if (!user) return;
     const updateBtn = document.getElementById('update-profile-btn');
     toggleLoading(updateBtn, true, 'Saving');
@@ -280,13 +270,13 @@ if(completeProfileForm) completeProfileForm.addEventListener('submit', async (e)
     } catch (error) { showMessage(completeProfileMessage, "Failed to update profile."); } 
     finally { toggleLoading(updateBtn, false, 'Save and Update Profile'); }
 });
-if(showProductFormBtn) showProductFormBtn.addEventListener('click', () => {
+if (showProductFormBtn) showProductFormBtn.addEventListener('click', () => {
     const isVisible = productFormContainer.style.display === 'block';
     productFormContainer.style.display = isVisible ? 'none' : 'block';
     showProductFormBtn.textContent = isVisible ? 'Sell' : 'Close Form';
     if (!isVisible) { productForm.reset(); productIdInput.value = ''; submitBtn.textContent = 'Add Product'; updateCategoryOptions(); }
 });
-if(productForm) productForm.addEventListener('submit', async (e) => {
+if (productForm) productForm.addEventListener('submit', async (e) => {
     e.preventDefault(); const user = auth.currentUser; if (!user) return;
     const productSubmitBtn = document.getElementById('submit-btn');
     toggleLoading(productSubmitBtn, true, 'Submitting');
@@ -358,11 +348,4 @@ async function deleteProduct(productId) {
             fetchSellerProducts(auth.currentUser.uid);
         } catch (error) { showMessage(dashboardMessage, 'Failed to delete product.'); }
     }
-}
-function normalizeWhatsAppNumber(phone) {
-    let cleaned = ('' + phone).replace(/\D/g, '');
-    if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
-    if (cleaned.startsWith('256')) return cleaned;
-    if (cleaned.length === 9) return '256' + cleaned;
-    return cleaned;
 }
