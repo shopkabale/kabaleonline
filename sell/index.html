@@ -71,47 +71,52 @@
         .desktop-nav { display: none; }
         
           /* Style for the mobile navigation menu to match the image */
+/* Mobile nav sidebar */
 .mobile-nav {
-    display: none;
-    background-color: #ffffff; /* Use a clean white background */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border-top: 1px solid var(--border-color);
-    padding: 10px 0; /* Add some vertical padding */
+    position: fixed;
+    top: 0;
+    left: -260px; /* hidden by default */
+    width: 260px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 1100;
+    padding-top: 60px; /* space for header */
+    transition: left 0.3s ease;
 }
 
+/* Show when .active is toggled by ui.js */
 .mobile-nav.active {
-    display: block;
+    left: 0;
 }
 
-/* Style for each list item in the mobile navigation */
+/* Links inside sidebar */
 .mobile-nav a {
-    display: flex; /* Use flexbox for horizontal alignment */
-    align-items: center; /* Vertically center the icon and text */
-    padding: 15px 20px; /* Generous padding for a cleaner look */
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: #333;
     text-decoration: none;
-    color: var(--text-dark);
-    border-bottom: 1px solid var(--border-color); /* Add the separator line */
-    font-size: 1rem;
-    gap: 15px; /* Add space between the icon and the text */
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1em;
 }
 
-/* Style for the icons within the menu links */
 .mobile-nav a i {
-    font-size: 20px; /* Match the icon size from the image */
-    color: var(--primary-color); /* Use the primary blue color for icons */
-    width: 24px; /* Fix the icon width to keep text aligned */
-    text-align: center;
+    margin-right: 15px;
+    font-size: 18px;
+    color: #007bff; /* blue icons */
 }
 
-/* Style for the "Post Something" and "Login" links */
-.mobile-nav .post-button,
-.mobile-nav .login-button {
-    font-weight: bold; /* Make the text bold */
+/* Special buttons */
+.mobile-nav a.post-button,
+.mobile-nav a.login-button {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Hover effect */
+.mobile-nav a:hover {
+    background-color: #f8f9fa;
 }
      /* --- END OF NEW HEADER STYLES --- */
 
@@ -146,13 +151,16 @@
             </div>
         </div>
         <nav class="mobile-nav">
-            <a href="/" class="nav-link">🛍️ All Items</a>
-            <a href="/?type=service" class="nav-link">🛠️ Services</a>
- <a href="/rentals/" class="nav-link">🏨 Hostels & Rentals</a> 
-            <a href="/requests/view.html" class="nav-link">📝 User Requests</a>
-            <a href="/lost-and-found/" class="nav-link">🔦 Lost & Found</a>
-            <a href="/blog/" class="nav-link">📚 Tips</a>
-        </nav>
+    <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+    <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+    <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+    <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+    <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+    <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
+    <hr>
+    <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+    <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
+</nav>
     </header>
 
     <div class="container page-content">
