@@ -192,6 +192,53 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+        
+        /* NEW QA SECTION STYLES */
+        #qa-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        #qa-list .qa-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        #qa-list .qa-item:last-child {
+            border-bottom: none;
+        }
+
+        .qa-question {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .qa-answer {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #6c757d;
+            border-radius: 4px;
+        }
+
+        .qa-form {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .qa-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
 
     </style>
 </head>
@@ -305,6 +352,16 @@
                 <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
                 <p style="margin-top: 15px;">You have referred <span id="user-referral-count" style="font-weight: bold; color: #28a745;">0</span> new members.</p>
             </div>
+
+            <div id="unanswered-questions" style="margin-top: 30px;">
+                <h2 style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-comment-dots"></i> Questions for You (<span id="qa-count">0</span>)
+                </h2>
+                <div id="qa-list">
+                    <p>Loading questions...</p>
+                </div>
+            </div>
+            
             <p class="instruction-text"><b>To sell:</b> Click 'Sell', fill in the details, and add your item!</p>
             <button id="show-product-form-btn" class="cta-button">Sell</button>
             <button id="logout-btn">Logout</button>
