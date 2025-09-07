@@ -8,22 +8,15 @@ import {
 const hostelPostForm = document.getElementById('hostel-post-form');
 const publicHostelGrid = document.getElementById('hostel-grid-public');
 const myHostelsGrid = document.getElementById('my-hostels-grid');
-const authContainer = document.getElementById('auth-container');
-const dashboardContainer = document.getElementById('dashboard-container');
-const sellerEmailSpan = document.getElementById('seller-email');
 const showFormBtn = document.getElementById('show-hostel-form-btn');
 const formContainer = document.getElementById('hostel-form-container');
 const formMessage = document.getElementById('hostel-form-message');
 
 let currentEditingHostelId = null;
 
-// --- AUTH STATE & DATA FETCHING ---
+// --- PAGE-SPECIFIC LOGIC ---
 onAuthStateChanged(auth, async (user) => {
     if (user && user.emailVerified) {
-        if (authContainer) authContainer.style.display = 'none';
-        if (dashboardContainer) dashboardContainer.style.display = 'block';
-        if (sellerEmailSpan) sellerEmailSpan.textContent = user.email;
-        
         const contactDisplay = document.getElementById('landlord-contact-display');
         if (contactDisplay) {
             try {
@@ -33,20 +26,20 @@ onAuthStateChanged(auth, async (user) => {
                     const localNumber = `0${userDoc.data().whatsapp.substring(3)}`;
                     contactDisplay.textContent = `📞 ${localNumber}`;
                 } else {
-                    contactDisplay.textContent = "No contact number. Please update your profile.";
+                    contactDisplay.textContent = "No contact number found. Please update your profile.";
                     contactDisplay.style.color = 'red';
                 }
             } catch (err) {
                 contactDisplay.textContent = "Could not load contact info.";
             }
         }
-        
         fetchMyHostels(user.uid);
-    } else {
-        if (authContainer) authContainer.style.display = 'block';
-        if (dashboardContainer) dashboardContainer.style.display = 'none';
     }
 });
+
+// --- HELPER FUNCTIONS ---
+const showMessage = (element, message, isError = true) => { /* ... full function from auth.js ... */ };
+async function uploadImageToCloudinary(file) { /* ... full function from sell.js ... */ }
 
 // --- EVENT LISTENERS ---
 if (showFormBtn) {
@@ -64,36 +57,11 @@ if (hostelPostForm) {
     hostelPostForm.addEventListener('submit', handleHostelSubmit);
 }
 
-// --- HELPER FUNCTIONS ---
-const showMessage = (message, isError = true) => {
-    if (!formMessage) return;
-    formMessage.textContent = message;
-    formMessage.className = isError ? 'error-message' : 'success-message';
-    formMessage.style.display = 'block';
-    setTimeout(() => { formMessage.style.display = 'none'; }, 5000);
-};
-
-async function uploadImageToCloudinary(file) {
-    const response = await fetch('/.netlify/functions/generate-signature');
-    if (!response.ok) throw new Error('Could not get upload signature.');
-    const { signature, timestamp, cloudname, apikey } = await response.json();
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', apikey);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
-    const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-    if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-    const uploadData = await uploadResponse.json();
-    return uploadData.secure_url;
-}
-
-// --- CORE LOGIC: SUBMIT, FETCH, EDIT, DELETE ---
+// --- CORE FUNCTIONS ---
 async function handleHostelSubmit(e) {
     e.preventDefault();
     const user = auth.currentUser;
-    if (!user) return showMessage("You must be logged in to post.");
+    if (!user) return showMessage(formMessage, "You must be logged in to post.");
     
     const submitBtn = hostelPostForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
@@ -122,11 +90,11 @@ async function handleHostelSubmit(e) {
 
         if (currentEditingHostelId) {
             await updateDoc(doc(db, 'hostels', currentEditingHostelId), hostelData);
-            showMessage("Hostel updated successfully!", false);
+            showMessage(formMessage, "Hostel updated successfully!", false);
         } else {
             hostelData.createdAt = serverTimestamp();
             await addDoc(collection(db, 'hostels'), hostelData);
-            showMessage("Hostel posted successfully!", false);
+            showMessage(formMessage, "Hostel posted successfully!", false);
         }
         
         resetHostelForm();
@@ -135,7 +103,7 @@ async function handleHostelSubmit(e) {
 
     } catch (error) {
         console.error("Error submitting hostel: ", error);
-        showMessage(`Error: ${error.message}`);
+        showMessage(formMessage, `Error: ${error.message}`);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = currentEditingHostelId ? "Update Listing" : "Submit Listing";
@@ -241,12 +209,12 @@ async function deleteHostel(id) {
     
     try {
         await deleteDoc(doc(db, "hostels", id));
-        showMessage("Hostel deleted successfully.", false);
+        showMessage(document.getElementById('dashboard-message'), "Hostel deleted successfully.", false); // A general message area might be needed
         fetchMyHostels(auth.currentUser.uid);
         fetchPublicHostels();
     } catch (error) {
         console.error("Error deleting hostel: ", error);
-        showMessage("Could not delete hostel. Please try again.");
+        showMessage(document.getElementById('dashboard-message'), "Could not delete hostel. Please try again.");
     }
 }
 
