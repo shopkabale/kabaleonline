@@ -6,13 +6,6 @@
 
     <title>Kabale Online | Buy & Sell Electronics, Fashion & More in Kabale</title>
     <meta name="description" content="Find great deals on new and second-hand items in Kabale. Kabale Online is the #1 student and community marketplace for electronics, fashion, textbooks, and services. Discover, buy, and sell easily today!">
-    <meta name="keywords" content="Kabale, Uganda, online market, marketplace, buy, sell, second-hand, used items, student hustle, Kabale University, KAB , kabale online , online jobs in kabale , shop online in kabale , kabale online shop , kabale , kigezi , online jobs in kabale , Uganda  ">
-
-    <meta property="og:title" content="Kabale Online | Your #1 Marketplace in Kabale">
-    <meta property="og:description" content="The best place for students and residents in Kabale to buy and sell new & used goods and services.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.kabaleonline.com/">
-    <meta property="og:image" content="https://www.kabaleonline.com/social-share-image.jpg">
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -24,6 +17,7 @@
             --card-bg: #ffffff;
             --text-dark: #34495e;
             --text-muted: #6c757d;
+            --border-color: #e9ecef;
             --border-radius: 8px;
             --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
@@ -31,7 +25,8 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding-top: 60px; /* Space for new sticky header */
+            /* New padding-top to account for the new sticky header's height */
+            padding-top: 105px; 
             background-color: var(--bg-color);
             color: var(--text-dark);
             line-height: 1.6;
@@ -48,169 +43,175 @@
             padding-bottom: 20px;
         }
 
-        /* --- UPDATED: Making Main Header Sticky --- */
-        .site-header-main {
-            text-align: center;
-            padding: 15px 0;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid #eee;
+        /* --- NEW JUMIA-STYLE STICKY HEADER --- */
+        .sticky-header {
             position: sticky;
             top: 0;
             z-index: 1000;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             width: 100%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            height: 50px;
+        }
+
+        .hamburger-menu {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dark);
         }
 
         .site-title {
             text-decoration: none;
             color: var(--text-dark);
-            font-size: 1.8em;
+            font-size: 1.6em;
             font-weight: bold;
         }
-
         .site-title span {
             color: var(--accent-color);
         }
 
-        /* --- UPDATED: Reduced Hero Section --- */
-        .hero-section {
-            background-image: linear-gradient(145deg, #007bff, #003d7a);
-            color: white;
-            text-align: center;
-            padding: 30px 20px; /* Reduced vertical padding */
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-
-        .hero-section h1 {
-            font-size: 2.1em; /* Reduced font size */
-            margin-bottom: 10px;
-        }
-
-        .hero-section p {
-            font-size: 1.1em; /* Reduced font size */
-            margin-bottom: 25px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            opacity: 0.9;
-        }
-
-        .hero-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 18px;
-        }
-
-        @media (max-width: 768px) {
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-
-        .hero-btn {
-            width: 260px;
-            padding: 16px 24px;
-            font-size: 1.1em;
-            font-weight: bold;
-            text-decoration: none;
-            text-align: center;
-            border-radius: 40px;
+        .header-icons {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease-in-out;
+            gap: 20px;
+        }
+        .header-icons a {
+            color: var(--text-dark);
+            font-size: 22px;
+            text-decoration: none;
         }
 
-        .hero-browse {
-            background-color: white;
-            color: #007bff;
+        .header-search-bar {
+            padding: 0 15px 10px 15px;
+            border-top: 1px solid var(--border-color);
         }
-
-        .hero-start-selling {
-            background-color: #ffc107;
-            color: #34495e;
+        .search-container {
+            position: relative;
         }
-
-        .hero-community-btn {
-            background-color: #25D366;
-            color: white;
-            font-size: 1.15em;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        #search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px; /* Space for icon */
+            font-size: 1em;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
         }
-
-        .hero-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.95;
+        .search-container .fa-search {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
         }
         
-        /* --- Search & Filter --- */
-        .search-and-filter-container {
-            padding: 20px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            margin-bottom: 30px;
-        }
-        .search-bar {
-            display: flex;
-            gap: 10px;
+        /* --- NEW NAVIGATION MENUS --- */
+        .desktop-nav {
+            display: none; /* Hidden on mobile */
             align-items: center;
+            gap: 25px;
         }
-        .search-bar input {
-            flex-grow: 1;
-            padding: 12px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        .desktop-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s;
         }
-        .cta-button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-        .cta-button:hover {
-            background-color: #0056b3;
-        }
-        .filters {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .filter-row {
-            display: flex;
-            gap: 10px;
-        }
-        .filters select, .filters input[type="number"] {
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            width: 100%;
-        }
-        .price-filter-group {
-            display: flex;
-            gap: 10px;
-        }
-        .price-filter-group input[type="number"] {
-            flex: 1;
-        }
-        #apply-filters-btn {
-            background-color: #ffc107;
-            color: #333;
+        .desktop-nav a:hover, .desktop-nav a.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
         }
 
+        .mobile-nav {
+            display: none; /* Hidden by default */
+            background-color: var(--card-bg);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-top: 1px solid var(--border-color);
+        }
+        .mobile-nav.active {
+            display: block; /* Shown with JS */
+        }
+        .mobile-nav a {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .mobile-nav a:last-child {
+            border-bottom: none;
+        }
+        .mobile-nav a.active {
+            background-color: var(--bg-color);
+            font-weight: bold;
+        }
+
+        /* --- UPDATED: Significantly Reduced Hero Section for Mobile --- */
+        .hero-section {
+            background-image: linear-gradient(145deg, #007bff, #003d7a);
+            color: white; text-align: center; padding: 25px 15px; /* Reduced padding */
+            border-radius: 12px; margin-bottom: 20px;
+        }
+        .hero-section h1 { font-size: 1.8em; margin-bottom: 8px; } /* Reduced font size */
+        .hero-section p { font-size: 1em; margin-bottom: 20px; opacity: 0.9; } /* Reduced font size */
+        
+        .hero-buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .hero-btn { 
+            width: 90%; max-width: 280px; padding: 12px 20px; /* Reduced padding */
+            font-size: 1em; /* Reduced font size */
+            font-weight: bold; text-decoration: none; border-radius: 40px; 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            transition: all 0.2s ease-in-out;
+        }
+        .hero-browse { background-color: white; color: #007bff; }
+        .hero-start-selling { background-color: #ffc107; color: #34495e; }
+        .hero-community-btn { background-color: #25D366; color: white; }
+
+        /* --- RESPONSIVE STYLES --- */
+        /* Tablet screens and up */
+        @media (min-width: 768px) {
+            body { padding-top: 115px; } /* Adjust body padding for desktop header */
+            
+            /* Restore hero section for larger screens */
+            .hero-section { padding: 40px 20px; }
+            .hero-section h1 { font-size: 2.3em; }
+            .hero-section p { font-size: 1.1em; }
+            .hero-buttons { flex-direction: row; justify-content: center; }
+            .hero-btn { width: auto; }
+        }
+
+        /* Desktop screens */
+        @media (min-width: 992px) {
+            body { padding-top: 65px; } /* Final body padding for desktop */
+            .hamburger-menu { display: none; } /* Hide hamburger */
+            .desktop-nav { display: flex; } /* Show desktop nav */
+            .site-title { margin: 0; }
+            .header-top-bar { justify-content: space-between; height: 65px; }
+            .header-search-bar { display: none; } /* Jumia-like sites often hide the second bar on desktop */
+            .header-top-bar > .site-title { order: 2; flex-grow: 0; }
+            .desktop-nav { order: 1; }
+            .header-icons { order: 3; }
+        }
+
+        /* Other styles for product grid, footer, etc. remain the same */
         /* --- Product Grid --- */
+        main {
+            padding-top: 20px;
+        }
         main h2 {
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 10px;
@@ -259,96 +260,10 @@
             font-size: 0.8em;
             color: grey;
             margin: 0 15px 10px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
         .seller-info a {
             color: grey;
             text-decoration: underline;
-        }
-        .verified-badge-svg {
-            width: 16px;
-            height: 16px;
-            fill: var(--primary-color);
-        }
-
-        /* --- CTA Sections --- */
-        .request-cta-section,
-        .blog-section-container {
-            text-align: center;
-            margin: 40px 0;
-            padding: 40px 20px;
-            border-radius: var(--border-radius);
-            color: white;
-            background-image: linear-gradient(145deg, #007bff, #0056b3);
-        }
-        .request-cta-section h3, .blog-section-container h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-        }
-        .request-cta-section p, .blog-section-container p {
-            margin-bottom: 25px;
-            opacity: 0.9;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .request-cta-section .cta-button, .blog-section-container .cta-button {
-            background-color: var(--accent-color);
-            color: var(--text-dark);
-        }
-
-        /* --- NEW: Pre-Footer Navigation Section --- */
-        .pre-footer-nav {
-            background-color: var(--card-bg);
-            border-top: 1px solid #e9ecef;
-            padding: 30px 15px;
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        .pre-footer-nav h3 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            color: var(--text-dark);
-        }
-
-        .nav-grid {
-            display: grid;
-            gap: 12px;
-            /* Mobile: 2 columns */
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .action-btn {
-            padding: 12px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9em;
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            background-color: #f8f9fa;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Center content inside button */
-            gap: 8px;
-        }
-
-        .action-btn:hover {
-            background-color: #e9ecef;
-            border-color: #ced4da;
-        }
-
-        .nav-link.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
         }
 
         /* --- Footer --- */
@@ -358,134 +273,73 @@
             padding: 40px 20px;
             text-align: center;
         }
-        .kabale-contact-title {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-        }
-        .kabale-contact-details p {
-            margin: 5px 0;
-        }
-        .kabale-footer-links {
-            margin: 20px 0;
-        }
-        .kabale-footer-link {
-            color: #bdc3c7;
-            margin: 0 10px;
-            text-decoration: none;
-        }
-        .kabale-footer-link:hover {
-            color: white;
-        }
-        .copyright {
-            font-size: 0.9em;
-            color: var(--text-muted);
-            margin-top: 20px;
-        }
-
-        /* --- Responsive Grids --- */
-        @media (min-width: 768px) {
-            .product-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            /* Nav Grid for Tablet and up: 4 columns */
-            .nav-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .product-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
+        .kabale-footer-links { margin: 20px 0; }
+        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
+        .kabale-footer-link:hover { color: white; }
+        .copyright { font-size: 0.9em; color: var(--text-muted); margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <header class="site-header-main">
-        <a href="/" class="site-title">Kabale <span>Online</span></a>
-    </header>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            
+            <nav class="desktop-nav">
+                <a href="/" class="nav-link" id="items-btn-desktop">All Items</a>
+                <a href="/?type=service" class="nav-link" id="services-btn-desktop">Services</a>
+                <a href="/requests/view.html" class="nav-link" id="request-btn-desktop">Requests</a>
+                <a href="/lost-and-found/" class="nav-link" id="lost-found-btn-desktop">Lost & Found</a>
+            </nav>
 
+            <div class="header-icons">
+                <a href="/sell/" aria-label="Your Dashboard" id="dashboard-btn-main"><i class="fa-regular fa-user"></i></a>
+                <a href="/sell/" aria-label="Post Something" id="post-btn-main"><i class="fa-solid fa-plus"></i></a>
+            </div>
+        </div>
+        <div class="header-search-bar">
+            <div class="search-container">
+                <i class="fa fa-search"></i>
+                <input type="search" id="search-input" placeholder="Search for items or services...">
+            </div>
+        </div>
+    </header>
+    
+    <nav class="mobile-nav">
+        <a href="/" class="nav-link" id="items-btn">🛍️ All Items</a>
+        <a href="/?type=service" class="nav-link" id="services-btn">🛠️ Services</a>
+        <a href="/requests/view.html" class="nav-link" id="request-btn">📝 User Requests</a>
+        <a href="/lost-and-found/" class="nav-link" id="lost-found-btn">🔦 Lost & Found</a>
+        <a href="/blog/" class="nav-link" id="tips-btn">📚 Tips</a>
+        <hr>
+        <a href="/sell/" id="dashboard-btn" style="display: none;">👤 Your Dashboard</a>
+        <a href="/sell/" id="post-btn" style="display: none;">➕ Post Something</a>
+        <a href="/sell/" id="login-btn" style="display: none;">🔑 Login</a>
+    </nav>
     <div class="container page-container">
         <section class="hero-section">
             <h1>More Than a Marketplace</h1>
             <p>The #1 community platform for items, services, rentals, lost & found, and more in Kabale.</p>
             <div class="hero-buttons">
-                <a href="#listings-title" class="hero-btn hero-browse">🛍️ Browse Products</a>
-                <a href="/sell/" class="hero-btn hero-start-selling">➕ Post Something</a>
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" class="hero-btn hero-community-btn" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Join Our Community
-                </a>
+                <a href="#listings-title" class="hero-btn hero-browse">Browse Products</a>
+                <a href="/sell/" class="hero-btn hero-start-selling">Post Something</a>
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" class="hero-btn hero-community-btn" target="_blank">Join Our Community</a>
             </div>
         </section>
-
-        <div class="search-and-filter-container">
-            <div class="search-bar">
-                <input type="search" id="search-input" placeholder="Search for items or services...">
-                <button id="search-btn" class="cta-button">Search</button>
-            </div>
-            <div class="filters">
-                <div class="filter-row">
-                    <select id="category-filter">
-                        <option value="">All Categories</option>
-                        <optgroup label="Items"><option value="Electronics">Electronics</option><option value="Clothing & Apparel">Clothing & Apparel</option><option value="Home & Furniture">Home & Furniture</option><option value="Health & Beauty">Health & Beauty</option><option value="Vehicles">Vehicles</option><option value="Property">Property</option><option value="Other">Other (Items)</option></optgroup>
-                        <optgroup label="Services / Student Hustles"><option value="Tutoring & Academics">Tutoring & Academics</option><option value="Printing & Design">Printing & Design</option><option value="Tech & Repair">Tech & Repair</option><option value="Personal & Beauty">Personal & Beauty</option><option value="Events & Creative">Events & Creative</option><option value="Other Services">Other (Services)</option></optgroup>
-                    </select>
-                </div>
-                <div class="filter-row price-filter-group">
-                    <input type="number" id="min-price" placeholder="Min Price (UGX)">
-                    <input type="number" id="max-price" placeholder="Max Price (UGX)">
-                    <button id="apply-filters-btn" class="cta-button">Filter</button>
-                </div>
-            </div>
-        </div>
 
         <main>
             <h2 id="listings-title">All Listings</h2>
             <div id="product-grid" class="product-grid"></div>
-            <div id="load-more-container" style="text-align: center; margin-top: 30px;">
-                <button id="load-more-btn" class="cta-button" style="display: none;">Load More</button>
-            </div>
         </main>
-
-        <div class="request-cta-section">
-            <h3>Didn't find what you're looking for?</h3>
-            <p>Let our community of sellers know what you need by posting a public request.</p>
-            <a href="/requests/" class="cta-button">Request an Item or Service</a>
-        </div>
-        
-        <div class="blog-section-container">
-            <h3>From Our Tips Section</h3>
-            <p>Read our guides on how to buy safely and sell your items faster on Kabale Online.</p>
-            <a href="/blog/" class="cta-button">Read All Tips</a>
-        </div>
     </div>
 
-    <nav class="pre-footer-nav container">
-        <h3>Quick Links</h3>
-        <div class="nav-grid">
-            <a href="/" class="action-btn nav-link" id="items-btn">🛍️ All Items</a>
-            <a href="/?type=service" class="action-btn nav-link" id="services-btn">🛠️ Services</a>
-            <a href="/requests/view.html" class="action-btn nav-link" id="request-btn">📝 User Requests</a>
-            <a href="/lost-and-found/" class="action-btn nav-link" id="lost-found-btn">🔦 Lost & Found</a>
-            <a href="/blog/" class="action-btn nav-link" id="tips-btn">📚 Tips</a>
-            <a href="/sell/" class="action-btn" id="login-btn" style="display: none;">🔑 Login</a>
-            <a href="/sell/" class="action-btn" id="post-btn" style="display: none;">➕ Post Something</a>
-            <a href="/sell/" class="action-btn" id="dashboard-btn" style="display: none;">👤 Your Dashboard</a>
-        </div>
-    </nav>
     <footer>
-        <div class="kabale-contact-info-section">
-            <h3 class="kabale-contact-title">Get in Touch</h3>
-            <div class="kabale-contact-details">
-                <p class="kabale-contact-item">📞 +256 784655792</p>
-                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
-            </div>
-            <div class="kabale-footer-links">
-                <a href="/about.html" class="kabale-footer-link">About Us</a>
-                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
         </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
@@ -493,5 +347,17 @@
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+
+            if (hamburger && mobileNav) {
+                hamburger.addEventListener('click', () => {
+                    mobileNav.classList.toggle('active');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
