@@ -136,8 +136,40 @@ footer {
             <p>Find your next place to stay. Search student hostels and private rentals across Kabale.</p>
             <a href="/rentals/post.html" class="cta-button">Post a Rental (Free)</a>
         </div>
-        <div class="filter-bar">
-            </div>
+        
+<div class="filter-bar">
+  <div class="filter-grid">
+
+    <div class="filter-group">
+      <label for="filter-type">Type</label>
+      <select id="filter-type">
+        <option value="">All</option>
+        <option value="hostel">Hostel</option>
+        <option value="apartment">Apartment</option>
+        <option value="house">House</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-location">Location</label>
+      <input type="text" id="filter-location" placeholder="Enter location">
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-sort">Sort By</label>
+      <select id="filter-sort">
+        <option value="newest">Newest</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <button id="apply-rental-filters">Apply Filters</button>
+    </div>
+
+  </div> <!-- end .filter-grid -->
+</div> <!-- end .filter-bar -->
         <div id="rental-grid" class="rental-grid"><p>Loading listings...</p></div>
     </div>
 
