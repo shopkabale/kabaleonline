@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Rental or Hostel | Kabale Online</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .form-container { max-width: 700px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
+        .price-group { display: flex; gap: 10px; }
+        .amenities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (min-width: 768px) { .amenities-grid { grid-template-columns: repeat(3, 1fr); } }
+        .amenity-item { display: flex; align-items: center; gap: 8px; }
+        .success-message { display: none; text-align: center; color: #155724; background-color: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <header class="site-header-main">
+        <a href="/" class="site-title">Kabale <span>Online</span></a>
+    </header>
+    <div class="container">
+        <a href="/" class="back-home-btn">⬅ Back to Home</a>
+        <div class="form-container">
+            <h2>Post a New Rental or Hostel Listing</h2>
+            <p id="success-message" class="success-message">Listing submitted successfully!</p>
+            <form id="rental-form">
+                <div class="form-group"><label for="listing-type">Listing Type</label><select id="listing-type" required><option value="Hostel">Student Hostel</option><option value="Rental">House/Apartment Rental</option></select></div>
+                <div class="form-group"><label for="title">Listing Title</label><input type="text" id="title" placeholder="e.g., Single Room in New Ark Hostel" required></div>
+                <div class="form-group"><label for="location">Location / Area</label><input type="text" id="location" placeholder="e.g., Kikungiri, Makanga" required></div>
+                <div class="form-group"><label for="price">Price (UGX)</label><div class="price-group"><input type="number" id="price" placeholder="800000" required><select id="price-frequency"><option value="per Semester">per Semester</option><option value="per Month">per Month</option></select></div></div>
+                <div class="form-group"><label for="description">Description</label><textarea id="description" rows="5" placeholder="Provide details about the room, amenities, and nearby facilities." required></textarea></div>
+                <div class="form-group"><label>Amenities (Check all that apply)</label><div class="amenities-grid">
+                    <div class="amenity-item"><input type="checkbox" id="hasWater"><label for="hasWater">Running Water</label></div>
+                    <div class="amenity-item"><input type="checkbox" id="hasPowerBackup"><label for="hasPowerBackup">Power Backup</label></div>
+                    <div class="amenity-item"><input type="checkbox" id="isFenced"><label for="isFenced">Fenced/Gated</label></div>
+                    <div class="amenity-item"><input type="checkbox" id="isFurnished"><label for="isFurnished">Furnished</label></div>
+                </div></div>
+                <div class="form-group"><label for="contactName">Contact Person Name</label><input type="text" id="contactName" required></div>
+                <div class="form-group"><label for="contactPhone">Contact WhatsApp Number</label><input type="tel" id="contactPhone" required></div>
+                <div class="form-group"><label for="photos">Upload Photos (up to 5)</label><input type="file" id="photos" multiple accept="image/*"></div>
+                <button type="submit" id="submit-btn" class="cta-button">Submit Listing</button>
+            </form>
+        </div>
+    </div>
+    <script type="module" src="post.js"></script>
+</body>
+</html>
