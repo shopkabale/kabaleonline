@@ -112,51 +112,70 @@
                 justify-content: center;
             }
         }
-.hero-start-selling {
-    background-color: var(--accent-color); /* Yellow */
-    color: var(--text-dark);
+/* --- Hero Section --- */
+.hero-section {
+    background-image: linear-gradient(145deg, #007bff, #003d7a);
+    color: white;
+    text-align: center;
+    padding: 50px 20px;
+    border-radius: 12px; /* Rounded corners on the whole hero box */
+    margin-bottom: 30px;
 }
 
+.hero-section h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
 
-        /* --- Hero Section --- */
-        .hero-section {
-            background-image: linear-gradient(145deg, #007bff, #003d7a);
-            color: white;
-            text-align: center;
-            padding: 50px 20px;
-            border-radius: var(--border-radius);
-        }
-        .hero-section h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        .hero-section p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            opacity: 0.9;
-        }
-        .hero-buttons a {
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            display: inline-block;
-        }
-        .hero-browse {
-            background-color: white;
-            color: #007bff;
-        }
-        
-/* Extra rules to improve spacing for hero buttons */
+.hero-section p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+/* --- Hero Buttons --- */
 .hero-buttons {
     display: flex;
     justify-content: center;
-    gap: 15px;          /* Horizontal spacing on big screens */
-    flex-wrap: wrap;    /* Allows vertical stacking on small screens */
+    gap: 15px;          /* Horizontal spacing */
+    flex-wrap: wrap;    /* Allows stacking on small screens */
 }
 
 .hero-buttons a {
-    margin: 8px 0;      /* Vertical spacing when stacked */
+    padding: 12px 24px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 30px; /* Rounded corners on all buttons */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Individual button colors */
+.hero-browse {
+    background-color: white;
+    color: #007bff;
+}
+
+.hero-start-selling {
+    background-color: #ffc107;
+    color: #34495e;
+}
+
+.hero-community-btn {
+    background-color: #25D366; /* WhatsApp green */
+    color: white;
+    font-size: 1.1em;
+    padding: 14px 28px;
+    border-radius: 50px; /* More rounded, pill shape */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+
+.hero-buttons a:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 /* WhatsApp special styling */
@@ -415,20 +434,18 @@
 
     <div class="container page-container">
         <section class="hero-section">
-            <h1>More Than a Marketplace</h1>
-            <p>The #1 community platform for items, services, rentals, lost & found, and so much more in Kabale.
-</p>
-            <div class="hero-buttons">
-                
-    <a href="#listings-title" class="hero-browse">🛍️ Browse Products</a>
+  <h1>More Than a Marketplace</h1>
+  <p>The #1 community platform for items, services, rentals, lost & found, and more in Kabale.</p>
 
+  <div class="hero-buttons">
+    <a href="#listings-title" class="hero-browse">🛍️ Browse Products</a>
     <a href="/sell/" class="hero-start-selling">➕ Post Something</a>
-</div>
-  <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" class="hero-community-btn" target="_blank">
-                    <i class="fa-brands fa-whatsapp"></i> Join Our Community
-                </a>
-            </div>
-        </section>
+    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" 
+       class="hero-community-btn" target="_blank">
+       <i class="fa-brands fa-whatsapp"></i> Join Our Community
+    </a>
+  </div>
+</section>
 
         <div class="search-and-filter-container">
             <div class="search-bar">
