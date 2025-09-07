@@ -11,6 +11,7 @@ requestForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Posting...';
 
     try {
+        // The IDs now match the HTML
         const item = document.getElementById('request-item').value;
         const details = document.getElementById('request-details').value;
         const nickname = document.getElementById('request-nickname').value;
