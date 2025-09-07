@@ -9,7 +9,7 @@ const qaFormContainer = document.getElementById('qa-form-container');
 let currentProductId = null;
 let currentUserId = null;
 
-// Listen for authentication state changes
+// Listen for authentication state changes and render the Q&A form accordingly
 onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
     renderQaForm();
@@ -129,6 +129,14 @@ async function handleQuestionSubmit(e) {
     const messageEl = document.getElementById('qa-message');
     const question = input.value.trim();
 
+    // Check for a valid user ID as a failsafe
+    if (!currentUserId) {
+        messageEl.textContent = 'You must be logged in to ask a question.';
+        messageEl.style.display = 'block';
+        messageEl.style.color = 'red';
+        return;
+    }
+
     if (!question) {
         messageEl.textContent = 'Please type a question.';
         messageEl.style.display = 'block';
@@ -142,7 +150,7 @@ async function handleQuestionSubmit(e) {
             askerId: currentUserId,
             createdAt: new Date()
         });
-        
+
         input.value = '';
         messageEl.textContent = 'Question submitted successfully!';
         messageEl.style.display = 'block';
@@ -160,7 +168,7 @@ function fetchQuestions() {
     if (!currentProductId) return;
 
     const q = query(collection(db, `products/${currentProductId}/qanda`), orderBy('createdAt', 'desc'));
-    
+
     // onSnapshot provides a real-time listener
     onSnapshot(q, async (querySnapshot) => {
         qaList.innerHTML = '';
@@ -187,7 +195,7 @@ function fetchQuestions() {
                 </div>
             `;
         });
-        
+
         // Wait for all user names to be fetched
         const questionsHtmlArray = await Promise.all(questionsPromises);
         qaList.innerHTML = questionsHtmlArray.join('');
