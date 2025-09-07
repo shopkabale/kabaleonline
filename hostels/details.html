@@ -36,6 +36,7 @@
         .hostel-location { font-size: 1.1em; color: #6c757d; margin-bottom: 20px; }
         
         .details-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .details-section:last-of-type { border-bottom: none; }
         .details-section h2 { margin-top: 0; font-size: 1.4em; }
         
         .price-tag { font-size: 1.8em; font-weight: bold; color: var(--primary-color); }
@@ -63,7 +64,8 @@
         }
         .contact-button:hover { background-color: #1EBE56; }
 
-        .landlord-info { margin-top: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;}
+        .landlord-info { margin-top: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
+        .landlord-info p { margin: 5px 0; }
         
         #loading-state, #error-state { text-align: center; padding: 50px; font-size: 1.2em; }
     </style>
@@ -71,7 +73,6 @@
 <body>
     <header class="sticky-header">
         <div class="header-top-bar">
-            <!-- Simplified header for this page -->
             <a href="/hostels/" style="color: var(--text-dark); text-decoration: none; font-size: 1.2em;"><i class="fa-solid fa-arrow-left"></i> Back</a>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
         </div>
@@ -105,21 +106,21 @@
             
             <div class="details-section">
                 <h2>Amenities</h2>
-                <ul id="amenities-list" class="amenities-list">
-                    <!-- Amenities will be loaded here by JavaScript -->
-                </ul>
+                <ul id="amenities-list" class="amenities-list"></ul>
             </div>
 
             <a href="#" id="contact-landlord-btn" class="contact-button" target="_blank">
-                <i class="fa-brands fa-whatsapp"></i> Contact Landlord
+                <i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp
             </a>
 
             <div id="landlord-info" class="landlord-info">
                 <p>Listing by: <strong id="landlord-name"></strong></p>
+                <p>Phone: <a id="landlord-phone-link" href="#" style="font-weight: bold; text-decoration: none;"></a></p>
             </div>
         </div>
     </div>
     
+    <script type="module" src="../firebase.js"></script>
     <script type="module" src="details.js"></script>
 </body>
 </html>
