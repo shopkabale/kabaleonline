@@ -13,6 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.kabaleonline.com/">
     <meta property="og:image" content="https://www.kabaleonline.com/social-share-image.jpg">
+    
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -23,10 +24,8 @@
             --bg-color: #f0f5fa;
             --card-bg: #ffffff;
             --text-dark: #34495e;
-            --text-muted: #6c757d;
             --border-color: #e9ecef;
             --border-radius: 8px;
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -136,7 +135,7 @@
             display: none;
             background-color: var(--card-bg);
             position: absolute;
-            top: 100%;
+            top: 100%; /* Positions it correctly below the header */
             left: 0;
             right: 0;
             z-index: 999;
@@ -186,20 +185,16 @@
         main h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         .product-card-link { text-decoration: none; color: inherit; }
-        .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #e9ecef; transition: transform 0.2s, box-shadow 0.2s; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+        .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #e9ecef; }
         .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
         .product-card h3 { margin: 15px; font-size: 1rem; line-height: 1.3; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); margin-top: auto; }
         .seller-info { font-size: 0.8em; color: grey; margin: 0 15px 10px; }
-        .seller-info a { color: grey; text-decoration: underline; }
-
+        
         /* --- FOOTER --- */
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
         .kabale-footer-links { margin: 20px 0; }
         .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
-        .kabale-footer-link:hover { color: white; }
-        .copyright { font-size: 0.9em; color: var(--text-muted); margin-top: 20px; }
         
         /* --- RESPONSIVE STYLES --- */
         @media (min-width: 768px) {
@@ -240,20 +235,20 @@
                 <button id="search-btn">Search</button>
             </div>
         </div>
+        
+        <nav class="mobile-nav">
+            <a href="/" class="nav-link" id="items-btn">🛍️ All Items</a>
+            <a href="/?type=service" class="nav-link" id="services-btn">🛠️ Services</a>
+            <a href="/requests/view.html" class="nav-link" id="request-btn">📝 User Requests</a>
+            <a href="/lost-and-found/" class="nav-link" id="lost-found-btn">🔦 Lost & Found</a>
+            <a href="/blog/" class="nav-link" id="tips-btn">📚 Tips</a>
+            <hr>
+            <a href="/sell/" id="dashboard-btn" style="display: none;">👤 Your Dashboard</a>
+            <a href="/sell/" id="post-btn" style="display: none;">➕ Post Something</a>
+            <a href="/sell/" id="login-btn" style="display: none;">🔑 Login</a>
+        </nav>
     </header>
     
-    <nav class="mobile-nav">
-        <a href="/" class="nav-link" id="items-btn">🛍️ All Items</a>
-        <a href="/?type=service" class="nav-link" id="services-btn">🛠️ Services</a>
-        <a href="/requests/view.html" class="nav-link" id="request-btn">📝 User Requests</a>
-        <a href="/lost-and-found/" class="nav-link" id="lost-found-btn">🔦 Lost & Found</a>
-        <a href="/blog/" class="nav-link" id="tips-btn">📚 Tips</a>
-        <hr>
-        <a href="/sell/" id="dashboard-btn" style="display: none;">👤 Your Dashboard</a>
-        <a href="/sell/" id="post-btn" style="display: none;">➕ Post Something</a>
-        <a href="/sell/" id="login-btn" style="display: none;">🔑 Login</a>
-    </nav>
-
     <div class="container page-container">
         <section class="hero-section">
             <h1>More Than a Marketplace</h1>
