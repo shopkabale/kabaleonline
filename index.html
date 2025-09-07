@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Kabale Online | Buy & Sell Electronics, Fashion & More in Kabale</title>
-    <meta name="description" content="Find great deals on new and second-hand items in Kabale. The #1 community marketplace for items, services, rentals, and more in Kabale.">
+    
+    <meta name="description" content="Find great deals on new and second-hand items in Kabale. Kabale Online is the #1 community marketplace for electronics, fashion, textbooks, and services. Discover, buy, and sell easily today!">
+    <meta name="keywords" content="Kabale, Uganda, online market, marketplace, buy, sell, second-hand, used items, student hustle, Kabale University, KAB, kabale online, online jobs in kabale, shop online in kabale, kabale online shop, kigezi">
+    <meta property="og:title" content="Kabale Online | Your #1 Marketplace in Kabale">
+    <meta property="og:description" content="The best place for students and residents in Kabale to buy and sell new & used goods and services.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.kabaleonline.com/">
+    <meta property="og:image" content="https://www.kabaleonline.com/social-share-image.jpg">
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -25,7 +32,6 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            /* CHANGE: REMOVED all padding-top properties to eliminate the space above the header */
             background-color: var(--bg-color);
             color: var(--text-dark);
             line-height: 1.6;
@@ -38,18 +44,19 @@
         }
 
         .page-container {
-            padding-top: 20px;
+            padding-top: 125px; /* Space for the entire sticky header */
             padding-bottom: 20px;
         }
 
-        /* --- JUMIA-STYLE STICKY HEADER --- */
+        /* --- STICKY HEADER --- */
         .sticky-header {
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
             background-color: var(--card-bg);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            width: 100%;
         }
 
         .header-top-bar {
@@ -89,7 +96,6 @@
             text-decoration: none;
         }
 
-        /* --- CHANGE: UPDATED SEARCH BAR WITH BUTTON --- */
         .header-search-bar {
             padding: 0 15px 10px 15px;
             border-top: 1px solid var(--border-color);
@@ -99,12 +105,12 @@
         }
         #search-input {
             width: 100%;
-            flex-grow: 1; /* Allows input to take up available space */
+            flex-grow: 1;
             padding: 10px 15px;
             font-size: 1em;
             border: 1px solid #ccc;
-            border-right: none; /* Remove right border to merge with button */
-            border-radius: 20px 0 0 20px; /* Rounded corners on the left */
+            border-right: none;
+            border-radius: 20px 0 0 20px;
             box-sizing: border-box;
         }
         #search-input:focus {
@@ -118,7 +124,7 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 0 20px 20px 0; /* Rounded corners on the right */
+            border-radius: 0 20px 20px 0;
         }
         
         /* --- NAVIGATION MENUS --- */
@@ -127,13 +133,13 @@
         }
         
         .mobile-nav {
-            display: none; /* Hidden by default */
+            display: none;
             background-color: var(--card-bg);
-            position: absolute; /* CHANGE: Ensures it flows over content */
-            top: 100%; /* Positioned right below the header */
+            position: absolute;
+            top: 100%;
             left: 0;
             right: 0;
-            z-index: 999; /* Below header but above everything else */
+            z-index: 999;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border-top: 1px solid var(--border-color);
         }
@@ -197,6 +203,7 @@
         
         /* --- RESPONSIVE STYLES --- */
         @media (min-width: 768px) {
+            .page-container { padding-top: 135px; }
             .hero-section { padding: 40px 20px; }
             .hero-section h1 { font-size: 2.3em; }
             .hero-section p { font-size: 1.1em; }
@@ -206,6 +213,7 @@
         }
 
         @media (min-width: 992px) {
+            .page-container { padding-top: 85px; }
             .hamburger-menu, .header-search-bar { display: none; }
             .desktop-nav { display: flex; align-items: center; gap: 25px; }
             .desktop-nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; }
@@ -274,16 +282,7 @@
 
     <script type="module" src="shared.js"></script>
     <script type="module" src="main.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const hamburger = document.querySelector('.hamburger-menu');
-            const mobileNav = document.querySelector('.mobile-nav');
-            if (hamburger && mobileNav) {
-                hamburger.addEventListener('click', () => {
-                    mobileNav.classList.toggle('active');
-                });
-            }
-        });
-    </script>
+    <script type="module" src="ui.js"></script>
+
 </body>
 </html>
