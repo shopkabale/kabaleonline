@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostels & Rentals in Kabale | Kabale Online</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .filter-bar { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .filter-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
+        .filter-group select, .filter-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .rental-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .rental-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 992px) { .rental-grid { grid-template-columns: repeat(3, 1fr); } }
+        .rental-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        .rental-card:hover { transform: translateY(-5px); }
+        .rental-card img { width: 100%; height: 200px; object-fit: cover; }
+        .rental-card-content { padding: 15px; }
+        .rental-card-title { font-size: 1.2em; font-weight: bold; margin: 0 0 10px; }
+        .rental-card-price { font-size: 1.1em; font-weight: bold; color: #007bff; }
+        .rental-card-location { color: #6c757d; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <header class="site-header-main">
+        <a href="/" class="site-title">Kabale <span>Online</span></a>
+    </header>
+    <div class="container">
+        <div class="page-welcome">
+            <h1>Hostels & Rentals in Kabale</h1>
+            <p>Find your next place to stay. Search student hostels and private rentals across Kabale.</p>
+            <a href="/rentals/post.html" class="cta-button">Post a Rental (Free)</a>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-grid">
+                <div class="filter-group"><label for="filter-type">Listing Type</label><select id="filter-type"><option value="">All Types</option><option value="Hostel">Student Hostel</option><option value="Rental">House/Apartment</option></select></div>
+                <div class="filter-group"><label for="filter-location">Location</label><input type="text" id="filter-location" placeholder="e.g., Kikungiri"></div>
+                <div class="filter-group"><label for="filter-sort">Sort By</label><select id="filter-sort"><option value="newest">Newest First</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option></select></div>
+            </div>
+        </div>
+        <div id="rental-grid" class="rental-grid"><p>Loading listings...</p></div>
+    </div>
+</body>
+</html>
