@@ -43,32 +43,17 @@
         .hostel-card-amenities { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; font-size: 0.9em; }
         .hostel-card-amenities span { display: flex; align-items: center; gap: 5px; }
 
-        /* --- NEW: FORM SPECIFIC STYLES --- */
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 15px; 
-            margin-bottom: 15px;
-        }
-        .amenities-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 10px; 
-            margin-top: 5px; 
-        }
-        .amenity-checkbox { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        .amenity-checkbox label { 
-            font-weight: normal; 
-            margin: 0;
-        }
-        .amenity-checkbox input {
-            width: auto;
-        }
-        /* --- END OF NEW FORM STYLES --- */
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px; }
+        .amenities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 5px; }
+        .amenity-checkbox { display: flex; align-items: center; gap: 8px; }
+        .amenity-checkbox label { font-weight: normal; margin: 0; }
+        .amenity-checkbox input { width: auto; }
+
+        /* --- NEW: LOADER ANIMATION CSS --- */
+        .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .auth-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+        /* --- END LOADER CSS --- */
 
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
         .kabale-footer-links { margin: 20px 0; }
@@ -79,11 +64,7 @@
             .hamburger-menu { display: none; }
             .header-top-bar { height: 65px; }
             .hostel-grid { grid-template-columns: repeat(2, 1fr); }
-            /* Make form grid responsive */
             .form-grid { grid-template-columns: 1fr 1fr; }
-        }
-         @media (min-width: 992px) {
-            .hostel-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
@@ -93,7 +74,7 @@
             <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
             <nav class="mobile-nav">
-                <a href="/" class="nav-link">🛍️ All Items</a>
+                <a href="/" class="nav-link">🛍️ Home </a>
                 <a href="/hostels/" class="nav-link">🏨 Hostels & Rentals</a>
             </nav>
         </div>
@@ -104,9 +85,9 @@
         <div id="dashboard-container" class="section-box" style="display: none;">
             <h2>Post Your Hostel/Rental</h2>
             <p>Welcome, <strong id="seller-email"></strong>! <button id="logout-btn" class="link-button">Logout</button></p>
-            
             <form id="hostel-post-form">
-                <p id="hostel-form-message" class="success-message" style="display: none;"></p>
+                <!-- Detailed form is here -->
+                 <p id="hostel-form-message" class="success-message" style="display: none;"></p>
                 <div class="form-grid">
                     <div class="form-group"><label for="hostel-name">Hostel/Rental Name</label><input type="text" id="hostel-name" required></div>
                     <div class="form-group"><label for="hostel-location">Location</label><input type="text" id="hostel-location" placeholder="e.g., Kikungiri, near KAB" required></div>
@@ -133,16 +114,32 @@
             </form>
         </div>
 
+        <!-- FULL AUTH BLOCK RESTORED -->
         <div id="auth-container" class="section-box">
             <div class="login-card">
                 <h1 class="auth-title">Landlord & Agent Portal</h1>
                 <p class="auth-subtitle">Log in or create your Kabale Online account to post a rental.</p>
+                <p id="auth-success" class="success-message" style="display: none;"></p>
+                <div class="auth-tabs">
+                    <button class="tab-link active" data-tab="login-tab">Login</button>
+                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
+                </div>
                 <div id="login-tab" class="tab-content active">
-                     <form id="login-form">
+                    <form id="login-form">
                         <p id="login-error" class="error-message"></p>
                         <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
-                        <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required></div></div>
+                        <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div>
                         <button type="submit" class="auth-button">Login</button>
+                    </form>
+                </div>
+                <div id="signup-tab" class="tab-content">
+                    <form id="signup-form">
+                        <p id="signup-error" class="error-message"></p>
+                        <div class="form-group"><label for="signup-name">Your Full Name (or Agency Name)</label><input type="text" id="signup-name" required></div>
+                        <div class="form-group"><label for="signup-whatsapp">Contact Phone / WhatsApp</label><input type="tel" id="signup-whatsapp" required></div>
+                        <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
+                        <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
+                        <button type="submit" class="auth-button">Create Account</button>
                     </form>
                 </div>
             </div>
