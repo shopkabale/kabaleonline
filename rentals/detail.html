@@ -27,6 +27,24 @@
         .contact-info { margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
         .action-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .delete-btn { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        /* Your ui.js script adds this .active class to show the menu */
+        .mobile-nav.active { transform: translateX(0); }
+
+        .mobile-nav ul { list-style: none; padding: 0; margin: 0; }
+        .mobile-nav li a {
+            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
+            text-decoration: none; color: var(--text-dark); font-weight: bold;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .mobile-nav li a:hover { background-color: #f8f9fa; }
+        .mobile-nav i { width: 20px; text-align: center; color: var(--primary-color); }
+        .mobile-nav .nav-separator { height: 1px; background-color: #e0e0e0; margin: 10px 0; }
+/* --- Footer Styles --- */
+:root {
+    --text-dark: #34495e;
+    --text-muted: #6c757d;
+}
+
     </style>
 </head>
 <body>
@@ -59,6 +77,25 @@
             <p>Loading rental details...</p>
         </div>
     </div>
+    <footer>
+    <div class="kabale-contact-info-section">
+        <h3 class="kabale-contact-title">Get in Touch</h3>
+        <div class="kabale-contact-details">
+            <p>📞 +256 784655792</p>
+            <p>📧 shopkabale@gmail.com</p>
+        </div>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/lost-and-found/" class="kabale-footer-link">Lost & Found</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+        </div>
+    </div>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
+
+
+    <script type="module" src="../ui.js"></script>
     <script type="module" src="detail.js"></script>
 </body>
 </html>
