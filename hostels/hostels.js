@@ -190,7 +190,10 @@ async function handleHostelSubmit(e) {
         }
 
         if (imageFile1) imageUrls[0] = await uploadImageToCloudinary(imageFile1);
-        if (imageFile2) imageUrls[1] = await uploadImageToCloudinary(imageFile2);
+        if (imageFile2) {
+            if (imageUrls.length < 2) imageUrls.push('');
+            imageUrls[1] = await uploadImageToCloudinary(imageFile2);
+        }
         
         const hostelData = { name, location, description, amenities, imageUrls, price: Number(price), term, landlordId: user.uid, landlordEmail: user.email, updatedAt: serverTimestamp() };
 
