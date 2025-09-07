@@ -127,13 +127,13 @@
         }
         
         /* --- NAVIGATION MENUS --- */
-        .desktop-nav {
-            display: none;
-        }
-        
-        .mobile-nav {
+.desktop-nav {
     display: none;
-    background-color: #f0f5fa !important; /* Added !important to force the change */
+}
+
+.mobile-nav {
+    display: none;
+    background-color: var(--card-bg) !important; /* Change to white */
     position: absolute;
     top: 100%;
     left: 0;
@@ -143,16 +143,40 @@
     border-top: 1px solid var(--border-color);
 }
 
-        .mobile-nav.active {
-            display: block;
-        }
-        .mobile-nav a {
-            display: block;
-            padding: 15px;
-            text-decoration: none;
-            color: var(--text-dark);
-            border-bottom: 1px solid var(--border-color);
-        }
+.mobile-nav.active {
+    display: block;
+}
+
+/* Style for each link in the mobile nav to create the list look */
+.mobile-nav a {
+    display: flex; /* Use flexbox for icon and text alignment */
+    align-items: center; /* Vertically align items */
+    gap: 15px; /* Space between icon and text */
+    padding: 15px 20px; /* Adjust padding for better spacing */
+    text-decoration: none;
+    color: var(--text-dark);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Style for the icons within the links */
+.mobile-nav a i {
+    font-size: 20px; /* Adjust icon size */
+    color: var(--primary-color); /* Set icon color */
+    width: 24px; /* Maintain consistent icon width for alignment */
+    text-align: center;
+}
+
+/* Style for the "Post Something" and "Login" buttons at the bottom */
+.mobile-nav a.post-button,
+.mobile-nav a.login-button {
+    font-weight: bold;
+}
+
+/* Add a hover effect for user feedback */
+.mobile-nav a:hover {
+    background-color: #f8f9fa;
+}
+
         
         /* --- HERO SECTION --- */
         .hero-section {
