@@ -7,6 +7,7 @@
     <meta name="description" content="Find the best student hostels, rentals, and rooms for rent in Kabale. Search by location, price, and amenities near Kabale University and more.">
     <link rel="icon" href="../favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../styles.css"> <!-- Link to your main stylesheet -->
 
     <style>
         :root {
@@ -37,156 +38,148 @@
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
         .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.6em; font-weight: bold; }
         .site-title span { color: var(--accent-color); }
-        .header-icons { display: flex; align-items: center; gap: 20px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
-        .desktop-nav { display: none; }
         .mobile-nav { display: none; background-color: var(--card-bg); position: absolute; top: 100%; left: 0; right: 0; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 1px solid var(--border-color); }
         .mobile-nav.active { display: block; }
         .mobile-nav a { display: block; padding: 15px; text-decoration: none; color: var(--text-dark); border-bottom: 1px solid var(--border-color); }
         
-        /* --- PAGE-SPECIFIC STYLES --- */
-        .section-box { background-color: var(--card-bg); padding: 20px; margin-bottom: 25px; border-radius: var(--border-radius); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .section-box h1, .section-box h2 { text-align: center; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { font-weight: bold; display: block; margin-bottom: 5px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        .cta-button { width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold; border: none; background-color: var(--primary-color); color: white; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
-        .cta-button:hover { background-color: #0056b3; }
-        .secondary-button { background-color: #6c757d; }
-        .amenities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .amenities-grid label { font-weight: normal; }
-
-        /* Login/Auth styling */
-        .auth-card { max-width: 400px; margin: 0 auto; }
-        .auth-tabs { display: flex; margin-bottom: 15px; }
-        .tab-link { flex: 1; padding: 10px; background: #eee; border: 1px solid #ccc; border-bottom: none; cursor: pointer; }
-        .tab-link.active { background: var(--card-bg); border-bottom: 1px solid var(--card-bg); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .section-box { background-color: var(--card-bg); padding: 20px; margin-bottom: 25px; border-radius: var(--border-radius); }
+        .cta-button { width: 100%; }
         
         /* Hostel Grid */
-        .hostel-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
-        .hostel-card { background-color: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        .hostel-grid { display: grid; gap: 20px; grid-template-columns: 1fr; margin-top: 20px; }
+        .hostel-card { background-color: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; }
         .hostel-card-image { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background-color: #eee; }
         .hostel-card-content { padding: 15px; }
         .hostel-card-content h3 { margin: 0 0 5px 0; }
-        .hostel-card-location { color: #666; margin-bottom: 10px; }
-        .hostel-card-price { font-size: 1.2em; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; }
-        .hostel-card-price span { font-size: 0.8em; font-weight: normal; color: #666; }
+        .hostel-card-location { color: #666; }
+        .hostel-card-price { font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
         
-        .message { display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; }
-        .error { background-color: #f8d7da; color: #721c24; }
-        .success { background-color: #d4edda; color: #155724; }
-
         @media (min-width: 768px) {
             .page-container { padding-top: 85px; }
             .hamburger-menu { display: none; }
             .header-top-bar { height: 65px; }
             .hostel-grid { grid-template-columns: repeat(2, 1fr); }
-            .amenities-grid { grid-template-columns: repeat(3, 1fr); }
         }
-         @media (min-width: 992px) {
-            .hostel-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+    /* --- FOOTER STYLES --- */
+footer {
+    background-color: var(--text-dark);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.kabale-footer-links {
+    margin: 20px 0;
+}
+
+.kabale-footer-link {
+    color: #bdc3c7;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.kabale-footer-link:hover {
+    color: white;
+}
+
+.copyright {
+    font-size: 0.9em;
+    color: #6c757d; /* Using a variable from your root would be better long-term */
+    margin-top: 20px;
+}
+
+
     </style>
 </head>
 <body>
     <header class="sticky-header">
+        <!-- Header content remains the same -->
         <div class="header-top-bar">
             <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <div class="header-icons">
-                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-            </div>
+            <nav class="mobile-nav">
+                <a href="/" class="nav-link">🛍️ All Items</a>
+                <a href="/hostels/" class="nav-link">🏨 Hostels & Rentals</a>
+            </nav>
         </div>
-        <nav class="mobile-nav">
-            <a href="/" class="nav-link">🛍️ All Items</a>
-            <a href="/hostels/" class="nav-link">🏨 Hostels & Rentals</a>
-            <!-- Add other links as needed -->
-        </nav>
     </header>
 
     <div class="container page-container">
         
-        <!-- FINDER & POSTING TRIGGER SECTION -->
         <div class="section-box">
             <h1>Hostel & Rental Finder</h1>
-            <form id="hostel-filter-form">
-                <div class="form-group">
-                    <input type="search" id="filter-search-term" placeholder="Search by name or location...">
-                </div>
-                <button type="submit" class="cta-button">Find Hostels</button>
+            <!-- Filter form can go here -->
+        </div>
+
+        <!-- AUTH & POSTING SECTION -->
+        <div id="dashboard-container" class="section-box" style="display: none;">
+            <h2>Post Your Hostel/Rental</h2>
+             <p>Welcome, <strong id="seller-email"></strong>! <button id="logout-btn" class="link-button">Logout</button></p>
+            <form id="hostel-post-form">
+                <!-- Hostel submission form fields will go here -->
+                <div class="form-group"><label for="hostel-name">Hostel Name</label><input type="text" id="hostel-name" required></div>
+                <div class="form-group"><label for="hostel-location">Location</label><input type="text" id="hostel-location" placeholder="e.g., Kikungiri" required></div>
+                <button type="submit" class="cta-button">Submit Listing</button>
             </form>
-            <hr style="margin: 20px 0;">
-            <p style="text-align: center; margin: 0;">Are you a landlord or agent?</p>
-            <button id="show-post-section-btn" class="cta-button secondary-button" style="margin-top: 10px;">Post Your Hostel</button>
         </div>
 
-        <!-- POSTING SECTION (Initially Hidden) -->
-        <div id="post-hostel-section" class="section-box" style="display: none;">
-            
-            <!-- AUTH CONTAINER (Shows if logged out) -->
-            <div id="hostel-auth-container" class="auth-card">
-                <h2>Landlord Portal</h2>
-                <div id="auth-message" class="message"></div>
+        <div id="auth-container" class="section-box">
+            <!-- THIS IS THE UNIFIED LOGIN/SIGNUP BLOCK -->
+            <div class="login-card">
+                <!-- MODIFIED: Titles and descriptions updated for landlords -->
+                <h1 class="auth-title">Landlord & Agent Portal</h1>
+                <p class="auth-subtitle">Log in or create an account to post your hostel or rental.</p>
+                <p id="auth-success" class="success-message" style="display: none;"></p>
                 <div class="auth-tabs">
-                    <button class="tab-link active" data-tab="login">Login</button>
-                    <button class="tab-link" data-tab="signup">Sign Up</button>
+                    <button class="tab-link active" data-tab="login-tab">Login</button>
+                    <button class="tab-link" data-tab="signup-tab">Sign Up</button>
                 </div>
-                <!-- Login Form -->
-                <div id="login" class="tab-content active">
-                    <form id="hostel-login-form">
+                <!-- Login Tab (Same as sell page) -->
+                <div id="login-tab" class="tab-content active">
+                    <form id="login-form">
+                        <p id="login-error" class="error-message"></p>
                         <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
-                        <div class="form-group"><label for="login-password">Password</label><input type="password" id="login-password" required></div>
-                        <button type="submit" class="cta-button">Login</button>
+                        <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div>
+                        <button type="submit" class="auth-button">Login</button>
                     </form>
                 </div>
-                <!-- Signup Form -->
-                <div id="signup" class="tab-content">
-                    <form id="hostel-signup-form">
+                <!-- Signup Tab (MODIFIED with new fields) -->
+                <div id="signup-tab" class="tab-content">
+                    <form id="signup-form">
+                        <p id="signup-error" class="error-message"></p>
+                        <!-- MODIFIED: "Your Full Name" is now semantically for the landlord -->
+                        <div class="form-group"><label for="signup-name">Your Full Name (or Agency Name)</label><input type="text" id="signup-name" required></div>
+                        <!-- MODIFIED: "WhatsApp Number" from sell.js is used here -->
+                        <div class="form-group"><label for="signup-whatsapp">Contact Phone / WhatsApp</label><input type="tel" id="signup-whatsapp" required></div>
                         <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
-                        <div class="form-group"><label for="signup-password">Password</label><input type="password" id="signup-password" required></div>
-                        <button type="submit" class="cta-button">Create Account</button>
+                        <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
+                        <button type="submit" class="auth-button">Create Account</button>
                     </form>
                 </div>
             </div>
-
-            <!-- POSTING FORM CONTAINER (Shows if logged in) -->
-            <div id="hostel-form-container" style="display: none;">
-                <h2>Post a New Hostel/Rental</h2>
-                <p>Logged in as: <strong id="user-email-display"></strong> <button id="hostel-logout-btn" style="margin-left: 10px; background: none; border: none; color: var(--primary-color); cursor: pointer;">Logout</button></p>
-                <div id="form-message" class="message"></div>
-                <form id="hostel-post-form">
-                    <div class="form-group"><label for="hostel-name">Hostel Name</label><input type="text" id="hostel-name" required></div>
-                    <div class="form-group"><label for="hostel-location">Location</label><input type="text" id="hostel-location" placeholder="e.g., Kikungiri, near KAB main gate" required></div>
-                    <div class="form-group"><label for="hostel-price">Price (UGX)</label><input type="number" id="hostel-price" required></div>
-                    <div class="form-group"><label for="price-duration">Per</label><select id="price-duration"><option value="Semester">Semester</option><option value="Month">Month</option></select></div>
-                    <div class="form-group"><label for="whatsapp-number">Contact WhatsApp</label><input type="tel" id="whatsapp-number" required></div>
-                    <div class="form-group"><label>Amenities</label>
-                        <div class="amenities-grid">
-                            <div><input type="checkbox" id="wifi" value="WiFi"><label for="wifi"> WiFi</label></div>
-                            <div><input type="checkbox" id="self-contained" value="Self-Contained"><label for="self-contained"> Self-Contained</label></div>
-                            <div><input type="checkbox" id="kitchen" value="Kitchen"><label for="kitchen"> Kitchen</label></div>
-                            <div><input type="checkbox" id="security" value="Security"><label for="security"> Security</label></div>
-                            <div><input type="checkbox" id="water" value="Water Included"><label for="water"> Water Included</label></div>
-                            <div><input type="checkbox" id="electricity" value="Electricity Included"><label for="electricity"> Yaka/Electricity Included</label></div>
-                        </div>
-                    </div>
-                    <div class="form-group"><label for="hostel-photos">Photos (up to 3)</label><input type="file" id="hostel-photos" accept="image/*" multiple></div>
-                    <button type="submit" class="cta-button">Submit Listing</button>
-                </form>
-            </div>
         </div>
 
-        <!-- HOSTEL LISTINGS GRID -->
-        <h2 style="text-align: center; margin-top: 30px;">Available Hostels & Rentals</h2>
+        <h2 style="text-align:center; margin-top:30px;">Available Hostels</h2>
         <div id="hostel-grid" class="hostel-grid">
-            <!-- Hostel cards will be loaded here by JavaScript -->
+            <!-- Hostels will be loaded here -->
         </div>
-
     </div>
+        <!-- Paste this entire block before the closing </body> tag -->
+    <footer>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
     
+
     <script type="module" src="../ui.js"></script>
+    <script type="module" src="../shared.js"></script>
+    <!-- MODIFIED: This page now uses sell.js for auth -->
+    <script type="module" src="../sell/sell.js"></script> 
     <script type="module" src="hostels.js"></script>
 </body>
 </html>
