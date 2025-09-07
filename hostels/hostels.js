@@ -1,15 +1,13 @@
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, addDoc, query, getDocs, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, addDoc, query, getDocs, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENTS ---
 const hostelPostForm = document.getElementById('hostel-post-form');
 const hostelGrid = document.getElementById('hostel-grid');
-const hostelFilterForm = document.getElementById('hostel-filter-form');
 const authContainer = document.getElementById('auth-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const sellerEmailSpan = document.getElementById('seller-email');
-const logoutBtn = document.getElementById('logout-btn');
 
 // This listener shows/hides sections based on login state
 // The actual login logic is handled by sell.js
@@ -54,7 +52,6 @@ if (hostelPostForm) {
     });
 }
 
-
 // --- FETCH & DISPLAY HOSTELS ---
 async function fetchHostels() {
     if (!hostelGrid) return;
@@ -88,4 +85,6 @@ async function fetchHostels() {
 }
 
 // Initial load
-fetchHostels();
+if (hostelGrid) {
+    fetchHostels();
+}
