@@ -15,15 +15,33 @@ const showFormBtn = document.getElementById('show-hostel-form-btn');
 const formContainer = document.getElementById('hostel-form-container');
 const formMessage = document.getElementById('hostel-form-message');
 
-let currentEditingHostelId = null; // Variable to track if we are editing or creating
+let currentEditingHostelId = null;
 
 // --- AUTH STATE & DATA FETCHING ---
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user && user.emailVerified) {
         if (authContainer) authContainer.style.display = 'none';
         if (dashboardContainer) dashboardContainer.style.display = 'block';
         if (sellerEmailSpan) sellerEmailSpan.textContent = user.email;
-        fetchMyHostels(user.uid); // Fetch user's own hostels when they log in
+        
+        const contactDisplay = document.getElementById('landlord-contact-display');
+        if (contactDisplay) {
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists() && userDoc.data().whatsapp) {
+                    const localNumber = `0${userDoc.data().whatsapp.substring(3)}`;
+                    contactDisplay.textContent = `📞 ${localNumber}`;
+                } else {
+                    contactDisplay.textContent = "No contact number. Please update your profile.";
+                    contactDisplay.style.color = 'red';
+                }
+            } catch (err) {
+                contactDisplay.textContent = "Could not load contact info.";
+            }
+        }
+        
+        fetchMyHostels(user.uid);
     } else {
         if (authContainer) authContainer.style.display = 'block';
         if (dashboardContainer) dashboardContainer.style.display = 'none';
@@ -37,7 +55,7 @@ if (showFormBtn) {
         formContainer.style.display = isVisible ? 'none' : 'block';
         showFormBtn.textContent = isVisible ? 'Post New Hostel/Rental' : 'Close Form';
         if (isVisible) {
-            resetHostelForm(); // Clear form when hiding
+            resetHostelForm();
         }
     });
 }
@@ -72,7 +90,6 @@ async function uploadImageToCloudinary(file) {
 }
 
 // --- CORE LOGIC: SUBMIT, FETCH, EDIT, DELETE ---
-
 async function handleHostelSubmit(e) {
     e.preventDefault();
     const user = auth.currentUser;
@@ -177,7 +194,6 @@ async function fetchMyHostels(uid) {
             const hostel = doc.data();
             const card = document.createElement('div');
             card.className = 'hostel-card';
-            const amenitiesHTML = Object.keys(hostel.amenities || {}).filter(key => hostel.amenities[key]).map(key => `<span><i class="fa-solid fa-check"></i> ${key.charAt(0).toUpperCase() + key.slice(1)}</span>`).join('');
             card.innerHTML = `
                 <img src="${hostel.imageUrls && hostel.imageUrls.length > 0 ? hostel.imageUrls[0] : 'https://via.placeholder.com/400x250.png?text=No+Image'}" alt="${hostel.name}" class="hostel-card-image">
                 <div class="hostel-card-content">
@@ -210,9 +226,11 @@ function populateFormForEdit(id, hostel) {
     document.getElementById('hostel-price').value = hostel.price || '';
     document.getElementById('hostel-term').value = hostel.term || 'Semester';
     document.getElementById('hostel-description').value = hostel.description || '';
-    for (const key in hostel.amenities) {
-        const checkbox = document.getElementById(`amenity-${key}`);
-        if (checkbox) checkbox.checked = hostel.amenities[key];
+    if (hostel.amenities) {
+        for (const key in hostel.amenities) {
+            const checkbox = document.getElementById(`amenity-${key}`);
+            if (checkbox) checkbox.checked = hostel.amenities[key];
+        }
     }
     
     hostelPostForm.querySelector('button[type="submit"]').textContent = "Update Listing";
