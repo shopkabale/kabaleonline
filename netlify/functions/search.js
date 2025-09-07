@@ -1,66 +1,61 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 
-// Replace with your Firebase Admin SDK service account key
-const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+};
 
-// Initialize Firebase Admin SDK
-initializeApp({
-  credential: cert(serviceAccount)
-});
+if (!global._firebaseApp) {
+    global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
+}
 
 const db = getFirestore();
+const PRODUCTS_PER_PAGE = 30;
 
-exports.handler = async (event, context) => {
-  const { searchTerm, type, lastVisible } = event.queryStringParameters;
-  let productsRef = db.collection('products');
-  let querySnapshot;
+exports.handler = async (event) => {
+    try {
+        const { searchTerm, category, minPrice, maxPrice, lastVisible, type } = event.queryStringParameters;
+        let query = db.collection("products");
 
-  try {
-    // Check if the 'type' query parameter exists and filter accordingly.
-    // The field name 'listing_type' must match your database.
-    if (type) {
-      productsRef = productsRef.where('listing_type', '==', type);
+        // Step 1: Apply filters based on query parameters.
+        if (type) query = query.where("listing_type", "==", type);
+        if (category) query = query.where("category", "==", category);
+        if (minPrice) query = query.where("price", ">=", Number(minPrice));
+        if (maxPrice) query = query.where("price", "<=", Number(maxPrice));
+
+        if (searchTerm) {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            query = query.where("name_lowercase", ">=", lowercasedTerm)
+                         .where("name_lowercase", "<=", lowercasedTerm + '\uf8ff');
+        }
+
+        // Step 2: IMPORTANT - Add an orderBy clause. This is required for `startAfter`.
+        // It must match a field used in a `where` clause if you have one.
+        // For example, if you have a `where` on `price`, you must `orderBy` `price`.
+        // Since you don't always use price, `createdAt` is a safe bet for a consistent sort.
+        query = query.orderBy("createdAt", "desc");
+
+        // Step 3: Implement pagination using startAfter.
+        if (lastVisible) {
+            const lastDoc = await db.collection("products").doc(lastVisible).get();
+            if (lastDoc.exists) query = query.startAfter(lastDoc);
+        }
+
+        // Step 4: Add a limit.
+        query = query.limit(PRODUCTS_PER_PAGE);
+
+        const snapshot = await query.get();
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        return {
+            statusCode: 200,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(products),
+        };
+    } catch (error) {
+        console.error("Search function error:", error);
+        return { statusCode: 500, body: JSON.stringify({ error: "Failed to fetch products." })};
     }
-    
-    // Check if a search term exists and filter by it
-    if (searchTerm) {
-      // For a simple text search, Firestore requires a start/end range.
-      // This is a basic prefix search.
-      const searchTermLower = searchTerm.toLowerCase();
-      productsRef = productsRef
-        .where('name_lowercase', '>=', searchTermLower)
-        .where('name_lowercase', '<=', searchTermLower + '\uf8ff');
-    }
-
-    // Always order by a field to ensure consistent pagination
-    productsRef = productsRef.orderBy('createdAt', 'desc');
-
-    // Implement pagination
-    if (lastVisible) {
-      const lastVisibleDoc = await db.collection('products').doc(lastVisible).get();
-      productsRef = productsRef.startAfter(lastVisibleDoc);
-    }
-
-    // Add a limit to prevent fetching too many documents at once
-    productsRef = productsRef.limit(30);
-
-    querySnapshot = await productsRef.get();
-
-    const products = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(products),
-    };
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to fetch products." }),
-    };
-  }
 };
