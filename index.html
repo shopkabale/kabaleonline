@@ -7,12 +7,26 @@
     <title>Kabale Online | Buy & Sell Electronics, Fashion & More in Kabale</title>
 
     <meta name="description" content="Find great deals on new and second-hand items in Kabale. Kabale Online is the #1 community marketplace for electronics, fashion, textbooks, and services. Discover, buy, and sell easily today!">
-    <meta name="keywords" content="Kabale, Uganda, online market, marketplace, buy, sell, second-hand, used items, student hustle, Kabale University, KAB, kabale online, online jobs in kabale, shop online in kabale, kigezi">
+    <meta name="keywords" content="Kabale, Uganda, online market, marketplace, buy, sell, second-hand, used items, student hustle, Kabale University, KAB, kabale online, online jobs in kabale, shop online in kabale, kigezi, used clothes, electronics, services, rentals, lost and found, community forum, local deals, post free ad, buy and sell near me">
+    <meta name="author" content="Kabale Online">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://www.kabaleonline.com/">
+
     <meta property="og:title" content="Kabale Online | Your #1 Marketplace in Kabale">
     <meta property="og:description" content="The best place for students and residents in Kabale to buy and sell new & used goods and services.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.kabaleonline.com/">
     <meta property="og:image" content="https://www.kabaleonline.com/social-share-image.jpg">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Kabale Online">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@kabaleonline">
+    <meta name="twitter:creator" content="@kabaleonline">
+    <meta name="twitter:title" content="Kabale Online | The Best Marketplace in Kabale">
+    <meta name="twitter:description" content="The best place for students and residents in Kabale to buy and sell new & used goods and services.">
+    <meta name="twitter:image" content="https://www.kabaleonline.com/social-share-image.jpg">
 
     <link rel="icon" href="favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -43,7 +57,7 @@
         }
 
         .page-container {
-            padding-top: 125px;
+            padding-top: 125px; /* Space for the entire sticky header */
             padding-bottom: 20px;
         }
 
@@ -193,52 +207,55 @@
         .hero-start-selling { background-color: #ffc107; color: #34495e; }
         .hero-community-btn { background-color: #25D366; color: white; }
 
-        /* --- FLOATING CTA CONTAINER --- */
+        /* --- CTA Buttons Section --- */
+        .cta-floating-container-wrapper {
+            padding: 30px 15px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
         .cta-floating-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: var(--primary-color);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .cta-item {
+            text-align: center;
+            max-width: 250px;
+        }
+        .cta-button {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 40px;
+            font-weight: bold;
             color: white;
-            border-radius: 50%;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 1em;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 900;
-            transition: width 0.3s ease, height 0.3s ease;
-        }
-        .cta-floating-container.expanded {
-            width: 250px; /* Adjust width as needed for content */
-            height: auto;
-            border-radius: 10px;
-            flex-direction: column;
-            padding: 15px;
-        }
-        .cta-floating-icon {
-            font-size: 2em;
-        }
-        .cta-floating-links {
-            display: none;
-            flex-direction: column;
             gap: 10px;
-            text-align: left;
-            width: 100%;
         }
-        .cta-floating-container.expanded .cta-floating-links {
-            display: flex;
-        }
-        .cta-floating-links a {
-            color: white;
-            text-decoration: none;
+        .cta-description {
             font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 10px;
+            line-height: 1.4;
         }
-        .cta-floating-links a i {
-            margin-right: 10px;
-        }
+        .sell-product-btn { background-color: #ffc107; color: #34495e; }
+        .post-story-btn { background-color: #007bff; }
+        .lost-and-found-btn { background-color: #28a745; }
+        .rentals-btn { background-color: #6c757d; }
+        .sell-product-btn:hover { background-color: #e0ac00; }
+        .post-story-btn:hover { background-color: #0056b3; }
+        .lost-and-found-btn:hover { background-color: #218838; }
+        .rentals-btn:hover { background-color: #5a6268; }
+
 
         /* --- SKELETON LOADER STYLES --- */
         .skeleton-card { background: #fff; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
@@ -383,15 +400,35 @@
         </main>
     </div>
 
-    <div class="cta-floating-container">
-        <i class="fa-solid fa-plus cta-floating-icon"></i>
-        <div class="cta-floating-links">
-            <a href="/sell/"><i class="fa-solid fa-plus-circle"></i> Post a Product or Service</a>
-            <a href="/stories/submit-story.html"><i class="fa-solid fa-pen-to-square"></i> Share Your Story</a>
-            <a href="/lost-and-found/"><i class="fa-solid fa-magnifying-glass"></i> Found Something?</a>
-            <a href="/rentals/"><i class="fa-solid fa-house"></i> Have a Rental?</a>
+    <div class="cta-floating-container-wrapper container">
+        <div class="cta-floating-container">
+            <div class="cta-item">
+                <a href="/sell/" class="cta-button sell-product-btn">
+                    <i class="fa-solid fa-plus-circle"></i> Post a Product or Service
+                </a>
+                <p class="cta-description">Got something to sell or a skill to offer? List it here for free!</p>
+            </div>
+            <div class="cta-item">
+                <a href="/stories/submit-story.html" class="cta-button post-story-btn">
+                    <i class="fa-solid fa-pen-to-square"></i> Share Your Story
+                </a>
+                <p class="cta-description">Tell the community about your experience, tips, and knowledge.</p>
+            </div>
+            <div class="cta-item">
+                <a href="/lost-and-found/" class="cta-button lost-and-found-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i> Found Something?
+                </a>
+                <p class="cta-description">Help someone in the community by reporting a lost or found item.</p>
+            </div>
+            <div class="cta-item">
+                <a href="/rentals/" class="cta-button rentals-btn">
+                    <i class="fa-solid fa-house"></i> Have a Rental?
+                </a>
+                <p class="cta-description">List your hostel or room for rent and connect with students.</p>
+            </div>
         </div>
     </div>
+
 
     <footer>
         <div class="kabale-footer-links">
