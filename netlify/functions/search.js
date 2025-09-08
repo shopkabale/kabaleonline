@@ -1,16 +1,12 @@
 const algoliasearch = require("algoliasearch");
 
-// --- IMPORTANT ---
-// These environment variables MUST be set in your Netlify project settings.
-// Go to Site settings > Build & deploy > Environment > Environment variables.
+// Environment variables must be set in your Netlify project settings.
 const APP_ID = process.env.ALGOLIA_APP_ID;
 const SEARCH_KEY = process.env.ALGOLIA_SEARCH_API_KEY;
 
-// --- Initialization ---
-// Check if the keys exist before trying to initialize the client.
+// Check for keys on initialization.
 if (!APP_ID || !SEARCH_KEY) {
-    console.error("FATAL: Algolia environment variables (ALGOLIA_APP_ID or ALGOLIA_SEARCH_API_KEY) are not set.");
-    // No need to initialize if keys are missing. The handler will return an error.
+    console.error("FATAL: Algolia environment variables are not set.");
 }
 
 const algoliaClient = algoliasearch(APP_ID, SEARCH_KEY);
@@ -18,7 +14,7 @@ const index = algoliaClient.initIndex('products');
 
 // --- Netlify Function Handler ---
 exports.handler = async (event) => {
-    // Immediately stop if the environment is not configured.
+    // Stop if the environment is not configured.
     if (!APP_ID || !SEARCH_KEY) {
         return {
             statusCode: 500,
@@ -26,8 +22,6 @@ exports.handler = async (event) => {
         };
     }
     
-    console.log("Search function triggered with params:", event.queryStringParameters);
-
     const { searchTerm = "", type, page = 0 } = event.queryStringParameters;
 
     try {
@@ -36,8 +30,11 @@ exports.handler = async (event) => {
             page: parseInt(page, 10)
         };
 
+        // --- THE FIX IS HERE ---
+        // If a 'type' parameter exists (e.g., 'service'), add a filter.
+        // We now correctly filter on the 'listing_type' attribute to match your database.
         if (type) {
-            searchOptions.filters = `type:${type}`;
+            searchOptions.filters = `listing_type:${type}`;
         }
 
         const searchResult = await index.search(searchTerm, searchOptions);
@@ -57,7 +54,6 @@ exports.handler = async (event) => {
         };
 
     } catch (error) {
-        // Log the specific error from Algolia for easier debugging.
         console.error("Algolia search error:", error);
         return {
             statusCode: 500,
