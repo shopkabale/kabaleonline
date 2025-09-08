@@ -7,85 +7,75 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; 
-            --text-muted: #6c757d; --bg-light: #f8f9fa; --card-bg: #ffffff;
+            --primary-color: #007bff; 
+            --accent-color: #ffc107; 
+            --text-dark: #34495e; 
+            --text-muted: #6c757d; 
+            --bg-light: #f8f9fa; 
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-light); padding-top: 60px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-light); 
+            padding-top: 60px; /* Space for the fixed header */
+        }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
 
-        /* --- NEW HEADER STYLES --- */
-        .site-header { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--card-bg); z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .header-container { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 60px; }
-        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.5em; font-weight: bold; }
+        /* --- CORRECTED HEADER STYLES --- */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 60px;
+        }
+        .hamburger-menu {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+        .site-title {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 1.5em;
+            font-weight: bold;
+        }
         .site-title span { color: var(--accent-color); }
-        .header-icons { display: flex; align-items: center; gap: 15px; }
-        .header-icons a { text-decoration: none; color: var(--text-dark); font-size: 22px; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+
+        /* --- MOBILE NAV & OVERLAY STYLES --- */
+        .mobile-nav-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); z-index: 1090;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
         
-        /* --- NEW MOBILE NAV MENU STYLES (TAILORED FOR YOUR SCRIPT) --- */
         .mobile-nav {
-            position: fixed; top: 0; left: 0; width: 280px; height: 100%;
-            background-color: var(--card-bg); z-index: 3000;
-            transform: translateX(-100%); transition: transform 0.3s ease-in-out;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.1); padding-top: 20px;
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background-color: var(--card-bg); z-index: 1100;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            transition: left 0.3s ease;
         }
-        /* Your ui.js script adds this .active class to show the menu */
-        .mobile-nav.active { transform: translateX(0); }
-        
-        .mobile-nav ul { list-style: none; padding: 0; margin: 0; }
-        .mobile-nav li a {
-            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
-            text-decoration: none; color: var(--text-dark); font-weight: bold;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .mobile-nav li a:hover { background-color: #f8f9fa; }
-        .mobile-nav i { width: 20px; text-align: center; color: var(--primary-color); }
-        .mobile-nav .nav-separator { height: 1px; background-color: #e0e0e0; margin: 10px 0; }
-/* --- Footer Styles --- */
-:root {
-    --text-dark: #34495e;
-    --text-muted: #6c757d;
-}
-
-footer {
-    background-color: var(--text-dark);
-    color: white;
-    padding: 40px 20px;
-    text-align: center;
-    margin-top: 40px;
-}
-
-.kabale-contact-title {
-    font-size: 1.8em;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-.kabale-contact-details p {
-    margin: 5px 0;
-    font-size: 1.1em;
-}
-
-.kabale-footer-links {
-    margin: 30px 0;
-}
-
-.kabale-footer-link {
-    color: #bdc3c7; /* A lighter grey for links */
-    margin: 0 10px;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.kabale-footer-link:hover {
-    color: white;
-}
-
-.copyright {
-    font-size: 0.9em;
-    color: var(--text-muted);
-    margin-top: 20px;
-}
+        .mobile-nav.active { left: 0; }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); }
+        .mobile-nav a:hover { background-color: #f8f9fa; }
 
         /* --- Page Specific Styles --- */
         .page-welcome { text-align: center; margin-bottom: 30px; }
@@ -98,93 +88,72 @@ footer {
         .rental-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; color: inherit; }
         .rental-card img { width: 100%; height: 200px; object-fit: cover; }
         .rental-card-content { padding: 15px; }
-
-        /* --- Footer Styles --- */
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
-/* --- REQUIRED CSS FOR THE OVERLAY --- */
-.mobile-nav-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1090; /* Must be below the nav menu */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
-
-.mobile-nav-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease;
-}
-
     </style>
 </head>
 <body>
-<!-- Add this right after your <body> tag -->
-<div class="mobile-nav-overlay"></div>
+
+    <div class="mobile-nav-overlay"></div>
 
     <header class="sticky-header">
-  <div class="header-content-wrapper">
-    <div class="header-top-bar">
-      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-      <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div class="header-spacer"></div>
-      <div class="header-icons">
-        <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-        <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
-      </div>
-    </div>
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-icons">
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <a href="/" aria-label="Back to Home"><i class="fa-solid fa-house"></i></a>
+            </div>
+        </div>
+    </header>
 
-    <!-- Desktop nav (currently hidden) -->
-    <nav class="desktop-nav"></nav>
-  </div>
-</header>
+    <!-- THIS IS THE MISSING NAVIGATION MENU -->
+    <nav class="mobile-nav">
+        <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book"></i> Campus Stories</a>
+        <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+        <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+        <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+        <hr>
+        <a href="/sell/" class="nav-link"><i class="fa-solid fa-key"></i> Dashboard</a>
+    </nav>
 
-    
     <div class="container">
         <div class="page-welcome">
             <h1>Hostels & Rentals in Kabale</h1>
             <p>Find your next place to stay. Search student hostels and private rentals across Kabale.</p>
             <a href="/rentals/post.html" class="cta-button">Post a Rental (Free)</a>
         </div>
+
+        <div class="filter-bar">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label for="filter-type">Type</label>
+              <select id="filter-type">
+                <option value="">All</option>
+                <option value="hostel">Hostel</option>
+                <option value="apartment">Apartment</option>
+                <option value="house">House</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-location">Location</label>
+              <input type="text" id="filter-location" placeholder="Enter location">
+            </div>
+            <div class="filter-group">
+              <label for="filter-sort">Sort By</label>
+              <select id="filter-sort">
+                <option value="newest">Newest</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <button id="apply-rental-filters">Apply Filters</button>
+            </div>
+          </div>
+        </div>
         
-<div class="filter-bar">
-  <div class="filter-grid">
-
-    <div class="filter-group">
-      <label for="filter-type">Type</label>
-      <select id="filter-type">
-        <option value="">All</option>
-        <option value="hostel">Hostel</option>
-        <option value="apartment">Apartment</option>
-        <option value="house">House</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="filter-location">Location</label>
-      <input type="text" id="filter-location" placeholder="Enter location">
-    </div>
-
-    <div class="filter-group">
-      <label for="filter-sort">Sort By</label>
-      <select id="filter-sort">
-        <option value="newest">Newest</option>
-        <option value="price-asc">Price: Low to High</option>
-        <option value="price-desc">Price: High to Low</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <button id="apply-rental-filters">Apply Filters</button>
-    </div>
-
-  </div> <!-- end .filter-grid -->
-</div> <!-- end .filter-bar -->
         <div id="rental-grid" class="rental-grid"><p>Loading listings...</p></div>
     </div>
 
@@ -201,10 +170,8 @@ footer {
             <a href="/lost-and-found/" class="kabale-footer-link">Lost & Found</a>
             <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
         </div>
-    </div>
-    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-</footer>
-
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
 
     <script type="module" src="../ui.js"></script>
     <script type="module" src="main.js"></script>
