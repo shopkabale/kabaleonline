@@ -43,7 +43,7 @@
         }
 
         .page-container {
-            padding-top: 125px; /* Space for the entire sticky header */
+            padding-top: 125px;
             padding-bottom: 20px;
         }
 
@@ -125,63 +125,6 @@
             cursor: pointer;
             border-radius: 0 20px 20px 0;
         }
-/* --- CALL TO ACTION BUTTONS SECTION --- */
-.cta-buttons-section {
-    padding: 30px 15px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px; /* Reduced gap */
-}
-
-.cta-item {
-    text-align: center;
-    max-width: 200px; /* Reduced max-width */
-}
-
-.cta-button {
-    display: block;
-    width: 100%;
-    padding: 10px 15px; /* Reduced padding */
-    border-radius: 40px;
-    font-weight: bold;
-    color: white;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    font-size: 0.9em; /* Reduced font size */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* Reduced gap */
-}
-
-.cta-description {
-    font-size: 0.8em; /* Reduced font size */
-    color: #6c757d;
-    margin-top: 8px;
-    line-height: 1.3;
-}
-
-/* Button Colors */
-.sell-product-btn { background-color: #ffc107; color: #34495e; }
-.post-story-btn { background-color: #007bff; }
-.lost-and-found-btn { background-color: #28a745; }
-.rentals-btn { background-color: #6c757d; }
-
-/* Hover Effects */
-.sell-product-btn:hover { background-color: #e0ac00; }
-.post-story-btn:hover { background-color: #0056b3; }
-.lost-and-found-btn:hover { background-color: #218838; }
-.rentals-btn:hover { background-color: #5a6268; }
-
-/* --- RESPONSIVE STYLES --- */
-@media (min-width: 768px) {
-    .cta-buttons-section {
-        justify-content: space-around;
-        gap: 20px; /* Adjust gap for larger screens */
-    }
-}
 
         /* --- NAVIGATION MENUS --- */
 .desktop-nav {
@@ -192,22 +135,20 @@
 .mobile-nav {
     position: fixed;
     top: 0;
-    left: -260px; /* hidden by default */
+    left: -260px;
     width: 260px;
     height: 100%;
     background-color: #fff;
     box-shadow: 2px 0 10px rgba(0,0,0,0.2);
     z-index: 1100;
-    padding-top: 60px; /* space for header */
+    padding-top: 60px;
     transition: left 0.3s ease;
 }
 
-/* Show when .active is toggled by ui.js */
 .mobile-nav.active {
     left: 0;
 }
 
-/* Links inside sidebar */
 .mobile-nav a {
     display: flex;
     align-items: center;
@@ -221,17 +162,15 @@
 .mobile-nav a i {
     margin-right: 15px;
     font-size: 18px;
-    color: #007bff; /* blue icons */
+    color: #007bff;
 }
 
-/* Special buttons */
 .mobile-nav a.post-button,
 .mobile-nav a.login-button {
     font-weight: bold;
     color: #007bff;
 }
 
-/* Hover effect */
 .mobile-nav a:hover {
     background-color: #f8f9fa;
 }
@@ -254,6 +193,53 @@
         .hero-start-selling { background-color: #ffc107; color: #34495e; }
         .hero-community-btn { background-color: #25D366; color: white; }
 
+        /* --- FLOATING CTA CONTAINER --- */
+        .cta-floating-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 900;
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        .cta-floating-container.expanded {
+            width: 250px; /* Adjust width as needed for content */
+            height: auto;
+            border-radius: 10px;
+            flex-direction: column;
+            padding: 15px;
+        }
+        .cta-floating-icon {
+            font-size: 2em;
+        }
+        .cta-floating-links {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+            width: 100%;
+        }
+        .cta-floating-container.expanded .cta-floating-links {
+            display: flex;
+        }
+        .cta-floating-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .cta-floating-links a i {
+            margin-right: 10px;
+        }
+
         /* --- SKELETON LOADER STYLES --- */
         .skeleton-card { background: #fff; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
         .skeleton-image { width: 100%; aspect-ratio: 1 / 1; background-color: #e0e0e0; }
@@ -274,6 +260,27 @@
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); margin-top: auto; }
         .seller-info { font-size: 0.8em; color: grey; margin: 0 15px 10px; }
 
+        /* --- PAGINATION --- */
+        .pagination-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .load-more-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .load-more-btn:hover {
+            background-color: #0056b3;
+        }
+
         /* --- FOOTER --- */
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
         .kabale-footer-links { margin: 20px 0; }
@@ -293,25 +300,22 @@
        @media (min-width: 992px) {
     .page-container { padding-top: 85px; }
 
-    /* Keep hamburger menu visible and adjust size */
     .hamburger-menu { 
         display: inline-block; 
-        font-size: 20px;  /* slightly smaller on desktop */
-        margin-right: 15px; /* space before desktop nav */
+        font-size: 20px;
+        margin-right: 15px;
     }
 
-    /* Keep search bar visible with spacing */
     .header-search-bar { 
         display: block; 
         margin-left: 20px;
-        flex-grow: 1; /* optional: stretch search bar */
+        flex-grow: 1;
     }
 
-    /* Desktop navigation */
     .desktop-nav { 
         display: flex; 
         align-items: center; 
-        gap: 30px;  /* more spacing between nav links */
+        gap: 30px;
     }
     .desktop-nav a { 
         text-decoration: none; 
@@ -319,13 +323,12 @@
         font-weight: 500; 
     }
 
-    /* Header height */
     .header-top-bar { 
         height: 65px; 
-        justify-content: space-between; /* evenly space items */
-        gap: 20px; /* spacing between groups */
+        justify-content: space-between;
+        gap: 20px;
     }
-} 
+}
     </style>
 </head>
 <body>
@@ -350,7 +353,7 @@
         <nav class="mobile-nav">
             <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
             <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book"></i> Campus Stories</a>
+            <a href="/stories/stories.html" class="nav-link"><i class="fa-solid fa-book"></i> Campus Stories</a>
             <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
             <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
             <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
@@ -365,7 +368,7 @@
             <h1>More Than a Marketplace</h1>
             <p>The #1 community platform for items, services, rentals, lost & found, and more in Kabale.</p>
             <div class="hero-buttons">
-                <a href="#listings-title" class="hero-btn hero-browse">Browse Products</a>
+                <a href="?type=item" class="hero-btn hero-browse">Browse Products</a>
                 <a href="/sell/" class="hero-btn hero-start-selling">Post Something</a>
                 <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" class="hero-btn hero-community-btn" target="_blank">Join Our Community</a>
             </div>
@@ -374,41 +377,28 @@
         <main>
             <h2 id="listings-title">All Items</h2>
             <div id="product-grid" class="product-grid"></div>
+            <div id="pagination-container" class="pagination-container">
+                <button id="load-more-btn" class="load-more-btn" style="display: none;">Load More</button>
+            </div>
         </main>
     </div>
-<section class="cta-buttons-section container">
-    <div class="cta-item">
-        <a href="/sell/" class="cta-button sell-product-btn">
-            <i class="fa-solid fa-plus-circle"></i> Post a Product or Service
-        </a>
-        <p class="cta-description">Got something to sell or a skill to offer? List it here for free!</p>
+
+    <div class="cta-floating-container">
+        <i class="fa-solid fa-plus cta-floating-icon"></i>
+        <div class="cta-floating-links">
+            <a href="/sell/"><i class="fa-solid fa-plus-circle"></i> Post a Product or Service</a>
+            <a href="/stories/submit-story.html"><i class="fa-solid fa-pen-to-square"></i> Share Your Story</a>
+            <a href="/lost-and-found/"><i class="fa-solid fa-magnifying-glass"></i> Found Something?</a>
+            <a href="/rentals/"><i class="fa-solid fa-house"></i> Have a Rental?</a>
+        </div>
     </div>
-    <div class="cta-item">
-        <a href="/stories/submit-story.html" class="cta-button post-story-btn">
-            <i class="fa-solid fa-pen-to-square"></i> Share Your Story
-        </a>
-        <p class="cta-description">Tell the community about your experience, tips, and knowledge.</p>
-    </div>
-    <div class="cta-item">
-        <a href="/lost-and-found/" class="cta-button lost-and-found-btn">
-            <i class="fa-solid fa-magnifying-glass"></i> Found Something?
-        </a>
-        <p class="cta-description">Help someone in the community by reporting a lost or found item.</p>
-    </div>
-    <div class="cta-item">
-        <a href="/rentals/" class="cta-button rentals-btn">
-            <i class="fa-solid fa-house"></i> Have a Rental?
-        </a>
-        <p class="cta-description">List your hostel or room for rent and connect with students.</p>
-    </div>
-</section>
 
     <footer>
         <div class="kabale-footer-links">
             <a href="/about.html" class="kabale-footer-link">About Us</a>
             <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
             <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
+        </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
