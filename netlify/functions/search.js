@@ -2,27 +2,22 @@ const algoliasearch = require("algoliasearch");
 
 const algoliaClient = algoliasearch(
     process.env.ALGOLIA_APP_ID, 
-    process.env.ALGOLIA_SEARCH_API_KEY // Use the SEARCH key for reading
+    process.env.ALGOLIA_SEARCH_API_KEY
 );
-const index = algoliaClient.initIndex('products'); // Ensure this matches your Algolia index name
+const index = algoliaClient.initIndex('products');
 
 exports.handler = async (event) => {
-    const { searchTerm, type } = event.queryStringParameters;
+    const { searchTerm } = event.queryStringParameters;
 
     try {
         const searchOptions = {
-            hitsPerPage: 30 // This corresponds to your PRODUCTS_PER_PAGE
+            hitsPerPage: 30
         };
 
-        if (type) {
-            // This is how you filter by type in Algolia
-            searchOptions.filters = `listing_type:"${type}"`;
-        }
-        
-        // This is the main Algolia search call
+        // This is the main Algolia search call, without any 'type' filter.
+        // It will now fetch ALL products, whether you're on the homepage or the Services page.
         const { hits } = await index.search(searchTerm, searchOptions);
         
-        // Algolia results come with an 'objectID'. We need to map it to 'id'
         const products = hits.map(hit => {
             const { objectID, ...data } = hit;
             return { id: objectID, ...data };
