@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const badges = userData.badges || [];
 
             let detailsHTML = '';
-            if (sellerLocation) detailsHTML += `<p style="margin-top: -10px;">📍 From ${sellerLocation}</p>`;
-            if (sellerInstitution) detailsHTML += `<p style="margin-top: -10px;">🎓 ${sellerInstitution}</p>`;
+            if (sellerLocation) detailsHTML += `<p>📍 From ${sellerLocation}</p>`;
+            if (sellerInstitution) detailsHTML += `<p>🎓 ${sellerInstitution}</p>`;
 
             let bioHTML = '';
             if (sellerBio) bioHTML = `<p class="profile-bio">"${sellerBio}"</p>`;
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let contactHTML = '';
             if (whatsappNumber) {
                 const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your profile on Kabale Online.`;
-                contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank" style="margin-top: 15px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
+                contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
 
             let badgesHTML = '';
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="profile-header-flex">
                     <img src="${profilePhotoUrl}" alt="${sellerName}" class="profile-photo">
                     <div class="profile-details">
-                        <h1 style="display: flex; align-items: center; gap: 10px;">${sellerName}</h1>
+                        <h1>${sellerName}</h1>
                         ${badgesHTML}
                         ${detailsHTML}
                     </div>
@@ -76,7 +76,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (document.querySelector('.profile-details')) {
         try {
-            const q = query(collection(db, "products"), where("sellerId", "==", sellerId), orderBy("createdAt", "desc"));
+            const q = query(
+                collection(db, "products"), 
+                where("sellerId", "==", sellerId), 
+                orderBy("createdAt", "desc")
+            );
             const querySnapshot = await getDocs(q);
             sellerProductGrid.innerHTML = '';
             if (querySnapshot.empty) {
@@ -92,12 +96,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="product-card">
                         <img src="${(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
                         <h3>${product.name}</h3>
-                        <p class="price">UGX ${product.price.toLocaleString()}</p>
+                        <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
                     </div>
                 `;
                 sellerProductGrid.appendChild(productLink);
             });
         } catch (error) {
+            console.error("Error fetching listings:", error);
             listingsTitle.textContent = 'Could not load listings.';
         }
     }
