@@ -35,7 +35,7 @@ async function fetchProducts(isNewSearch = false) {
     if (isNewSearch) {
         lastVisibleProductId = null;
         renderSkeletonLoaders(12);
-        loadMoreBtn.style.display = 'none'; // Hide button on new search
+        loadMoreBtn.style.display = 'none';
     }
 
     let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
@@ -61,9 +61,9 @@ async function fetchProducts(isNewSearch = false) {
         if (products.length > 0) {
             lastVisibleProductId = products[products.length - 1].id;
             if (products.length === PRODUCTS_PER_PAGE) {
-                loadMoreBtn.style.display = 'block'; // Show if a full page was returned
+                loadMoreBtn.style.display = 'block';
             } else {
-                loadMoreBtn.style.display = 'none'; // Hide if last page has been reached
+                loadMoreBtn.style.display = 'none';
             }
         }
 
@@ -120,12 +120,10 @@ searchInput.addEventListener('keydown', (e) => {
     }
 });
 
-// Load more products when button is clicked
 loadMoreBtn.addEventListener('click', () => {
     fetchProducts(false);
 });
 
-// Handle the floating CTA button
 const ctaFloatingContainer = document.querySelector('.cta-floating-container');
 ctaFloatingContainer.addEventListener('click', () => {
     ctaFloatingContainer.classList.toggle('expanded');
