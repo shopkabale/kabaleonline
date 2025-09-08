@@ -141,120 +141,34 @@
         }
 
         /* --- NAVIGATION MENUS --- */
-.desktop-nav {
-    display: none;
-}
-
-/* Mobile nav sidebar */
-.mobile-nav {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    width: 260px;
-    height: 100%;
-    background-color: #fff;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-    z-index: 1100;
-    padding-top: 60px;
-    transition: left 0.3s ease;
-}
-
-.mobile-nav.active {
-    left: 0;
-}
-
-.mobile-nav a {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    color: #333;
-    text-decoration: none;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 1em;
-}
-
-.mobile-nav a i {
-    margin-right: 15px;
-    font-size: 18px;
-    color: #007bff;
-}
-
-.mobile-nav a.post-button,
-.mobile-nav a.login-button {
-    font-weight: bold;
-    color: #007bff;
-}
-
-.mobile-nav a:hover {
-    background-color: #f8f9fa;
-}
+        .desktop-nav { display: none; }
+        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; padding-top: 60px; transition: left 0.3s ease; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: #007bff; }
+        .mobile-nav a.post-button, .mobile-nav a.login-button { font-weight: bold; color: #007bff; }
+        .mobile-nav a:hover { background-color: #f8f9fa; }
 
         /* --- HERO SECTION --- */
-        .hero-section {
-            background-image: linear-gradient(145deg, #007bff, #003d7a);
-            color: white; text-align: center; padding: 25px 15px;
-            border-radius: 12px; margin-bottom: 20px;
-        }
+        .hero-section { background-image: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 25px 15px; border-radius: 12px; margin-bottom: 20px; }
         .hero-section h1 { font-size: 1.8em; margin-bottom: 8px; }
         .hero-section p { font-size: 1em; margin-bottom: 20px; opacity: 0.9; }
         .hero-buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .hero-btn { 
-            width: 90%; max-width: 280px; padding: 12px 20px;
-            font-size: 1em; font-weight: bold; text-decoration: none; border-radius: 40px; 
-            display: flex; align-items: center; justify-content: center; gap: 8px; 
-        }
+        .hero-btn { width: 90%; max-width: 280px; padding: 12px 20px; font-size: 1em; font-weight: bold; text-decoration: none; border-radius: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .hero-browse { background-color: white; color: #007bff; }
         .hero-start-selling { background-color: #ffc107; color: #34495e; }
         .hero-community-btn { background-color: #25D366; color: white; }
 
         /* --- CTA Buttons Section --- */
-        .cta-floating-container-wrapper {
-            padding: 30px 15px;
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .cta-floating-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-        }
-        .cta-item {
-            text-align: center;
-            max-width: 250px;
-        }
-        .cta-button {
-            display: block;
-            width: 100%;
-            padding: 10px 15px; /* Reduced padding */
-            border-radius: 40px;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-size: 0.9em; /* Reduced font size */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px; /* Reduced gap */
-        }
-        .cta-description {
-            font-size: 0.8em; /* Reduced font size */
-            color: #6c757d;
-            margin-top: 8px;
-            line-height: 1.3;
-        }
+        .cta-floating-container-wrapper { padding: 30px 15px; background-color: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .cta-floating-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .cta-item { text-align: center; max-width: 250px; }
+        .cta-button { display: block; width: 100%; padding: 10px 15px; border-radius: 40px; font-weight: bold; color: white; text-decoration: none; transition: background-color 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .cta-description { font-size: 0.8em; color: #6c757d; margin-top: 8px; line-height: 1.3; }
         .sell-product-btn { background-color: #ffc107; color: #34495e; }
         .post-story-btn { background-color: #007bff; }
         .lost-and-found-btn { background-color: #28a745; }
         .rentals-btn { background-color: #6c757d; }
-        .sell-product-btn:hover { background-color: #e0ac00; }
-        .post-story-btn:hover { background-color: #0056b3; }
-        .lost-and-found-btn:hover { background-color: #218838; }
-        .rentals-btn:hover { background-color: #5a6268; }
 
         /* --- SKELETON LOADER STYLES --- */
         .skeleton-card { background: #fff; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
@@ -271,34 +185,19 @@
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         .product-card-link { text-decoration: none; color: inherit; }
         .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #e9ecef; }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
         .product-card h3 { margin: 15px; font-size: 1rem; line-height: 1.3; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); margin-top: auto; }
         .seller-info { font-size: 0.8em; color: grey; margin: 0 15px 10px; }
 
         /* --- PAGINATION --- */
-        .pagination-container {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .load-more-btn {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 20px;
-            font-size: 1em;
-            font-weight: bold;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .load-more-btn:hover {
-            background-color: #0056b3;
-        }
+        .pagination-container { text-align: center; margin-top: 30px; }
+        .load-more-btn { background-color: var(--primary-color); color: white; padding: 12px 25px; border-radius: 20px; font-size: 1em; font-weight: bold; text-decoration: none; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        .load-more-btn:hover { background-color: #0056b3; }
+        .load-more-btn:disabled { background-color: #5a6268; cursor: not-allowed; }
 
         /* --- FOOTER --- */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
+        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 30px; }
         .kabale-footer-links { margin: 20px 0; }
         .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
 
@@ -312,58 +211,39 @@
             .hero-btn { width: auto; }
             .product-grid { grid-template-columns: repeat(3, 1fr); }
         }
-
-       @media (min-width: 992px) {
-    .page-container { padding-top: 85px; }
-
-    .hamburger-menu { 
-        display: inline-block; 
-        font-size: 20px;
-        margin-right: 15px;
-    }
-
-    .header-search-bar { 
-        display: block; 
-        margin-left: 20px;
-        flex-grow: 1;
-    }
-
-    .desktop-nav { 
-        display: flex; 
-        align-items: center; 
-        gap: 30px;
-    }
-    .desktop-nav a { 
-        text-decoration: none; 
-        color: var(--text-dark); 
-        font-weight: 500; 
-    }
-
-    .header-top-bar { 
-        height: 65px; 
-        justify-content: space-between;
-        gap: 20px;
-    }
-}
+        @media (min-width: 992px) {
+            .page-container { padding-top: 85px; }
+            .hamburger-menu { display: none; }
+            .header-search-bar { flex-grow: 1; padding: 0; border: none; }
+            .search-container { max-width: 500px; margin: 0 auto; }
+            .desktop-nav { display: flex; align-items: center; gap: 30px; }
+            .desktop-nav a { text-decoration: none; color: var(--text-dark); font-weight: 500; }
+            .header-top-bar { height: 75px; padding: 0 25px; }
+            .site-title { flex-shrink: 0; }
+        }
     </style>
 </head>
 <body>
 
     <header class="sticky-header">
-        <div class="header-top-bar">
+        <div class="header-top-bar container">
             <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-search-bar">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search for items or services...">
+                    <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+            </div>
             <nav class="desktop-nav">
-                </nav>
+                <a href="/">All Items</a>
+                <a href="/?type=service">Services</a>
+                <a href="/stories/stories.html">Campus Stories</a>
+                <a href="/rentals/">Rentals</a>
+            </nav>
             <div class="header-icons">
                 <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
                 <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
-            </div>
-        </div>
-        <div class="header-search-bar">
-            <div class="search-container">
-                <input type="text" id="search-input" placeholder="Search for items or services...">
-                <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
         </div>
         <nav class="mobile-nav">
@@ -384,9 +264,9 @@
             <h1>More Than a Marketplace</h1>
             <p>The #1 community platform for items, services, rentals, lost & found, and more in Kabale.</p>
             <div class="hero-buttons">
-                <a href="?type=item" class="hero-btn hero-browse">Browse Products</a>
+                <a href="/" class="hero-btn hero-browse">Browse Products</a>
                 <a href="/sell/" class="hero-btn hero-start-selling">Post Something</a>
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" class="hero-btn hero-community-btn" target="_blank">Join Our Community</a>
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y" class="hero-btn hero-community-btn" target="_blank">Join Our Community</a>
             </div>
         </section>
 
@@ -401,30 +281,10 @@
 
     <div class="cta-floating-container-wrapper container">
         <div class="cta-floating-container">
-            <div class="cta-item">
-                <a href="/sell/" class="cta-button sell-product-btn">
-                    <i class="fa-solid fa-plus-circle"></i> Post a Product or Service
-                </a>
-                <p class="cta-description">Got something to sell or a skill to offer? List it here for free!</p>
-            </div>
-            <div class="cta-item">
-                <a href="/stories/submit-story.html" class="cta-button post-story-btn">
-                    <i class="fa-solid fa-pen-to-square"></i> Share Your Story
-                </a>
-                <p class="cta-description">Tell the community about your experience, tips, and knowledge.</p>
-            </div>
-            <div class="cta-item">
-                <a href="/lost-and-found/" class="cta-button lost-and-found-btn">
-                    <i class="fa-solid fa-magnifying-glass"></i> Found Something?
-                </a>
-                <p class="cta-description">Help someone in the community by reporting a lost or found item.</p>
-            </div>
-            <div class="cta-item">
-                <a href="/rentals/" class="cta-button rentals-btn">
-                    <i class="fa-solid fa-house"></i> Have a Rental?
-                </a>
-                <p class="cta-description">List your hostel or room for rent and connect with students.</p>
-            </div>
+            <div class="cta-item"><a href="/sell/" class="cta-button sell-product-btn"><i class="fa-solid fa-plus-circle"></i> Post a Product or Service</a><p class="cta-description">Got something to sell or a skill to offer? List it here for free!</p></div>
+            <div class="cta-item"><a href="/stories/submit-story.html" class="cta-button post-story-btn"><i class="fa-solid fa-pen-to-square"></i> Share Your Story</a><p class="cta-description">Tell the community about your experience, tips, and knowledge.</p></div>
+            <div class="cta-item"><a href="/lost-and-found/" class="cta-button lost-and-found-btn"><i class="fa-solid fa-magnifying-glass"></i> Found Something?</a><p class="cta-description">Help someone in the community by reporting a lost or found item.</p></div>
+            <div class="cta-item"><a href="/rentals/" class="cta-button rentals-btn"><i class="fa-solid fa-house"></i> Have a Rental?</a><p class="cta-description">List your hostel or room for rent and connect with students.</p></div>
         </div>
     </div>
 
@@ -438,8 +298,10 @@
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
-    <script type="module" src="main.js"></script>
+    <!-- The 'ui.js' file is included as your original code referenced it. -->
+    <!-- You can add any UI-specific logic there (e.g., mobile menu toggle). -->
     <script type="module" src="ui.js"></script>
+    <script type="module" src="main.js"></script>
 
 </body>
 </html>
