@@ -4,46 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Stories | Kabale Online</title>
-    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Add your header and footer styles here */
+        /* --- Basic Styles & Variables --- */
+        :root {
+            --primary-color: #007bff;
+            --accent-color: #ffc107;
+            --text-dark: #34495e;
+            --text-muted: #6c757d;
+            --card-bg: #ffffff;
+            --bg-light: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .page-content {
+            padding-top: 85px; /* Push content below fixed header */
+            padding-bottom: 40px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        /* --- Stories Grid --- */
         .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 25px; }
-        .story-card { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s ease-in-out; }
+        .story-card { background-color: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s ease-in-out; }
         .story-card:hover { transform: translateY(-5px); }
-        .story-card h2 { color: #007bff; font-size: 1.5em; margin-top: 0; }
+        .story-card h2 { color: var(--primary-color); font-size: 1.5em; margin-top: 0; }
         .story-content { margin: 15px 0; font-size: 0.95em; color: #555; }
-        .story-content h1, h2, h3 { color: #34495e; font-family: "Georgia", serif; }
+        .story-content h1, .story-content h2, .story-content h3 { color: var(--text-dark); font-family: "Georgia", serif; }
         .story-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px auto; display: block; }
         .story-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
         .like-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #ccc; transition: color 0.2s; }
-        .like-btn.liked { color: #e74c3c; } /* A color for a "liked" state */
+        .like-btn.liked { color: #e74c3c; }
         .likes-count { font-weight: bold; color: #333; margin-left: 5px; }
+        .delete-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-size: 0.8em; cursor: pointer; margin-top: 10px; transition: background-color 0.3s ease; }
+        .delete-btn:hover { background-color: #c0392b; }
 
-        /* Styles for the delete button */
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
-
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-
+        /* --- Header --- */
         .sticky-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
@@ -51,8 +78,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 15px;
-            height: 50px;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 8px 15px;
+            height: 65px;
         }
 
         .hamburger-menu {
@@ -70,7 +99,7 @@
             font-weight: bold;
         }
         .site-title span {
-            color: var(--accent-color);
+            color: var(--primary-color);
         }
 
         .header-icons {
@@ -85,7 +114,12 @@
         }
 
         .desktop-nav { display: none; }
+        @media (min-width: 992px) {
+            .desktop-nav { display: flex; }
+            .hamburger-menu { display: none; }
+        }
 
+        /* --- Mobile Nav --- */
         .mobile-nav {
             position: fixed;
             top: 0;
@@ -95,8 +129,10 @@
             background-color: #fff;
             box-shadow: 2px 0 10px rgba(0,0,0,0.2);
             z-index: 1100;
-            padding-top: 60px;
+            padding-top: 20px;
             transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
         .mobile-nav.active {
             left: 0;
@@ -109,28 +145,52 @@
             color: #333;
             text-decoration: none;
             border-bottom: 1px solid #f0f0f0;
-            font-size: 1em;
+            font-size: 1.1em;
         }
 
         .mobile-nav a i {
             margin-right: 15px;
             font-size: 18px;
-            color: #007bff;
+            color: var(--primary-color);
+            width: 20px;
+            text-align: center;
         }
         .mobile-nav a.post-button,
         .mobile-nav a.login-button {
             font-weight: bold;
-            color: #007bff;
+            color: var(--primary-color);
         }
         .mobile-nav a:hover {
-            background-color: #f8f9fa;
+            background-color: var(--bg-light);
         }
 
+        /* --- Overlay --- */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1090;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* --- Footer --- */
         footer {
             background-color: var(--text-dark);
             color: white;
             padding: 40px 20px;
             text-align: center;
+            margin-top: 40px;
         }
         .kabale-contact-info-section {
             display: flex;
@@ -158,26 +218,6 @@
             color: var(--text-muted);
         }
 
-   /* --- REQUIRED CSS FOR THE OVERLAY --- */
-.mobile-nav-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1090; /* Must be below the nav menu */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
-
-.mobile-nav-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease;
-}
-
     </style>
 </head>
 
@@ -195,50 +235,45 @@
 </nav>
 
 <header class="sticky-header">
-  <div class="header-content-wrapper">
     <div class="header-top-bar">
       <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
       <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div class="header-spacer"></div>
       <div class="header-icons">
         <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
         <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
       </div>
     </div>
-
-    <nav class="desktop-nav"></nav>
-  </div>
 </header>
 
-    <div class="container page-content">
-        <h1>Community Stories</h1>
-        <p>A collection of knowledge and experiences shared by our community.</p>
-        <a href="submit-story.html" class="cta-button" style="margin-bottom: 20px;">
-            <i class="fa-solid fa-plus"></i> Post a Story
-        </a>
-        <div class="stories-grid" id="stories-list">
-            <p>Loading stories...</p>
+<main class="container page-content">
+    <h1>Community Stories</h1>
+    <p>A collection of knowledge and experiences shared by our community.</p>
+    <a href="submit-story.html" class="cta-button" style="margin-bottom: 20px;">
+        <i class="fa-solid fa-plus"></i> Post a Story
+    </a>
+    <div class="stories-grid" id="stories-list">
+        <p>Loading stories...</p>
+    </div>
+</main>
+
+<footer>
+    <div class="kabale-contact-info-section">
+        <h3 class="kabale-contact-title">Get in Touch</h3>
+        <div class="kabale-contact-details">
+            <p class="kabale-contact-item">📞 +256 784655792</p>
+            <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+        </div>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
         </div>
     </div>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
 
-    <footer>
-        <div class="kabale-contact-info-section">
-            <h3 class="kabale-contact-title">Get in Touch</h3>
-            <div class="kabale-contact-details">
-                <p class="kabale-contact-item">📞 +256 784655792</p>
-                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
-            </div>
-            <div class="kabale-footer-links">
-                <a href="/about.html" class="kabale-footer-link">About Us</a>
-                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
-        </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
-
-    <script type="module" src="../firebase.js"></script>
-    <script type="module" src="../ui.js"></script>
-    <script type="module" src="displayStories.js"></script>
+<script type="module" src="../firebase.js"></script>
+<script type="module" src="../ui.js"></script>
+<script type="module" src="displayStories.js"></script>
 </body>
 </html>
