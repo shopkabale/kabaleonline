@@ -4,55 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post a Rental or Hostel | Kabale Online</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../styles.css">
     <style>
-        /* Added necessary root variables */
         :root {
-            --primary-color: #007bff;
-            --text-dark: #34495e;
-            --card-bg: #ffffff;
-            --bg-light: #f8f9fa;
+            --primary-color: #007bff; --text-dark: #34495e;
+            --card-bg: #ffffff; --bg-light: #f8f9fa;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            background-color: var(--bg-light);
-            /* Add padding to prevent content from hiding behind fixed header */
-            padding-top: 85px; 
+            margin: 0; background-color: var(--bg-light); padding-top: 85px;
         }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        .back-home-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .cta-button {
-            display: block;
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            font-size: 1.1em;
-        }
-
-        .form-container { max-width: 700px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .form-container h2 { text-align: center; margin-top: 0; }
+        .container { max-width: 960px; margin: 0 auto; padding: 0 15px; }
+        .back-home-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
+        .cta-button { display: inline-block; width: auto; background-color: var(--primary-color); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; font-size: 1.1em; }
+        .form-container, #login-prompt { max-width: 700px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .form-container h2, #login-prompt h2 { text-align: center; margin-top: 0; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
@@ -61,200 +28,73 @@
         @media (min-width: 768px) { .amenities-grid { grid-template-columns: repeat(3, 1fr); } }
         .amenity-item { display: flex; align-items: center; gap: 8px; }
         .success-message { display: none; text-align: center; color: #155724; background-color: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        
-        /* --- FOOTER --- */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 40px; }
-        .kabale-footer-links { margin: 20px 0; }
-        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
-
-        /* Sticky header */
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .header-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 15px;
-            height: 65px;
-        }
-        
-        .site-title {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-        
-        .site-title span {
-            color: var(--primary-color);
-        }
-
-        .hamburger-menu {
-            font-size: 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-dark);
-        }
-
-        /* Desktop nav */
-        .desktop-nav {
-            display: none;
-            gap: 25px;
-            align-items: center;
-        }
-        .desktop-nav a {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 500;
-        }
-
-        /* Mobile nav sidebar */
-        .mobile-nav {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background-color: #fff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            z-index: 1100;
-            padding-top: 20px;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; height: 65px; max-width: 960px; margin: 0 auto; }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.8em; font-weight: bold; }
+        .site-title span { color: var(--primary-color); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
+        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; padding-top: 20px; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .mobile-nav.active { left: 0; }
-        
-        .mobile-nav .nav-header {
-            padding: 15px 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            border-bottom: 1px solid #f0f0f0;
-            color: var(--text-dark);
-        }
-
-        .mobile-nav .nav-header span {
-            color: var(--primary-color);
-        }
-
-        .mobile-nav a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: #333;
-            text-decoration: none;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 1.1em;
-        }
-        .mobile-nav a:hover {
-            background-color: var(--bg-light);
-        }
-        .mobile-nav a i { 
-            margin-right: 15px; 
-            color: var(--primary-color);
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Desktop media query */
-        @media (min-width: 992px) {
-            .desktop-nav { display: flex; }
-            .hamburger-menu { display: none; }
-        }
-        /* --- REQUIRED CSS FOR THE OVERLAY --- */
-        .mobile-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1090; /* Must be below the nav menu */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
-        }
-
-        .mobile-nav-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
-        }
-
+        .mobile-nav .nav-header { padding: 15px 20px; font-size: 1.5em; font-weight: bold; border-bottom: 1px solid #f0f0f0; color: var(--text-dark); }
+        .mobile-nav .nav-header span { color: var(--primary-color); }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1.1em; }
+        .mobile-nav a i { margin-right: 15px; color: var(--primary-color); width: 20px; text-align: center; }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
     </style>
 </head>
 <body>
 
 <div class="mobile-nav-overlay"></div>
-
 <nav class="mobile-nav">
     <div class="nav-header">Kabale <span>Online</span></div>
     <a href="/"><i class="fa-solid fa-house"></i> Home</a>
     <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
-    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
-    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
-    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
-    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
 </nav>
+
 <header class="sticky-header">
-  <div class="container">
-    <div class="header-top-bar">
-      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-      <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <nav class="desktop-nav">
-        <a href="/">Home</a>
-        <a href="/rentals/">Rentals</a>
-        <a href="/about.html">About</a>
-      </nav>
-    </div>
+  <div class="header-top-bar">
+    <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+    <a href="/" class="site-title">Kabale <span>Online</span></a>
   </div>
 </header>
 
 <main class="container">
-    <a href="/" class="back-home-btn">⬅ Back to Home</a>
-    <div class="form-container">
-        <h2>Post a New Rental or Hostel Listing</h2>
-        <p id="success-message" class="success-message">Listing submitted successfully!</p>
-        <form id="rental-form">
-            <div class="form-group"><label for="listing-type">Listing Type</label><select id="listing-type" required><option value="Hostel">Student Hostel</option><option value="Rental">House/Apartment Rental</option></select></div>
-            <div class="form-group"><label for="title">Listing Title</label><input type="text" id="title" placeholder="e.g., Single Room in New Ark Hostel" required></div>
-            <div class="form-group"><label for="location">Location / Area</label><input type="text" id="location" placeholder="e.g., Kikungiri, Makanga" required></div>
-            <div class="form-group"><label for="price">Price (UGX)</label><div class="price-group"><input type="number" id="price" placeholder="800000" required><select id="price-frequency"><option value="per Semester">per Semester</option><option value="per Month">per Month</option></select></div></div>
-            <div class="form-group"><label for="description">Description</label><textarea id="description" rows="5" placeholder="Provide details about the room, amenities, and nearby facilities." required></textarea></div>
-            <div class="form-group"><label>Amenities (Check all that apply)</label><div class="amenities-grid">
-                <div class="amenity-item"><input type="checkbox" id="hasWater"><label for="hasWater">Running Water</label></div>
-                <div class="amenity-item"><input type="checkbox" id="hasPowerBackup"><label for="hasPowerBackup">Power Backup</label></div>
-                <div class="amenity-item"><input type="checkbox" id="isFenced"><label for="isFenced">Fenced/Gated</label></div>
-                <div class="amenity-item"><input type="checkbox" id="isFurnished"><label for="isFurnished">Furnished</label></div>
-            </div></div>
-            <div class="form-group"><label for="contactName">Contact Person Name</label><input type="text" id="contactName" required></div>
-            <div class="form-group"><label for="contactPhone">Contact WhatsApp Number</label><input type="tel" id="contactPhone" required></div>
-            <div class="form-group"><label for="photos">Upload Photos (up to 5)</label><input type="file" id="photos" multiple accept="image/*"></div>
-            <button type="submit" id="submit-btn" class="cta-button">Submit Listing</button>
-        </form>
+    <a href="/rentals/" class="back-home-btn">⬅ Back to All Rentals</a>
+
+    <div id="login-prompt" style="display: none; text-align: center;">
+        <h2>Login Required</h2>
+        <p>You must be logged in as a landlord or agent to post a new listing.</p>
+        <a href="/sell/" class="cta-button">Login or Register</a>
+    </div>
+
+    <div id="form-wrapper" style="display: none;">
+        <div class="form-container">
+            <h2>Post a New Rental or Hostel Listing</h2>
+            <p id="success-message" class="success-message">Listing submitted successfully!</p>
+            <form id="rental-form">
+                <div class="form-group"><label for="listing-type">Listing Type</label><select id="listing-type" required><option value="Hostel">Student Hostel</option><option value="Rental">House/Apartment Rental</option></select></div>
+                <div class="form-group"><label for="title">Listing Title</label><input type="text" id="title" placeholder="e.g., Single Room in New Ark Hostel" required></div>
+                <div class="form-group"><label for="location">Location / Area</label><input type="text" id="location" placeholder="e.g., Kikungiri, Makanga" required></div>
+                <div class="form-group"><label for="price">Price (UGX)</label><div class="price-group"><input type="number" id="price" placeholder="800000" required><select id="price-frequency"><option value="per Semester">per Semester</option><option value="per Month">per Month</option></select></div></div>
+                <div class="form-group"><label for="description">Description</label><textarea id="description" rows="5" placeholder="Provide details about the room, amenities, and nearby facilities." required></textarea></div>
+                <div class="form-group"><label>Amenities</label><div class="amenities-grid">
+                    <div class="amenity-item"><input type="checkbox" id="hasWater"><label for="hasWater">Running Water</label></div>
+                    <div class="amenity-item"><input type="checkbox" id="hasPowerBackup"><label for="hasPowerBackup">Power Backup</label></div>
+                    <div class="amenity-item"><input type="checkbox" id="isFenced"><label for="isFenced">Fenced/Gated</label></div>
+                    <div class="amenity-item"><input type="checkbox" id="isFurnished"><label for="isFurnished">Furnished</label></div>
+                </div></div>
+                <div class="form-group"><label for="contactName">Contact Person Name</label><input type="text" id="contactName" required></div>
+                <div class="form-group"><label for="contactPhone">Contact WhatsApp Number</label><input type="tel" id="contactPhone" required></div>
+                <div class="form-group"><label for="photos">Upload Photos (up to 5)</label><input type="file" id="photos" multiple accept="image/*"></div>
+                <button type="submit" id="submit-btn" class="cta-button" style="width: 100%;">Submit Listing</button>
+            </form>
+        </div>
     </div>
 </main>
 
-<footer>
-    <div class="kabale-footer-links">
-        <a href="/about.html" class="kabale-footer-link">About Us</a>
-        <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-        <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-    </div>
-    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-</footer>
-
-<script type="module" src="ui.js"></script>
-<script type="module" src="post.js"></script>
+<script type="module" src="../ui.js"></script>
+<script type="module" src="post-rental.js"></script>
 
 </body>
 </html>
