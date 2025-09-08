@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Requests | Kabale Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root {
             --primary-blue: #007bff;
@@ -141,9 +142,13 @@
             border: none;
             cursor: pointer;
             color: var(--text-dark);
+            z-index: 10; /* Keep hamburger accessible */
         }
 
         .site-title {
+            position: absolute; /* Center title */
+            left: 50%;
+            transform: translateX(-50%);
             text-decoration: none;
             color: var(--text-dark);
             font-size: 1.8em;
@@ -172,22 +177,46 @@
             color: var(--primary-blue);
         }
 
+        .header-icons {
+             margin-left: auto; /* Push icons to the right */
+        }
+
+        .header-icons a {
+            color: var(--text-dark);
+            font-size: 1.2em;
+            margin-left: 15px;
+        }
+
+
         /* Mobile nav sidebar */
         .mobile-nav {
             position: fixed;
             top: 0;
-            left: -260px;
+            left: -260px; /* Start off-screen */
             width: 260px;
             height: 100%;
             background-color: var(--bg-white);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
             z-index: 1100;
-            padding-top: 65px;
+            padding-top: 20px; /* Add some top padding */
             transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .mobile-nav.active {
-            left: 0;
+            left: 0; /* Slide in */
+        }
+        
+        .mobile-nav .nav-header {
+            padding: 15px 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .mobile-nav .nav-header span {
+            color: var(--primary-blue);
         }
 
         .mobile-nav a {
@@ -198,6 +227,7 @@
             text-decoration: none;
             border-bottom: 1px solid var(--border-light);
             transition: background-color 0.2s;
+            font-size: 1.1em;
         }
 
         .mobile-nav a:hover {
@@ -206,6 +236,8 @@
 
         .mobile-nav a i {
             margin-right: 15px;
+            width: 20px; /* Align icons */
+            text-align: center;
             color: var(--primary-blue);
         }
 
@@ -241,72 +273,110 @@
             .hamburger-menu {
                 display: none;
             }
+             .site-title {
+                position: static; /* Reset positioning for desktop */
+                transform: none;
+            }
+             .header-top-bar {
+                justify-content: space-between;
+            }
+            .header-icons {
+                display: none; /* Example: hide mobile icons on desktop */
+            }
         }
-/* --- REQUIRED CSS FOR THE OVERLAY --- */
-.mobile-nav-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1090; /* Must be below the nav menu */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
+        /* --- REQUIRED CSS FOR THE OVERLAY --- */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1090; /* Must be below the nav menu */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
 
-.mobile-nav-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease;
-}
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
 
     </style>
 </head>
 <body>
-<!-- Add this right after your <body> tag -->
+
 <div class="mobile-nav-overlay"></div>
 
-     <header class="sticky-header">
-  <div class="header-content-wrapper">
+<nav class="mobile-nav">
+    <div class="nav-header">Kabale <span>Online</span></div>
+    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
+    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
+    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
+    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+</nav>
+
+
+<header class="sticky-header">
+  <div class="header-content-wrapper container">
     <div class="header-top-bar">
       <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
       <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div class="header-spacer"></div>
       <div class="header-icons">
         <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
         <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
       </div>
+      <nav class="desktop-nav">
+         <a href="/">Home</a>
+         <a href="/about.html">About Us</a>
+         <a href="/blog/">Blog</a>
+         <a href="/sell/" class="cta-button" style="font-size: 1em;">Post Ad</a>
+      </nav>
     </div>
-
-    <!-- Desktop nav (currently hidden) -->
-    <nav class="desktop-nav"></nav>
   </div>
 </header>
 
-    <div class="container page-content">
-        <a href="/" class="back-home-btn">⬅ Back to Home</a>
-        <div class="page-welcome">
-            <h1>Community Requests</h1>
-            <p>See what items and services people are looking for in Kabale.</p>
-            <a href="/requests/" class="cta-button">Post a New Request</a>
-        </div>
-
-        <div id="requests-list">
-            <p>Loading requests...</p>
-        </div>
+<main class="container page-content">
+    <a href="/" class="back-home-btn">⬅ Back to Home</a>
+    <div class="page-welcome">
+        <h1>Community Requests</h1>
+        <p>See what items and services people are looking for in Kabale.</p>
+        <a href="/requests/" class="cta-button">Post a New Request</a>
     </div>
 
-    <footer>
-                <div class="kabale-footer-links">
-            <a href="/about.html" class="kabale-footer-link">About Us</a>
-            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+    <div id="requests-list">
+        <div class="request-card">
+            <h3>Looking for a reliable plumber</h3>
+            <p>I have a leaking sink in my kitchen in Kigongi and need an experienced plumber to fix it urgently. Please contact me with your rates.</p>
+            <div class="request-card-meta">
+                <span>Posted by: Alex M.</span> | <span>Date: September 8, 2025</span>
+            </div>
         </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
-    <script type="module" src="ui.js"></script>
-    <script type="module" src="view.js"></script>
+        <div class="request-card">
+            <h3>Second-hand bicycle for a student</h3>
+            <p>My son needs a bicycle to get to school. Looking for a used one in good condition. Budget is around 150,000 UGX.</p>
+            <div class="request-card-meta">
+                <span>Posted by: Sarah K.</span> | <span>Date: September 7, 2025</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="kabale-footer-links">
+        <a href="/about.html" class="kabale-footer-link">About Us</a>
+        <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+        <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+    </div>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
+
+<script type="module" src="ui.js"></script>
+<script type="module" src="view.js"></script>
+
 </body>
 </html>
