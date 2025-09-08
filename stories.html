@@ -36,7 +36,7 @@
         .delete-btn:hover {
             background-color: #c0392b;
         }
-        
+
         .sticky-header {
             position: fixed;
             top: 0;
@@ -157,7 +157,7 @@
             font-size: 0.9em;
             color: var(--text-muted);
         }
-     
+
    /* --- REQUIRED CSS FOR THE OVERLAY --- */
 .mobile-nav-overlay {
     position: fixed;
@@ -182,10 +182,19 @@
 </head>
 
 <body>
-<!-- Add this right after your <body> tag -->
 <div class="mobile-nav-overlay"></div>
 
-     <header class="sticky-header">
+<nav class="mobile-nav">
+    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="/stories/"><i class="fa-solid fa-book-open"></i> Stories</a>
+    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
+    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
+    <div style="border-top: 1px solid #eee; margin: 10px 20px;"></div> 
+    <a href="/sell/" class="login-button"><i class="fa-regular fa-user"></i> My Account</a>
+    <a href="/sell/" class="post-button"><i class="fa-solid fa-plus"></i> Post Something</a>
+</nav>
+
+<header class="sticky-header">
   <div class="header-content-wrapper">
     <div class="header-top-bar">
       <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
@@ -197,7 +206,6 @@
       </div>
     </div>
 
-    <!-- Desktop nav (currently hidden) -->
     <nav class="desktop-nav"></nav>
   </div>
 </header>
