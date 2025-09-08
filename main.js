@@ -37,7 +37,7 @@ async function fetchProducts(isNewSearch = false) {
 
     if (isNewSearch) {
         lastVisibleProductId = null;
-        productGrid.innerHTML = ''; // Clear the grid for a new search
+        productGrid.innerHTML = '';
         renderSkeletonLoaders(12);
         loadMoreBtn.style.display = 'none';
     }
@@ -55,7 +55,6 @@ async function fetchProducts(isNewSearch = false) {
         if (!response.ok) throw new Error('Network response was not ok.');
         const products = await response.json();
 
-        // Remove skeleton loaders
         document.querySelectorAll('.skeleton-card').forEach(card => card.remove());
 
         if (products.length === 0 && isNewSearch) {
@@ -71,7 +70,6 @@ async function fetchProducts(isNewSearch = false) {
                 loadMoreBtn.style.display = 'none';
             }
         } else {
-             // Hide load more button if no more products are returned
             loadMoreBtn.style.display = 'none';
         }
 
@@ -89,11 +87,10 @@ function renderProducts(productsToDisplay) {
     const existingProductIds = new Set(Array.from(productGrid.children).map(child => child.dataset.productId));
 
     productsToDisplay.forEach(product => {
-        // Prevent rendering duplicates
         if (existingProductIds.has(product.id)) {
             return;
         }
-        
+
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
 
         const verifiedBadge = product.sellerBadges?.includes('verified')
@@ -108,7 +105,7 @@ function renderProducts(productsToDisplay) {
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
         productLink.className = 'product-card-link';
-        productLink.dataset.productId = product.id; // Add a data attribute for ID
+        productLink.dataset.productId = product.id;
         productLink.innerHTML = `
             <div class="product-card">
                 <img src="${primaryImage}" alt="${product.name}" loading="lazy">
