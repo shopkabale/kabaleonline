@@ -142,11 +142,11 @@
             border: none;
             cursor: pointer;
             color: var(--text-dark);
-            z-index: 10; /* Keep hamburger accessible */
+            z-index: 10;
         }
 
         .site-title {
-            position: absolute; /* Center title */
+            position: absolute;
             left: 50%;
             transform: translateX(-50%);
             text-decoration: none;
@@ -178,7 +178,7 @@
         }
 
         .header-icons {
-             margin-left: auto; /* Push icons to the right */
+            margin-left: auto;
         }
 
         .header-icons a {
@@ -187,34 +187,33 @@
             margin-left: 15px;
         }
 
-
         /* Mobile nav sidebar */
         .mobile-nav {
             position: fixed;
             top: 0;
-            left: -260px; /* Start off-screen */
+            left: -260px;
             width: 260px;
             height: 100%;
             background-color: var(--bg-white);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
             z-index: 1100;
-            padding-top: 20px; /* Add some top padding */
+            padding-top: 20px;
             transition: left 0.3s ease;
             display: flex;
             flex-direction: column;
         }
 
         .mobile-nav.active {
-            left: 0; /* Slide in */
+            left: 0;
         }
-        
+
         .mobile-nav .nav-header {
             padding: 15px 20px;
             font-size: 1.5em;
             font-weight: bold;
             border-bottom: 1px solid var(--border-light);
         }
-        
+
         .mobile-nav .nav-header span {
             color: var(--primary-blue);
         }
@@ -236,7 +235,7 @@
 
         .mobile-nav a i {
             margin-right: 15px;
-            width: 20px; /* Align icons */
+            width: 20px;
             text-align: center;
             color: var(--primary-blue);
         }
@@ -273,18 +272,19 @@
             .hamburger-menu {
                 display: none;
             }
-             .site-title {
-                position: static; /* Reset positioning for desktop */
+            .site-title {
+                position: static;
                 transform: none;
             }
-             .header-top-bar {
+            .header-top-bar {
                 justify-content: space-between;
             }
             .header-icons {
-                display: none; /* Example: hide mobile icons on desktop */
+                display: none;
             }
         }
-        /* --- REQUIRED CSS FOR THE OVERLAY --- */
+
+        /* Overlay */
         .mobile-nav-overlay {
             position: fixed;
             top: 0;
@@ -292,7 +292,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            z-index: 1090; /* Must be below the nav menu */
+            z-index: 1090;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0s 0.3s;
@@ -303,7 +303,6 @@
             visibility: visible;
             transition: opacity 0.3s ease;
         }
-
     </style>
 </head>
 <body>
@@ -319,7 +318,6 @@
     <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
     <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
 </nav>
-
 
 <header class="sticky-header">
   <div class="header-content-wrapper container">
@@ -348,22 +346,8 @@
         <a href="/requests/" class="cta-button">Post a New Request</a>
     </div>
 
-    <div id="requests-list">
-        <div class="request-card">
-            <h3>Looking for a reliable plumber</h3>
-            <p>I have a leaking sink in my kitchen in Kigongi and need an experienced plumber to fix it urgently. Please contact me with your rates.</p>
-            <div class="request-card-meta">
-                <span>Posted by: Alex M.</span> | <span>Date: September 8, 2025</span>
-            </div>
-        </div>
-        <div class="request-card">
-            <h3>Second-hand bicycle for a student</h3>
-            <p>My son needs a bicycle to get to school. Looking for a used one in good condition. Budget is around 150,000 UGX.</p>
-            <div class="request-card-meta">
-                <span>Posted by: Sarah K.</span> | <span>Date: September 7, 2025</span>
-            </div>
-        </div>
-    </div>
+    <!-- Dynamic requests will be injected here by view.js -->
+    <div id="requests-list"></div>
 </main>
 
 <footer>
