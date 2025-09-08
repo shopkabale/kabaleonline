@@ -13,7 +13,10 @@ const urlParams = new URLSearchParams(window.location.search);
 const listingTypeFilter = urlParams.get('type');
 
 function renderSkeletonLoaders(count) {
-    productGrid.innerHTML = '';
+    // Clear the grid only on a new search
+    if (lastVisibleProductId === null) {
+        productGrid.innerHTML = '';
+    }
     for (let i = 0; i < count; i++) {
         const skeletonCard = document.createElement('div');
         skeletonCard.className = 'skeleton-card';
@@ -34,6 +37,7 @@ async function fetchProducts(isNewSearch = false) {
 
     if (isNewSearch) {
         lastVisibleProductId = null;
+        productGrid.innerHTML = ''; // Clear the grid for a new search
         renderSkeletonLoaders(12);
         loadMoreBtn.style.display = 'none';
     }
@@ -51,7 +55,8 @@ async function fetchProducts(isNewSearch = false) {
         if (!response.ok) throw new Error('Network response was not ok.');
         const products = await response.json();
 
-        if (isNewSearch) productGrid.innerHTML = '';
+        // Remove skeleton loaders
+        document.querySelectorAll('.skeleton-card').forEach(card => card.remove());
 
         if (products.length === 0 && isNewSearch) {
             productGrid.innerHTML = '<p>No listings match your criteria.</p>';
@@ -65,6 +70,9 @@ async function fetchProducts(isNewSearch = false) {
             } else {
                 loadMoreBtn.style.display = 'none';
             }
+        } else {
+             // Hide load more button if no more products are returned
+            loadMoreBtn.style.display = 'none';
         }
 
         renderProducts(products);
@@ -78,7 +86,14 @@ async function fetchProducts(isNewSearch = false) {
 }
 
 function renderProducts(productsToDisplay) {
+    const existingProductIds = new Set(Array.from(productGrid.children).map(child => child.dataset.productId));
+
     productsToDisplay.forEach(product => {
+        // Prevent rendering duplicates
+        if (existingProductIds.has(product.id)) {
+            return;
+        }
+        
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
 
         const verifiedBadge = product.sellerBadges?.includes('verified')
@@ -93,6 +108,7 @@ function renderProducts(productsToDisplay) {
         const productLink = document.createElement('a');
         productLink.href = `product.html?id=${product.id}`;
         productLink.className = 'product-card-link';
+        productLink.dataset.productId = product.id; // Add a data attribute for ID
         productLink.innerHTML = `
             <div class="product-card">
                 <img src="${primaryImage}" alt="${product.name}" loading="lazy">
