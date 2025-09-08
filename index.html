@@ -3,110 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kabale Online | Buy & Sell Electronics, Fashion & More in Kabale</title>
-    <meta name="description" content="Find great deals on new and second-hand items in Kabale. Kabale Online is the #1 community marketplace for electronics, fashion, textbooks, and services. Discover, buy, and sell easily today!">
-    <link rel="icon" href="favicon.webp" type="image/webp">
+
+    <!-- SEO: Primary Meta Tags -->
+    <title>Kabale Online | Buy & Sell Used Items, Find Services in Kabale</title>
+    <meta name="description" content="The #1 online marketplace for Kabale. Find great deals on used electronics, fashion, textbooks, and local services. Post your free ad today and start selling!">
+    <meta name="keywords" content="Kabale, Uganda, online market, buy and sell, used items, second-hand, Kabale University, KAB, student hustle, electronics, rentals, services, free ads, Kigezi">
+    <meta name="author" content="Kabale Online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.kabaleonline.com/">
+    
+    <!-- SEO: Open Graph Meta Tags (for Facebook, WhatsApp, etc.) -->
+    <meta property="og:title" content="Kabale Online | Your Community Marketplace">
+    <meta property="og:description" content="The best place for students and residents in Kabale to buy, sell, and discover new & used goods and services.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.kabaleonline.com/">
+    <meta property="og:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Kabale Online">
+
+    <!-- SEO: Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@KabaleOnline"> <!-- Optional: Your Twitter handle -->
+    <meta name="twitter:creator" content="@KabaleOnline"> <!-- Optional: Your Twitter handle -->
+    <meta name="twitter:title" content="Kabale Online | The #1 Marketplace in Kabale">
+    <meta name="twitter:description" content="Buy and sell everything from used phones to textbooks. Find local services and rentals right here in Kabale.">
+    <meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
+
+    <!-- App Icons and Manifest -->
+    <link rel="icon" href="/favicon.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png"> <!-- 180x180 png -->
+    <link rel="manifest" href="/site.webmanifest">
+
+    <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- SEO: JSON-LD Structured Data for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Kabale Online",
+      "url": "https://www.kabaleonline.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.kabaleonline.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Kabale Online",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.kabaleonline.com/assets/logo.png"
+        }
+      }
+    }
+    </script>
+    
     <style>
         :root {
             --primary-color: #007bff;
             --accent-color: #ffc107;
-            --bg-color: #f0f5fa;
+            --bg-color: #f4f7f6;
             --card-bg: #ffffff;
             --text-dark: #34495e;
+            --text-light: #7f8c8d;
             --border-color: #e9ecef;
-            --border-radius: 8px;
+            --border-radius: 12px;
+            --shadow: 0 4px 15px rgba(0,0,0,0.07);
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 
-        /* --- FIXED HEADER STYLES --- */
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        }
-        .header-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-            height: 60px;
-        }
-        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.5em; font-weight: bold; margin: 0 auto 0 15px; }
+        /* HEADER STYLES */
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; }
+        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
         .site-title span { color: var(--accent-color); }
-        .header-icons { display: flex; align-items: center; gap: 20px; }
-        .header-icons a { color: var(--text-dark); font-size: 24px; text-decoration: none; }
-        
-        .header-search-bar { padding: 5px 15px 12px 15px; border-top: 1px solid var(--border-color); }
+        .header-spacer { flex-grow: 1; }
+        .header-icons { display: flex; align-items: center; gap: 18px; }
+        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+        .header-search-bar { padding: 8px 15px 10px; border-top: 1px solid var(--border-color); }
         .search-container { display: flex; }
-        #search-input { width: 100%; flex-grow: 1; padding: 10px 15px; font-size: 1em; border: 1px solid #ccc; border-right: none; border-radius: 20px 0 0 20px; box-sizing: border-box; -webkit-appearance: none; }
+        #search-input { width: 100%; padding: 9px 15px; font-size: 0.95em; border: 1px solid #ddd; border-right: none; border-radius: 20px 0 0 20px; box-sizing: border-box; -webkit-appearance: none; }
         #search-input:focus { outline: none; border-color: var(--primary-color); }
-        #search-btn { padding: 10px 20px; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; font-weight: bold; cursor: pointer; border-radius: 0 20px 20px 0; }
+        #search-btn { padding: 9px 18px; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; cursor: pointer; border-radius: 0 20px 20px 0; }
+        .page-container { padding-top: 115px; padding-bottom: 20px; }
         
-        .page-container {
-            padding-top: 130px; /* Adjusted for new header height */
-            padding-bottom: 20px;
-        }
-        
-        /* --- NAVIGATION MENUS --- */
-        .desktop-nav { display: none; }
-        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; padding-top: 60px; transition: left 0.3s ease; }
+        /* MOBILE NAV STYLES */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .mobile-nav.active { left: 0; }
-        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
-        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); }
-        
-        /* --- HERO & CTA --- */
-        .hero-section { background: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 25px 15px; border-radius: 12px; margin-bottom: 20px; }
-        .hero-section h1 { font-size: 1.8em; margin-bottom: 8px; }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
+        .mobile-nav a:hover { background-color: #f8f9fa; }
+        .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
+        .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
+
+        /* HERO & PRODUCT GRID STYLES */
+        .hero-section { background: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 30px 15px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: var(--shadow); }
+        .hero-section h1 { font-size: 1.8em; margin: 0 0 8px; }
         .hero-buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; }
         .hero-btn { width: 90%; max-width: 280px; padding: 12px 20px; font-size: 1em; font-weight: bold; text-decoration: none; border-radius: 40px; }
         .hero-browse { background-color: white; color: var(--primary-color); }
         .hero-start-selling { background-color: var(--accent-color); color: var(--text-dark); }
-        .hero-community-btn { background-color: #25D366; color: white; }
-        .cta-floating-container-wrapper { padding: 30px 15px; background-color: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 30px; }
-        .cta-floating-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-        .cta-item { text-align: center; max-width: 250px; }
-        .cta-button { display: block; width: 100%; padding: 10px 15px; border-radius: 40px; font-weight: bold; color: white; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.9em; }
-        .cta-description { font-size: 0.8em; color: #6c757d; margin-top: 8px; }
-        .sell-product-btn { background-color: var(--accent-color); color: var(--text-dark); }
-        .post-story-btn { background-color: var(--primary-color); }
-
-        /* --- SKELETON & GRID --- */
-        .skeleton-card, .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
-        .skeleton-image { width: 100%; aspect-ratio: 1 / 1; background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0 0px, #f5f5f5 40px, #e0e0e0 80px); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
-        @keyframes shimmer { 100% { background-position: -200% 0; } }
-        .skeleton-text { padding: 15px; }
-        .skeleton-line { height: 1.2rem; background-color: #e0e0e0; margin-bottom: 10px; border-radius: 4px; background-image: linear-gradient(90deg, #e0e0e0 0px, #f5f5f5 40px, #e0e0e0 80px); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
         main h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         .product-card-link { text-decoration: none; color: inherit; }
-        .product-card { display: flex; flex-direction: column; height: 100%; }
+        .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
-        .product-card h3 { margin: 10px 15px; font-size: 1rem; flex-grow: 1; }
+        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); }
-        .seller-info { font-size: 0.8em; color: grey; margin: 0 15px 10px; }
-
-        /* --- PAGINATION & FOOTER --- */
         .pagination-container { text-align: center; margin-top: 30px; }
         .load-more-btn { background-color: var(--primary-color); color: white; padding: 12px 25px; border-radius: 20px; font-size: 1em; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.3s; }
         .load-more-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 30px; }
+
+        /* CTA & FOOTER STYLES */
+        .cta-wrapper { background-color: var(--card-bg); border-radius: var(--border-radius); padding: 25px 15px; margin-top: 30px; box-shadow: var(--shadow); }
+        .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.5em; }
+        .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .cta-item { text-align: center; }
+        .cta-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background-color: var(--bg-color); border-radius: var(--border-radius); padding: 15px 10px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 0.9em; transition: background-color 0.2s ease; height: 100%; }
+        .cta-button i { font-size: 24px; margin-bottom: 5px; }
+        .cta-button:hover { background-color: #e9ecef; }
+        .cta-button.sell { color: #c28b00; }
+        .cta-button.story { color: #0056b3; }
+        .cta-button.lost { color: #218838; }
+        .cta-button.rental { color: #5a6268; }
+        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--accent-color); }
+        .footer-tagline { color: var(--text-light); font-size: 0.95em; margin-bottom: 25px; }
+        .footer-socials { margin-bottom: 25px; }
+        .footer-socials a { color: white; font-size: 22px; margin: 0 12px; text-decoration: none; transition: color 0.2s ease; }
+        .footer-socials a:hover { color: var(--accent-color); }
+        .footer-links { margin-bottom: 25px; }
+        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
         
-        /* --- RESPONSIVE --- */
+        /* RESPONSIVE STYLES */
         @media (min-width: 768px) {
             .product-grid { grid-template-columns: repeat(3, 1fr); }
+            .cta-container { grid-template-columns: repeat(4, 1fr); }
         }
         @media (min-width: 992px) {
             .hamburger-menu { display: none; }
             .header-top-bar { height: 70px; }
-            .site-title { margin-left: 0; }
+            .site-title { margin: 0; }
             .header-search-bar { order: 2; flex-grow: 1; padding: 0; border: none; max-width: 500px; }
             .desktop-nav { display: flex; align-items: center; gap: 30px; order: 3; }
             .header-icons { order: 4; }
@@ -118,31 +168,47 @@
 </head>
 <body>
 
+    <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
+        <!-- This wrapper is for desktop layout -->
         <div class="header-content-wrapper">
             <div class="header-top-bar">
                 <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
                 <a href="/" class="site-title">Kabale <span>Online</span></a>
+                <div class="header-spacer"></div>
                 <div class="header-icons">
                     <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
                     <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
                 </div>
             </div>
-            <nav class="desktop-nav">
-                <a href="/">All Items</a>
-                <a href="/?type=service">Services</a>
-            </nav>
+            <!-- This search bar is part of the mobile header but hidden on desktop -->
             <div class="header-search-bar">
                 <div class="search-container">
                     <input type="text" id="search-input" placeholder="Search items or services...">
                     <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
+            <!-- Desktop only navigation -->
+            <nav class="desktop-nav">
+                <a href="/">All Items</a>
+                <a href="/?type=service">Services</a>
+            </nav>
         </div>
     </header>
     
     <nav class="mobile-nav">
-        <!-- You can add your mobile nav links back in here -->
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/stories/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/sell/" class="post-button">Post Something Free</a>
+        </div>
     </nav>
 
     <div class="container page-container">
@@ -152,31 +218,49 @@
             <div class="hero-buttons">
                 <a href="/" class="hero-btn hero-browse">Browse Products</a>
                 <a href="/sell/" class="hero-btn hero-start-selling">Post Something</a>
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y" class="hero-btn hero-community-btn" target="_blank">Join Community</a>
             </div>
         </section>
 
         <main>
             <h2 id="listings-title">All Items</h2>
             <div id="product-grid" class="product-grid"></div>
-            <div id="pagination-container" class="pagination-container">
+            <div class="pagination-container">
                 <button id="load-more-btn" class="load-more-btn" style="display: none;">Load More</button>
             </div>
         </main>
-
-        <div class="cta-floating-container-wrapper">
-             <div class="cta-floating-container">
-                <div class="cta-item"><a href="/sell/" class="cta-button sell-product-btn"><i class="fa-solid fa-plus-circle"></i> Post a Product</a><p class="cta-description">Got something to sell? List it here for free!</p></div>
-                <div class="cta-item"><a href="/stories/submit-story.html" class="cta-button post-story-btn"><i class="fa-solid fa-pen-to-square"></i> Share a Story</a><p class="cta-description">Tell the community about your experience or tips.</p></div>
+    </div>
+    
+    <div class="container">
+        <div class="cta-wrapper">
+            <h2>What would you like to do?</h2>
+            <div class="cta-container">
+                <div class="cta-item"><a href="/sell/" class="cta-button sell"><i class="fa-solid fa-plus-circle"></i>Post an Ad</a></div>
+                <div class="cta-item"><a href="/stories/submit-story.html" class="cta-button story"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
+                <div class="cta-item"><a href="/lost-and-found/" class="cta-button lost"><i class="fa-solid fa-magnifying-glass"></i>Lost & Found</a></div>
+                <div class="cta-item"><a href="/rentals/" class="cta-button rental"><i class="fa-solid fa-house"></i>List a Rental</a></div>
             </div>
         </div>
     </div>
     
     <footer>
-        <p>&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-socials">
+                <a href="https://wa.me/yourwhatsapp" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
     </footer>
 
-    <!-- You'll need a ui.js file for the mobile menu to work -->
     <script type="module" src="ui.js"></script>
     <script type="module" src="main.js"></script>
 
