@@ -2,6 +2,7 @@ const productGrid = document.getElementById('product-grid');
 const searchInput = document.getElementById('search-input');
 const listingsTitle = document.getElementById('listings-title');
 const searchBtn = document.getElementById('search-btn');
+const loadMoreBtn = document.getElementById('load-more-btn');
 
 const PRODUCTS_PER_PAGE = 30;
 let lastVisibleProductId = null;
@@ -34,6 +35,7 @@ async function fetchProducts(isNewSearch = false) {
     if (isNewSearch) {
         lastVisibleProductId = null;
         renderSkeletonLoaders(12);
+        loadMoreBtn.style.display = 'none'; // Hide button on new search
     }
 
     let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentQuery.searchTerm)}`;
@@ -53,16 +55,23 @@ async function fetchProducts(isNewSearch = false) {
 
         if (products.length === 0 && isNewSearch) {
             productGrid.innerHTML = '<p>No listings match your criteria.</p>';
+            loadMoreBtn.style.display = 'none';
         }
 
         if (products.length > 0) {
             lastVisibleProductId = products[products.length - 1].id;
+            if (products.length === PRODUCTS_PER_PAGE) {
+                loadMoreBtn.style.display = 'block'; // Show if a full page was returned
+            } else {
+                loadMoreBtn.style.display = 'none'; // Hide if last page has been reached
+            }
         }
 
         renderProducts(products);
     } catch (error) {
         console.error("Error fetching products:", error);
         productGrid.innerHTML = '<p>Sorry, could not load listings. Please try again later.</p>';
+        loadMoreBtn.style.display = 'none';
     } finally {
         fetching = false;
     }
@@ -109,6 +118,17 @@ searchInput.addEventListener('keydown', (e) => {
         e.preventDefault();
         handleNewSearch();
     }
+});
+
+// Load more products when button is clicked
+loadMoreBtn.addEventListener('click', () => {
+    fetchProducts(false);
+});
+
+// Handle the floating CTA button
+const ctaFloatingContainer = document.querySelector('.cta-floating-container');
+ctaFloatingContainer.addEventListener('click', () => {
+    ctaFloatingContainer.classList.toggle('expanded');
 });
 
 if (listingTypeFilter === 'service') {
