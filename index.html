@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- SEO: Primary Meta Tags -->
+    <!-- SEO Meta Tags -->
     <title>Kabale Online | Buy & Sell Used Items, Find Services in Kabale</title>
     <meta name="description" content="The #1 online marketplace for Kabale. Find great deals on used electronics, fashion, textbooks, and local services. Post your free ad today and start selling!">
     <meta name="keywords" content="Kabale, Uganda, online market, buy and sell, used items, second-hand, Kabale University, KAB, student hustle, electronics, rentals, services, free ads, Kigezi">
@@ -12,55 +12,20 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.kabaleonline.com/">
     
-    <!-- SEO: Open Graph Meta Tags (for Facebook, WhatsApp, etc.) -->
+    <!-- Social Share & App Icons -->
     <meta property="og:title" content="Kabale Online | Your Community Marketplace">
     <meta property="og:description" content="The best place for students and residents in Kabale to buy, sell, and discover new & used goods and services.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.kabaleonline.com/">
     <meta property="og:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:locale" content="en_US">
-    <meta property="og:site_name" content="Kabale Online">
-
-    <!-- SEO: Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@KabaleOnline"> <!-- Optional: Your Twitter handle -->
-    <meta name="twitter:creator" content="@KabaleOnline"> <!-- Optional: Your Twitter handle -->
     <meta name="twitter:title" content="Kabale Online | The #1 Marketplace in Kabale">
-    <meta name="twitter:description" content="Buy and sell everything from used phones to textbooks. Find local services and rentals right here in Kabale.">
     <meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
-
-    <!-- App Icons and Manifest -->
     <link rel="icon" href="/favicon.webp" type="image/webp">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png"> <!-- 180x180 png -->
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- SEO: JSON-LD Structured Data for Rich Snippets -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Kabale Online",
-      "url": "https://www.kabaleonline.com/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.kabaleonline.com/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Kabale Online",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://www.kabaleonline.com/assets/logo.png"
-        }
-      }
-    }
-    </script>
     
     <style>
         :root {
@@ -93,6 +58,9 @@
         #search-btn { padding: 9px 18px; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; cursor: pointer; border-radius: 0 20px 20px 0; }
         .page-container { padding-top: 115px; padding-bottom: 20px; }
         
+        /* --- FIXED: Hide desktop nav --- */
+        .desktop-nav { display: none !important; }
+
         /* MOBILE NAV STYLES */
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
@@ -125,18 +93,20 @@
         .load-more-btn { background-color: var(--primary-color); color: white; padding: 12px 25px; border-radius: 20px; font-size: 1em; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.3s; }
         .load-more-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
 
-        /* CTA & FOOTER STYLES */
+        /* --- FIXED: SEPARATED CTA CARDS --- */
         .cta-wrapper { background-color: var(--card-bg); border-radius: var(--border-radius); padding: 25px 15px; margin-top: 30px; box-shadow: var(--shadow); }
         .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.5em; }
-        .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .cta-container { display: flex; flex-direction: column; gap: 15px; } /* Changed to flex column */
         .cta-item { text-align: center; }
-        .cta-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background-color: var(--bg-color); border-radius: var(--border-radius); padding: 15px 10px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 0.9em; transition: background-color 0.2s ease; height: 100%; }
-        .cta-button i { font-size: 24px; margin-bottom: 5px; }
+        .cta-button { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background-color: var(--bg-color); border-radius: var(--border-radius); padding: 15px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 1em; transition: background-color 0.2s ease; }
+        .cta-button i { font-size: 20px; width: 25px; text-align: center; }
         .cta-button:hover { background-color: #e9ecef; }
-        .cta-button.sell { color: #c28b00; }
-        .cta-button.story { color: #0056b3; }
-        .cta-button.lost { color: #218838; }
-        .cta-button.rental { color: #5a6268; }
+        .cta-button.sell i { color: #c28b00; }
+        .cta-button.story i { color: #0056b3; }
+        .cta-button.lost i { color: #218838; }
+        .cta-button.rental i { color: #5a6268; }
+
+        /* FOOTER STYLES */
         footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
         .footer-logo span { color: var(--accent-color); }
@@ -151,14 +121,12 @@
         /* RESPONSIVE STYLES */
         @media (min-width: 768px) {
             .product-grid { grid-template-columns: repeat(3, 1fr); }
-            .cta-container { grid-template-columns: repeat(4, 1fr); }
+            .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } /* Revert to grid on larger screens */
         }
         @media (min-width: 992px) {
-            .hamburger-menu { display: none; }
             .header-top-bar { height: 70px; }
             .site-title { margin: 0; }
             .header-search-bar { order: 2; flex-grow: 1; padding: 0; border: none; max-width: 500px; }
-            .desktop-nav { display: flex; align-items: center; gap: 30px; order: 3; }
             .header-icons { order: 4; }
             .page-container { padding-top: 90px; }
             .sticky-header { display: flex; justify-content: center; }
@@ -170,7 +138,6 @@
 
     <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
-        <!-- This wrapper is for desktop layout -->
         <div class="header-content-wrapper">
             <div class="header-top-bar">
                 <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
@@ -181,18 +148,14 @@
                     <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
                 </div>
             </div>
-            <!-- This search bar is part of the mobile header but hidden on desktop -->
             <div class="header-search-bar">
                 <div class="search-container">
                     <input type="text" id="search-input" placeholder="Search items or services...">
                     <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
-            <!-- Desktop only navigation -->
-            <nav class="desktop-nav">
-                <a href="/">All Items</a>
-                <a href="/?type=service">Services</a>
-            </nav>
+            <!-- This nav is now hidden on all screen sizes -->
+            <nav class="desktop-nav"></nav>
         </div>
     </header>
     
@@ -236,7 +199,7 @@
             <div class="cta-container">
                 <div class="cta-item"><a href="/sell/" class="cta-button sell"><i class="fa-solid fa-plus-circle"></i>Post an Ad</a></div>
                 <div class="cta-item"><a href="/stories/submit-story.html" class="cta-button story"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
-                <div class="cta-item"><a href="/lost-and-found/" class="cta-button lost"><i class="fa-solid fa-magnifying-glass"></i>Lost & Found</a></div>
+                <div class="cta-item"><a href="/lost-and-found/" class="cta-button lost"><i class="fa-solid fa-magnifying-glass"></i>Report Lost & Found</a></div>
                 <div class="cta-item"><a href="/rentals/" class="cta-button rental"><i class="fa-solid fa-house"></i>List a Rental</a></div>
             </div>
         </div>
