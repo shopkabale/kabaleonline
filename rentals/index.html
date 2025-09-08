@@ -23,23 +23,26 @@
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
 
-        /* --- CORRECTED HEADER STYLES --- */
+        /* --- UPDATED HEADER STYLES --- */
         .sticky-header {
-            position: fixed;
+            position: fixed; /* Makes the header stay at the top */
             top: 0;
             left: 0;
-            right: 0;
+            width: 100%; /* Ensures it spans the full width */
             z-index: 1000;
             background-color: var(--card-bg);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+
         .header-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-            height: 60px;
+            display: flex; /* Arranges children (menu, title, icons) in a row */
+            justify-content: space-between; /* Pushes menu to the left and icons to the right */
+            align-items: center; /* Vertically centers all items in the header */
+            padding: 0 15px; /* Adds space on the sides */
+            height: 60px; /* Defines header height */
+            box-sizing: border-box; /* Ensures padding is included in the width */
         }
+
         .hamburger-menu {
             font-size: 24px;
             background: none;
@@ -54,8 +57,16 @@
             font-weight: bold;
         }
         .site-title span { color: var(--accent-color); }
-        .header-icons { display: flex; align-items: center; gap: 20px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+        .header-icons { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+        }
+        .header-icons a { 
+            color: var(--text-dark); 
+            font-size: 22px; 
+            text-decoration: none; 
+        }
 
         /* --- MOBILE NAV & OVERLAY STYLES --- */
         .mobile-nav-overlay {
@@ -65,7 +76,7 @@
             transition: opacity 0.3s ease, visibility 0s 0.3s;
         }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-        
+
         .mobile-nav {
             position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
             background-color: var(--card-bg); z-index: 1100;
@@ -106,7 +117,6 @@
         </div>
     </header>
 
-    <!-- THIS IS THE MISSING NAVIGATION MENU -->
     <nav class="mobile-nav">
         <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
         <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
@@ -153,7 +163,7 @@
             </div>
           </div>
         </div>
-        
+
         <div id="rental-grid" class="rental-grid"><p>Loading listings...</p></div>
     </div>
 
