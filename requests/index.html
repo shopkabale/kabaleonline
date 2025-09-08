@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Requests | Kabale Online</title>
-    
+
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -141,7 +141,7 @@
             background-color: #DFF2BF; 
             border: 1px solid #4F8A10; 
         }
-        
+
         /* --- HEADER & NAVIGATION STYLES --- */
         .sticky-header {
             position: fixed;
@@ -159,7 +159,6 @@
             align-items: center;
             padding: 8px 15px;
             height: 65px;
-            gap: 15px;
         }
 
         .hamburger-menu {
@@ -169,8 +168,11 @@
             cursor: pointer;
             color: var(--text-dark);
         }
-
+        
         .site-title {
+            position: absolute; /* Center title */
+            left: 50%;
+            transform: translateX(-50%);
             text-decoration: none;
             color: var(--text-dark);
             font-size: 1.8em;
@@ -179,6 +181,16 @@
 
         .site-title span {
             color: var(--primary-blue);
+        }
+        
+        .header-icons {
+             margin-left: auto; /* Push icons to the right */
+        }
+
+        .header-icons a {
+            color: var(--text-dark);
+            font-size: 1.2em;
+            margin-left: 15px;
         }
 
         /* Desktop nav */
@@ -203,18 +215,32 @@
         .mobile-nav {
             position: fixed;
             top: 0;
-            left: -260px;
+            left: -260px; /* Start off-screen */
             width: 260px;
             height: 100%;
             background-color: var(--bg-white);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
             z-index: 1100;
-            padding-top: 65px;
+            padding-top: 20px; /* Add some top padding */
             transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .mobile-nav.active {
-            left: 0;
+            left: 0; /* Slide in */
+        }
+        
+        .mobile-nav .nav-header {
+            padding: 15px 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-dark);
+        }
+        
+        .mobile-nav .nav-header span {
+            color: var(--primary-blue);
         }
 
         .mobile-nav a {
@@ -225,6 +251,7 @@
             text-decoration: none;
             border-bottom: 1px solid var(--border-light);
             transition: background-color 0.2s;
+            font-size: 1.1em;
         }
 
         .mobile-nav a:hover {
@@ -233,6 +260,8 @@
 
         .mobile-nav a i {
             margin-right: 15px;
+            width: 20px; /* Align icons */
+            text-align: center;
             color: var(--primary-blue);
         }
 
@@ -268,87 +297,113 @@
             .hamburger-menu {
                 display: none;
             }
+             .site-title {
+                position: static; /* Reset positioning for desktop */
+                transform: none;
+                margin-right: auto; /* Push other elements to the right */
+            }
+             .header-top-bar {
+                justify-content: flex-start;
+            }
+            .header-icons {
+                display: none;
+            }
         }
-/* --- REQUIRED CSS FOR THE OVERLAY --- */
-.mobile-nav-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1090; /* Must be below the nav menu */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
+        
+        /* --- REQUIRED CSS FOR THE OVERLAY --- */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1090; /* Must be below the nav menu */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
 
-.mobile-nav-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease;
-}
-
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 <body>
-<!-- Add this right after your <body> tag -->
+
 <div class="mobile-nav-overlay"></div>
 
-    <header class="sticky-header">
-  <div class="header-content-wrapper">
+<nav class="mobile-nav">
+    <div class="nav-header">Kabale <span>Online</span></div>
+    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
+    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
+    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
+    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+</nav>
+<header class="sticky-header">
+  <div class="header-content-wrapper container">
     <div class="header-top-bar">
       <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
       <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div class="header-spacer"></div>
       <div class="header-icons">
         <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
         <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
       </div>
+      <nav class="desktop-nav">
+        <a href="/">Home</a>
+        <a href="/about.html">About Us</a>
+        <a href="/blog/">Blog & Tips</a>
+        <a href="/sell/">Post Something</a>
+      </nav>
     </div>
-
-    <!-- Desktop nav (currently hidden) -->
-    <nav class="desktop-nav"></nav>
   </div>
 </header>
-    <div class="container page-content">
-        <p id="success-message" class="success-message">Your request has been posted!</p>
-        <a href="view.html" class="back-home-btn">⬅ Back to Requests</a>
-        <div class="form-card">
-            <h1>Post a New Request</h1>
-            <form id="request-form">
-                <div class="form-group">
-                    <label for="request-item">What are you looking for?</label>
-                    <input type="text" id="request-item" name="title" placeholder="E.g., Second-hand laptop, Plumber" required>
-                </div>
-                <div class="form-group">
-                    <label for="request-details">Describe what you need:</label>
-                    <textarea id="request-details" name="description" placeholder="Provide more details about the item or service you need." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="request-nickname">How can people contact you?</label>
-                    <input type="text" id="request-nickname" name="contact" placeholder="E.g., Call/WhatsApp 077... or email..." required>
-                </div>
-                <button type="submit" id="submit-request-btn" class="form-submit-btn">Submit Request</button>
-            </form>
+
+<main class="container page-content">
+    <p id="success-message" class="success-message">Your request has been posted!</p>
+    <a href="view.html" class="back-home-btn">⬅ Back to Requests</a>
+    <div class="form-card">
+        <h1>Post a New Request</h1>
+        <form id="request-form">
+            <div class="form-group">
+                <label for="request-item">What are you looking for?</label>
+                <input type="text" id="request-item" name="title" placeholder="E.g., Second-hand laptop, Plumber" required>
+            </div>
+            <div class="form-group">
+                <label for="request-details">Describe what you need:</label>
+                <textarea id="request-details" name="description" placeholder="Provide more details about the item or service you need." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="request-nickname">How can people contact you?</label>
+                <input type="text" id="request-nickname" name="contact" placeholder="E.g., Call/WhatsApp 077... or email..." required>
+            </div>
+            <button type="submit" id="submit-request-btn" class="form-submit-btn">Submit Request</button>
+        </form>
+    </div>
+</main>
+
+<footer>
+    <div class="kabale-contact-info-section">
+        <h3 class="kabale-contact-title">Get in Touch</h3>
+        <div class="kabale-contact-details">
+            <p class="kabale-contact-item">📞 +256 784655792</p>
+            <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+        </div>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
         </div>
     </div>
-    <footer>
-        <div class="kabale-contact-info-section">
-            <h3 class="kabale-contact-title">Get in Touch</h3>
-            <div class="kabale-contact-details">
-                <p class="kabale-contact-item">📞 +256 784655792</p>
-                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
-            </div>
-            <div class="kabale-footer-links">
-                <a href="/about.html" class="kabale-footer-link">About Us</a>
-                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
-        </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
-    <script type="module" src="../ui.js"></script>
-    <script type="module" src="requests.js"></script>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
+
+<script type="module" src="../ui.js"></script>
+<script type="module" src="requests.js"></script>
+
 </body>
 </html>
