@@ -39,13 +39,13 @@
             font-weight: bold;
         }
         
-        /* --- Profile Styles --- */
+        /* --- Profile Styles (Fits well on mobile) --- */
         .profile-header-flex {
             display: flex;
-            align-items-center;
+            align-items: center;
             gap: 20px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Allows items to stack on small screens */
             background-color: var(--card-bg);
             padding: 20px;
             border-radius: 8px;
@@ -74,22 +74,59 @@
             border-left: 3px solid var(--primary-color);
             font-style: italic;
             color: #555;
+            width: 100%; /* Ensures it takes full width when stacked */
         }
 
-        /* --- Product Grid --- */
+        /* --- MODIFIED: Product Grid (2 Columns on Mobile) --- */
         #listings-title {
             margin-top: 40px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
         }
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            /* This creates a 2-column grid by default */
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
+
+        /* On larger screens (tablets and up), it becomes a responsive grid */
         @media (min-width: 768px) {
             .product-grid {
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
         }
+        
+        /* ADDED: Styles for the product cards for a complete look */
+        .product-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        .product-card-content {
+            padding: 10px;
+        }
+        .product-card-title {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .product-card-price {
+            color: var(--primary-color);
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
 
         /* --- Header --- */
         .sticky-header {
@@ -112,17 +149,6 @@
             height: 65px;
         }
         
-        .site-title {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-        
-        .site-title span {
-            color: var(--primary-color);
-        }
-
         .hamburger-menu {
             font-size: 24px;
             background: none;
@@ -131,68 +157,39 @@
             color: var(--text-dark);
         }
 
-        /* Desktop nav */
-        .desktop-nav { display: none; }
-        @media (min-width: 992px) {
-            .desktop-nav { display: flex; }
-            .hamburger-menu { display: none; }
+        /* ENHANCED: Title is now centered on mobile */
+        .site-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .site-title span {
+            color: var(--primary-color);
         }
 
         /* Mobile nav sidebar */
         .mobile-nav {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background-color: #fff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            z-index: 1100;
-            padding-top: 20px;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
+            position: fixed; top: 0; left: -260px; width: 260px; height: 100%;
+            background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            z-index: 1100; padding-top: 20px; transition: left 0.3s ease;
+            display: flex; flex-direction: column;
         }
         .mobile-nav.active { left: 0; }
-        
-        .mobile-nav .nav-header {
-            padding: 15px 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            border-bottom: 1px solid #f0f0f0;
-            color: var(--text-dark);
-        }
-        .mobile-nav .nav-header span { color: var(--primary-color); }
-        
-        .mobile-nav a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: #333;
-            text-decoration: none;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 1.1em;
-        }
-        .mobile-nav a:hover { background-color: var(--bg-light); }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1.1em; }
         .mobile-nav a i { margin-right: 15px; color: var(--primary-color); width: 20px; text-align: center; }
 
         /* Overlay */
-        .mobile-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1090;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
-        }
-        .mobile-nav-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+
+        /* On desktop, reset title position and hide hamburger */
+        @media (min-width: 992px) {
+            .hamburger-menu { display: none; }
+            .site-title { position: static; transform: none; }
         }
 
         /* --- FOOTER --- */
@@ -207,20 +204,14 @@
 <div class="mobile-nav-overlay"></div>
 
 <nav class="mobile-nav">
-    <div class="nav-header">Kabale <span>Online</span></div>
     <a href="/"><i class="fa-solid fa-house"></i> Home</a>
     <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
-    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
     <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
-    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
-    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
 </nav>
 <header class="sticky-header">
     <div class="header-top-bar">
       <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
       <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <nav class="desktop-nav">
-        </nav>
     </div>
 </header>
 
@@ -244,7 +235,7 @@
     <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
 </footer>
 
-<script type="module" src="ui.js"></script>
+<script type="module" src="../ui.js"></script>
 <script type="module" src="profile.js"></script>
 
 </body>
