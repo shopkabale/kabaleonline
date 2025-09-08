@@ -3,97 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostels & Rentals in Kabale | Kabale Online</title>
+    <title>Rental Details | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --primary-color: #007bff; --text-dark: #34495e; --bg-light: #f8f9fa;
-            --card-bg: #ffffff;
+            --primary-color: #007bff; --text-dark: #34495e; --text-muted: #6c757d;
+            --card-bg: #ffffff; --bg-light: #f8f9fa;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-light); padding-top: 85px; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
-        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 65px; max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px 15px; }
+        .back-link { display: block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
+        .rental-details-card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .rental-details-card-content { padding: 20px; }
+        .rental-details-card h1 { color: var(--text-dark); margin-top: 0; }
+        #rental-image { width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: 8px 8px 0 0; }
+        #amenities-list { list-style: none; padding: 0; }
+        #amenities-list li { margin-bottom: 8px; }
+        .contact-info { margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+        #owner-actions { margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+        .delete-btn { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 1em; font-weight: bold; }
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top-bar { display: flex; justify-content: space-between; align-items: center; max-width: 960px; margin: 0 auto; padding: 8px 15px; height: 65px; }
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.6em; font-weight: bold; }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.8em; font-weight: bold; }
         .site-title span { color: var(--primary-color); }
-        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--card-bg); z-index: 1100; box-shadow: 2px 0 10px rgba(0,0,0,0.2); transition: left 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: var(--card-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; transition: left 0.3s ease; }
         .mobile-nav.active { left: 0; }
-        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+        .mobile-nav a { display: flex; align-items: center; gap: 15px; padding: 15px 20px; text-decoration: none; color: var(--text-dark); border-bottom: 1px solid #f0f0f0; }
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
-        .page-welcome { text-align: center; margin-bottom: 30px; }
-        .page-welcome .cta-button { background-color: var(--primary-color); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; }
-        .filter-bar { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: flex-end; }
-        .filter-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
-        .filter-group select, .filter-group input, .filter-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
-        .filter-group button { background-color: var(--primary-color); color: white; border: none; cursor: pointer; font-weight: bold; }
-        .rental-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 768px) { .rental-grid { grid-template-columns: repeat(2, 1fr); } }
-        .rental-card { display: flex; flex-direction: column; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; color: inherit; }
-        .rental-card img { width: 100%; height: 200px; object-fit: cover; }
-        .rental-card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-        .rental-card-title { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
-        .rental-card-price { color: var(--primary-color); font-weight: bold; margin-bottom: 10px; }
-        .rental-card-location { margin-top: auto; color: #666; font-size: 0.9em; }
     </style>
 </head>
 <body>
-
-    <div class="mobile-nav-overlay"></div>
-    <nav class="mobile-nav">
-        <a href="/"><i class="fa-solid fa-store"></i> All Items</a>
-        <a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-    </nav>
-    <header class="sticky-header">
-        <div class="header-top-bar">
-            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-            <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user" style="font-size: 1.2em;"></i></a>
+<div class="mobile-nav-overlay"></div>
+<nav class="mobile-nav">
+    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+</nav>
+<header class="sticky-header">
+    <div class="header-top-bar">
+      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+      <a href="/" class="site-title">Kabale <span>Online</span></a>
+    </div>
+</header>
+<main class="container">
+    <a href="/rentals/" class="back-link">← Back to Rentals</a>
+    <div id="rental-details-container">
+        <p>Loading rental...</p>
+        <div class="rental-details-card" id="rental-card-placeholder" style="visibility: hidden;">
+            <img id="rental-image" src="../placeholder.webp" alt="Rental image">
+            <div class="rental-details-card-content">
+                <h1 id="rental-title">Loading title...</h1>
+                <div>
+                    <h2>Details</h2>
+                    <p><strong>Price:</strong> <span id="rental-price">...</span></p>
+                    <p id="rental-description">Loading description...</p>
+                </div>
+                <div>
+                    <h2>Amenities</h2>
+                    <ul id="amenities-list"><li>Loading amenities...</li></ul>
+                </div>
+                <div class="contact-info">
+                    <h2>Contact Information</h2>
+                    <p><strong>Contact Person:</strong> <span id="contact-name">...</span></p>
+                    <p><strong>Phone:</strong> <span id="contact-phone">...</span></p>
+                </div>
+                <div id="owner-actions" style="display: none;">
+                    <h3>Owner Controls</h3>
+                    <button id="delete-btn" class="delete-btn">Delete Listing</button>
+                </div>
+            </div>
         </div>
-    </header>
-
-    <main class="container">
-        <div class="page-welcome">
-            <h1>Hostels & Rentals in Kabale</h1>
-            <p>Find your next place to stay. Search student hostels and private rentals.</p>
-            <a href="/rentals/post.html" class="cta-button">Post a Rental (Free)</a>
-        </div>
-
-        <div class="filter-bar">
-          <div class="filter-grid">
-            <div class="filter-group">
-              <label for="filter-type">Type</label>
-              <select id="filter-type">
-                <option value="">All Types</option>
-                <option value="Hostel">Hostel</option>
-                <option value="Rental">Rental</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="filter-location">Location</label>
-              <input type="text" id="filter-location" placeholder="e.g., Kikungiri">
-            </div>
-            <div class="filter-group">
-              <label for="filter-sort">Sort By</label>
-              <select id="filter-sort">
-                <option value="newest">Newest</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <button id="apply-rental-filters">Search</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="rental-grid" class="rental-grid"><p>Loading listings...</p></div>
-    </main>
-
-    <script type="module" src="../ui.js"></script>
-    <script type="module" src="main.js"></script>
-
+    </div>
+</main>
+<script type="module" src="../ui.js"></script>
+<script type="module" src="detail.js"></script>
 </body>
 </html>
