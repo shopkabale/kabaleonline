@@ -4,9 +4,9 @@ const algoliasearch = require("algoliasearch");
 const APP_ID = process.env.ALGOLIA_APP_ID;
 const SEARCH_KEY = process.env.ALGOLIA_SEARCH_API_KEY;
 
-// Check for keys on initialization.
+// Check for keys on initialization. This is a safety measure.
 if (!APP_ID || !SEARCH_KEY) {
-    console.error("FATAL: Algolia environment variables are not set.");
+    console.error("FATAL: Algolia environment variables (ALGOLIA_APP_ID or ALGOLIA_SEARCH_API_KEY) are not set.");
 }
 
 const algoliaClient = algoliasearch(APP_ID, SEARCH_KEY);
@@ -22,6 +22,7 @@ exports.handler = async (event) => {
         };
     }
     
+    // Get parameters from the frontend URL.
     const { searchTerm = "", type, page = 0 } = event.queryStringParameters;
 
     try {
@@ -30,16 +31,17 @@ exports.handler = async (event) => {
             page: parseInt(page, 10)
         };
 
-        // --- THE FIX IS HERE ---
-        // If a 'type' parameter exists (e.g., 'service'), add a filter.
-        // We now correctly filter on the 'listing_type' attribute to match your database.
+        // This is the key line that now works because you configured Algolia.
+        // If the 'type' parameter is 'service', this filters the results.
         if (type) {
             searchOptions.filters = `listing_type:${type}`;
         }
 
+        // Perform the search with the given options (search term and filter).
         const searchResult = await index.search(searchTerm, searchOptions);
         const { hits, nbPages } = searchResult;
 
+        // Format the results to send back to the frontend.
         const products = hits.map(hit => {
             const { objectID, ...data } = hit;
             return { id: objectID, ...data };
