@@ -239,9 +239,51 @@
             border-radius: 5px;
             resize: vertical;
         }
+/* --- REQUIRED CSS FOR THE OVERLAY AND MENU --- */
+
+/* The dark background overlay */
+.mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1090; /* Must be below the nav menu */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+/* The state when the menu is open */
+.mobile-nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+}
+
+/* The navigation menu itself (already in your code, but shown for context) */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hidden off-screen */
+    width: 280px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 1100; /* Must be above the overlay */
+    transition: left 0.3s ease;
+}
+
+/* The state when the menu is open */
+.mobile-nav.active {
+    left: 0; /* Slides the menu into view */
+}
+
 
     </style>
 </head>
+<div class="mobile-nav-overlay"></div>
 <body>
     <header class="sticky-header">
     <div class="header-top-bar">
