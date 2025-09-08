@@ -6,12 +6,27 @@
     <title>Product Details | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --text-muted: #6c757d; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f8f9fa; }
+        :root { 
+            --primary-color: #007bff; 
+            --accent-color: #ffc107; 
+            --text-dark: #34495e; 
+            --text-muted: #6c757d; 
+            --card-bg: #ffffff;
+            --bg-light: #f8f9fa;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-light); 
+        }
+
         .container { max-width: 960px; margin: 0 auto; padding: 20px 15px; }
-        .site-header-main { text-align: center; padding: 15px 0; background-color: white; border-bottom: 1px solid #eee; }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.8em; font-weight: bold; }
-        .site-title span { color: var(--accent-color); }
+        
+        .page-content {
+             padding-top: 85px; /* Push content below fixed header */
+        }
+        
         .back-home-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
         .product-detail-container { display: flex; flex-wrap: wrap; gap: 30px; }
         .product-images img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
@@ -22,7 +37,122 @@
         .cta-button { padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; text-align: center; }
         .whatsapp-btn { background-color: #25D366; color: white; }
         .profile-btn { background-color: #6c757d; color: white; }
-        /* MODIFICATION START: Footer CSS */
+        
+        /* --- Header --- */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 8px 15px;
+            height: 65px;
+        }
+
+        .site-title {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .site-title span {
+            color: var(--primary-color);
+        }
+
+        .hamburger-menu {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        /* Desktop nav */
+        .desktop-nav { display: none; }
+        @media (min-width: 992px) {
+            .desktop-nav { display: flex; }
+            .hamburger-menu { display: none; }
+        }
+
+        /* Mobile nav sidebar */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background-color: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            z-index: 1100;
+            padding-top: 20px;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .mobile-nav.active { left: 0; }
+        
+        .mobile-nav .nav-header {
+            padding: 15px 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-bottom: 1px solid #f0f0f0;
+            color: var(--text-dark);
+        }
+        .mobile-nav .nav-header span { color: var(--primary-color); }
+        
+        .mobile-nav a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 1.1em;
+        }
+        .mobile-nav a:hover { background-color: var(--bg-light); }
+        .mobile-nav a i { margin-right: 15px; color: var(--primary-color); width: 20px; text-align: center; }
+
+        /* Overlay */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1090;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Q&A Section Styles */
+        .qa-section { background-color: white; padding: 20px; border-radius: 8px; margin-top: 30px; }
+        .qa-form { margin-top: 20px; }
+        .qa-form textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; min-height: 80px; }
+        .qa-form-message { margin-top: 10px; }
+        .question-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .question-item:last-child { border-bottom: none; }
+        .question-item strong { display: block; margin-bottom: 5px; color: var(--primary-color); }
+        .answer-item { margin-top: 10px; padding-left: 20px; border-left: 3px solid #f0f0f0; }
+        
+        /* Footer */
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 40px; }
         .kabale-contact-title { font-size: 1.8em; margin-bottom: 20px; }
         .kabale-contact-details p { margin: 5px 0; }
@@ -30,197 +160,61 @@
         .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
         .kabale-footer-link:hover { color: white; }
         .copyright { font-size: 0.9em; color: var(--text-muted); margin-top: 20px; }
-        /* MODIFICATION END */
-        /* --- FOOTER --- */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
-        .kabale-footer-links { margin: 20px 0; }
-        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
-/* Sticky header */
-.sticky-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background-color: var(--card-bg);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.header-top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 15px;
-    height: 65px;
-    gap: 15px;
-}
-
-.hamburger-menu {
-    font-size: 24px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-dark);
-}
-
-/* Desktop nav */
-.desktop-nav {
-    display: none;
-    gap: 25px;
-    align-items: center;
-}
-.desktop-nav a {
-    text-decoration: none;
-    color: var(--text-dark);
-    font-weight: 500;
-}
-
-/* Mobile nav sidebar */
-.mobile-nav {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    width: 260px;
-    height: 100%;
-    background-color: #fff;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-    z-index: 1100;
-    padding-top: 65px;
-    transition: left 0.3s ease;
-}
-.mobile-nav.active { left: 0; }
-.mobile-nav a {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    color: #333;
-    text-decoration: none;
-    border-bottom: 1px solid #f0f0f0;
-}
-.mobile-nav a i { margin-right: 15px; color: #007bff; }
-
-/* Desktop media query */
-@media (min-width: 992px) {
-    .desktop-nav { display: flex; }
-}
-
-        /* NEW Q&A Section Styles */
-        .qa-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-        }
-
-        .qa-form {
-            margin-top: 20px;
-        }
-
-        .qa-form textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .qa-form-message {
-            margin-top: 10px;
-        }
-
-        .question-item {
-            border-bottom: 1px solid #eee;
-            padding: 15px 0;
-        }
-
-        .question-item:last-child {
-            border-bottom: none;
-        }
-
-        .question-item strong {
-            display: block;
-            margin-bottom: 5px;
-            color: #007bff;
-        }
-
-        .answer-item {
-            margin-top: 10px;
-            padding-left: 20px;
-            border-left: 3px solid #f0f0f0;
-        }
-/* --- REQUIRED CSS FOR THE OVERLAY --- */
-.mobile-nav-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1090; /* Must be below the nav menu */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
-
-.mobile-nav-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease;
-}
-
     </style>
 </head>
 <body>
-<!-- Add this right after your <body> tag -->
+
 <div class="mobile-nav-overlay"></div>
 
-     <header class="sticky-header">
-  <div class="header-content-wrapper">
-    <div class="header-top-bar">
-      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-      <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div class="header-spacer"></div>
-      <div class="header-icons">
-        <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-        <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
-      </div>
-    </div>
-
-    <!-- Desktop nav (currently hidden) -->
-    <nav class="desktop-nav"></nav>
+<nav class="mobile-nav">
+    <div class="nav-header">Kabale <span>Online</span></div>
+    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
+    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
+    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
+    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+</nav>
+<header class="sticky-header">
+  <div class="header-top-bar">
+    <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+    <a href="/" class="site-title">Kabale <span>Online</span></a>
+    <div class="desktop-nav">
+        </div>
   </div>
 </header>
-    <div class="container page-content">
-        <p> </p>
-        <div id="product-detail-content"><p>Loading product...</p></div>
-        
-        <div class="qa-section">
-            <h2>Questions & Answers</h2>
-            <div id="qa-list">
-                <p>No questions yet. Be the first to ask!</p>
-            </div>
-            <div id="qa-form-container">
-                <p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>
-            </div>
+
+<main class="container page-content">
+    <div id="product-detail-content"><p>Loading product...</p></div>
+    
+    <div class="qa-section">
+        <h2>Questions & Answers</h2>
+        <div id="qa-list">
+            <p>No questions yet. Be the first to ask!</p>
         </div>
+        <div id="qa-form-container">
+            <p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>
         </div>
-    <footer>
-        <div class="kabale-contact-info-section">
-            <h3 class="kabale-contact-title">Get in Touch</h3>
-            <div class="kabale-contact-details">
-                <p class="kabale-contact-item">📞 +256 784655792</p>
-                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
-            </div>
-            <div class="kabale-footer-links">
-                <a href="/about.html" class="kabale-footer-link">About Us</a>
-                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
+    </div>
+</main>
+
+<footer>
+    <div class="kabale-contact-info-section">
+        <h3 class="kabale-contact-title">Get in Touch</h3>
+        <div class="kabale-contact-details">
+            <p class="kabale-contact-item">📞 +256 784655792</p>
+            <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
         </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </footer>
-    <script type="module" src="ui.js"></script>
-    <script type="module" src="product.js"></script>
+        <div class="kabale-footer-links">
+            <a href="/about.html" class="kabale-footer-link">About Us</a>
+            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+        </div>
+    </div>
+    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+</footer>
+
+<script type="module" src="ui.js"></script>
+<script type="module" src="product.js"></script>
 </body>
 </html>
