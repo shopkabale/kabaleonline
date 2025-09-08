@@ -5,17 +5,16 @@ const requestsList = document.getElementById('requests-list');
 
 async function fetchRequests() {
     try {
-        // This is the new logic that makes requests disappear
+        // Only fetch requests from the last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const thirtyDaysAgoTimestamp = Timestamp.fromDate(thirtyDaysAgo);
 
         const q = query(
             collection(db, "requests"), 
-            where("createdAt", ">", thirtyDaysAgoTimestamp), // Only gets recent requests
+            where("createdAt", ">", thirtyDaysAgoTimestamp),
             orderBy("createdAt", "desc")
         );
-        // End of new logic
 
         const querySnapshot = await getDocs(q);
 
@@ -31,7 +30,11 @@ async function fetchRequests() {
             const card = document.createElement('div');
             card.className = 'request-card';
 
-            const date = request.createdAt ? request.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'a few moments ago';
+            const date = request.createdAt
+                ? request.createdAt.toDate().toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                  })
+                : 'a few moments ago';
 
             card.innerHTML = `
                 <h3>${request.item}</h3>
