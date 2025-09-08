@@ -2,7 +2,6 @@ import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// This Cloudinary function can be re-used
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
@@ -24,26 +23,21 @@ const successMessage = document.getElementById('success-message');
 const formWrapper = document.getElementById('form-wrapper');
 const loginPrompt = document.getElementById('login-prompt');
 
-// This logic runs when the page loads to check for a user
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // User is logged in: show the form, hide the login prompt
         loginPrompt.style.display = 'none';
         formWrapper.style.display = 'block';
     } else {
-        // User is NOT logged in: hide the form, show the login prompt
         formWrapper.style.display = 'none';
         loginPrompt.style.display = 'block';
     }
 });
 
-// This logic runs when the form is submitted
 rentalForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
-
     if (!user) {
-        alert("Authentication error. Please refresh the page and log in.");
+        alert("Authentication error. Please refresh and log in.");
         return;
     }
 
@@ -74,12 +68,11 @@ rentalForm.addEventListener('submit', async (e) => {
             contactName: document.getElementById('contactName').value,
             contactPhone: document.getElementById('contactPhone').value,
             imageUrls: imageUrls,
-            posterId: user.uid, // Attach the user's ID to the post
+            posterId: user.uid,
             createdAt: serverTimestamp()
         };
 
         await addDoc(collection(db, 'rentals'), rentalData);
-
         successMessage.style.display = 'block';
         rentalForm.reset();
         window.scrollTo(0, 0);
