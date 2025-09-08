@@ -8,18 +8,24 @@ const filterSort = document.getElementById('filter-sort');
 const applyFiltersBtn = document.getElementById('apply-rental-filters');
 
 async function fetchRentals() {
-    rentalGrid.innerHTML = '<p>Loading listings...</p>';
+    // Show a loading message immediately
+    if (rentalGrid) {
+        rentalGrid.innerHTML = '<p>Loading listings...</p>';
+    } else {
+        console.error("Fatal Error: rental-grid element not found.");
+        return; // Stop if the main container is missing
+    }
+
     try {
         let q = collection(db, 'rentals');
         const constraints = [];
 
         // 1. Build database query based on filters
-        const type = filterType.value;
-        if (type) {
-            constraints.push(where('listingType', '==', type));
+        if (filterType && filterType.value) {
+            constraints.push(where('listingType', '==', filterType.value));
         }
 
-        const sortBy = filterSort.value;
+        const sortBy = filterSort ? filterSort.value : 'newest';
         if (sortBy === 'newest') {
             constraints.push(orderBy('createdAt', 'desc'));
         } else if (sortBy === 'price-asc') {
@@ -31,8 +37,8 @@ async function fetchRentals() {
             constraints.push(orderBy('createdAt', 'desc'));
         }
 
+        // Apply all constraints to the query
         q = query(q, ...constraints, limit(30));
-        
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -40,21 +46,21 @@ async function fetchRentals() {
             return;
         }
 
-        // 2. Process results and apply text-based filters
+        // 2. Process results and apply client-side text filter for location
         let results = [];
         querySnapshot.forEach(doc => {
             results.push({ id: doc.id, ...doc.data() });
         });
-        
-        const location = filterLocation.value.trim();
-        if (location) {
+
+        if (filterLocation && filterLocation.value.trim() !== '') {
+            const location = filterLocation.value.trim().toLowerCase();
             results = results.filter(rental => 
-                rental.location.toLowerCase().includes(location.toLowerCase())
+                rental.location.toLowerCase().includes(location)
             );
         }
 
         if (results.length === 0) {
-            rentalGrid.innerHTML = '<p>No listings match your final criteria.</p>';
+            rentalGrid.innerHTML = '<p>No listings found in that location.</p>';
             return;
         }
 
@@ -63,8 +69,8 @@ async function fetchRentals() {
         results.forEach(rental => {
             const card = document.createElement('a');
             card.className = 'rental-card';
-            card.href = `detail.html?id=${rental.id}`; // This will link to the detail page we build next
-            
+            card.href = `detail.html?id=${rental.id}`;
+
             const primaryImage = (rental.imageUrls && rental.imageUrls.length > 0) ? rental.imageUrls[0] : '../placeholder.webp';
 
             card.innerHTML = `
@@ -79,13 +85,20 @@ async function fetchRentals() {
         });
 
     } catch (error) {
+        // This block runs if Firestore fails (e.g., missing index)
         console.error("Error fetching rentals:", error);
         rentalGrid.innerHTML = '<p>Could not load listings. A database index might be missing. Please check the console for errors.</p>';
     }
 }
 
-// Event Listeners
-applyFiltersBtn.addEventListener('click', fetchRentals);
+// --- Event Listeners ---
+// Check if filter elements exist before adding listeners
+if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', fetchRentals);
+}
+if (filterSort) {
+    filterSort.addEventListener('change', fetchRentals);
+}
 
 // Initial fetch when the page first loads
-fetchRentals();
+document.addEventListener('DOMContentLoaded', fetchRentals);
