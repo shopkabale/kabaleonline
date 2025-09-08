@@ -49,3 +49,56 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+
+// --- PWA Install Banner Code ---
+let deferredPrompt;
+const banner = document.getElementById('pwa-banner');
+const installBtn = document.getElementById('pwa-install-btn');
+const cancelBtn = document.getElementById('pwa-cancel-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  if (banner) {
+    banner.style.display = 'block';
+    setTimeout(() => {
+      banner.style.bottom = '0'; // slide in
+    }, 50);
+  }
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (banner) banner.style.bottom = '-120px';
+    setTimeout(() => {
+      if (banner) banner.style.display = 'none';
+    }, 500);
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(outcome === 'accepted' ? 'User accepted install ✅' : 'User dismissed install ❌');
+      deferredPrompt = null;
+    }
+  });
+}
+
+if (cancelBtn) {
+  cancelBtn.addEventListener('click', () => {
+    if (banner) banner.style.bottom = '-120px';
+    setTimeout(() => {
+      if (banner) banner.style.display = 'none';
+    }, 500);
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  if (banner) {
+    banner.style.bottom = '-120px';
+    setTimeout(() => {
+      if (banner) banner.style.display = 'none';
+    }, 500);
+  }
+  console.log('PWA was installed 🎉');
+});
