@@ -1,47 +1,47 @@
 import { auth, db } from '../firebase.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+// We no longer need onAuthStateChanged here for posting
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// Re-use the Cloudinary upload function
+// Re-use the Cloudinary upload function (this part is good!)
 async function uploadImageToCloudinary(file) {
     const response = await fetch('/.netlify/functions/generate-signature');
     const { signature, timestamp, cloudname, apikey } = await response.json();
     const formData = new FormData();
-    formData.append('file', file); formData.append('api_key', apikey);
-    formData.append('timestamp', timestamp); formData.append('signature', signature);
+    formData.append('file', file);
+    formData.append('api_key', apikey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
     const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
     if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-    const uploadData = await uploadResponse.json(); return uploadData.secure_url;
+    const uploadData = await uploadResponse.json();
+    return uploadData.secure_url;
 }
 
 const rentalForm = document.getElementById('rental-form');
 const submitBtn = document.getElementById('submit-btn');
 const successMessage = document.getElementById('success-message');
-let currentUserId = null;
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUserId = user.uid;
-    } else {
-        // If not logged in, redirect to the sell page to log in first
-        alert("You must be logged in to post a rental. Redirecting you to the login page.");
-        window.location.href = '/sell/';
-    }
-});
-
+// MODIFIED: This is the new, more reliable submit function
 rentalForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!currentUserId) {
-        alert("You must be logged in. Please refresh and log in again.");
-        return;
+
+    // Get the current user AT THE MOMENT of submission
+    const user = auth.currentUser;
+
+    // First, check if the user is logged in. This is the most important step.
+    if (!user) {
+        alert("You must be logged in to post a rental. Please log in and try again.");
+        // Optional: redirect them to the login page
+        // window.location.href = '/sell/'; 
+        return; // Stop the function immediately
     }
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Submitting...";
 
     try {
-        // Image Uploads
+        // Image Uploads (Your existing code is great)
         const imageFiles = document.getElementById('photos').files;
         let imageUrls = [];
         if (imageFiles.length > 0) {
@@ -66,15 +66,15 @@ rentalForm.addEventListener('submit', async (e) => {
             contactName: document.getElementById('contactName').value,
             contactPhone: document.getElementById('contactPhone').value,
             imageUrls: imageUrls,
-            posterId: currentUserId,
+            posterId: user.uid, // MODIFIED: Use the reliable user.uid
             createdAt: serverTimestamp()
         };
 
         await addDoc(collection(db, 'rentals'), rentalData);
-        
+
         successMessage.style.display = 'block';
         rentalForm.reset();
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
 
     } catch (error) {
         console.error("Error submitting rental:", error);
