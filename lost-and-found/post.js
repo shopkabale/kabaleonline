@@ -5,25 +5,13 @@ const postForm = document.getElementById('post-form');
 const successMessage = document.getElementById('success-message');
 const submitBtn = document.getElementById('submit-btn');
 
-// This function is now much smarter and safer
 postForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
 
-    // Get the current user AT THE MOMENT of submission
+    // Get the current user at the moment of submission
     const user = auth.currentUser;
-
-    // This is the collection name for this form
-    const collectionName = 'lost_and_found'; // For your rentals form, change this to 'rentals'
-
-    // --- IMPORTANT CHECK for collections that REQUIRE login (like rentals) ---
-    // if (collectionName === 'rentals' && !user) {
-    //     alert("You must be logged in to post a rental.");
-    //     submitBtn.disabled = false;
-    //     submitBtn.textContent = 'Submit Post';
-    //     return; // Stop the function here
-    // }
 
     try {
         const status = document.getElementById('status').value;
@@ -35,12 +23,8 @@ postForm.addEventListener('submit', async (e) => {
 
         // Prepare the data to be saved
         const postData = {
-            status,
-            itemName,
-            description,
-            location,
-            nickname,
-            contactInfo,
+            status, itemName, description, location, nickname,
+            contactInfo: contactInfo, // This can be an empty string
             createdAt: serverTimestamp()
         };
 
@@ -50,7 +34,7 @@ postForm.addEventListener('submit', async (e) => {
         }
 
         // Add the document to the database
-        await addDoc(collection(db, collectionName), postData);
+        await addDoc(collection(db, 'lost_and_found'), postData);
 
         // Show success message
         successMessage.style.display = 'block';
@@ -58,7 +42,7 @@ postForm.addEventListener('submit', async (e) => {
         window.scrollTo(0, 0);
 
     } catch (error) {
-        console.error(`Error submitting post to ${collectionName}:`, error);
+        console.error("Error submitting post:", error);
         alert("There was an error submitting your post. Please try again.");
     } finally {
         submitBtn.disabled = false;
