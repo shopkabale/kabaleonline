@@ -25,7 +25,7 @@ const showMessage = (message, isError = false) => {
 
 async function fetchAndDisplayStories() {
     storiesList.innerHTML = '<p>Loading stories...</p>';
-    
+
     const storiesQuery = query(collection(db, 'stories'), orderBy('createdAt', 'desc'));
 
     try {
@@ -36,14 +36,14 @@ async function fetchAndDisplayStories() {
             storiesList.innerHTML = '<p>No stories have been posted yet. Be the first!</p>';
             return;
         }
-        
+
         const storiesPromises = querySnapshot.docs.map(async docSnapshot => {
             const story = docSnapshot.data();
             const storyId = docSnapshot.id;
-            
+
             const authorDoc = await getDoc(doc(db, 'users', story.authorId));
             const authorName = authorDoc.exists() ? authorDoc.data().name : 'Anonymous';
-            
+
             let isLiked = false;
             if (currentUserId) {
                 const likeDoc = await getDoc(doc(db, `stories/${storyId}/likes`, currentUserId));
@@ -72,7 +72,7 @@ async function fetchAndDisplayStories() {
         });
 
         await Promise.all(storiesPromises);
-        
+
         // Attach event listeners for both like and delete buttons
         document.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', handleLike);
@@ -99,7 +99,7 @@ async function handleLike(e) {
         showMessage('You must be logged in to like a story.', true);
         return;
     }
-    
+
     if (btn.classList.contains('liked')) {
         showMessage('You have already liked this story.', true);
         return;
@@ -107,7 +107,7 @@ async function handleLike(e) {
 
     const storyId = btn.dataset.storyId;
     const authorId = btn.dataset.authorId;
-    
+
     const storyRef = doc(db, 'stories', storyId);
     const likeRef = doc(db, `stories/${storyId}/likes`, currentUserId);
     const authorProfileRef = doc(db, 'users', authorId);
@@ -120,18 +120,21 @@ async function handleLike(e) {
             }
 
             const newLikeCount = (storyDoc.data().likeCount || 0) + 1;
-            
+
+            // record like
             transaction.set(likeRef, { likedAt: serverTimestamp() });
-            
+
+            // update story like count
             transaction.update(storyRef, { likeCount: newLikeCount });
 
+            // increase reputation for author
             const authorProfileDoc = await transaction.get(authorProfileRef);
             if (authorProfileDoc.exists()) {
                 const currentReputation = authorProfileDoc.data().reputation || 0;
                 transaction.update(authorProfileRef, { reputation: currentReputation + 1 });
             }
         });
-        
+
         btn.classList.add('liked');
         const countEl = btn.nextElementSibling;
         countEl.textContent = (parseInt(countEl.textContent) || 0) + 1;
@@ -148,7 +151,7 @@ async function deleteStory(storyId) {
         showMessage("You must be logged in to delete a story.", true);
         return;
     }
-    
+
     try {
         const storyRef = doc(db, 'stories', storyId);
         await deleteDoc(storyRef);
