@@ -1,8 +1,8 @@
 {
   "name": "Kabale Online",
-  "short_name": "kab online",
-  "description": " Your go to community center , its more than a marketplace.",
-  "start_url": "/index.html",
+  "short_name": "Kab Online",
+  "description": "Your go-to community center, more than a marketplace.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
@@ -13,7 +13,7 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/5122.png",
+      "src": "/icons/512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
