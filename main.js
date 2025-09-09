@@ -53,7 +53,7 @@ async function fetchProducts(isNewSearch = false) {
             const errorBody = await response.json();
             throw new Error(`Network response was not ok. Status: ${response.status}. Message: ${errorBody.error}`);
         }
-        
+
         const data = await response.json();
         const { products } = data;
         totalPages = data.totalPages;
@@ -91,12 +91,22 @@ function renderProducts(productsToDisplay) {
     productsToDisplay.forEach(product => {
         const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
         const displayName = product.sellerName || 'A Seller';
+        const isSold = product.isSold || false;
 
         const productLink = document.createElement('a');
-        productLink.href = `product.html?id=${product.id}`;
+        
+        // If sold, make the link non-clickable to avoid confusion
+        if (isSold) {
+            productLink.href = 'javascript:void(0)';
+            productLink.style.cursor = 'default';
+        } else {
+            productLink.href = `product.html?id=${product.id}`;
+        }
+        
         productLink.className = 'product-card-link';
         productLink.innerHTML = `
-            <div class="product-card">
+            <div class="product-card ${isSold ? 'is-sold' : ''}">
+                ${isSold ? '<div class="sold-out-tag">SOLD</div>' : ''}
                 <img src="${primaryImage}" alt="${product.name}" loading="lazy" onerror="this.src='https://placehold.co/400x400/e0e0e0/777?text=Error'">
                 <h3>${product.name}</h3>
                 <p class="price">UGX ${product.price.toLocaleString()}</p>
