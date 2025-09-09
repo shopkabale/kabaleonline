@@ -37,6 +37,7 @@ exports.handler = async (event) => {
                 listing_type: data.listing_type,
                 sellerId: data.sellerId,
                 imageUrls: data.imageUrls,
+                isSold: data.isSold || false, // <-- THE FIX IS HERE
                 createdAt: data.createdAt ? data.createdAt.toMillis() : null // Convert Firestore Timestamp to milliseconds for Algolia
             };
         });
