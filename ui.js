@@ -1,56 +1,51 @@
-// Your existing hamburger menu code
+// ==================== HELPER FUNCTION ====================
+function isOneWeekPassed(lastTime) {
+  if (!lastTime) return true;
+  const oneWeek = 7 * 24 * 60 * 60 * 1000; // ms
+  return (Date.now() - parseInt(lastTime, 10)) > oneWeek;
+}
+
+// ==================== HAMBURGER MENU ====================
 document.addEventListener('DOMContentLoaded', () => {
-    const hamburger = document.querySelector('.hamburger-menu');
-    const mobileNav = document.querySelector('.mobile-nav');
-    const overlay = document.querySelector('.mobile-nav-overlay');
+  const hamburger = document.querySelector('.hamburger-menu');
+  const mobileNav = document.querySelector('.mobile-nav');
+  const overlay = document.querySelector('.mobile-nav-overlay');
 
-    if (hamburger && mobileNav && overlay) {
-        // Function to open the menu
-        const openMenu = () => {
-            mobileNav.classList.add('active');
-            overlay.classList.add('active');
-        };
+  if (hamburger && mobileNav && overlay) {
+    const openMenu = () => {
+      mobileNav.classList.add('active');
+      overlay.classList.add('active');
+    };
+    const closeMenu = () => {
+      mobileNav.classList.remove('active');
+      overlay.classList.remove('active');
+    };
 
-        // Function to close the menu
-        const closeMenu = () => {
-            mobileNav.classList.remove('active');
-            overlay.classList.remove('active');
-        };
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      openMenu();
+    });
 
-        // Event listener for the hamburger icon
-        hamburger.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            openMenu();
-        });
+    overlay.addEventListener('click', closeMenu);
 
-        // Event listener for the overlay
-        overlay.addEventListener('click', closeMenu);
-
-        // Optional: Close menu with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
-                closeMenu();
-            }
-        });
-    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+        closeMenu();
+      }
+    });
+  }
 });
 
-// --- ADD THE PWA CODE BELOW THIS LINE ---
-
-// Register the Service Worker for PWA functionality
+// ==================== PWA SERVICE WORKER ====================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('✅ ServiceWorker registration successful!');
-      })
-      .catch(err => {
-        console.log('❌ ServiceWorker registration failed: ', err);
-      });
+      .then(() => console.log('✅ ServiceWorker registered'))
+      .catch(err => console.log('❌ ServiceWorker failed: ', err));
   });
 }
 
-// --- PWA Install Banner Code ---
+// ==================== PWA INSTALL BANNER ====================
 let deferredPrompt;
 const banner = document.getElementById('pwa-banner');
 const installBtn = document.getElementById('pwa-install-btn');
@@ -60,21 +55,25 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 
-  if (banner) {
-    banner.style.display = 'block';
+  const lastSeen = localStorage.getItem("lastPwaPrompt");
+  if (isOneWeekPassed(lastSeen)) {
+    // Show banner after 15s
     setTimeout(() => {
-      banner.style.bottom = '0'; // slide in
-    }, 50);
+      if (banner) {
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.bottom = '0'; }, 50);
+        localStorage.setItem("lastPwaPrompt", Date.now().toString());
+      }
+    }, 15000);
   }
 });
 
 if (installBtn) {
   installBtn.addEventListener('click', async () => {
-    if (banner) banner.style.bottom = '-120px';
-    setTimeout(() => {
-      if (banner) banner.style.display = 'none';
-    }, 500);
-
+    if (banner) {
+      banner.style.bottom = '-120px';
+      setTimeout(() => (banner.style.display = 'none'), 500);
+    }
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -86,51 +85,74 @@ if (installBtn) {
 
 if (cancelBtn) {
   cancelBtn.addEventListener('click', () => {
-    if (banner) banner.style.bottom = '-120px';
-    setTimeout(() => {
-      if (banner) banner.style.display = 'none';
-    }, 500);
+    if (banner) {
+      banner.style.bottom = '-120px';
+      setTimeout(() => (banner.style.display = 'none'), 500);
+    }
   });
 }
 
 window.addEventListener('appinstalled', () => {
   if (banner) {
     banner.style.bottom = '-120px';
-    setTimeout(() => {
-      if (banner) banner.style.display = 'none';
-    }, 500);
+    setTimeout(() => (banner.style.display = 'none'), 500);
   }
-  console.log('PWA was installed 🎉');
+  console.log('PWA installed 🎉');
+  localStorage.removeItem("lastPwaPrompt");
 });
 
-
+// ==================== LOGIN PROMPT (ONLY FOR NOT LOGGED-IN USERS) ====================
 document.addEventListener("DOMContentLoaded", () => {
   const prompt = document.getElementById("loginPrompt");
-  if (!prompt) return; // safety check
+  const cancelLoginBtn = document.getElementById("loginPromptCancel");
 
-  const hasSeenPrompt = localStorage.getItem("seenLoginPrompt");
+  if (!prompt) return;
 
-  if (!hasSeenPrompt) {
-    // Wait 10 seconds before showing
-    setTimeout(() => {
-      prompt.style.display = "flex"; // Show
+  // Check Firebase Auth (replace with your auth method if different)
+  if (firebase && firebase.auth) {
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        // User not logged in → show prompt if week passed
+        const lastSeen = localStorage.getItem("lastLoginPrompt");
+        if (isOneWeekPassed(lastSeen)) {
+          setTimeout(() => {
+            prompt.style.display = "flex";
 
-      // Auto-remove after 4 seconds if not clicked
+            // Auto-remove after 4s
+            setTimeout(() => { if (prompt) prompt.remove(); }, 4000);
+
+            // Remove if user clicks outside
+            prompt.addEventListener("click", (e) => {
+              if (e.target === prompt) prompt.remove();
+            });
+
+            // Cancel button
+            if (cancelLoginBtn) {
+              cancelLoginBtn.addEventListener("click", () => {
+                prompt.remove();
+              });
+            }
+
+            // Save timestamp
+            localStorage.setItem("lastLoginPrompt", Date.now().toString());
+          }, 25000); // 25s delay
+        }
+      } else {
+        // Logged-in user → remove prompt immediately if exists
+        prompt.remove();
+      }
+    });
+  } else {
+    console.warn("Firebase Auth not found. Login prompt will show anyway.");
+    // fallback: show anyway
+    const lastSeen = localStorage.getItem("lastLoginPrompt");
+    if (isOneWeekPassed(lastSeen)) {
       setTimeout(() => {
-        if (prompt) {
-          prompt.remove();
-        }
-      }, 4000);
-
-      // Remove immediately if user clicks outside the box
-      prompt.addEventListener("click", (e) => {
-        if (e.target === prompt) {
-          prompt.remove();
-        }
-      });
-
-      // Save flag so it doesn’t show again
-      localStorage.setItem("seenLoginPrompt", "true");
-    }, 10000);
+        prompt.style.display = "flex";
+        setTimeout(() => { if (prompt) prompt.remove(); }, 4000);
+        if (cancelLoginBtn) cancelLoginBtn.addEventListener("click", () => { prompt.remove(); });
+        localStorage.setItem("lastLoginPrompt", Date.now().toString());
+      }, 25000);
+    }
   }
 });
