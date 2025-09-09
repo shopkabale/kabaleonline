@@ -1,4 +1,4 @@
-// ui.js (Production Mode)
+// ui.js (Production Mode - Fixed)
 
 // ----------------------
 // ELEMENT SELECTORS
@@ -13,6 +13,15 @@ const pwaCancelBtn = document.getElementById('pwa-cancel-btn');
 
 const loginPrompt = document.getElementById('loginPrompt');
 const loginCancelBtn = document.getElementById('loginPromptCancel');
+
+// ----------------------
+// HELPER: User login check
+// ----------------------
+// ⚠️ Replace this with your real login detection (e.g. Firebase auth, session, etc.)
+function isUserLoggedIn() {
+    // Example: check if token exists in localStorage
+    return !!localStorage.getItem("userLoggedIn");
+}
 
 // ----------------------
 // MOBILE NAV TOGGLE
@@ -36,16 +45,20 @@ if (hamburger && mobileNav && overlay) {
 // PWA BANNER FUNCTIONS
 // ----------------------
 function showPWABanner() {
-    if (pwaBanner) pwaBanner.style.bottom = '0';
+    if (!localStorage.getItem("pwaDismissed")) {
+        pwaBanner.style.display = "block";
+        setTimeout(() => { pwaBanner.style.bottom = "0"; }, 50); // smooth slide
+    }
 }
 
 function hidePWABanner() {
-    if (pwaBanner) pwaBanner.style.bottom = '-120px';
+    pwaBanner.style.bottom = "-120px";
+    localStorage.setItem("pwaDismissed", "true");
 }
 
 pwaCancelBtn?.addEventListener('click', hidePWABanner);
 pwaInstallBtn?.addEventListener('click', () => {
-    // Trigger PWA install logic here if needed
+    // Trigger install prompt if supported
     hidePWABanner();
 });
 
@@ -53,20 +66,23 @@ pwaInstallBtn?.addEventListener('click', () => {
 // LOGIN PROMPT FUNCTIONS
 // ----------------------
 function showLoginPrompt() {
-    if (loginPrompt) loginPrompt.style.display = 'flex';
+    if (!isUserLoggedIn() && !localStorage.getItem("loginDismissed")) {
+        loginPrompt.style.display = "flex";
+    }
 }
 
 function hideLoginPrompt() {
-    if (loginPrompt) loginPrompt.style.display = 'none';
+    loginPrompt.style.display = "none";
+    localStorage.setItem("loginDismissed", "true");
 }
 
 loginCancelBtn?.addEventListener('click', hideLoginPrompt);
 
 // ----------------------
-// INDEPENDENT TIMERS
+// TIMERS (One-Time Only)
 // ----------------------
-// Login Prompt after 10s
+// Login Prompt after 10s (only if not logged in & not dismissed)
 setTimeout(showLoginPrompt, 10000);
 
-// PWA Banner after 35s
+// PWA Banner after 35s (only if not dismissed)
 setTimeout(showPWABanner, 35000);
