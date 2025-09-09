@@ -1,4 +1,4 @@
-// ui.js (Production Mode - Fixed)
+// ui.js (Final Production Mode)
 
 // ----------------------
 // ELEMENT SELECTORS
@@ -15,74 +15,100 @@ const loginPrompt = document.getElementById('loginPrompt');
 const loginCancelBtn = document.getElementById('loginPromptCancel');
 
 // ----------------------
-// HELPER: User login check
+// HELPER: Check login
 // ----------------------
-// ⚠️ Replace this with your real login detection (e.g. Firebase auth, session, etc.)
+// Replace with Firebase or session check if you have one
 function isUserLoggedIn() {
-    // Example: check if token exists in localStorage
-    return !!localStorage.getItem("userLoggedIn");
+  return !!localStorage.getItem("userLoggedIn");
 }
 
 // ----------------------
-// MOBILE NAV TOGGLE
+// MOBILE NAVIGATION
 // ----------------------
 if (hamburger && mobileNav && overlay) {
-    const openMenu = () => {
-        mobileNav.classList.add('active');
-        overlay.classList.add('active');
-    };
+  const openMenu = () => {
+    mobileNav.classList.add('active');
+    overlay.classList.add('active');
+  };
+  const closeMenu = () => {
+    mobileNav.classList.remove('active');
+    overlay.classList.remove('active');
+  };
 
-    const closeMenu = () => {
-        mobileNav.classList.remove('active');
-        overlay.classList.remove('active');
-    };
-
-    hamburger.addEventListener('click', openMenu);
-    overlay.addEventListener('click', closeMenu);
+  hamburger.addEventListener('click', openMenu);
+  overlay.addEventListener('click', closeMenu);
 }
 
 // ----------------------
-// PWA BANNER FUNCTIONS
-// ----------------------
-function showPWABanner() {
-    if (!localStorage.getItem("pwaDismissed")) {
-        pwaBanner.style.display = "block";
-        setTimeout(() => { pwaBanner.style.bottom = "0"; }, 50); // smooth slide
-    }
-}
-
-function hidePWABanner() {
-    pwaBanner.style.bottom = "-120px";
-    localStorage.setItem("pwaDismissed", "true");
-}
-
-pwaCancelBtn?.addEventListener('click', hidePWABanner);
-pwaInstallBtn?.addEventListener('click', () => {
-    // Trigger install prompt if supported
-    hidePWABanner();
-});
-
-// ----------------------
-// LOGIN PROMPT FUNCTIONS
+// LOGIN PROMPT
 // ----------------------
 function showLoginPrompt() {
-    if (!isUserLoggedIn() && !localStorage.getItem("loginDismissed")) {
-        loginPrompt.style.display = "flex";
-    }
+  const alreadyDismissed = localStorage.getItem("loginDismissed");
+  if (!isUserLoggedIn() && !alreadyDismissed) {
+    loginPrompt.style.display = "flex";
+  }
 }
 
 function hideLoginPrompt() {
-    loginPrompt.style.display = "none";
-    localStorage.setItem("loginDismissed", "true");
+  if (loginPrompt) loginPrompt.style.display = "none";
+  localStorage.setItem("loginDismissed", "true"); // ✅ never show again
 }
 
 loginCancelBtn?.addEventListener('click', hideLoginPrompt);
 
 // ----------------------
-// TIMERS (One-Time Only)
+// PWA BANNER
 // ----------------------
-// Login Prompt after 10s (only if not logged in & not dismissed)
-setTimeout(showLoginPrompt, 10000);
+let deferredPrompt = null;
 
-// PWA Banner after 35s (only if not dismissed)
-setTimeout(showPWABanner, 35000);
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function showPWABanner() {
+  const alreadyDismissed = localStorage.getItem("pwaDismissed");
+  if (!alreadyDismissed && deferredPrompt) {
+    pwaBanner.style.display = "block";
+    setTimeout(() => {
+      pwaBanner.style.bottom = "0"; // slide up
+    }, 50);
+  }
+}
+
+function hidePWABanner() {
+  if (pwaBanner) {
+    pwaBanner.style.bottom = "-120px";
+    setTimeout(() => {
+      pwaBanner.style.display = "none";
+    }, 500);
+  }
+  localStorage.setItem("pwaDismissed", "true"); // ✅ never show again
+}
+
+pwaCancelBtn?.addEventListener("click", hidePWABanner);
+pwaInstallBtn?.addEventListener("click", async () => {
+  hidePWABanner();
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  }
+});
+
+// ----------------------
+// TIMERS
+// ----------------------
+// Login prompt → after 10s
+setTimeout(() => {
+  if (!isUserLoggedIn() && !localStorage.getItem("loginDismissed")) {
+    showLoginPrompt();
+  }
+}, 10000);
+
+// PWA banner → after 35s
+setTimeout(() => {
+  if (!localStorage.getItem("pwaDismissed")) {
+    showPWABanner();
+  }
+}, 35000);
