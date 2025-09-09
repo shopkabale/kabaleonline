@@ -155,7 +155,7 @@ function displayProfileOnDashboard(userData, userId) {
 
 async function fetchUnansweredQuestions(uid) {
     qaList.innerHTML = '<p>Loading questions...</p>';
-    
+
     const q = query(
         collectionGroup(db, 'qanda'), 
         where('answer', '==', null),
@@ -170,7 +170,7 @@ async function fetchUnansweredQuestions(uid) {
             const qaData = qaDoc.data();
             const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
             const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
-            
+
             const productId = qaDoc.ref.parent.parent.id;
             const productDoc = await getDoc(doc(db, 'products', productId));
             const productName = productDoc.exists() ? productDoc.data().name : 'Unknown Product';
@@ -457,9 +457,10 @@ productForm.addEventListener('submit', async (e) => {
         if (editingProductId) { 
             await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() }); 
         } else { 
-            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false }); 
+            // MODIFIED: Added isSold: false for new products
+            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false }); 
         }
-        
+
         // This is the automated sync trigger
         fetch('/.netlify/functions/syncToAlgolia')
             .then(response => {
@@ -472,7 +473,7 @@ productForm.addEventListener('submit', async (e) => {
             .catch(err => {
                 console.error("Error triggering Algolia sync:", err);
             });
-        
+
         showMessage(productFormMessage, 'Listing submitted successfully!', false); 
         productForm.reset();
         setTimeout(() => { productFormContainer.style.display = 'none'; productFormMessage.style.display = 'none'; fetchSellerProducts(user.uid); }, 2000);
@@ -501,15 +502,47 @@ async function fetchSellerProducts(uid) {
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
     if (querySnapshot.empty) { sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell' to get started!</p>"; return; }
+    
+    // MODIFIED: Logic to display sold status and toggle button
     querySnapshot.forEach((doc) => {
-        const product = doc.data(); const productId = doc.id;
+        const product = doc.data(); 
+        const productId = doc.id;
         const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
-        const productCard = document.createElement('div'); productCard.className = 'product-card';
-        productCard.innerHTML = `<img src="${primaryImage}" alt="${product.name}"><h3>${product.name}</h3><p class="price">UGX ${product.price.toLocaleString()}</p><div class="seller-controls"><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button></div>`;
+        const isSold = product.isSold || false; // Default to false
+
+        const productCard = document.createElement('div'); 
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            <img src="${primaryImage}" alt="${product.name}" class="${isSold ? 'sold-item' : ''}">
+            <h3>${product.name} ${isSold ? '<span class="sold-tag-dashboard">(Sold)</span>' : ''}</h3>
+            <p class="price">UGX ${product.price.toLocaleString()}</p>
+            <div class="seller-controls">
+                <button class="edit-btn">Edit</button>
+                <button class="delete-btn">Delete</button>
+                <button class="toggle-sold-btn">${isSold ? 'Mark as Available' : 'Mark as Sold'}</button>
+            </div>
+        `;
         productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
         productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
+        productCard.querySelector('.toggle-sold-btn').addEventListener('click', () => toggleSoldStatus(productId, isSold));
         sellerProductsList.appendChild(productCard);
     });
+}
+
+// NEW: Function to toggle the sold status of a product
+async function toggleSoldStatus(productId, currentStatus) {
+    const productRef = doc(db, 'products', productId);
+    const newStatus = !currentStatus;
+    try {
+        await updateDoc(productRef, {
+            isSold: newStatus
+        });
+        showMessage(dashboardMessage, `Listing marked as ${newStatus ? 'Sold' : 'Available'}.`, false);
+        fetchSellerProducts(auth.currentUser.uid); // Refresh the list
+    } catch (error) {
+        console.error("Error updating sold status:", error);
+        showMessage(dashboardMessage, 'Failed to update status. Please try again.');
+    }
 }
 
 function populateFormForEdit(id, product) {
