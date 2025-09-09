@@ -282,6 +282,28 @@
     left: 0; /* Slides the menu into view */
 }
 
+/* --- NEW: STYLES FOR SOLD ITEMS IN DASHBOARD --- */
+#seller-products-list .product-card img.sold-item {
+    opacity: 0.6;
+    filter: grayscale(80%);
+}
+#seller-products-list .product-card .sold-tag-dashboard {
+    color: #d9534f; /* A shade of red */
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+.seller-controls .toggle-sold-btn {
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 5px;
+    width: 100%;
+}
+
 
     </style>
 </head>
@@ -298,7 +320,6 @@
       </div>
     </div>
 
-    <!-- Desktop nav (currently hidden) -->
     <nav class="desktop-nav"></nav>
   </div>
 </header>
@@ -455,7 +476,6 @@
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
-<!-- PWA Install Banner -->
 <div id="pwa-banner" style="
     display:none;
     position:fixed;
