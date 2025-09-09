@@ -1,4 +1,4 @@
-// ui.js (Final Production Mode)
+// ui.js (Final Production Mode, Fixed PWA Prompt)
 
 // ----------------------
 // ELEMENT SELECTORS
@@ -17,7 +17,6 @@ const loginCancelBtn = document.getElementById('loginPromptCancel');
 // ----------------------
 // HELPER: Check login
 // ----------------------
-// Replace with Firebase or session check if you have one
 function isUserLoggedIn() {
   return !!localStorage.getItem("userLoggedIn");
 }
@@ -37,6 +36,13 @@ if (hamburger && mobileNav && overlay) {
 
   hamburger.addEventListener('click', openMenu);
   overlay.addEventListener('click', closeMenu);
+
+  // Optional: close with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+      closeMenu();
+    }
+  });
 }
 
 // ----------------------
@@ -51,7 +57,7 @@ function showLoginPrompt() {
 
 function hideLoginPrompt() {
   if (loginPrompt) loginPrompt.style.display = "none";
-  localStorage.setItem("loginDismissed", "true"); // ✅ never show again
+  localStorage.setItem("loginDismissed", "true"); // never show again
 }
 
 loginCancelBtn?.addEventListener('click', hideLoginPrompt);
@@ -64,6 +70,11 @@ let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
+
+  // If timer already passed, show immediately
+  if (!localStorage.getItem("pwaDismissed")) {
+    showPWABanner();
+  }
 });
 
 function showPWABanner() {
@@ -71,7 +82,7 @@ function showPWABanner() {
   if (!alreadyDismissed && deferredPrompt) {
     pwaBanner.style.display = "block";
     setTimeout(() => {
-      pwaBanner.style.bottom = "0"; // slide up
+      pwaBanner.style.bottom = "0"; // slide up animation
     }, 50);
   }
 }
@@ -83,10 +94,11 @@ function hidePWABanner() {
       pwaBanner.style.display = "none";
     }, 500);
   }
-  localStorage.setItem("pwaDismissed", "true"); // ✅ never show again
+  localStorage.setItem("pwaDismissed", "true"); // never show again
 }
 
 pwaCancelBtn?.addEventListener("click", hidePWABanner);
+
 pwaInstallBtn?.addEventListener("click", async () => {
   hidePWABanner();
   if (deferredPrompt) {
@@ -94,6 +106,11 @@ pwaInstallBtn?.addEventListener("click", async () => {
     await deferredPrompt.userChoice;
     deferredPrompt = null;
   }
+});
+
+window.addEventListener("appinstalled", () => {
+  hidePWABanner();
+  console.log("PWA was installed 🎉");
 });
 
 // ----------------------
@@ -112,3 +129,15 @@ setTimeout(() => {
     showPWABanner();
   }
 }, 35000);
+
+// ----------------------
+// SERVICE WORKER
+// ----------------------
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then(() => console.log("✅ Service Worker registered"))
+      .catch((err) => console.log("❌ Service Worker failed:", err));
+  });
+}
