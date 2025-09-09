@@ -1,21 +1,3 @@
-// ==================== IMPORTS ====================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
-
-// ==================== CONFIG ====================
-const firebaseConfig = {
-  // your Firebase config here
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// ==================== HELPER ====================
-function isOneWeekPassed(lastTime) {
-  if (!lastTime) return true;
-  const oneWeek = 7 * 24 * 60 * 60 * 1000;
-  return (Date.now() - parseInt(lastTime, 10)) > oneWeek;
-}
-
 // ==================== HAMBURGER MENU ====================
 document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.querySelector('.hamburger-menu');
@@ -45,25 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ==================== PWA INSTALL ====================
+// ==================== PWA INSTALL TEST ====================
 let deferredPrompt;
 const banner = document.getElementById('pwa-banner');
 const installBtn = document.getElementById('pwa-install-btn');
 const cancelBtn = document.getElementById('pwa-cancel-btn');
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const lastSeen = localStorage.getItem('lastPwaPrompt');
-  if (isOneWeekPassed(lastSeen)) {
-    setTimeout(() => {
-      if (banner) {
-        banner.style.display = 'block';
-        banner.animate([{ bottom: '-120px' }, { bottom: '0px' }], { duration: 500, fill: 'forwards' });
-        localStorage.setItem('lastPwaPrompt', Date.now().toString());
-      }
-    }, 15000); // 15s delay
-  }
+// For testing, show banner 5s after page load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (banner) {
+      banner.style.display = 'block';
+      banner.animate([{ bottom: '-120px' }, { bottom: '0px' }], { duration: 500, fill: 'forwards' });
+    }
+  }, 5000); // 5 seconds
 });
 
 if (installBtn) {
@@ -90,16 +67,7 @@ if (cancelBtn) {
   });
 }
 
-window.addEventListener('appinstalled', () => {
-  if (banner) {
-    banner.animate([{ bottom: '0px' }, { bottom: '-120px' }], { duration: 500, fill: 'forwards' })
-      .onfinish = () => (banner.style.display = 'none');
-  }
-  localStorage.removeItem('lastPwaPrompt');
-  console.log('PWA installed 🎉');
-});
-
-// ==================== LOGIN PROMPT ====================
+// ==================== LOGIN PROMPT TEST ====================
 document.addEventListener('DOMContentLoaded', () => {
   const prompt = document.getElementById('loginPrompt');
   const cancelLoginBtn = document.getElementById('loginPromptCancel');
@@ -127,22 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Save timestamp for weekly repeat
-    localStorage.setItem('lastLoginPrompt', Date.now().toString());
-
-    // Floating corner button if ignored
+    // Floating corner button
     createFloatingLoginButton();
   }
 
-  const lastSeen = localStorage.getItem('lastLoginPrompt');
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user && isOneWeekPassed(lastSeen)) {
-      setTimeout(showLoginPrompt, 25000); // 25s delay
-    } else if (user) {
-      prompt.remove();
-    }
-  });
+  // TEST: show login prompt 10s after page load
+  setTimeout(showLoginPrompt, 10000);
 });
 
 // ==================== FLOATING LOGIN BUTTON ====================
@@ -168,14 +126,9 @@ function createFloatingLoginButton() {
   });
   document.body.appendChild(btn);
 
-  btn.addEventListener('mouseenter', () => {
-    btn.style.transform = 'scale(1.1)';
-  });
-  btn.addEventListener('mouseleave', () => {
-    btn.style.transform = 'scale(1)';
-  });
+  btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.1)'; });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1)'; });
 
-  // Animation keyframes
   const style = document.createElement('style');
   style.innerHTML = `
     @keyframes floatIn { from {opacity:0; transform: translateY(50px);} to {opacity:1; transform: translateY(0);} }
