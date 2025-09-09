@@ -102,3 +102,35 @@ window.addEventListener('appinstalled', () => {
   }
   console.log('PWA was installed 🎉');
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const prompt = document.getElementById("loginPrompt");
+  if (!prompt) return; // safety check
+
+  const hasSeenPrompt = localStorage.getItem("seenLoginPrompt");
+
+  if (!hasSeenPrompt) {
+    // Wait 10 seconds before showing
+    setTimeout(() => {
+      prompt.style.display = "flex"; // Show
+
+      // Auto-remove after 4 seconds if not clicked
+      setTimeout(() => {
+        if (prompt) {
+          prompt.remove();
+        }
+      }, 4000);
+
+      // Remove immediately if user clicks outside the box
+      prompt.addEventListener("click", (e) => {
+        if (e.target === prompt) {
+          prompt.remove();
+        }
+      });
+
+      // Save flag so it doesn’t show again
+      localStorage.setItem("seenLoginPrompt", "true");
+    }, 10000);
+  }
+});
