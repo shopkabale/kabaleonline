@@ -1,6 +1,6 @@
 import { db, auth } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productDetailContent = document.getElementById('product-detail-content');
 const qaList = document.getElementById('qa-list');
@@ -10,14 +10,17 @@ let currentProductId = null;
 let currentUserId = null;
 let currentProductSellerId = null;
 
-// NEW: This function shows/hides user-specific buttons after the page loads
 function updateUserActionButtons() {
     const userActionsContainer = document.getElementById('user-action-buttons');
-    if (!currentUserId || !currentProductSellerId || !userActionsContainer) {
+    if (!userActionsContainer) return;
+
+    // CRITICAL CHECK: Ensure we have both a logged-in user and a seller ID
+    if (!currentUserId || !currentProductSellerId) {
+        console.log("Hiding buttons: Missing currentUserId or currentProductSellerId.");
+        userActionsContainer.style.display = 'none';
         return;
     }
     
-    // Hide the buttons on the user's own product page
     if (currentUserId === currentProductSellerId) {
         userActionsContainer.style.display = 'none';
         return;
@@ -25,16 +28,14 @@ function updateUserActionButtons() {
 
     const messageBtn = document.getElementById('message-seller-btn');
     const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-
-    // Show the buttons container
     userActionsContainer.style.display = 'flex';
 
     // --- Configure Message Button ---
-    // Creates a unique, consistent chat ID by sorting the two user IDs
+    console.log(`Configuring chat link: Buyer=${currentUserId}, Seller=${currentProductSellerId}`);
     const chatRoomId = [currentUserId, currentProductSellerId].sort().join('_');
     messageBtn.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
     
-    // --- Configure Wishlist Button (Check if already in wishlist) ---
+    // --- Configure Wishlist Button ---
     const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
     getDoc(wishlistItemRef).then(wishlistSnap => {
         if (wishlistSnap.exists()) {
@@ -44,14 +45,13 @@ function updateUserActionButtons() {
     });
 }
 
-// Main listener for user authentication changes
 onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
+    console.log("Auth state changed. Current User ID:", currentUserId);
     renderQaForm();
-    updateUserActionButtons(); // Update buttons visibility whenever auth state changes
+    updateUserActionButtons();
 });
 
-// Main listener for when the page content is loaded
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
@@ -70,12 +70,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const product = docSnap.data();
             currentProductSellerId = product.sellerId;
             document.title = `${product.name} | Kabale Online`;
-
+            console.log("Product loaded. Seller ID:", currentProductSellerId);
+            
             let imagesHTML = product.imageUrls?.map(url => `<img src="${url}" alt="${product.name}">`).join('') || '';
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
             const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hi, I saw your listing for '${product.name}' on Kabale Online.`;
 
-            // MODIFIED: This HTML block now includes the container for the new buttons
             productDetailContent.innerHTML = `
                 <div class="product-detail-container">
                     <div class="product-images">${imagesHTML}</div>
@@ -102,11 +102,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>`;
             
-            // Re-attach event listeners for newly created elements
             document.getElementById('share-btn').addEventListener('click', () => shareProduct(product));
             document.getElementById('add-to-wishlist-btn').addEventListener('click', () => addToWishlist(product));
             
-            updateUserActionButtons(); // Call again now that product seller ID is known
+            updateUserActionButtons();
             fetchQuestions();
 
         } else {
@@ -117,34 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         productDetailContent.innerHTML = '<p>There was an error loading this product.</p>';
     }
 });
-
-// --- Helper Functions ---
-
-async function addToWishlist(productData) {
-    if (!currentUserId) {
-        alert("Please log in to add items to your wishlist.");
-        return;
-    }
-    const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-    wishlistBtn.disabled = true;
-    wishlistBtn.innerHTML = 'Adding...';
-
-    try {
-        const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
-        await setDoc(wishlistItemRef, {
-            productId: currentProductId,
-            addedAt: new Date(),
-            name: productData.name,
-            price: productData.price,
-            imageUrl: productData.imageUrls?.[0] || ''
-        });
-        wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Added to Wishlist';
-    } catch (error) {
-        console.error("Error adding to wishlist: ", error);
-        alert("Failed to add item to wishlist.");
-        wishlistBtn.disabled = false;
-    }
-}
 
 async function shareProduct(product) {
     const shareData = {
@@ -164,20 +135,43 @@ async function shareProduct(product) {
     }
 }
 
-// --- Q&A Functions ---
+async function addToWishlist(productData) {
+    if (!currentUserId) {
+        alert("Please log in to add items to your wishlist.");
+        return;
+    }
+    const wishlistBtn = document.getElementById('add-to-wishlist-btn');
+    wishlistBtn.disabled = true;
+    wishlistBtn.innerHTML = 'Adding...';
+
+    try {
+        const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
+        await setDoc(wishlistItemRef, {
+            productId: currentProductId,
+            addedAt: serverTimestamp(),
+            name: productData.name,
+            price: productData.price,
+            imageUrl: productData.imageUrls?.[0] || ''
+        });
+        wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Added to Wishlist';
+    } catch (error) {
+        console.error("Error adding to wishlist: ", error);
+        alert("Failed to add item to wishlist.");
+        wishlistBtn.disabled = false;
+    }
+}
 
 function renderQaForm() {
     if (currentUserId) {
         qaFormContainer.innerHTML = `
             <form id="qa-form" class="qa-form">
-                <p id="qa-message" style="display:none;"></p>
                 <textarea id="qa-input" placeholder="Ask a public question..." required></textarea>
                 <button type="submit" class="cta-button">Post Question</button>
             </form>
         `;
         document.getElementById('qa-form').addEventListener('submit', handleQuestionSubmit);
     } else {
-        qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>`;
+        qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/sell/">log in</a> to ask a question.</p>`;
     }
 }
 
@@ -185,23 +179,24 @@ async function handleQuestionSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('qa-input');
     const question = input.value.trim();
-    if (!question || !currentUserId || !currentProductSellerId) return;
+    if (!question) return;
 
     try {
         await addDoc(collection(db, `products/${currentProductId}/qanda`), {
             question: question,
             askerId: currentUserId,
             sellerId: currentProductSellerId,
-            createdAt: serverTimestamp() // Use serverTimestamp
+            createdAt: serverTimestamp(),
+            answer: null
         });
         input.value = '';
     } catch (error) {
-        console.error("Error adding question:", error);
+        console.error("Error submitting question:", error);
+        alert("Could not submit your question.");
     }
 }
 
 function fetchQuestions() {
-    if (!currentProductId) return;
     const q = query(collection(db, `products/${currentProductId}/qanda`), orderBy('createdAt', 'desc'));
     onSnapshot(q, async (querySnapshot) => {
         if (querySnapshot.empty) {
