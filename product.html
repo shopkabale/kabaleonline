@@ -24,11 +24,11 @@
         }
 
         .container { max-width: 960px; margin: 0 auto; padding: 20px 15px; }
-        
+
         .page-content {
              padding-top: 85px; /* Push content below fixed header */
         }
-        
+
         .back-home-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
         .product-detail-container { display: flex; flex-wrap: wrap; gap: 30px; }
         .product-images img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
@@ -36,10 +36,10 @@
         #share-btn { background-color: #f0f2f5; color: #333; border: 1px solid #ddd; border-radius: 50%; width: 44px; height: 44px; font-size: 1.2em; cursor: pointer; }
         .seller-card { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px; }
         .contact-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .cta-button { padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; text-align: center; }
+        .cta-button { padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; text-align: center; border: none; font-family: inherit; font-size: 1em; }
         .whatsapp-btn { background-color: #25D366; color: white; }
         .profile-btn { background-color: #6c757d; color: white; }
-        
+
         /* --- Header --- */
         .sticky-header {
             position: fixed;
@@ -103,7 +103,7 @@
             flex-direction: column;
         }
         .mobile-nav.active { left: 0; }
-        
+
         .mobile-nav .nav-header {
             padding: 15px 20px;
             font-size: 1.5em;
@@ -112,7 +112,7 @@
             color: var(--text-dark);
         }
         .mobile-nav .nav-header span { color: var(--primary-color); }
-        
+
         .mobile-nav a {
             display: flex;
             align-items: center;
@@ -153,7 +153,7 @@
         .question-item:last-child { border-bottom: none; }
         .question-item strong { display: block; margin-bottom: 5px; color: var(--primary-color); }
         .answer-item { margin-top: 10px; padding-left: 20px; border-left: 3px solid #f0f0f0; }
-        
+
         /* Footer */
         footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 40px; }
         .kabale-contact-title { font-size: 1.8em; margin-bottom: 20px; }
@@ -172,11 +172,13 @@
     <div class="nav-header">Kabale <span>Online</span></div>
     <a href="/"><i class="fa-solid fa-house"></i> Home</a>
     <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+    <a href="/wishlist.html"><i class="fa-solid fa-heart"></i> My Wishlist</a>
     <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
     <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
     <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
     <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
 </nav>
+
 <header class="sticky-header">
   <div class="header-top-bar">
     <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
@@ -188,7 +190,7 @@
 
 <main class="container page-content">
     <div id="product-detail-content"><p>Loading product...</p></div>
-    
+
     <div class="qa-section">
         <h2>Questions & Answers</h2>
         <div id="qa-list">
@@ -215,7 +217,7 @@
     </div>
     <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
 </footer>
-<!-- PWA Install Banner -->
+
 <div id="pwa-banner" style="
     display:none;
     position:fixed;
