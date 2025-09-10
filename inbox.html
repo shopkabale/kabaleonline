@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Inbox | Kabale Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .page-content {
+            padding-top: 80px;
+        }
+        .inbox-container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .conversation-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .conversation-item {
+            display: block;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            text-decoration: none;
+            color: inherit;
+            transition: background-color 0.2s ease;
+        }
+        .conversation-item:last-child {
+            border-bottom: none;
+        }
+        .conversation-item:hover {
+            background-color: #f8f9fa;
+        }
+        .conversation-item .user-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+        .conversation-item .last-message {
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-nav-overlay"></div>
+    <header>
+        </header>
+    <nav class="mobile-nav">
+        </nav>
+
+    <main class="container page-content">
+        <div class="inbox-container">
+            <h1><i class="fa-solid fa-inbox"></i> My Inbox</h1>
+            <p>All your conversations in one place.</p>
+            <div id="conversation-list" class="conversation-list">
+                <p style="padding: 20px; text-align: center;">Loading conversations...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        </footer>
+
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="inbox.js"></script>
+</body>
+</html>
