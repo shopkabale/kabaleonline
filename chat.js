@@ -23,40 +23,42 @@ const urlParams = new URLSearchParams(window.location.search);
 const chatId = urlParams.get('chatId');
 const recipientId = urlParams.get('recipientId');
 let currentUser;
-let recipientName;
-
 
 // --- Main Initialization on Auth State Change ---
 onAuthStateChanged(auth, async (user) => {
     if (user && chatId && recipientId) {
         currentUser = user;
-        
-        const recipientDoc = await getDoc(doc(db, 'users', recipientId));
-        if (recipientDoc.exists()) {
-            recipientName = recipientDoc.data().name || 'User';
-        } else {
-            recipientName = 'User';
-        }
-        
-        chatRecipientName.textContent = recipientName;
-        if(reviewRecipientName) reviewRecipientName.textContent = recipientName;
 
+        // --- FIX FOR PERMISSION_DENIED ---
+        // This line creates the main chat document with the participants if it's the very first time.
+        // Doing this ensures the security rules have a document to check when the message listener starts.
+        const chatRef = doc(db, 'chats', chatId);
+        await setDoc(chatRef, {
+            users: [currentUser.uid, recipientId]
+        }, { merge: true });
+        // --- END OF FIX ---
+
+        // Fetch recipient's details
+        const recipientDoc = await getDoc(doc(db, 'users', recipientId));
+        const recipientName = recipientDoc.exists() ? recipientDoc.data().name : 'User';
+        chatRecipientName.textContent = recipientName;
+        if (reviewRecipientName) reviewRecipientName.textContent = recipientName;
+
+        // Setup all functionalities
         setupMessageListener();
         markChatAsRead();
-        setupReviewModal(); // Initialize review functionality
+        setupReviewModal();
+
     } else {
         document.body.innerHTML = `
             <div style="text-align: center; padding-top: 50px;">
                 <h1>Access Denied</h1>
                 <p>You must be <a href="/sell/">logged in</a> to view this page.</p>
-            </div>
-        `;
+            </div>`;
     }
 });
 
-
 // --- Message Handling ---
-
 function setupMessageListener() {
     const messagesRef = collection(db, `chats/${chatId}/messages`);
     const q = query(messagesRef, orderBy('timestamp', 'desc'));
@@ -71,6 +73,9 @@ function setupMessageListener() {
             messageDiv.classList.add(message.senderId === currentUser.uid ? 'sent' : 'received');
             chatMessages.appendChild(messageDiv);
         });
+    }, (error) => {
+        console.error("CRITICAL: Message listener failed!", error);
+        chatMessages.innerHTML = `<p style="text-align:center;color:red;">Error loading messages. Your security rules might be incorrect.</p>`;
     });
 }
 
@@ -78,13 +83,11 @@ chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const messageText = messageInput.value.trim();
     if (messageText === '' || !currentUser) return;
-    
     const originalValue = messageInput.value;
     messageInput.value = '';
     messageInput.disabled = true;
 
     try {
-        // 1. Create the message in the subcollection
         await addDoc(collection(db, `chats/${chatId}/messages`), {
             text: messageText,
             senderId: currentUser.uid,
@@ -92,19 +95,17 @@ chatForm.addEventListener('submit', async (e) => {
             timestamp: serverTimestamp()
         });
 
-        // 2. Update the parent chat document for inbox/notifications
-        await setDoc(doc(db, 'chats', chatId), {
-            users: [currentUser.uid, recipientId],
+        await updateDoc(doc(db, 'chats', chatId), {
             lastMessage: messageText,
             lastUpdated: serverTimestamp(),
             lastSenderId: currentUser.uid,
             lastRead: { [currentUser.uid]: serverTimestamp() }
-        }, { merge: true });
+        });
 
-    } catch (error) { 
-        console.error("Error sending message: ", error); 
+    } catch (error) {
+        console.error("Error sending message:", error);
         alert("Message could not be sent. Please check the console for errors.");
-        messageInput.value = originalValue; // Restore message on failure
+        messageInput.value = originalValue;
     } finally {
         messageInput.disabled = false;
         messageInput.focus();
@@ -113,24 +114,19 @@ chatForm.addEventListener('submit', async (e) => {
 
 async function markChatAsRead() {
     if (!currentUser) return;
-    // This updates the 'lastRead' timestamp for the current user, which hides the notification dot.
     await updateDoc(doc(db, 'chats', chatId), {
         [`lastRead.${currentUser.uid}`]: serverTimestamp()
     }).catch(err => {
-        // This can fail harmlessly on the very first message if the doc doesn't exist yet.
-        console.log("Could not mark chat as read. This is normal for a new chat.");
+        console.log("Could not mark chat as read. This is normal for a brand new chat.");
     });
 }
 
-
 // --- Review Handling Logic ---
-
 function setupReviewModal() {
-    if (!reviewModalBtn) return;
+    if (!reviewModalBtn || !cancelReviewBtn || !reviewModal || !reviewForm) return;
 
     checkIfAlreadyReviewed();
 
-    // Modal visibility event listeners
     reviewModalBtn.addEventListener('click', () => reviewModal.style.display = 'flex');
     cancelReviewBtn.addEventListener('click', () => reviewModal.style.display = 'none');
     reviewModal.addEventListener('click', (e) => {
@@ -139,7 +135,6 @@ function setupReviewModal() {
         }
     });
 
-    // Star rating selection listener
     starRatingContainer.addEventListener('click', e => {
         if (e.target.classList.contains('star')) {
             selectedRating = parseInt(e.target.dataset.value);
@@ -149,18 +144,15 @@ function setupReviewModal() {
         }
     });
 
-    // Form submission listener
     reviewForm.addEventListener('submit', handleReviewSubmission);
 }
 
 async function checkIfAlreadyReviewed() {
     const reviewRef = doc(db, `users/${recipientId}/reviews`, currentUser.uid);
     const reviewSnap = await getDoc(reviewRef);
+    reviewModalBtn.disabled = reviewSnap.exists();
     if (reviewSnap.exists()) {
         reviewModalBtn.textContent = 'Review Submitted';
-        reviewModalBtn.disabled = true;
-    } else {
-        reviewModalBtn.disabled = false;
     }
 }
 
@@ -180,30 +172,23 @@ async function handleReviewSubmission(e) {
     submitBtn.textContent = 'Submitting...';
 
     try {
-        // Use a transaction for data consistency (update average and add review together)
         await runTransaction(db, async (transaction) => {
             const sellerRef = doc(db, 'users', recipientId);
             const reviewRef = doc(db, `users/${recipientId}/reviews`, currentUser.uid);
-
             const sellerDoc = await transaction.get(sellerRef);
             if (!sellerDoc.exists()) {
                 throw "Seller profile does not exist.";
             }
             
-            // 1. Update seller's aggregate rating data
             const oldRatingTotal = sellerDoc.data().ratingTotal || 0;
             const oldReviewCount = sellerDoc.data().reviewCount || 0;
-            const newReviewCount = oldReviewCount + 1;
-            const newRatingTotal = oldRatingTotal + selectedRating;
-            const newAverageRating = newRatingTotal / newReviewCount;
-
+            
             transaction.update(sellerRef, {
                 reviewCount: increment(1),
-                ratingTotal: increment(selectedRating),
-                averageRating: newAverageRating
+                ratingTotal: oldRatingTotal + selectedRating,
+                averageRating: (oldRatingTotal + selectedRating) / (oldReviewCount + 1)
             });
 
-            // 2. Create the new review document
             const currentUserDoc = await getDoc(doc(db, 'users', currentUser.uid));
             const reviewerName = currentUserDoc.exists() ? currentUserDoc.data().name : 'Anonymous';
 
@@ -220,15 +205,15 @@ async function handleReviewSubmission(e) {
         messageEl.style.color = 'green';
         setTimeout(() => {
             reviewModal.style.display = 'none';
-            checkIfAlreadyReviewed(); // Disable button after successful submission
+            checkIfAlreadyReviewed();
         }, 2000);
 
     } catch (error) {
-        console.error("Error submitting review: ", error);
+        console.error("Error submitting review:", error);
         messageEl.textContent = 'Failed to submit review. Please try again.';
         messageEl.style.color = 'red';
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
+        submitBtn.textContent = 'Submit Review';
     }
 }
