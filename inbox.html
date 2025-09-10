@@ -31,31 +31,26 @@
             color: inherit;
             transition: background-color 0.2s ease;
         }
-        .conversation-item:last-child {
-            border-bottom: none;
-        }
-        .conversation-item:hover {
-            background-color: #f8f9fa;
-        }
-        .conversation-item .user-name {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: #34495e;
-            margin-bottom: 5px;
-        }
-        .conversation-item .last-message {
-            color: #6c757d;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 90%;
-        }
+        .conversation-item:hover { background-color: #f8f9fa; }
+        .conversation-item .user-name { font-weight: bold; font-size: 1.1em; }
+        .conversation-item .last-message { color: #6c757d; }
     </style>
 </head>
 <body>
     <div class="mobile-nav-overlay"></div>
-    <header>
-        </header>
+    <header class="sticky-header">
+        <div class="header-content-wrapper">
+            <div class="header-top-bar">
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+                <a href="/" class="site-title">Kabale <span>Online</span></a>
+                <div class="header-spacer"></div>
+                <div class="header-icons">
+                    <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                    <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+                </div>
+            </div>
+        </div>
+    </header>
     <nav class="mobile-nav">
         </nav>
 
@@ -70,7 +65,15 @@
     </main>
 
     <footer>
-        </footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
 
     <script type="module" src="ui.js"></script>
     <script type="module" src="inbox.js"></script>
