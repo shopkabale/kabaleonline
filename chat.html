@@ -10,6 +10,7 @@
         :root {
             --primary-color: #007bff;
             --text-dark: #34495e;
+            --text-light: #7f8c8d;
             --card-bg: #ffffff;
             --bg-light: #f8f9fa;
         }
@@ -18,19 +19,12 @@
             margin: 0;
             background-color: var(--bg-light);
             color: var(--text-dark);
-            /* Prevent body scroll on chat view */
-            overflow: hidden;
+            padding-top: 65px; /* Space for fixed header */
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 0 15px;
-        }
-        .page-content {
-            padding-top: 65px; /* Space for fixed header */
-            height: calc(100vh - 65px);
-            display: flex;
-            flex-direction: column;
+            padding: 20px 15px;
         }
 
         /* --- Header & Nav Styles --- */
@@ -50,15 +44,16 @@
         .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
         .mobile-nav .post-button { background-color: #ffc107; color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
         
-        /* --- Chat Interface Styles --- */
+        /* --- MODIFIED: Chat Interface Styles for Natural Scrolling --- */
         .chat-container {
-            width: 100%;
-            height: 100%;
             display: flex;
             flex-direction: column;
-            background-color: #fff;
-            border-left: 1px solid #e9ecef;
-            border-right: 1px solid #e9ecef;
+            background-color: var(--card-bg);
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            /* Set a height that works well on mobile screens */
+            height: 75vh;
+            max-height: 600px; /* Max height on desktop */
         }
         .chat-header {
             background: var(--primary-color);
@@ -68,26 +63,29 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-shrink: 0;
-            min-height: 40px;
+            flex-shrink: 0; /* Prevents header from shrinking */
         }
         .chat-header-left { display: flex; align-items: center; gap: 15px; }
         .chat-header-left a { color: white; font-size: 1.2em; text-decoration: none; }
         .chat-messages {
-            flex-grow: 1;
+            flex-grow: 1; /* Takes up all available space */
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: auto; /* IMPORTANT: Enables scrolling within the message area */
             display: flex;
-            flex-direction: column-reverse; /* Newest messages at the bottom */
+            flex-direction: column-reverse; /* Keeps view at the bottom */
         }
         .message { margin-bottom: 15px; max-width: 75%; padding: 10px 15px; border-radius: 18px; line-height: 1.4; word-wrap: break-word; }
         .message.sent { background-color: var(--primary-color); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .message.received { background-color: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-form { display: flex; padding: 10px; border-top: 1px solid #e9ecef; background-color: #fff; flex-shrink: 0; }
+        .chat-form { display: flex; padding: 10px; border-top: 1px solid #e9ecef; background-color: #fff; flex-shrink: 0; /* Prevents form from shrinking */ }
         .chat-form input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1em; }
         .chat-form input:focus { outline: none; border-color: #007bff; }
         .chat-form button { background: var(--primary-color); color: white; border: none; border-radius: 50%; width: 45px; height: 45px; margin-left: 10px; font-size: 1.2em; cursor: pointer; flex-shrink: 0; }
         #review-modal-btn { background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em; }
+        
+        /* Review Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 25px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; }
 
         /* --- Footer Styles --- */
         footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
@@ -126,7 +124,7 @@
         </div>
     </nav>
 
-    <main class="container page-content">
+    <main class="container">
         <div class="chat-container">
             <div class="chat-header" id="chat-header">
                 <div class="chat-header-left">
@@ -144,6 +142,17 @@
         </div>
     </main>
     
+    <footer class="container">
+        <div class="footer-logo">Kabale <span>Online</span></div>
+        <div class="footer-links">
+            <a href="/about.html">About</a>
+            <a href="/blog/">Blog</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/contact.html">Contact</a>
+        </div>
+        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
     <div id="review-modal" class="modal-overlay" style="display: none;">
         </div>
 
