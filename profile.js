@@ -1,7 +1,6 @@
 import { db } from './firebase.js';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// Existing element references
 const profileHeader = document.getElementById('profile-header');
 const sellerProductGrid = document.getElementById('seller-product-grid');
 const listingsTitle = document.getElementById('listings-title');
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // --- 1. Fetch and Display Seller Profile ---
+    // --- 1. Fetch and Display Seller Profile (Your Original Logic) ---
     try {
         const userDocRef = doc(db, 'users', sellerId);
         const userDoc = await getDoc(userDocRef);
@@ -30,24 +29,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             const sellerName = userData.name || 'Seller';
+            // ... (rest of your variable declarations)
             const sellerLocation = userData.location;
             const sellerInstitution = userData.institution;
             const sellerBio = userData.bio;
-            const profilePhotoUrl = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=No+Photo';
+            const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp';
             const whatsappNumber = userData.whatsapp;
             const badges = userData.badges || [];
 
+            // ... (rest of your HTML building logic)
             let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p>📍 From ${sellerLocation}</p>`;
             if (sellerInstitution) detailsHTML += `<p>🎓 ${sellerInstitution}</p>`;
-            if (bio) detailsHTML += `<p class="profile-bio">"${sellerBio}"</p>`;
-
+            let bioHTML = sellerBio ? `<p class="profile-bio">"${sellerBio}"</p>` : '';
             let contactHTML = '';
             if (whatsappNumber) {
                 const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your profile on Kabale Online.`;
-                contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank" style="margin-top:15px; display:inline-block;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
+                contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
-            
             let badgesHTML = '';
             if (badges.includes('verified')) {
                 badgesHTML += `<span class="badge-icon verified"><i class="fa-solid fa-circle-check"></i> Verified Seller</span>`;
@@ -66,8 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ${contactHTML}
             `;
             document.title = `Profile for ${sellerName} | Kabale Online`;
+
         } else {
-             profileHeader.innerHTML = `<h1>Profile Not Found</h1><p>This seller does not seem to exist.</p>`;
+            profileHeader.innerHTML = `<h1>Profile Not Found</h1>`;
             listingsTitle.style.display = 'none';
             reviewsSection.style.display = 'none';
         }
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         reviewsSection.style.display = 'none';
     }
 
-    // --- 2. Fetch and Display Reviews ---
+    // --- 2. NEW: Fetch and Display Reviews ---
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
@@ -102,40 +102,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             const avgRating = (totalRating / reviewsSnapshot.size).toFixed(1);
-            avgRatingSummary.innerHTML = `
-                <h3>
-                    Average Rating: ${avgRating} / 5.0 
-                    <span class="star-rating" style="font-size: 1em; vertical-align: middle;">${'★'.repeat(Math.round(avgRating))}</span>
-                    (${reviewsSnapshot.size} reviews)
-                </h3>
-            `;
+            avgRatingSummary.innerHTML = `<h3>Average Rating: ${avgRating} / 5.0 (${reviewsSnapshot.size} reviews)</h3>`;
         }
     } catch (error) {
         console.error("Error fetching reviews:", error);
-        avgRatingSummary.innerHTML = "<p>Could not load reviews.</p>";
+        avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
     }
 
-    // --- 3. Fetch and Display Seller's Listings ---
+    // --- 3. Fetch and Display Seller's Listings (Your Original Logic) ---
     try {
-        const productsQuery = query(
+        const q = query(
             collection(db, "products"), 
             where("sellerId", "==", sellerId), 
             orderBy("createdAt", "desc")
         );
-        const querySnapshot = await getDocs(productsQuery);
+        const querySnapshot = await getDocs(q);
         sellerProductGrid.innerHTML = '';
         if (querySnapshot.empty) {
             listingsTitle.textContent = 'This seller has no active listings.';
         } else {
             querySnapshot.forEach((doc) => {
                 const product = doc.data();
-                if (product.isSold) return; // Don't show sold items on profile
                 const productLink = document.createElement('a');
-                productLink.href = `/product.html?id=${doc.id}`;
+                productLink.href = `product.html?id=${doc.id}`;
                 productLink.className = 'product-card-link';
                 productLink.innerHTML = `
                     <div class="product-card">
-                        <img src="${product.imageUrls?.[0] || 'placeholder.webp'}" alt="${product.name}">
+                        <img src="${(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
                         <h3>${product.name}</h3>
                         <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
                     </div>
