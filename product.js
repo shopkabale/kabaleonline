@@ -14,9 +14,7 @@ function updateUserActionButtons() {
     const userActionsContainer = document.getElementById('user-action-buttons');
     if (!userActionsContainer) return;
 
-    // CRITICAL CHECK: Ensure we have both a logged-in user and a seller ID
     if (!currentUserId || !currentProductSellerId) {
-        console.log("Hiding buttons: Missing currentUserId or currentProductSellerId.");
         userActionsContainer.style.display = 'none';
         return;
     }
@@ -30,12 +28,9 @@ function updateUserActionButtons() {
     const wishlistBtn = document.getElementById('add-to-wishlist-btn');
     userActionsContainer.style.display = 'flex';
 
-    // --- Configure Message Button ---
-    console.log(`Configuring chat link: Buyer=${currentUserId}, Seller=${currentProductSellerId}`);
     const chatRoomId = [currentUserId, currentProductSellerId].sort().join('_');
     messageBtn.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
     
-    // --- Configure Wishlist Button ---
     const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
     getDoc(wishlistItemRef).then(wishlistSnap => {
         if (wishlistSnap.exists()) {
@@ -47,7 +42,6 @@ function updateUserActionButtons() {
 
 onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
-    console.log("Auth state changed. Current User ID:", currentUserId);
     renderQaForm();
     updateUserActionButtons();
 });
@@ -70,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const product = docSnap.data();
             currentProductSellerId = product.sellerId;
             document.title = `${product.name} | Kabale Online`;
-            console.log("Product loaded. Seller ID:", currentProductSellerId);
             
             let imagesHTML = product.imageUrls?.map(url => `<img src="${url}" alt="${product.name}">`).join('') || '';
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
