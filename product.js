@@ -7,49 +7,13 @@ const qaList = document.getElementById('qa-list');
 const qaFormContainer = document.getElementById('qa-form-container');
 
 let currentProductId = null;
-let currentUserId = null;
+let currentUserId = null; // We will still track this to know if the user is logged in
 let currentProductSellerId = null;
 
-// This function is called to show/hide the buttons for logged-in users
-function updateUserActionButtons() {
-    const userActionsContainer = document.getElementById('user-action-buttons');
-    if (!userActionsContainer) return; // Exit if the container isn't on the page yet
-
-    // Hide buttons if user is not logged in or we don't know who the seller is
-    if (!currentUserId || !currentProductSellerId) {
-        userActionsContainer.style.display = 'none';
-        return;
-    }
-    
-    // Hide buttons if the user is viewing their own product
-    if (currentUserId === currentProductSellerId) {
-        userActionsContainer.style.display = 'none';
-        return;
-    }
-
-    // If all checks pass, show the buttons
-    const messageBtn = document.getElementById('message-seller-btn');
-    const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-    userActionsContainer.style.display = 'flex';
-
-    // Configure the chat link
-    const chatRoomId = [currentUserId, currentProductSellerId].sort().join('_');
-    messageBtn.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
-    
-    // Check if the item is already in the user's wishlist
-    const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
-    getDoc(wishlistItemRef).then(wishlistSnap => {
-        if (wishlistSnap.exists()) {
-            wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> In Wishlist';
-            wishlistBtn.disabled = true;
-        }
-    });
-}
-
+// Listen for authentication changes to keep track of the current user's ID
 onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
-    renderQaForm();
-    updateUserActionButtons(); // Run the check when the user logs in or out
+    renderQaForm(); // This function can still update based on login status
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -75,18 +39,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
             const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hi, I saw your listing for '${product.name}' on Kabale Online.`;
 
-            //
-            // --- THIS IS THE CORRECTED HTML BLOCK ---
-            // The buttons are now included directly in the HTML that gets created.
-            //
+            // --- MODIFIED HTML BLOCK ---
+            // The user-action-buttons container is now always visible.
+            // We removed style="display: none;"
             productDetailContent.innerHTML = `
                 <div class="product-detail-container">
                     <div class="product-images">${imagesHTML}</div>
                     <div class="product-info">
-                        <div class="product-title-header">
-                            <h1>${product.name}</h1>
-                            <button id="share-btn" title="Share Product"><i class="fa-solid fa-share-nodes"></i></button>
-                        </div>
+                        <div class="product-title-header"><h1>${product.name}</h1></div>
                         <p class="price">UGX ${product.price.toLocaleString()}</p>
                         ${storyHTML}
                         <h3>Description</h3>
@@ -97,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
                                 <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn">See Seller Profile</a>
                             </div>
-                            <div id="user-action-buttons" class="contact-buttons" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px;">
+                            <div id="user-action-buttons" class="contact-buttons" style="margin-top: 10px; flex-direction: column; gap: 10px;">
                                 <a id="message-seller-btn" href="#" class="cta-button message-btn"><i class="fa-regular fa-comments"></i> Send Message</a>
                                 <button id="add-to-wishlist-btn" class="cta-button wishlist-btn"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
                             </div>
@@ -106,11 +66,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>`;
             
             // Re-attach event listeners to the newly created elements
-            document.getElementById('share-btn').addEventListener('click', () => shareProduct(product));
-            document.getElementById('add-to-wishlist-btn').addEventListener('click', () => addToWishlist(product));
+            document.getElementById('message-seller-btn').addEventListener('click', handleSendMessageClick);
+            document.getElementById('add-to-wishlist-btn').addEventListener('click', () => handleAddToWishlistClick(product));
             
-            // Now that the HTML exists, run the function to show/hide the buttons
-            updateUserActionButtons();
+            // If the logged-in user is the seller, hide the buttons after they've been created.
+            if (currentUserId && currentUserId === currentProductSellerId) {
+                document.getElementById('user-action-buttons').style.display = 'none';
+            }
+            
             fetchQuestions();
 
         } else {
@@ -122,25 +85,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// --- Helper Functions (No changes below this line) ---
+// --- NEW Event Handlers with Login Prompts ---
 
-async function shareProduct(product) {
-    const shareData = { title: product.name, text: `Check out this listing on Kabale Online: ${product.name}`, url: window.location.href };
-    try {
-        if (navigator.share) {
-            await navigator.share(shareData);
-        } else {
-            await navigator.clipboard.writeText(window.location.href);
-            alert('Product link copied to clipboard!');
-        }
-    } catch (err) { console.error('Error sharing:', err); }
+function handleSendMessageClick(e) {
+    e.preventDefault(); // Prevent the link from navigating immediately
+    if (currentUserId) {
+        // If the user is logged in, build the chat link and go there
+        const chatRoomId = [currentUserId, currentProductSellerId].sort().join('_');
+        window.location.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
+    } else {
+        // If the user is NOT logged in, prompt them to sign in
+        alert("Please log in or create an account to send a message.");
+        window.location.href = '/sell/'; // Redirect to login/signup page
+    }
 }
 
-async function addToWishlist(productData) {
-    if (!currentUserId) { alert("Please log in to add items to your wishlist."); return; }
+async function handleAddToWishlistClick(productData) {
+    if (!currentUserId) {
+        // If the user is NOT logged in, prompt them to sign in
+        alert("Please log in or create an account to save items to your wishlist.");
+        window.location.href = '/sell/'; // Redirect to login/signup page
+        return;
+    }
+
+    // If the user IS logged in, proceed with adding to wishlist
     const wishlistBtn = document.getElementById('add-to-wishlist-btn');
     wishlistBtn.disabled = true;
     wishlistBtn.innerHTML = 'Adding...';
+
     try {
         const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
         await setDoc(wishlistItemRef, {
@@ -155,8 +127,11 @@ async function addToWishlist(productData) {
         console.error("Error adding to wishlist: ", error);
         alert("Failed to add item to wishlist.");
         wishlistBtn.disabled = false;
+        wishlistBtn.innerHTML = '<i class="fa-regular fa-heart"></i> Add to Wishlist';
     }
 }
+
+// --- Q&A Functions (No changes below this line) ---
 
 function renderQaForm() {
     if (currentUserId) {
