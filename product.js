@@ -1,22 +1,42 @@
 import { db, auth } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productDetailContent = document.getElementById('product-detail-content');
 const qaList = document.getElementById('qa-list');
 const qaFormContainer = document.getElementById('qa-form-container');
-const productForm = document.getElementById('product-form');
-const productFormMessage = document.getElementById('product-form-message');
-const productIdInput = document.getElementById('productId');
-const submitBtn = document.getElementById('submit-btn');
 
 let currentProductId = null;
 let currentUserId = null;
 let currentProductSellerId = null;
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     currentUserId = user ? user.uid : null;
     renderQaForm();
+
+    // NEW: Logic to show/hide user-specific buttons
+    if (user && currentProductSellerId && user.uid !== currentProductSellerId) {
+        // Show Wishlist Button
+        const wishlistBtn = document.getElementById('add-to-wishlist-btn');
+        if (wishlistBtn) {
+            wishlistBtn.style.display = 'block';
+            // Check if already in wishlist
+            const wishlistItemRef = doc(db, `users/${user.uid}/wishlist`, currentProductId);
+            const wishlistItemSnap = await getDoc(wishlistItemRef);
+            if (wishlistItemSnap.exists()) {
+                wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> In Wishlist';
+                wishlistBtn.disabled = true;
+            }
+        }
+        // Show Message Button
+        const messageBtn = document.getElementById('message-seller-btn');
+         if(messageBtn) {
+            messageBtn.style.display = 'block';
+            // Create a unique chat room ID by sorting the two user IDs
+            const chatRoomId = [user.uid, currentProductSellerId].sort().join('_');
+            messageBtn.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
+        }
+    }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -69,10 +89,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h3>Description</h3>
                         <p>${product.description.replace(/\n/g, '<br>')}</p>
                         <div class="seller-card">
-                            <h3>About the Seller</h3>
+                            <h3>Contact Seller</h3>
                             <div class="contact-buttons">
-                                <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank" style="background-color: #25D366;"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
-                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn" style="background-color: #6c757d;">See Seller Profile</a>
+                                <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+                                <a id="message-seller-btn" href="#" class="cta-button" style="background-color: #5a6268; display: none;"><i class="fa-regular fa-comments"></i> Message Seller</a>
+                                <button id="add-to-wishlist-btn" class="cta-button" style="background-color: #007bff; display: none;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
+                                
+                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn" style="background-color: #34495e;">See Seller Profile</a>
                             </div>
                         </div>
                     </div>
@@ -97,6 +120,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     alert('Could not share or copy link.');
                 }
             });
+            
+            // NEW: Add event listener for the wishlist button
+            const wishlistBtn = document.getElementById('add-to-wishlist-btn');
+            if (wishlistBtn) {
+                wishlistBtn.addEventListener('click', () => addToWishlist(product));
+            }
 
             fetchQuestions();
 
@@ -108,6 +137,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         productDetailContent.innerHTML = '<p>There was an error loading this product.</p>';
     }
 });
+
+
+// NEW: Function to add a product to the user's wishlist
+async function addToWishlist(productData) {
+    if (!currentUserId || !currentProductId) {
+        alert("You must be logged in to add items to your wishlist.");
+        return;
+    }
+
+    const wishlistBtn = document.getElementById('add-to-wishlist-btn');
+    wishlistBtn.disabled = true;
+    wishlistBtn.innerHTML = 'Adding...';
+
+    try {
+        const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
+        await setDoc(wishlistItemRef, {
+            productId: currentProductId,
+            addedAt: new Date(),
+            name: productData.name,
+            price: productData.price,
+            imageUrl: productData.imageUrls?.[0] || ''
+        });
+        wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Added to Wishlist';
+    } catch (error) {
+        console.error("Error adding to wishlist: ", error);
+        alert("Failed to add item to wishlist. Please try again.");
+        wishlistBtn.innerHTML = '<i class="fa-regular fa-heart"></i> Add to Wishlist';
+        wishlistBtn.disabled = false;
+    }
+}
 
 function renderQaForm() {
     if (currentUserId) {
