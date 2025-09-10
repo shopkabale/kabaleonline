@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat | Kabale Online</title>
-    <link rel="stylesheet" href="/styles.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/styles.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { background-color: #f4f7f6; }
         .page-content { padding-top: 20px; }
         .chat-container { max-width: 800px; margin: auto; display: flex; flex-direction: column; height: calc(100vh - 40px); background-color: #fff; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.07); }
-        .chat-header { background: #007bff; color: white; padding: 15px; font-weight: bold; text-align: center; display: flex; align-items: center; gap: 10px; }
-        .chat-header a { color: white; font-size: 1.2em; }
+        .chat-header { background: #007bff; color: white; padding: 15px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: space-between; }
+        .chat-header-left { display: flex; align-items: center; gap: 15px; }
+        .chat-header-left a { color: white; font-size: 1.2em; text-decoration: none;}
         .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column-reverse; }
         .message { margin-bottom: 15px; max-width: 75%; padding: 10px 15px; border-radius: 18px; line-height: 1.4; word-wrap: break-word; }
         .message.sent { background-color: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
@@ -19,23 +21,62 @@
         .chat-form input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1em; }
         .chat-form input:focus { outline: none; border-color: #007bff; }
         .chat-form button { background: #007bff; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; margin-left: 10px; font-size: 1.2em; cursor: pointer; flex-shrink: 0; }
+        
+        /* --- NEW: Review Modal Styles --- */
+        #review-modal-btn { background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em; }
+        #review-modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 25px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; }
+        .modal-content h2 { margin-top: 0; }
+        .star-rating-input { display: flex; justify-content: center; margin: 20px 0; font-size: 2em; cursor: pointer; }
+        .star { color: #ccc; }
+        .star.selected { color: #ffc107; }
+        .modal-content textarea { width: 100%; min-height: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .modal-buttons button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; }
+        #submit-review-btn { background-color: #007bff; color: white; }
+        #cancel-review-btn { background-color: #6c757d; color: white; }
     </style>
 </head>
 <body>
     <main class="container page-content">
         <div class="chat-container">
             <div class="chat-header" id="chat-header">
-                <a href="/inbox.html" aria-label="Back to Inbox"><i class="fa-solid fa-arrow-left"></i></a>
-                <span id="chat-recipient-name">Loading Chat...</span>
-            </div>
-            <div class="chat-messages" id="chat-messages">
+                <div class="chat-header-left">
+                    <a href="/inbox.html" aria-label="Back to Inbox"><i class="fa-solid fa-arrow-left"></i></a>
+                    <span id="chat-recipient-name">Loading Chat...</span>
                 </div>
+                <button id="review-modal-btn" disabled>Leave a Review</button>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
             <form class="chat-form" id="chat-form">
                 <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" required>
                 <button type="submit" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
             </form>
         </div>
     </main>
+    
+    <div id="review-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Review <span id="review-recipient-name">User</span></h2>
+            <form id="review-form">
+                <div id="star-rating" class="star-rating-input">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <textarea id="review-text" placeholder="Share your experience..." required></textarea>
+                <div class="modal-buttons">
+                    <button type="button" id="cancel-review-btn">Cancel</button>
+                    <button type="submit" id="submit-review-btn">Submit</button>
+                </div>
+                <p id="review-form-message" style="margin-top: 10px;"></p>
+            </form>
+        </div>
+    </div>
+
     <script type="module" src="chat.js"></script>
 </body>
 </html>
