@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | Kabale Online</title>
+    <link rel="stylesheet" href="/styles.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; }
+        .page-content { padding-top: 20px; }
+        .chat-container { max-width: 800px; margin: auto; display: flex; flex-direction: column; height: calc(100vh - 40px); background-color: #fff; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.07); }
+        .chat-header { background: #007bff; color: white; padding: 15px; font-weight: bold; text-align: center; display: flex; align-items: center; gap: 10px; }
+        .chat-header a { color: white; font-size: 1.2em; }
+        .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column-reverse; }
+        .message { margin-bottom: 15px; max-width: 75%; padding: 10px 15px; border-radius: 18px; line-height: 1.4; word-wrap: break-word; }
+        .message.sent { background-color: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .message.received { background-color: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-form { display: flex; padding: 10px; border-top: 1px solid #e9ecef; background-color: #fff; }
+        .chat-form input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1em; }
+        .chat-form input:focus { outline: none; border-color: #007bff; }
+        .chat-form button { background: #007bff; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; margin-left: 10px; font-size: 1.2em; cursor: pointer; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+    <main class="container page-content">
+        <div class="chat-container">
+            <div class="chat-header" id="chat-header">
+                <a href="/inbox.html" aria-label="Back to Inbox"><i class="fa-solid fa-arrow-left"></i></a>
+                <span id="chat-recipient-name">Loading Chat...</span>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                </div>
+            <form class="chat-form" id="chat-form">
+                <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </main>
+    <script type="module" src="chat.js"></script>
+</body>
+</html>
