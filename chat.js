@@ -22,29 +22,51 @@ const chatId = urlParams.get('chatId');
 const recipientId = urlParams.get('recipientId');
 let currentUser;
 
+console.log("chat.js loaded.");
+
 // --- CRITICAL CHECK ---
-// Check if the necessary IDs were passed in the URL. If not, stop everything.
 if (!chatId || !recipientId) {
+    console.error("HALT: Missing chatId or recipientId in the URL.");
     document.body.innerHTML = `<div style="text-align: center; padding: 50px;"><h1>Error</h1><p>Could not start chat. Missing required information. Please go back and try again.</p></div>`;
 } else {
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            currentUser = user;
+        if (!user) {
+            console.log("Auth state changed: No user is logged in.");
+            return;
+        }
+        
+        currentUser = user;
+        console.log(`Auth state changed: User ${currentUser.uid} is logged in.`);
+        console.log(`Chat ID from URL: ${chatId}`);
+        console.log(`Recipient ID from URL: ${recipientId}`);
 
-            // Ensure the parent chat document exists to satisfy security rules
+        try {
+            // STEP A: Ensure parent chat document exists
+            console.log("Step A: Attempting to create/ensure chat document...");
             const chatRef = doc(db, 'chats', chatId);
             await setDoc(chatRef, { users: [currentUser.uid, recipientId] }, { merge: true });
+            console.log("Step A: Success! Chat document ensured.");
 
+            // STEP B: Fetch recipient's details
+            console.log(`Step B: Attempting to fetch recipient data for ID: ${recipientId}...`);
             const recipientDoc = await getDoc(doc(db, 'users', recipientId));
             const recipientName = recipientDoc.exists() ? recipientDoc.data().name : 'User';
             chatRecipientName.textContent = recipientName;
             if (reviewRecipientName) reviewRecipientName.textContent = recipientName;
-            
+            console.log(`Step B: Success! Recipient name is "${recipientName}".`);
+
+            // STEP C: Setup functionalities
+            console.log("Step C: Setting up message listener and other functions...");
             setupMessageListener();
             markChatAsRead();
             setupReviewModal();
-        } else {
-            document.body.innerHTML = `<div style="text-align: center; padding: 50px;"><h1>Access Denied</h1><p>You must be <a href="/sell/">logged in</a> to view this page.</p></div>`;
+            console.log("Step C: Success! All functions are set up.");
+
+        } catch (error) {
+            console.error("--- A CRITICAL ERROR OCCURRED DURING INITIALIZATION ---");
+            console.error(error);
+            chatRecipientName.textContent = "Error";
+            chatMessages.innerHTML = `<p style="text-align:center;color:red;">Could not load chat. An error occurred. Please check the console on a computer for details.</p>`;
         }
     });
 }
@@ -52,6 +74,7 @@ if (!chatId || !recipientId) {
 function setupMessageListener() {
     const messagesRef = collection(db, `chats/${chatId}/messages`);
     const q = query(messagesRef, orderBy('timestamp', 'desc'));
+
     onSnapshot(q, (snapshot) => {
         chatMessages.innerHTML = '';
         snapshot.forEach(doc => {
@@ -192,7 +215,7 @@ async function handleReviewSubmission(e) {
         messageEl.textContent = 'Review submitted successfully!';
         messageEl.style.color = 'green';
         setTimeout(() => {
-            reviewModal.style.display = 'none';
+            if (reviewModal) reviewModal.style.display = 'none';
             checkIfAlreadyReviewed();
         }, 2000);
 
@@ -201,7 +224,9 @@ async function handleReviewSubmission(e) {
         messageEl.textContent = 'Failed to submit review. Please try again.';
         messageEl.style.color = 'red';
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Review';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Review';
+        }
     }
 }
