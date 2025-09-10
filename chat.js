@@ -2,13 +2,11 @@ import { auth, db } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, getDoc, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, setDoc, updateDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// --- Chat Elements ---
+// --- Elements ---
 const chatRecipientName = document.getElementById('chat-recipient-name');
 const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('message-input');
-
-// --- Review Modal Elements ---
 const reviewModalBtn = document.getElementById('review-modal-btn');
 const reviewModal = document.getElementById('review-modal');
 const cancelReviewBtn = document.getElementById('cancel-review-btn');
@@ -24,45 +22,36 @@ const chatId = urlParams.get('chatId');
 const recipientId = urlParams.get('recipientId');
 let currentUser;
 
-// --- Main Initialization on Auth State Change ---
-onAuthStateChanged(auth, async (user) => {
-    if (user && chatId && recipientId) {
-        currentUser = user;
+// --- CRITICAL CHECK ---
+// Check if the necessary IDs were passed in the URL. If not, stop everything.
+if (!chatId || !recipientId) {
+    document.body.innerHTML = `<div style="text-align: center; padding: 50px;"><h1>Error</h1><p>Could not start chat. Missing required information. Please go back and try again.</p></div>`;
+} else {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
 
-        // --- FIX FOR PERMISSION_DENIED ---
-        // This line creates the main chat document with the participants if it's the very first time.
-        // Doing this ensures the security rules have a document to check when the message listener starts.
-        const chatRef = doc(db, 'chats', chatId);
-        await setDoc(chatRef, {
-            users: [currentUser.uid, recipientId]
-        }, { merge: true });
-        // --- END OF FIX ---
+            // Ensure the parent chat document exists to satisfy security rules
+            const chatRef = doc(db, 'chats', chatId);
+            await setDoc(chatRef, { users: [currentUser.uid, recipientId] }, { merge: true });
 
-        // Fetch recipient's details
-        const recipientDoc = await getDoc(doc(db, 'users', recipientId));
-        const recipientName = recipientDoc.exists() ? recipientDoc.data().name : 'User';
-        chatRecipientName.textContent = recipientName;
-        if (reviewRecipientName) reviewRecipientName.textContent = recipientName;
+            const recipientDoc = await getDoc(doc(db, 'users', recipientId));
+            const recipientName = recipientDoc.exists() ? recipientDoc.data().name : 'User';
+            chatRecipientName.textContent = recipientName;
+            if (reviewRecipientName) reviewRecipientName.textContent = recipientName;
+            
+            setupMessageListener();
+            markChatAsRead();
+            setupReviewModal();
+        } else {
+            document.body.innerHTML = `<div style="text-align: center; padding: 50px;"><h1>Access Denied</h1><p>You must be <a href="/sell/">logged in</a> to view this page.</p></div>`;
+        }
+    });
+}
 
-        // Setup all functionalities
-        setupMessageListener();
-        markChatAsRead();
-        setupReviewModal();
-
-    } else {
-        document.body.innerHTML = `
-            <div style="text-align: center; padding-top: 50px;">
-                <h1>Access Denied</h1>
-                <p>You must be <a href="/sell/">logged in</a> to view this page.</p>
-            </div>`;
-    }
-});
-
-// --- Message Handling ---
 function setupMessageListener() {
     const messagesRef = collection(db, `chats/${chatId}/messages`);
     const q = query(messagesRef, orderBy('timestamp', 'desc'));
-
     onSnapshot(q, (snapshot) => {
         chatMessages.innerHTML = '';
         snapshot.forEach(doc => {
@@ -94,27 +83,26 @@ chatForm.addEventListener('submit', async (e) => {
             recipientId: recipientId,
             timestamp: serverTimestamp()
         });
-
         await updateDoc(doc(db, 'chats', chatId), {
             lastMessage: messageText,
             lastUpdated: serverTimestamp(),
             lastSenderId: currentUser.uid,
             lastRead: { [currentUser.uid]: serverTimestamp() }
         });
-
-    } catch (error) {
-        console.error("Error sending message:", error);
+    } catch (error) { 
+        console.error("Error sending message:", error); 
         alert("Message could not be sent. Please check the console for errors.");
         messageInput.value = originalValue;
     } finally {
         messageInput.disabled = false;
         messageInput.focus();
     }
-});
+}
 
 async function markChatAsRead() {
     if (!currentUser) return;
-    await updateDoc(doc(db, 'chats', chatId), {
+    const chatRef = doc(db, 'chats', chatId);
+    await updateDoc(chatRef, {
         [`lastRead.${currentUser.uid}`]: serverTimestamp()
     }).catch(err => {
         console.log("Could not mark chat as read. This is normal for a brand new chat.");
