@@ -6,7 +6,7 @@
     <title>Seller Profile | Kabale Online</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#007bff">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1.css">
     <style>
         /* --- Basic Styles & Variables --- */
         :root {
@@ -66,7 +66,7 @@
         .profile-details h1 { 
             margin: 0; 
             font-size: 1.5em; 
-            margin-bottom: 6px; /* space between name and location */
+            margin-bottom: 6px;
         }
         .profile-details p { 
             margin: 4px 0; 
@@ -99,6 +99,33 @@
             color: #007bff;
         }
 
+        /* --- NEW: Review Section Styles --- */
+        .reviews-section {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 30px;
+            box-shadow: var(--shadow);
+        }
+        .star-rating { 
+            font-size: 1.3em; 
+            color: #ffc107; 
+            margin-bottom: 5px;
+        }
+        .review-card { 
+            border-top: 1px solid #eee;
+            padding-top: 15px; 
+            margin-top: 15px; 
+        }
+        .review-card:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+        .review-card p { margin: 5px 0; }
+        .review-author { font-weight: bold; font-size: 0.9em; }
+
+
         /* --- Product Grid --- */
         #listings-title {
             margin-top: 40px;
@@ -113,11 +140,6 @@
         @media (min-width: 768px) {
             .product-grid {
                 grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        @media (min-width: 1024px) {
-            .product-grid {
-                grid-template-columns: repeat(4, 1fr);
             }
         }
 
@@ -200,10 +222,15 @@
         <p>Loading profile...</p>
     </div>
 
+    <div id="reviews-section" class="reviews-section">
+        <h2>Seller Reviews</h2>
+        <div id="average-rating-summary"><p>Loading reviews...</p></div>
+        <div id="reviews-list"></div>
+    </div>
+
     <h2 id="listings-title">Listings from this Seller</h2>
     <div id="seller-product-grid" class="product-grid">
-        <!-- Products will be dynamically loaded by profile.js -->
-    </div>
+        </div>
 </main>
 
 <footer>
@@ -214,23 +241,8 @@
     </div>
     <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
 </footer>
-<!-- PWA Install Banner -->
-<div id="pwa-banner" style="
-    display:none;
-    position:fixed;
-    bottom:-120px; /* start hidden below screen */
-    left:0;
-    width:100%;
-    background:#007bff;
-    color:#fff;
-    box-shadow:0 -2px 10px rgba(0,0,0,0.2);
-    padding:15px;
-    font-family:sans-serif;
-    z-index:9999;
-    border-top-left-radius:10px;
-    border-top-right-radius:10px;
-    transition: bottom 0.5s ease-in-out;
-">
+
+<div id="pwa-banner" style="display:none; position:fixed; bottom:-120px; left:0; width:100%; background:#007bff; color:#fff; box-shadow:0 -2px 10px rgba(0,0,0,0.2); padding:15px; font-family:sans-serif; z-index:9999; border-top-left-radius:10px; border-top-right-radius:10px; transition: bottom 0.5s ease-in-out;">
   <div style="display:flex; flex-direction:column; gap:5px;">
     <strong style="font-size:16px;">KABALE ONLINE APP</strong>
     <span style="font-size:14px;">Install Kabale Online for faster access, offline use, and under 1 MB!</span>
@@ -240,7 +252,6 @@
     </div>
   </div>
 </div>
-
 
 <script type="module" src="../ui.js"></script>
 <script type="module" src="profile.js"></script>
