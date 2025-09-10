@@ -307,28 +307,31 @@
 
     </style>
 </head>
+<body>
     <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
-  <div class="header-content-wrapper">
-    <div class="header-top-bar">
-      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-      <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div class="header-spacer"></div>
-      <div class="header-icons">
-        <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-        <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
-      </div>
-    </div>
+      <div class="header-content-wrapper">
+        <div class="header-top-bar">
+          <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+          <a href="/" class="site-title">Kabale <span>Online</span></a>
+          <div class="header-spacer"></div>
+          <div class="header-icons">
+            <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+          </div>
+        </div>
 
-    <nav class="desktop-nav"></nav>
-  </div>
-</header>
+        <nav class="desktop-nav"></nav>
+      </div>
+    </header>
 
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
             <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
             <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
             <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
@@ -338,7 +341,6 @@
             <a href="/sell/" class="post-button">Post Something Free</a>
         </div>
     </nav>
-</header>
 
     <div class="container page-content">
         <div id="auth-container">
@@ -426,7 +428,7 @@
                 <p style="margin-top: 15px;">You have referred <span id="user-referral-count" style="font-weight: bold; color: #28a745;">0</span> new members.</p>
             </div>
 
-            <div id="unanswered-questions" style="margin-top: 30px;">
+            <div id="qa-section" style="margin-top: 30px;">
                 <h2 style="display: flex; align-items: center; gap: 10px;">
                     <i class="fa-solid fa-comment-dots"></i> Questions for You (<span id="qa-count">0</span>)
                 </h2>
@@ -435,10 +437,14 @@
                 </div>
             </div>
 
-            <p class="instruction-text"><b>To sell:</b> Click 'Sell', fill in the details, and add your item!</p>
-            <button id="show-product-form-btn" class="cta-button">Sell</button>
-            <button id="logout-btn">Logout</button>
+            <p class="instruction-text"><b>Manage your listings and messages below.</b></p>
+            <div class="dashboard-actions" style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
+                <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
+                <a href="/inbox.html" class="cta-button" style="background-color: #5a6268; text-decoration: none;">My Inbox</a>
+                <button id="logout-btn" style="background-color: #dc3545;">Logout</button>
+            </div>
             <button id="reset-password-btn">Change Password</button>
+
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Listing</h2>
                 <form id="product-form">
