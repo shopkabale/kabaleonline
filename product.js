@@ -1,6 +1,6 @@
 import { db, auth } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productDetailContent = document.getElementById('product-detail-content');
 const qaList = document.getElementById('qa-list');
@@ -10,35 +10,48 @@ let currentProductId = null;
 let currentUserId = null;
 let currentProductSellerId = null;
 
-onAuthStateChanged(auth, async (user) => {
+// NEW: This function shows/hides user-specific buttons after the page loads
+function updateUserActionButtons() {
+    const userActionsContainer = document.getElementById('user-action-buttons');
+    if (!currentUserId || !currentProductSellerId || !userActionsContainer) {
+        return;
+    }
+    
+    // Hide the buttons on the user's own product page
+    if (currentUserId === currentProductSellerId) {
+        userActionsContainer.style.display = 'none';
+        return;
+    }
+
+    const messageBtn = document.getElementById('message-seller-btn');
+    const wishlistBtn = document.getElementById('add-to-wishlist-btn');
+
+    // Show the buttons container
+    userActionsContainer.style.display = 'flex';
+
+    // --- Configure Message Button ---
+    // Creates a unique, consistent chat ID by sorting the two user IDs
+    const chatRoomId = [currentUserId, currentProductSellerId].sort().join('_');
+    messageBtn.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
+    
+    // --- Configure Wishlist Button (Check if already in wishlist) ---
+    const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
+    getDoc(wishlistItemRef).then(wishlistSnap => {
+        if (wishlistSnap.exists()) {
+            wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> In Wishlist';
+            wishlistBtn.disabled = true;
+        }
+    });
+}
+
+// Main listener for user authentication changes
+onAuthStateChanged(auth, (user) => {
     currentUserId = user ? user.uid : null;
     renderQaForm();
-
-    // NEW: Logic to show/hide user-specific buttons
-    if (user && currentProductSellerId && user.uid !== currentProductSellerId) {
-        // Show Wishlist Button
-        const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-        if (wishlistBtn) {
-            wishlistBtn.style.display = 'block';
-            // Check if already in wishlist
-            const wishlistItemRef = doc(db, `users/${user.uid}/wishlist`, currentProductId);
-            const wishlistItemSnap = await getDoc(wishlistItemRef);
-            if (wishlistItemSnap.exists()) {
-                wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> In Wishlist';
-                wishlistBtn.disabled = true;
-            }
-        }
-        // Show Message Button
-        const messageBtn = document.getElementById('message-seller-btn');
-         if(messageBtn) {
-            messageBtn.style.display = 'block';
-            // Create a unique chat room ID by sorting the two user IDs
-            const chatRoomId = [user.uid, currentProductSellerId].sort().join('_');
-            messageBtn.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
-        }
-    }
+    updateUserActionButtons(); // Update buttons visibility whenever auth state changes
 });
 
+// Main listener for when the page content is loaded
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
@@ -58,24 +71,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentProductSellerId = product.sellerId;
             document.title = `${product.name} | Kabale Online`;
 
-            let imagesHTML = '';
-            if (product.imageUrls && product.imageUrls.length > 0) {
-                product.imageUrls.forEach(url => { imagesHTML += `<img src="${url}" alt="${product.name}">`; });
-            }
-
+            let imagesHTML = product.imageUrls?.map(url => `<img src="${url}" alt="${product.name}">`).join('') || '';
             const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
-            let sellerName = product.sellerName || 'A Seller';
-            let whatsappNumber = product.whatsapp;
-            if (product.sellerId) {
-                 const userRef = doc(db, 'users', product.sellerId);
-                 const userSnap = await getDoc(userRef);
-                 if (userSnap.exists()) {
-                    sellerName = userSnap.data().name || 'A Seller';
-                    whatsappNumber = userSnap.data().whatsapp || product.whatsapp;
-                 }
-            }
-            const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your listing for '${product.name}' on Kabale Online.`;
+            const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hi, I saw your listing for '${product.name}' on Kabale Online.`;
 
+            // MODIFIED: This HTML block now includes the container for the new buttons
             productDetailContent.innerHTML = `
                 <div class="product-detail-container">
                     <div class="product-images">${imagesHTML}</div>
@@ -84,49 +84,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <h1>${product.name}</h1>
                             <button id="share-btn" title="Share Product"><i class="fa-solid fa-share-nodes"></i></button>
                         </div>
-                        <p class="price" style="font-size: 1.8em; color: #007bff; font-weight: bold;">UGX ${product.price.toLocaleString()}</p>
+                        <p class="price">UGX ${product.price.toLocaleString()}</p>
                         ${storyHTML}
                         <h3>Description</h3>
                         <p>${product.description.replace(/\n/g, '<br>')}</p>
                         <div class="seller-card">
-                            <h3>Contact Seller</h3>
+                            <h3>About the Seller</h3>
                             <div class="contact-buttons">
                                 <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
-                                <a id="message-seller-btn" href="#" class="cta-button" style="background-color: #5a6268; display: none;"><i class="fa-regular fa-comments"></i> Message Seller</a>
-                                <button id="add-to-wishlist-btn" class="cta-button" style="background-color: #007bff; display: none;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
-                                
-                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn" style="background-color: #34495e;">See Seller Profile</a>
+                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn">See Seller Profile</a>
+                            </div>
+                            <div id="user-action-buttons" class="contact-buttons" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px;">
+                                <a id="message-seller-btn" href="#" class="cta-button message-btn"><i class="fa-regular fa-comments"></i> Send Message</a>
+                                <button id="add-to-wishlist-btn" class="cta-button wishlist-btn"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
                             </div>
                         </div>
                     </div>
                 </div>`;
-
-            const shareBtn = document.getElementById('share-btn');
-            shareBtn.addEventListener('click', async () => {
-                const shareData = {
-                    title: product.name,
-                    text: `Check out this listing on Kabale Online: ${product.name}`,
-                    url: window.location.href
-                };
-                try {
-                    if (navigator.share) {
-                        await navigator.share(shareData);
-                    } else {
-                        await navigator.clipboard.writeText(window.location.href);
-                        alert('Product link copied to clipboard!');
-                    }
-                } catch (err) {
-                    console.error('Error sharing:', err);
-                    alert('Could not share or copy link.');
-                }
-            });
             
-            // NEW: Add event listener for the wishlist button
-            const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-            if (wishlistBtn) {
-                wishlistBtn.addEventListener('click', () => addToWishlist(product));
-            }
-
+            // Re-attach event listeners for newly created elements
+            document.getElementById('share-btn').addEventListener('click', () => shareProduct(product));
+            document.getElementById('add-to-wishlist-btn').addEventListener('click', () => addToWishlist(product));
+            
+            updateUserActionButtons(); // Call again now that product seller ID is known
             fetchQuestions();
 
         } else {
@@ -138,14 +118,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// --- Helper Functions ---
 
-// NEW: Function to add a product to the user's wishlist
 async function addToWishlist(productData) {
-    if (!currentUserId || !currentProductId) {
-        alert("You must be logged in to add items to your wishlist.");
+    if (!currentUserId) {
+        alert("Please log in to add items to your wishlist.");
         return;
     }
-
     const wishlistBtn = document.getElementById('add-to-wishlist-btn');
     wishlistBtn.disabled = true;
     wishlistBtn.innerHTML = 'Adding...';
@@ -162,11 +141,30 @@ async function addToWishlist(productData) {
         wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Added to Wishlist';
     } catch (error) {
         console.error("Error adding to wishlist: ", error);
-        alert("Failed to add item to wishlist. Please try again.");
-        wishlistBtn.innerHTML = '<i class="fa-regular fa-heart"></i> Add to Wishlist';
+        alert("Failed to add item to wishlist.");
         wishlistBtn.disabled = false;
     }
 }
+
+async function shareProduct(product) {
+    const shareData = {
+        title: product.name,
+        text: `Check out this listing on Kabale Online: ${product.name}`,
+        url: window.location.href
+    };
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            await navigator.clipboard.writeText(window.location.href);
+            alert('Product link copied to clipboard!');
+        }
+    } catch (err) {
+        console.error('Error sharing:', err);
+    }
+}
+
+// --- Q&A Functions ---
 
 function renderQaForm() {
     if (currentUserId) {
@@ -186,73 +184,37 @@ function renderQaForm() {
 async function handleQuestionSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('qa-input');
-    const messageEl = document.getElementById('qa-message');
     const question = input.value.trim();
-
-    if (!currentUserId || !currentProductSellerId) {
-        messageEl.textContent = 'Failed to submit question. Please try again.';
-        messageEl.style.display = 'block';
-        messageEl.style.color = 'red';
-        return;
-    }
-
-    if (!question) {
-        messageEl.textContent = 'Please type a question.';
-        messageEl.style.display = 'block';
-        messageEl.style.color = 'red';
-        return;
-    }
+    if (!question || !currentUserId || !currentProductSellerId) return;
 
     try {
         await addDoc(collection(db, `products/${currentProductId}/qanda`), {
             question: question,
             askerId: currentUserId,
             sellerId: currentProductSellerId,
-            createdAt: new Date()
+            createdAt: serverTimestamp() // Use serverTimestamp
         });
-
         input.value = '';
-        messageEl.textContent = 'Question submitted successfully!';
-        messageEl.style.display = 'block';
-        messageEl.style.color = 'green';
     } catch (error) {
         console.error("Error adding question:", error);
-        messageEl.textContent = 'Failed to submit question. Please try again.';
-        messageEl.style.display = 'block';
-        messageEl.style.color = 'red';
     }
 }
 
 function fetchQuestions() {
     if (!currentProductId) return;
-
     const q = query(collection(db, `products/${currentProductId}/qanda`), orderBy('createdAt', 'desc'));
-
     onSnapshot(q, async (querySnapshot) => {
-        qaList.innerHTML = '';
         if (querySnapshot.empty) {
             qaList.innerHTML = '<p>No questions yet. Be the first to ask!</p>';
             return;
         }
-
-        const questionsPromises = querySnapshot.docs.map(async docSnapshot => {
+        const questionsPromises = querySnapshot.docs.map(async (docSnapshot) => {
             const qaData = docSnapshot.data();
             const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
             const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
-
-            let answerHtml = '';
-            if (qaData.answer) {
-                answerHtml = `<div class="answer-item"><strong>Seller's Answer:</strong> ${qaData.answer}</div>`;
-            }
-
-            return `
-                <div class="question-item">
-                    <strong>${askerName} asked:</strong> ${qaData.question}
-                    ${answerHtml}
-                </div>
-            `;
+            const answerHtml = qaData.answer ? `<div class="answer-item"><strong>Seller's Answer:</strong> ${qaData.answer}</div>` : '';
+            return `<div class="question-item"><strong>${askerName} asked:</strong> ${qaData.question}${answerHtml}</div>`;
         });
-
         const questionsHtmlArray = await Promise.all(questionsPromises);
         qaList.innerHTML = questionsHtmlArray.join('');
     });
