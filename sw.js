@@ -1,13 +1,14 @@
-// sw.js
+// sw.js (Updated)
 
 // --- CACHE NAMES ---
-const CACHE_NAME = 'kabaleonline-cache-v6';
+const CACHE_NAME = 'kabaleonline-cache-v6'; // Consider incrementing version, e.g., v7
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
 // --- CORE FILES (essential app shell) ---
 const CORE_FILES = [
   '/', '/index.html', '/offline.html',
   '/styles.css', '/main.js',
+  // You might want to move some of these to OPTIONAL if they aren't on every page
   '/auth.js', '/firebase.js',
   '/nav.js', '/ui.js',
   '/manifest.json', '/favicon.webp',
@@ -16,9 +17,21 @@ const CORE_FILES = [
 
 // --- OPTIONAL FILES (cached on demand) ---
 const OPTIONAL_FILES = [
+  // --- EXISTING FILES ---
   '/about.html', '/product.html', '/profile.html',
   '/stories.html', '/submit-story.html', '/terms.html',
   '/displayStories.js', '/postStory.js', '/profile.js', '/shared.js',
+
+  // --- 📝 ADDED FILES ---
+  '/auth.html',
+  '/chat.html',
+  '/chat.js',
+  '/inbox.html',
+  '/inbox.js',
+  '/product.js',
+  '/style.css', // Added the second stylesheet
+  '/wishlist.html',
+  '/wishlist.js',
 
   // Blog
   '/blog/', '/blog/index.html',
@@ -57,7 +70,7 @@ self.addEventListener('install', event => {
       );
     })
   );
-  self.skipWaiting(); // activate immediately after install
+  self.skipWaiting();
 });
 
 // --- ACTIVATE EVENT ---
@@ -74,7 +87,7 @@ self.addEventListener('activate', event => {
       )
     )
   );
-  self.clients.claim(); // control clients without reload
+  self.clients.claim();
 });
 
 // --- FETCH EVENT ---
@@ -82,7 +95,7 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // 1. Network-first for HTML pages
+  // Network-first for HTML pages
   if (req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(req)
@@ -99,7 +112,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 2. Runtime caching for images with fallback
+  // Runtime caching for images with fallback
   if (req.destination === 'image') {
     event.respondWith(
       caches.open(IMAGE_CACHE).then(async cache => {
@@ -112,14 +125,14 @@ self.addEventListener('fetch', event => {
           limitCacheSize(IMAGE_CACHE, 50);
           return networkRes;
         } catch (err) {
-          return caches.match('/icons/192.png'); // fallback placeholder
+          return caches.match('/icons/192.png');
         }
       })
     );
     return;
   }
 
-  // 3. Cache-first for other static assets
+  // Cache-first for other static assets
   event.respondWith(
     caches.match(req).then(cacheRes => {
       return (
@@ -134,6 +147,24 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+// --- PUSH NOTIFICATION EVENT ---
+self.addEventListener('push', event => {
+  const data = event.data.json(); // Assumes you send JSON payload
+  console.log('📬 Push received:', data);
+
+  const options = {
+    body: data.body,
+    icon: '/icons/192.png', // Default icon
+    badge: '/icons/badge.png', // Icon for notification bar (optional)
+    ...data.options, // Allow overriding with payload options (like custom image)
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
 
 // --- HELPER: Limit cache size ---
 function limitCacheSize(cacheName, maxItems) {
