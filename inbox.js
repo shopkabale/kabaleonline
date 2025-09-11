@@ -1,7 +1,5 @@
 // inbox.js
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, query, where, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { auth, db, onAuthStateChanged, collection, query, where, onSnapshot, doc, getDoc } from "./firebase.js";
 
 const conversationList = document.getElementById('conversation-list');
 
@@ -37,7 +35,12 @@ function loadConversations(currentUserId) {
         if (userDoc.exists()) recipientName = userDoc.data().name || 'User';
       }
 
-      const isUnread = !!(chat.lastUpdated && (!chat.lastRead || !chat.lastRead[currentUserId] || (chat.lastRead[currentUserId]?.toMillis?.() || 0) < (chat.lastUpdated?.toMillis?.() || 0)) && chat.lastSenderId !== currentUserId);
+      const lastReadTime = chat.lastRead?.[currentUserId]?.toMillis?.() || 0;
+      const lastUpdatedTime = chat.lastUpdated?.toMillis?.() || 0;
+
+      const isUnread = chat.lastUpdated &&
+        lastReadTime < lastUpdatedTime &&
+        chat.lastSenderId !== currentUserId;
 
       const a = document.createElement('a');
       a.href = `/chat.html?chatId=${encodeURIComponent(chatId)}&recipientId=${encodeURIComponent(recipientId)}`;
