@@ -4,204 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details | Kabale Online</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#007bff">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root { 
-            --primary-color: #007bff; 
-            --accent-color: #ffc107; 
-            --text-dark: #34495e; 
-            --text-muted: #6c757d; 
-            --card-bg: #ffffff;
-            --bg-light: #f8f9fa;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            background-color: var(--bg-light); 
-        }
-
-        .container { max-width: 960px; margin: 0 auto; padding: 20px 15px; }
-
-        .page-content {
-             padding-top: 85px; /* Push content below fixed header */
-        }
-
-        .back-home-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: bold; }
-        .product-detail-container { display: flex; flex-wrap: wrap; gap: 30px; }
-        .product-images img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
-        .product-title-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
-        #share-btn { background-color: #f0f2f5; color: #333; border: 1px solid #ddd; border-radius: 50%; width: 44px; height: 44px; font-size: 1.2em; cursor: pointer; }
-        .seller-card { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px; }
-        .contact-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .cta-button { padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; text-align: center; border: none; font-family: inherit; font-size: 1em; }
-        .whatsapp-btn { background-color: #25D366; color: white; }
-        .profile-btn { background-color: #6c757d; color: white; }
-
-        /* --- Header --- */
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .header-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 8px 15px;
-            height: 65px;
-        }
-
-        .site-title {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-
-        .site-title span {
-            color: var(--primary-color);
-        }
-
-        .hamburger-menu {
-            font-size: 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-dark);
-        }
-
-        /* Desktop nav */
-        .desktop-nav { display: none; }
-        @media (min-width: 992px) {
-            .desktop-nav { display: flex; }
-            .hamburger-menu { display: none; }
-        }
-
-        /* Mobile nav sidebar */
-        .mobile-nav {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background-color: #fff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            z-index: 1100;
-            padding-top: 20px;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        .mobile-nav.active { left: 0; }
-
-        .mobile-nav .nav-header {
-            padding: 15px 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            border-bottom: 1px solid #f0f0f0;
-            color: var(--text-dark);
-        }
-        .mobile-nav .nav-header span { color: var(--primary-color); }
-
-        .mobile-nav a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: #333;
-            text-decoration: none;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 1.1em;
-        }
-        .mobile-nav a:hover { background-color: var(--bg-light); }
-        .mobile-nav a i { margin-right: 15px; color: var(--primary-color); width: 20px; text-align: center; }
-
-        /* Overlay */
-        .mobile-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1090;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
-        }
-        .mobile-nav-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
-        }
-
-        /* Q&A Section Styles */
-        .qa-section { background-color: white; padding: 20px; border-radius: 8px; margin-top: 30px; }
-        .qa-form { margin-top: 20px; }
-        .qa-form textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; min-height: 80px; }
-        .qa-form-message { margin-top: 10px; }
-        .question-item { border-bottom: 1px solid #eee; padding: 15px 0; }
-        .question-item:last-child { border-bottom: none; }
-        .question-item strong { display: block; margin-bottom: 5px; color: var(--primary-color); }
-        .answer-item { margin-top: 10px; padding-left: 20px; border-left: 3px solid #f0f0f0; }
-
-        /* Footer */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; margin-top: 40px; }
-        .kabale-contact-title { font-size: 1.8em; margin-bottom: 20px; }
-        .kabale-contact-details p { margin: 5px 0; }
-        .kabale-footer-links { margin: 20px 0; }
-        .kabale-footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
-        .kabale-footer-link:hover { color: white; }
-        .copyright { font-size: 0.9em; color: var(--text-muted); margin-top: 20px; }
-/* product.html CSS */
-.contact-buttons button { /* Make buttons look like links */
-    padding: 12px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    text-align: center;
-    border: none;
-    font-family: inherit;
-    font-size: 1em;
-    cursor: pointer;
-    width: 100%;
-}
-.message-btn { background-color: #5a6268; color: white; }
-.wishlist-btn { background-color: var(--primary-color); color: white; }
-
-    </style>
-</head>
+    <link rel="stylesheet" href="/style.css"> </head>
 <body>
 
 <div class="mobile-nav-overlay"></div>
-
 <nav class="mobile-nav">
-    <div class="nav-header">Kabale <span>Online</span></div>
-    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
-    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
-    <a href="/wishlist.html"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
-    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
-    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
-    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+    <div class="mobile-nav-header">Kabale Online</div>
+    <div class="mobile-nav-links">
+        <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+        <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+        <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+    </div>
+    <div class="mobile-nav-footer">
+        <a href="/sell/" class="post-button">Post Something Free</a>
+    </div>
 </nav>
 
 <header class="sticky-header">
-  <div class="header-top-bar">
-    <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-    <a href="/" class="site-title">Kabale <span>Online</span></a>
-    <div class="desktop-nav">
+    <div class="header-content-wrapper">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-spacer"></div>
+            <div class="header-icons">
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-count" id="notification-count" style="display: none;">0</span>
+                </a>
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            </div>
         </div>
-  </div>
+    </div>
 </header>
 
 <main class="container page-content">
@@ -209,58 +45,32 @@
 
     <div class="qa-section">
         <h2>Questions & Answers</h2>
-        <div id="qa-list">
-            <p>No questions yet. Be the first to ask!</p>
-        </div>
-        <div id="qa-form-container">
-            <p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>
-        </div>
+        <div id="qa-list"><p>Loading questions...</p></div>
+        <div id="qa-form-container"></div>
     </div>
 </main>
 
-<footer>
-    <div class="kabale-contact-info-section">
-        <h3 class="kabale-contact-title">Get in Touch</h3>
-        <div class="kabale-contact-details">
-            <p class="kabale-contact-item">📞 +256 784655792</p>
-            <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-logo">Kabale <span>Online</span></div>
+        <p class="footer-tagline">Your Community Marketplace</p>
+        <div class="footer-socials">
+            <a href="#" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
         </div>
-        <div class="kabale-footer-links">
-            <a href="/about.html" class="kabale-footer-link">About Us</a>
-            <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-            <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+        <div class="footer-links">
+            <a href="/about.html">About</a>
+            <a href="/blog/">Blog</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/contact.html">Contact</a>
         </div>
+        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </div>
-    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
 </footer>
 
-<div id="pwa-banner" style="
-    display:none;
-    position:fixed;
-    bottom:-120px; /* start hidden below screen */
-    left:0;
-    width:100%;
-    background:#007bff;
-    color:#fff;
-    box-shadow:0 -2px 10px rgba(0,0,0,0.2);
-    padding:15px;
-    font-family:sans-serif;
-    z-index:9999;
-    border-top-left-radius:10px;
-    border-top-right-radius:10px;
-    transition: bottom 0.5s ease-in-out;
-">
-  <div style="display:flex; flex-direction:column; gap:5px;">
-    <strong style="font-size:16px;">KABALE ONLINE APP</strong>
-    <span style="font-size:14px;">Install Kabale Online for faster access, offline use, and under 1 MB!</span>
-    <div style="margin-top:8px; display:flex; gap:10px;">
-      <button id="pwa-install-btn" style="flex:1; background:#fff; color:#007bff; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">Install</button>
-      <button id="pwa-cancel-btn" style="flex:1; background:transparent; border:1px solid #fff; color:#fff; padding:8px 10px; border-radius:6px; cursor:pointer;">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <script type="module" src="ui.js"></script>
+<script type="module" src="shared.js"></script>
 <script type="module" src="product.js"></script>
 </body>
 </html>
