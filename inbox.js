@@ -1,5 +1,7 @@
 // inbox.js
-import { auth, db, onAuthStateChanged, collection, query, where, onSnapshot, doc, getDoc } from "./firebase.js";
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { collection, query, where, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const conversationList = document.getElementById('conversation-list');
 
