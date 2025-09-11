@@ -31,7 +31,6 @@ const recipientParam = urlParams.get('recipientId');
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     console.warn('No user logged in; redirecting to login.');
-    // This will redirect the user to your login/dashboard page
     window.location.href = '/sell/'; 
     return;
   }
