@@ -5,26 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/style.css"> </head>
+    <style>
+        /* --- GLOBAL STYLES & VARIABLES --- */
+        :root {
+            --primary-color: #007bff;
+            --accent-color: #ffc107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-dark: #34495e;
+            --text-light: #7f8c8d;
+            --border-color: #e9ecef;
+            --border-radius: 12px;
+            --shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+        /* --- HEADER & NAVIGATION --- */
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; max-width: 1200px; margin: 0 auto; }
+        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
+        .site-title span { color: var(--accent-color); }
+        .header-spacer { flex-grow: 1; }
+        .header-icons { display: flex; align-items: center; gap: 18px; }
+        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; position: relative; }
+        .notification-count { position: absolute; top: -5px; right: -8px; background-color: red; color: white; font-size: 10px; font-weight: bold; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+        .page-container { padding-top: 80px; padding-bottom: 40px; }
+
+        /* MOBILE NAV */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
+        .mobile-nav a:hover { background-color: #f8f9fa; }
+        .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
+        .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; text-decoration: none; }
+
+        /* --- FOOTER --- */
+        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--accent-color); }
+        .footer-tagline { color: var(--text-light); font-size: 0.95em; margin-bottom: 25px; }
+        .footer-socials { margin-bottom: 25px; }
+        .footer-socials a { color: white; font-size: 22px; margin: 0 12px; text-decoration: none; transition: color 0.2s ease; }
+        .footer-socials a:hover { color: var(--accent-color); }
+        .footer-links { margin-bottom: 25px; }
+        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
+
+        /* --- PRODUCT PAGE SPECIFIC STYLES --- */
+        .product-detail-container { display: flex; flex-wrap: wrap; gap: 30px; }
+        .product-images { flex: 1; min-width: 300px; }
+        .product-info { flex: 1; min-width: 300px; }
+        .product-images img { width: 100%; border-radius: var(--border-radius); margin-bottom: 10px; box-shadow: var(--shadow); }
+        .product-title-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+        #product-name { margin-top: 0; }
+        #share-btn { background-color: #f0f2f5; color: #333; border: 1px solid #ddd; border-radius: 50%; width: 44px; height: 44px; font-size: 1.2em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #product-price { font-size: 1.8em; font-weight: bold; color: var(--primary-color); margin: 10px 0; }
+        #product-description { line-height: 1.7; }
+        .seller-card { background-color: var(--card-bg); padding: 20px; border-radius: var(--border-radius); margin-top: 20px; box-shadow: var(--shadow); }
+        .contact-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .cta-button { padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; text-align: center; border: none; font-family: inherit; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background-color 0.2s; }
+        .message-btn { background-color: var(--primary-color); color: white; }
+        .whatsapp-btn { background-color: #25D366; color: white; }
+        .profile-btn { background-color: #6c757d; color: white; }
+        .wishlist-btn { background-color: #f0f2f5; color: var(--text-dark); border: 1px solid #ddd; }
+        .wishlist-btn.active { background-color: #fbeaf1; color: #d91b60; border-color: #d91b60; }
+        .badge-icon.verified { color: var(--primary-color); font-weight: bold; }
+        
+        /* Q&A Section Styles */
+        .qa-section { background-color: white; padding: 20px; border-radius: 8px; margin-top: 30px; box-shadow: var(--shadow); }
+        .qa-form { margin-top: 20px; }
+        .qa-form textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; min-height: 80px; }
+        .question-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .question-item:last-child { border-bottom: none; }
+        .question-item strong { display: block; margin-bottom: 5px; }
+        .answer-item { margin-top: 10px; padding-left: 20px; border-left: 3px solid #f0f0f0; }
+    </style>
+</head>
 <body>
 
-<div class="mobile-nav-overlay"></div>
-<nav class="mobile-nav">
-    <div class="mobile-nav-header">Kabale Online</div>
-    <div class="mobile-nav-links">
-        <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-        <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-        <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-        <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
-    </div>
-    <div class="mobile-nav-footer">
-        <a href="/sell/" class="post-button">Post Something Free</a>
-    </div>
-</nav>
-
-<header class="sticky-header">
-    <div class="header-content-wrapper">
+    <div class="mobile-nav-overlay"></div>
+    <header class="sticky-header">
         <div class="header-top-bar">
             <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
@@ -37,40 +104,53 @@
                 <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
-<main class="container page-content">
-    <div id="product-detail-content"><p>Loading product...</p></div>
-
-    <div class="qa-section">
-        <h2>Questions & Answers</h2>
-        <div id="qa-list"><p>Loading questions...</p></div>
-        <div id="qa-form-container"></div>
-    </div>
-</main>
-
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-logo">Kabale <span>Online</span></div>
-        <p class="footer-tagline">Your Community Marketplace</p>
-        <div class="footer-socials">
-            <a href="#" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-            <a href="#" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
         </div>
-        <div class="footer-links">
-            <a href="/about.html">About</a>
-            <a href="/blog/">Blog</a>
-            <a href="/terms.html">Terms</a>
-            <a href="/contact.html">Contact</a>
+        <div class="mobile-nav-footer">
+            <a href="/sell/" class="post-button">Post Something Free</a>
         </div>
-        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </div>
-</footer>
+    </nav>
 
-<script type="module" src="ui.js"></script>
-<script type="module" src="shared.js"></script>
-<script type="module" src="product.js"></script>
+    <main class="container page-container">
+        <div id="product-detail-content"><p style="text-align:center; padding: 40px;">Loading product...</p></div>
+
+        <div class="qa-section">
+            <h2>Questions & Answers</h2>
+            <div id="qa-list"><p>Loading questions...</p></div>
+            <div id="qa-form-container"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-socials">
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="shared.js"></script>
+    <script type="module" src="product.js"></script>
 </body>
 </html>
