@@ -5,48 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="mobile-nav-overlay"></div>
-<nav class="mobile-nav">
-    </nav>
-
-<header class="sticky-header">
-    <div class="header-content-wrapper">
+    <div class="mobile-nav-overlay"></div>
+    <header class="sticky-header">
         <div class="header-top-bar">
             <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
             <div class="header-spacer"></div>
             <div class="header-icons">
-                <a href="/inbox.html" id="notification-bell"><i class="fa-regular fa-bell"></i><span id="notification-count" style="display: none;">0</span></a>
-                <a href="/sell/"><i class="fa-regular fa-user"></i></a>
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-count" id="notification-count" style="display: none;">0</span>
+                </a>
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
-<main class="container page-content">
-    <h1 id="chat-recipient-name">Loading...</h1>
-    <div id="chat-messages" class="chat-messages-container">
-        <p>Loading messages...</p>
-    </div>
-    <form id="chat-form" class="chat-form">
-        <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
-        <button type="submit">Send</button>
-    </form>
-    <button id="review-modal-btn" class="cta-button">Leave a Review</button>
-</main>
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/sell/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
 
-<div id="review-modal" class="modal">
+    <div class="container page-container">
+        <main>
+            <h1 id="chat-recipient-name">Loading Chat...</h1>
+            <div id="chat-messages" class="chat-messages">
+                <p style="text-align:center;color:gray;">Loading messages...</p>
+            </div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+             <button id="review-modal-btn" style="margin:1rem 0; padding:0.8rem 1rem;border:none;border-radius:5px;background:#ffc107;color:#fff;cursor:pointer; width: 100%;">Leave a Review</button>
+        </main>
+    </div>
+    
+    <div id="review-modal" class="modal" style="display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index: 2000;">
+      <div class="modal-content" style="background:#fff; padding:1.5rem; border-radius:12px; max-width:400px; width:90%;">
+        <h2>Leave a Review for <span id="review-recipient-name"></span></h2>
+        <div id="star-rating" style="display:flex; margin-bottom:1rem; font-size: 2rem;">
+          <span class="star" data-value="1" style="cursor:pointer; color:gray;">&#9733;</span>
+          <span class="star" data-value="2" style="cursor:pointer; color:gray;">&#9733;</span>
+          <span class="star" data-value="3" style="cursor:pointer; color:gray;">&#9733;</span>
+          <span class="star" data-value="4" style="cursor:pointer; color:gray;">&#9733;</span>
+          <span class="star" data-value="5" style="cursor:pointer; color:gray;">&#9733;</span>
+        </div>
+        <form id="review-form">
+          <textarea id="review-text" placeholder="Write a review..." style="width:100%; min-height:80px; margin-bottom:1rem; padding:0.5rem; border-radius:5px; border:1px solid #ccc;"></textarea>
+          <button id="submit-review-btn" type="submit" style="padding:0.7rem 1rem; border:none; border-radius:5px; background:#28a745; color:#fff; cursor:pointer;">Submit</button>
+          <button type="button" id="cancel-review-btn" style="padding:0.7rem 1rem; border:none; border-radius:5px; background:#dc3545; color:#fff; cursor:pointer;">Cancel</button>
+          <p id="review-form-message"></p>
+        </form>
+      </div>
     </div>
 
-<footer class="site-footer">
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-socials">
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
     </footer>
+    
+    <div id="pwa-banner">
+      <div>
+        <strong>KABALE ONLINE APP</strong>
+        <span>Install Kabale Online for faster access, offline use, and under 1 MB!</span>
+        <div class="button-container">
+          <button id="pwa-install-btn">Install</button>
+          <button id="pwa-cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
 
-<script type="module" src="ui.js"></script>
-<script type="module" src="shared.js"></script>
-<script type="module" src="chat.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="shared.js"></script>
+    <script type="module" src="chat.js"></script>
 </body>
 </html>
