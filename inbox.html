@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inbox | KabaleOnline</title>
-<style>
-  body { font-family: sans-serif; margin:0; padding:0; background:#f5f5f5; }
-  header { padding:1rem; background:#007bff; color:#fff; display:flex; justify-content:space-between; align-items:center; }
-  header a { color:#fff; text-decoration:none; }
-  .conversation-list { padding:1rem; }
-  .conversation-item { display:flex; padding:0.7rem; background:#fff; border-radius:5px; margin-bottom:0.5rem; text-decoration:none; color:#000; }
-  .conversation-item.unread { font-weight:bold; }
-  .conversation-item .user-name { flex:1; }
-  .unread-dot { display:inline-block; width:8px; height:8px; background:red; border-radius:50%; margin-left:5px; }
-  .last-message { color:#555; font-size:0.9rem; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox | Kabale Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header>
-  <h1>Inbox</h1>
-  <a href="/sell/">Home</a>
+
+<div class="mobile-nav-overlay"></div>
+<nav class="mobile-nav">
+    </nav>
+
+<header class="sticky-header">
+    <div class="header-content-wrapper">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-spacer"></div>
+            <div class="header-icons">
+                <a href="/inbox.html" id="notification-bell"><i class="fa-regular fa-bell"></i><span id="notification-count" style="display: none;">0</span></a>
+                <a href="/sell/"><i class="fa-regular fa-user"></i></a>
+            </div>
+        </div>
+    </div>
 </header>
 
-<main>
-  <div id="conversation-list" class="conversation-list">
-    <p>Loading conversations...</p>
-  </div>
+<main class="container page-content">
+    <h1>Inbox</h1>
+    <div id="conversation-list" class="conversation-list-container">
+        <p>Loading conversations...</p>
+    </div>
 </main>
 
+<footer class="site-footer">
+    </footer>
+
+<script type="module" src="ui.js"></script>
+<script type="module" src="shared.js"></script>
 <script type="module" src="inbox.js"></script>
 </body>
 </html>
