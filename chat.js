@@ -226,7 +226,3 @@ async function checkIfAlreadyReviewed() {
     // ignore
   }
 }
-
-// helper imports used inside review functions
-import { getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { doc as docFn } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
