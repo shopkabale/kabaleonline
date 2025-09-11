@@ -49,7 +49,7 @@ async function loadProductDetails() {
     });
 
     // Setup Contact Seller Button
-    const sellerId = productData.sellerId; // ✅ CORRECTED LINE
+    const sellerId = productData.userId; // This is the original line with the bug
     if (sellerId) {
       if (currentUser && currentUser.uid === sellerId) {
         contactSellerBtn.textContent = "This is your listing";
