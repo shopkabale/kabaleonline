@@ -1,3 +1,7 @@
+import { messaging } from './firebase.js';
+import { getToken } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging.js";
+import { db, doc, setDoc, auth } from './firebase.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.querySelector('.hamburger-menu');
   const mobileNav = document.querySelector('.mobile-nav');
@@ -7,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const installAppPrompt = document.getElementById('install-app-prompt');
   const installAppBtn = document.getElementById('install-app-btn');
   const installAppCancel = document.getElementById('install-app-cancel');
+  const notificationsBtn = document.getElementById('enable-notifications-btn');
 
   function isUserLoggedIn() {
     return !!localStorage.getItem("userLoggedIn");
@@ -88,7 +93,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (installAppPrompt) installAppPrompt.style.display = "none";
     localStorage.removeItem('installPromptDismissedAt');
   });
+  
+  async function requestNotificationPermission() {
+    if (!auth.currentUser) {
+        alert("Please log in to enable notifications.");
+        return;
+    }
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const fcmToken = await getToken(messaging, { vapidKey: 'PASTE_YOUR_VAPID_KEY_HERE' });
+            if (fcmToken) {
+                const userId = auth.currentUser.uid;
+                await setDoc(doc(db, 'fcmTokens', userId), { token: fcmToken });
+                alert('Notifications have been enabled!');
+            }
+        } else {
+            alert('Notification permission was denied.');
+        }
+    } catch (error) {
+        console.error('Error getting notification permission:', error);
+    }
+  }
 
+  notificationsBtn?.addEventListener('click', requestNotificationPermission);
+  
   setTimeout(showLoginPrompt, 10000);
 
   if ("serviceWorker" in navigator) {
