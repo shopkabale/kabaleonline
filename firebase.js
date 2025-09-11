@@ -38,7 +38,7 @@ const firebaseConfig = {
   storageBucket: "kabale-20ec4.firebasestorage.app",
   messagingSenderId: "792218710477",
   appId: "1:792218710477:web:5a32cc3177ddba98ff5484",
-  measurementId: "G-XXXXXXXXXX" // ✅ Add your Measurement ID from Firebase settings
+  measurementId: "G-5XQRYNC9TW" // ✅ Add your Measurement ID from Firebase settings
 };
 
 // Initialize Firebase
