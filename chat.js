@@ -11,7 +11,6 @@ const chatRecipientName = document.getElementById('chat-recipient-name');
 const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('message-input');
-
 const reviewModalBtn = document.getElementById('review-modal-btn');
 const reviewModal = document.getElementById('review-modal');
 const cancelReviewBtn = document.getElementById('cancel-review-btn');
@@ -25,14 +24,15 @@ let chatId = null;
 let recipientId = null;
 let selectedRating = 0;
 
-// read URL params
 const urlParams = new URLSearchParams(window.location.search);
-const chatIdParam = urlParams.get('chatId'); // optional
-const recipientParam = urlParams.get('recipientId'); // required
+const chatIdParam = urlParams.get('chatId');
+const recipientParam = urlParams.get('recipientId');
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     console.warn('No user logged in; redirecting to login.');
+    // This will redirect the user to your login/dashboard page
+    window.location.href = '/sell/'; 
     return;
   }
   currentUser = user;
@@ -44,26 +44,22 @@ onAuthStateChanged(auth, async (user) => {
   }
   recipientId = recipientParam;
 
-  // compute chatId: prefer explicit param, otherwise deterministic from uids
   chatId = chatIdParam ? chatIdParam : [currentUser.uid, recipientId].sort().join('_');
 
   try {
-    // ensure chat doc exists (merge: true)
     const chatRef = doc(db, 'chats', chatId);
     await setDoc(chatRef, {
       users: [currentUser.uid, recipientId],
       createdAt: serverTimestamp()
     }, { merge: true });
 
-    // load recipient name
     const userDoc = await getDoc(doc(db, 'users', recipientId));
     const recipientName = userDoc.exists() ? userDoc.data().name || 'User' : 'User';
     chatRecipientName.textContent = recipientName;
     if (reviewRecipientName) reviewRecipientName.textContent = recipientName;
 
-    // setup listeners and UI
     setupMessageListener();
-    markChatAsRead(); // initial
+    markChatAsRead();
     setupReviewModal();
 
   } catch (err) {
@@ -82,25 +78,18 @@ function setupMessageListener() {
       const div = document.createElement('div');
       div.classList.add('message');
       div.classList.add(m.senderId === currentUser.uid ? 'sent' : 'received');
-
       const textEl = document.createElement('div');
       textEl.textContent = m.text || '';
       div.appendChild(textEl);
-
       const meta = document.createElement('div');
       meta.className = 'meta';
       try {
         meta.textContent = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().toLocaleString() : '';
       } catch (e) { meta.textContent = ''; }
       div.appendChild(meta);
-
       chatMessages.appendChild(div);
     });
-
-    // scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    // mark read
     markChatAsRead();
   }, (err) => {
     console.error('Message listener error:', err);
@@ -114,24 +103,19 @@ chatForm?.addEventListener('submit', async (e) => {
   if (!text || !currentUser) return;
   messageInput.disabled = true;
   chatForm.querySelector('button[type="submit"]').disabled = true;
-
   try {
-    // add message
     await addDoc(collection(db, 'chats', chatId, 'messages'), {
       text,
       senderId: currentUser.uid,
       recipientId,
       timestamp: serverTimestamp()
     });
-
-    // update parent chat
     await updateDoc(doc(db, 'chats', chatId), {
       lastMessage: text,
       lastUpdated: serverTimestamp(),
       lastSenderId: currentUser.uid,
       [`lastRead.${currentUser.uid}`]: serverTimestamp()
     });
-
     messageInput.value = '';
   } catch (err) {
     console.error('Send error:', err);
@@ -150,26 +134,22 @@ async function markChatAsRead() {
       [`lastRead.${currentUser.uid}`]: serverTimestamp()
     });
   } catch (err) {
-    // Not fatal — often permission error for new chat doc; ignore
+    // Not fatal, can ignore
   }
 }
 
-/* ---------------- Review modal ---------------- */
 function setupReviewModal() {
   if (!reviewModalBtn || !cancelReviewBtn || !reviewModal || !reviewForm) return;
   checkIfAlreadyReviewed();
-
   reviewModalBtn.addEventListener('click', () => { reviewModal.style.display = 'flex'; });
   cancelReviewBtn.addEventListener('click', () => { reviewModal.style.display = 'none'; });
   reviewModal.addEventListener('click', (e) => { if (e.target === reviewModal) reviewModal.style.display = 'none'; });
-
   starRatingContainer?.addEventListener('click', (e) => {
     if (e.target.classList.contains('star')) {
       selectedRating = parseInt(e.target.dataset.value, 10);
       stars.forEach(s => s.classList.toggle('selected', parseInt(s.dataset.value, 10) <= selectedRating));
     }
   });
-
   reviewForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const reviewText = document.getElementById('review-text').value || '';
@@ -179,13 +159,11 @@ function setupReviewModal() {
     }
     const submitBtn = document.getElementById('submit-review-btn');
     submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
-
     try {
       await runTransaction(db, async (tx) => {
         const sellerRef = doc(db, 'users', recipientId);
         const sellerSnap = await tx.get(sellerRef);
         if (!sellerSnap.exists()) throw new Error('Seller profile missing');
-
         const oldTotal = sellerSnap.data().ratingTotal || 0;
         const oldCount = sellerSnap.data().reviewCount || 0;
         tx.update(sellerRef, {
@@ -193,7 +171,6 @@ function setupReviewModal() {
           ratingTotal: oldTotal + selectedRating,
           averageRating: (oldTotal + selectedRating) / (oldCount + 1)
         });
-
         const reviewRef = doc(db, 'users', recipientId, 'reviews', currentUser.uid);
         tx.set(reviewRef, {
           rating: selectedRating,
@@ -202,7 +179,6 @@ function setupReviewModal() {
           timestamp: serverTimestamp()
         });
       });
-
       messageEl.textContent = 'Review submitted'; messageEl.style.color = 'green';
       setTimeout(()=> { reviewModal.style.display = 'none'; checkIfAlreadyReviewed(); }, 1200);
     } catch (err) {
@@ -215,6 +191,7 @@ function setupReviewModal() {
 }
 
 async function checkIfAlreadyReviewed() {
+  if (!currentUser || !recipientId) return;
   try {
     const rev = await getDoc(doc(db, 'users', recipientId, 'reviews', currentUser.uid));
     if (rev.exists()) { reviewModalBtn.disabled = true; reviewModalBtn.textContent = 'Review Submitted'; }
