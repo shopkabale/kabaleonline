@@ -1,3 +1,10 @@
+// sw.js (MERGED FILE)
+
+// 1. Import Firebase Scripts
+importScripts("https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging-compat.js");
+
+// 2. Define Caches and File Lists
 const CACHE_NAME = 'kabaleonline-cache-v7';
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
@@ -39,6 +46,32 @@ const OPTIONAL_FILES = [
   '/sell/sell.js', '/sell/styles.css'
 ];
 
+// 3. Initialize Firebase App
+const firebaseConfig = {
+    apiKey: "AIzaSyBLf0fZUFGXS9NMS3rMr8Iisy-siAAiIyI",
+    authDomain: "kabale-20ec4.firebaseapp.com",
+    projectId: "kabale-20ec4",
+    storageBucket: "kabale-20ec4.firebasestorage.app",
+    messagingSenderId: "792218710477",
+    appId: "1:792218710477:web:5a32cc3177ddba98ff5484",
+};
+
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// 4. Handle Incoming Background Push Notifications
+messaging.onBackgroundMessage(function(payload) {
+  console.log('Received background message ', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: '/icons/192.png'
+  };
+  return self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+
+// 5. Custom Service Worker Logic for Caching and Offline Support
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -121,19 +154,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-self.addEventListener('push', event => {
-  const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: '/icons/192.png',
-    badge: '/icons/badge.png',
-    ...data.options,
-  };
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
-});
-
+// 6. Helper function to limit cache size
 function limitCacheSize(cacheName, maxItems) {
   caches.open(cacheName).then(cache => {
     cache.keys().then(keys => {
