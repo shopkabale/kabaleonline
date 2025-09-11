@@ -1,69 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat | KabaleOnline</title>
-<style>
-  body { font-family: sans-serif; margin:0; padding:0; background:#f5f5f5; }
-  header { padding:1rem; background:#007bff; color:#fff; display:flex; justify-content:space-between; align-items:center; }
-  header a { color:#fff; text-decoration:none; }
-  .chat-messages { padding:1rem; height:60vh; overflow-y:auto; background:#fff; margin:1rem; border-radius:5px; }
-  .message { margin:0.5rem 0; padding:0.5rem; border-radius:5px; max-width:70%; }
-  .sent { background:#dcf8c6; margin-left:auto; }
-  .received { background:#eee; margin-right:auto; }
-  .meta { font-size:0.7rem; color:#666; text-align:right; }
-  .chat-form { display:flex; margin:0 1rem 1rem 1rem; }
-  .chat-form input { flex:1; padding:0.5rem; border-radius:5px; border:1px solid #ccc; }
-  .chat-form button { padding:0.5rem 1rem; margin-left:0.5rem; border:none; border-radius:5px; background:#007bff; color:#fff; cursor:pointer; }
-  .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-  .modal-content { background:#fff; padding:1rem; border-radius:5px; max-width:400px; width:90%; }
-  #star-rating { display:flex; margin-bottom:0.5rem; }
-  .star { font-size:1.5rem; cursor:pointer; color:gray; margin-right:2px; }
-  .star.selected { color:gold; }
-  textarea { width:100%; min-height:60px; margin-bottom:0.5rem; padding:0.5rem; border-radius:5px; border:1px solid #ccc; resize:none; }
-  #submit-review-btn { padding:0.5rem 1rem; border:none; border-radius:5px; background:#28a745; color:#fff; cursor:pointer; margin-right:0.5rem; }
-  #cancel-review-btn { padding:0.5rem 1rem; border:none; border-radius:5px; background:#dc3545; color:#fff; cursor:pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | Kabale Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header>
-  <h1 id="chat-recipient-name">Loading...</h1>
-  <a href="inbox.html">Inbox</a>
+
+<div class="mobile-nav-overlay"></div>
+<nav class="mobile-nav">
+    </nav>
+
+<header class="sticky-header">
+    <div class="header-content-wrapper">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-spacer"></div>
+            <div class="header-icons">
+                <a href="/inbox.html" id="notification-bell"><i class="fa-regular fa-bell"></i><span id="notification-count" style="display: none;">0</span></a>
+                <a href="/sell/"><i class="fa-regular fa-user"></i></a>
+            </div>
+        </div>
+    </div>
 </header>
 
-<main>
-  <div id="chat-messages" class="chat-messages">
-    <p style="text-align:center;color:gray;">Loading messages...</p>
-  </div>
-
-  <form id="chat-form" class="chat-form">
-    <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
-    <button type="submit">Send</button>
-  </form>
+<main class="container page-content">
+    <h1 id="chat-recipient-name">Loading...</h1>
+    <div id="chat-messages" class="chat-messages-container">
+        <p>Loading messages...</p>
+    </div>
+    <form id="chat-form" class="chat-form">
+        <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
+        <button type="submit">Send</button>
+    </form>
+    <button id="review-modal-btn" class="cta-button">Leave a Review</button>
 </main>
 
 <div id="review-modal" class="modal">
-  <div class="modal-content">
-    <h2>Leave a Review for <span id="review-recipient-name"></span></h2>
-    <div id="star-rating">
-      <span class="star" data-value="1">&#9733;</span>
-      <span class="star" data-value="2">&#9733;</span>
-      <span class="star" data-value="3">&#9733;</span>
-      <span class="star" data-value="4">&#9733;</span>
-      <span class="star" data-value="5">&#9733;</span>
     </div>
-    <form id="review-form">
-      <textarea id="review-text" placeholder="Write a review..."></textarea>
-      <button id="submit-review-btn" type="submit">Submit Review</button>
-      <button type="button" id="cancel-review-btn">Cancel</button>
-      <p id="review-form-message"></p>
-    </form>
-  </div>
-</div>
 
-<button id="review-modal-btn" style="margin:1rem;padding:0.5rem 1rem;border:none;border-radius:5px;background:#ffc107;color:#fff;cursor:pointer;">Leave a Review</button>
+<footer class="site-footer">
+    </footer>
 
+<script type="module" src="ui.js"></script>
+<script type="module" src="shared.js"></script>
 <script type="module" src="chat.js"></script>
 </body>
 </html>
