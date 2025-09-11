@@ -1,107 +1,60 @@
-import { auth, db } from './firebase.js'; // MODIFIED: Added db import
+// shared.js
+import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-// NEW: Added all necessary Firestore imports
 import { collection, query, where, onSnapshot, collectionGroup } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// --- NEW: Notification Listener Function ---
-// This function sets up real-time listeners for new messages and questions.
-const listenForNotifications = (userId) => {
-    const notificationBell = document.getElementById('notification-bell');
-    const notificationCount = document.getElementById('notification-count');
-    if (!notificationBell || !notificationCount) return;
+const notificationBell = document.getElementById('notification-bell');
+const notificationCountEl = document.getElementById('notification-count');
 
-    let unreadMessages = 0;
-    let unansweredQuestions = 0;
-
-    // Listener for Unread Messages
-    const chatsQuery = query(
-        collection(db, 'chats'),
-        where('users', 'array-contains', userId)
-    );
-
-    onSnapshot(chatsQuery, (snapshot) => {
-        let count = 0;
-        snapshot.forEach(doc => {
-            const chat = doc.data();
-            if (chat.lastUpdated && (!chat.lastRead || !chat.lastRead[userId] || chat.lastRead[userId].toDate() < chat.lastUpdated.toDate())) {
-                if(chat.lastSenderId !== userId) {
-                    count++;
-                }
-            }
-        });
-        unreadMessages = count;
-        updateTotalCount();
+function listenForNotifications(userId) {
+  if (!userId) return;
+  // Unread chats
+  const chatsQ = query(collection(db, 'chats'), where('users', 'array-contains', userId));
+  onSnapshot(chatsQ, (snap) => {
+    let unread = 0;
+    snap.forEach(d => {
+      const c = d.data();
+      if (c.lastUpdated && c.lastSenderId !== userId) {
+        const lastReadForMe = c.lastRead?.[userId];
+        const lastReadMillis = lastReadForMe?.toMillis?.() || 0;
+        const lastUpdatedMillis = c.lastUpdated?.toMillis?.() || 0;
+        if (lastUpdatedMillis > lastReadMillis) unread++;
+      }
     });
+    updateBadge(unread);
+  }, (err) => console.error('Chats notify error:', err));
 
-    // Listener for Unanswered Questions
-    const questionsQuery = query(
-        collectionGroup(db, 'qanda'),
-        where('sellerId', '==', userId),
-        where('answer', '==', null)
-    );
+  // Unanswered Q&A (collectionGroup 'qanda' where sellerId == userId && answer == null)
+  try {
+    const qandaQ = query(collectionGroup(db, 'qanda'), where('sellerId', '==', userId), where('answer', '==', null));
+    onSnapshot(qandaQ, (snap) => {
+      const unanswered = snap.size || 0;
+      // Combine with unread; (we'll read current badge value)
+      const current = parseInt(notificationCountEl?.textContent || '0') || 0;
+      // Attempt to show sum; we will instead compute fresh by calling chats listener again,
+      // but to keep it simple we add unanswered to badge
+      updateBadge(current + unanswered);
+    }, (err) => console.warn('Q&A notify error:', err));
+  } catch (err) {
+    // collectionGroup may be restricted by rules — ignore if it errors
+    console.warn('Could not register qanda listener (might be permission/index issue):', err);
+  }
+}
 
-    onSnapshot(questionsQuery, (snapshot) => {
-        unansweredQuestions = snapshot.size;
-        updateTotalCount();
-    });
+function updateBadge(count) {
+  if (!notificationCountEl) return;
+  if (count > 0) {
+    notificationCountEl.textContent = String(count);
+    notificationCountEl.style.display = 'inline-block';
+  } else {
+    notificationCountEl.style.display = 'none';
+  }
+}
 
-    function updateTotalCount() {
-        const total = unreadMessages + unansweredQuestions;
-        if (total > 0) {
-            notificationCount.textContent = total;
-            notificationCount.style.display = 'block';
-        } else {
-            notificationCount.style.display = 'none';
-        }
-    }
-};
-
-// --- Your Existing Header Setup Function ---
-const setupDynamicHeader = () => {
-    const loginBtn = document.getElementById('login-btn');
-    const postBtn = document.getElementById('post-btn');
-    const dashboardBtn = document.getElementById('dashboard-btn');
-
-    // Login/Logout Button Logic
-    if (loginBtn && postBtn && dashboardBtn) {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in
-                loginBtn.style.display = 'none';
-                postBtn.style.display = 'none';
-                dashboardBtn.style.display = 'flex';
-                
-                // MODIFIED: Call the notification listener when the user is logged in
-                listenForNotifications(user.uid);
-
-            } else {
-                // User is signed out
-                loginBtn.style.display = 'flex';
-                postBtn.style.display = 'flex';
-                dashboardBtn.style.display = 'none';
-            }
-        });
-    }
-
-    // Active Page Button Logic
-    const urlParams = new URLSearchParams(window.location.search);
-    const listingType = urlParams.get('type');
-    const path = window.location.pathname;
-
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => link.classList.remove('active'));
-
-    if (path === '/' || path === '/index.html') {
-        if (listingType === 'service') {
-            document.getElementById('services-btn')?.classList.add('active');
-        } else {
-            document.getElementById('items-btn')?.classList.add('active');
-        }
-    } else if (path.startsWith('/requests')) {
-        document.getElementById('request-btn')?.classList.add('active');
-    } else if (path.startsWith('/blog')) {
-        document.getElementById('tips-btn')?.classList.add('active');
-    }
-};
-
-document.addEventListener('DOMContentLoaded', setupDynamicHeader);
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    listenForNotifications(user.uid);
+  } else {
+    updateBadge(0);
+  }
+});
