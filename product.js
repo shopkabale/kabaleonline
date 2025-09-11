@@ -1,186 +1,117 @@
-import { db, auth } from './firebase.js';
+import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, addDoc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-const productDetailContent = document.getElementById('product-detail-content');
-const qaList = document.getElementById('qa-list');
-const qaFormContainer = document.getElementById('qa-form-container');
+const productName = document.getElementById('product-name');
+const productPrice = document.getElementById('product-price');
+const productDescription = document.getElementById('product-description');
+const productImages = document.getElementById('product-images');
+const contactSellerBtn = document.getElementById('contact-seller-btn');
+const qandaList = document.getElementById('qanda-list');
+const qandaForm = document.getElementById('qanda-form');
+const questionInput = document.getElementById('question-input');
 
-let currentProductId = null;
-let currentUserId = null; // We will still track this to know if the user is logged in
-let currentProductSellerId = null;
+let currentUser = null;
+const urlParams = new URLSearchParams(window.location.search);
+const productId = urlParams.get('id');
 
-// Listen for authentication changes to keep track of the current user's ID
+if (!productId) {
+  document.body.innerHTML = '<h1>Product not found</h1><p>Missing product ID in URL.</p>';
+}
+
 onAuthStateChanged(auth, (user) => {
-    currentUserId = user ? user.uid : null;
-    renderQaForm(); // This function can still update based on login status
+  currentUser = user;
+  loadProductDetails();
 });
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-    currentProductId = productId;
+async function loadProductDetails() {
+  try {
+    const productRef = doc(db, 'products', productId);
+    const productSnap = await getDoc(productRef);
 
-    if (!productId) {
-        productDetailContent.innerHTML = '<p>Product not found.</p>';
-        return;
+    if (!productSnap.exists()) {
+      productName.textContent = 'Product Not Found';
+      return;
     }
 
-    try {
-        const productRef = doc(db, 'products', productId);
-        const docSnap = await getDoc(productRef);
+    const productData = productSnap.data();
+    productName.textContent = productData.name || 'No name';
+    productPrice.textContent = `UGX ${productData.price?.toLocaleString() || '0'}`;
+    productDescription.textContent = productData.description || 'No description';
 
-        if (docSnap.exists()) {
-            const product = docSnap.data();
-            currentProductSellerId = product.sellerId;
-            document.title = `${product.name} | Kabale Online`;
-            
-            let imagesHTML = product.imageUrls?.map(url => `<img src="${url}" alt="${product.name}">`).join('') || '';
-            const storyHTML = product.story ? `<div class="product-story"><p>"${product.story}"</p></div>` : '';
-            const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hi, I saw your listing for '${product.name}' on Kabale Online.`;
-
-            // --- MODIFIED HTML BLOCK ---
-            // The user-action-buttons container is now always visible.
-            // We removed style="display: none;"
-            productDetailContent.innerHTML = `
-                <div class="product-detail-container">
-                    <div class="product-images">${imagesHTML}</div>
-                    <div class="product-info">
-                        <div class="product-title-header"><h1>${product.name}</h1></div>
-                        <p class="price">UGX ${product.price.toLocaleString()}</p>
-                        ${storyHTML}
-                        <h3>Description</h3>
-                        <p>${product.description.replace(/\n/g, '<br>')}</p>
-                        <div class="seller-card">
-                            <h3>About the Seller</h3>
-                            <div class="contact-buttons">
-                                <a href="${whatsappLink}" class="cta-button whatsapp-btn" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
-                                <a href="profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn">See Seller Profile</a>
-                            </div>
-                            <div id="user-action-buttons" class="contact-buttons" style="margin-top: 10px; flex-direction: column; gap: 10px;">
-                                <a id="message-seller-btn" href="#" class="cta-button message-btn"><i class="fa-regular fa-comments"></i> Send Message</a>
-                                <button id="add-to-wishlist-btn" class="cta-button wishlist-btn"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            
-            // Re-attach event listeners to the newly created elements
-            document.getElementById('message-seller-btn').addEventListener('click', handleSendMessageClick);
-            document.getElementById('add-to-wishlist-btn').addEventListener('click', () => handleAddToWishlistClick(product));
-            
-            // If the logged-in user is the seller, hide the buttons after they've been created.
-            if (currentUserId && currentUserId === currentProductSellerId) {
-                document.getElementById('user-action-buttons').style.display = 'none';
-            }
-            
-            fetchQuestions();
-
-        } else {
-            productDetailContent.innerHTML = '<p>Sorry, this product could not be found.</p>';
-        }
-    } catch (error) {
-        console.error("Error fetching product:", error);
-        productDetailContent.innerHTML = '<p>There was an error loading this product.</p>';
-    }
-});
-
-// --- NEW Event Handlers with Login Prompts ---
-
-function handleSendMessageClick(e) {
-    e.preventDefault(); // Prevent the link from navigating immediately
-    if (currentUserId) {
-        // If the user is logged in, build the chat link and go there
-        const chatRoomId = [currentUserId, currentProductSellerId].sort().join('_');
-        window.location.href = `/chat.html?chatId=${chatRoomId}&recipientId=${currentProductSellerId}`;
-    } else {
-        // If the user is NOT logged in, prompt them to sign in
-        alert("Please log in or create an account to send a message.");
-        window.location.href = '/sell/'; // Redirect to login/signup page
-    }
-}
-
-async function handleAddToWishlistClick(productData) {
-    if (!currentUserId) {
-        // If the user is NOT logged in, prompt them to sign in
-        alert("Please log in or create an account to save items to your wishlist.");
-        window.location.href = '/sell/'; // Redirect to login/signup page
-        return;
-    }
-
-    // If the user IS logged in, proceed with adding to wishlist
-    const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-    wishlistBtn.disabled = true;
-    wishlistBtn.innerHTML = 'Adding...';
-
-    try {
-        const wishlistItemRef = doc(db, `users/${currentUserId}/wishlist`, currentProductId);
-        await setDoc(wishlistItemRef, {
-            productId: currentProductId,
-            addedAt: serverTimestamp(),
-            name: productData.name,
-            price: productData.price,
-            imageUrl: productData.imageUrls?.[0] || ''
-        });
-        wishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Added to Wishlist';
-    } catch (error) {
-        console.error("Error adding to wishlist: ", error);
-        alert("Failed to add item to wishlist.");
-        wishlistBtn.disabled = false;
-        wishlistBtn.innerHTML = '<i class="fa-regular fa-heart"></i> Add to Wishlist';
-    }
-}
-
-// --- Q&A Functions (No changes below this line) ---
-
-function renderQaForm() {
-    if (currentUserId) {
-        qaFormContainer.innerHTML = `
-            <form id="qa-form" class="qa-form">
-                <textarea id="qa-input" placeholder="Ask a public question..." required></textarea>
-                <button type="submit" class="cta-button">Post Question</button>
-            </form>`;
-        document.getElementById('qa-form').addEventListener('submit', handleQuestionSubmit);
-    } else {
-        qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/sell/">log in</a> to ask a question.</p>`;
-    }
-}
-
-async function handleQuestionSubmit(e) {
-    e.preventDefault();
-    const input = document.getElementById('qa-input');
-    const question = input.value.trim();
-    if (!question) return;
-    try {
-        await addDoc(collection(db, `products/${currentProductId}/qanda`), {
-            question: question,
-            askerId: currentUserId,
-            sellerId: currentProductSellerId,
-            createdAt: serverTimestamp(),
-            answer: null
-        });
-        input.value = '';
-    } catch (error) {
-        console.error("Error submitting question:", error);
-        alert("Could not submit your question.");
-    }
-}
-
-function fetchQuestions() {
-    const q = query(collection(db, `products/${currentProductId}/qanda`), orderBy('createdAt', 'desc'));
-    onSnapshot(q, async (querySnapshot) => {
-        if (querySnapshot.empty) {
-            qaList.innerHTML = '<p>No questions yet. Be the first to ask!</p>';
-            return;
-        }
-        const questionsPromises = querySnapshot.docs.map(async (docSnapshot) => {
-            const qaData = docSnapshot.data();
-            const askerDoc = await getDoc(doc(db, 'users', qaData.askerId));
-            const askerName = askerDoc.exists() ? askerDoc.data().name : 'Anonymous';
-            const answerHtml = qaData.answer ? `<div class="answer-item"><strong>Seller's Answer:</strong> ${qaData.answer}</div>` : '';
-            return `<div class="question-item"><strong>${askerName} asked:</strong> ${qaData.question}${answerHtml}</div>`;
-        });
-        const questionsHtmlArray = await Promise.all(questionsPromises);
-        qaList.innerHTML = questionsHtmlArray.join('');
+    // Display images
+    productImages.innerHTML = '';
+    (productData.imageUrls || []).forEach(url => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = productData.name;
+      productImages.appendChild(img);
     });
+
+    // Setup Contact Seller Button
+    const sellerId = productData.sellerId; // ✅ CORRECTED LINE
+    if (sellerId) {
+      if (currentUser && currentUser.uid === sellerId) {
+        contactSellerBtn.textContent = "This is your listing";
+        contactSellerBtn.disabled = true;
+      } else {
+        contactSellerBtn.href = `/chat.html?recipientId=${sellerId}`;
+      }
+    } else {
+      contactSellerBtn.textContent = "Seller info missing";
+      contactSellerBtn.disabled = true;
+    }
+
+    // Load Q&A
+    loadQandA(sellerId);
+
+  } catch (err) {
+    console.error("Error loading product:", err);
+    productName.textContent = 'Error loading product';
+  }
+}
+
+function loadQandA(sellerId) {
+  const qandaRef = collection(db, 'products', productId, 'qanda');
+  const q = query(qandaRef, orderBy('timestamp', 'desc'));
+
+  onSnapshot(q, (snapshot) => {
+    qandaList.innerHTML = '';
+    if (snapshot.empty) {
+      qandaList.innerHTML = '<p>No questions yet. Be the first to ask!</p>';
+    }
+    snapshot.forEach(docSnap => {
+      const qa = docSnap.data();
+      const div = document.createElement('div');
+      div.className = 'qa-item';
+      div.innerHTML = `
+        <p class="question"><strong>Q:</strong> ${qa.question}</p>
+        ${qa.answer ? `<p class="answer"><strong>A:</strong> ${qa.answer}</p>` : '<p class="answer"><em>Awaiting answer from seller...</em></p>'}
+      `;
+      qandaList.appendChild(div);
+    });
+  });
+
+  qandaForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const questionText = questionInput.value.trim();
+    if (!questionText || !currentUser) {
+      alert('Please log in and type a question.');
+      return;
+    }
+
+    try {
+      await addDoc(qandaRef, {
+        question: questionText,
+        answer: null,
+        askerId: currentUser.uid,
+        sellerId: sellerId,
+        timestamp: serverTimestamp()
+      });
+      questionInput.value = '';
+    } catch (err) {
+      console.error("Error submitting question:", err);
+      alert('Could not submit your question.');
+    }
+  });
 }
