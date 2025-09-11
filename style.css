@@ -1,0 +1,82 @@
+/* style.css */
+
+/* --- GLOBAL STYLES & VARIABLES --- */
+:root {
+    --primary-color: #007bff;
+    --accent-color: #ffc107;
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --text-dark: #34495e;
+    --text-light: #7f8c8d;
+    --border-color: #e9ecef;
+    --border-radius: 12px;
+    --shadow: 0 4px 15px rgba(0,0,0,0.07);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+/* --- HEADER & NAVIGATION --- */
+.sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+.header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; max-width: 1200px; margin: 0 auto; }
+.hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
+.site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
+.site-title span { color: var(--accent-color); }
+.header-spacer { flex-grow: 1; }
+.header-icons { display: flex; align-items: center; gap: 18px; }
+.header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; position: relative; }
+.notification-count { position: absolute; top: -5px; right: -8px; background-color: red; color: white; font-size: 10px; font-weight: bold; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.page-container { padding-top: 80px; padding-bottom: 40px; }
+
+/* MOBILE NAV */
+.mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+.mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+.mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
+.mobile-nav.active { left: 0; }
+.mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+.mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+.mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+.mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
+.mobile-nav a:hover { background-color: #f8f9fa; }
+.mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
+.mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; text-decoration: none; }
+
+/* --- FOOTER --- */
+footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+.footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+.footer-logo span { color: var(--accent-color); }
+.footer-tagline { color: var(--text-light); font-size: 0.95em; margin-bottom: 25px; }
+.footer-socials { margin-bottom: 25px; }
+.footer-socials a { color: white; font-size: 22px; margin: 0 12px; text-decoration: none; transition: color 0.2s ease; }
+.footer-socials a:hover { color: var(--accent-color); }
+.footer-links { margin-bottom: 25px; }
+.footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+.footer-copyright { font-size: 0.8em; color: var(--text-light); }
+
+/* --- PWA BANNER --- */
+#pwa-banner { display:none; position:fixed; bottom:-120px; left:0; width:100%; background:#007bff; color:#fff; box-shadow:0 -2px 10px rgba(0,0,0,0.2); padding:15px; font-family:sans-serif; z-index:9999; border-top-left-radius:10px; border-top-right-radius:10px; transition: bottom 0.5s ease-in-out; box-sizing: border-box; }
+#pwa-banner div { display:flex; flex-direction:column; gap:5px; }
+#pwa-banner strong { font-size:16px; }
+#pwa-banner span { font-size:14px; }
+#pwa-banner .button-container { margin-top:8px; display:flex; gap:10px; }
+#pwa-banner button { flex:1; padding:8px 10px; border-radius:6px; cursor:pointer; font-weight:bold; }
+#pwa-install-btn { background:#fff; color:#007bff; border:none; }
+#pwa-cancel-btn { background:transparent; border:1px solid #fff; color:#fff; }
+
+/* --- INBOX PAGE STYLES --- */
+.conversation-list { padding: 1rem 0; }
+.conversation-item { display:flex; padding:0.8rem 1rem; background:var(--card-bg); border-radius:var(--border-radius); margin-bottom:0.7rem; text-decoration:none; color:var(--text-dark); box-shadow: var(--shadow); transition: transform 0.2s ease; }
+.conversation-item:hover { transform: translateY(-3px); }
+.conversation-item.unread { font-weight:bold; border-left: 4px solid var(--primary-color); }
+.conversation-item .user-name { flex:1; }
+.last-message { color: var(--text-light); font-size:0.9rem; margin: 4px 0 0 0; }
+
+/* --- CHAT PAGE STYLES --- */
+.chat-messages { padding:1rem; min-height: 50vh; overflow-y:auto; background:var(--card-bg); margin:1rem 0; border-radius:var(--border-radius); }
+.message { margin:0.5rem 0; padding:0.6rem 0.9rem; border-radius:15px; max-width:80%; line-height: 1.4; }
+.sent { background:#007bff; color: white; margin-left:auto; border-bottom-right-radius: 3px; }
+.received { background:#e9ecef; color: var(--text-dark); margin-right:auto; border-bottom-left-radius: 3px; }
+.meta { font-size:0.7rem; color:#666; text-align:right; margin-top: 5px; }
+.sent .meta { color: #f0f0f0; }
+.chat-form { display:flex; margin:1rem 0; }
+.chat-form input { flex:1; padding:0.8rem; border-radius:20px; border:1px solid #ccc; }
+.chat-form button { padding:0.8rem 1.2rem; margin-left:0.5rem; border:none; border-radius:20px; background:var(--primary-color); color:#fff; cursor:pointer; font-weight: bold; }
