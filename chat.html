@@ -6,6 +6,19 @@
     <title>Chat | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+      /* ⭐ Review Stars Highlight Fix */
+      .star {
+        cursor: pointer;
+        font-size: 2rem;
+        color: gray;
+        transition: color 0.2s;
+      }
+      .star:hover,
+      .star.selected {
+        color: gold;
+      }
+    </style>
 </head>
 <body>
 
@@ -51,16 +64,16 @@
              <button id="review-modal-btn" style="margin:1rem 0; padding:0.8rem 1rem;border:none;border-radius:5px;background:#ffc107;color:#fff;cursor:pointer; width: 100%;">Leave a Review</button>
         </main>
     </div>
-    
+
     <div id="review-modal" class="modal" style="display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index: 2000;">
       <div class="modal-content" style="background:#fff; padding:1.5rem; border-radius:12px; max-width:400px; width:90%;">
         <h2>Leave a Review for <span id="review-recipient-name"></span></h2>
         <div id="star-rating" style="display:flex; margin-bottom:1rem; font-size: 2rem;">
-          <span class="star" data-value="1" style="cursor:pointer; color:gray;">&#9733;</span>
-          <span class="star" data-value="2" style="cursor:pointer; color:gray;">&#9733;</span>
-          <span class="star" data-value="3" style="cursor:pointer; color:gray;">&#9733;</span>
-          <span class="star" data-value="4" style="cursor:pointer; color:gray;">&#9733;</span>
-          <span class="star" data-value="5" style="cursor:pointer; color:gray;">&#9733;</span>
+          <span class="star" data-value="1">&#9733;</span>
+          <span class="star" data-value="2">&#9733;</span>
+          <span class="star" data-value="3">&#9733;</span>
+          <span class="star" data-value="4">&#9733;</span>
+          <span class="star" data-value="5">&#9733;</span>
         </div>
         <form id="review-form">
           <textarea id="review-text" placeholder="Write a review..." style="width:100%; min-height:80px; margin-bottom:1rem; padding:0.5rem; border-radius:5px; border:1px solid #ccc;"></textarea>
@@ -86,7 +99,7 @@
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
-    
+
     <div id="pwa-banner">
       <div>
         <strong>KABALE ONLINE APP</strong>
