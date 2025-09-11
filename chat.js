@@ -33,8 +33,6 @@ const recipientParam = urlParams.get('recipientId'); // required
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     console.warn('No user logged in; redirecting to login.');
-    // adjust as you prefer
-    // window.location.href = '/sell/';
     return;
   }
   currentUser = user;
@@ -153,7 +151,6 @@ async function markChatAsRead() {
     });
   } catch (err) {
     // Not fatal — often permission error for new chat doc; ignore
-    // console.log('Could not mark read:', err);
   }
 }
 
