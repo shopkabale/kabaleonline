@@ -1,24 +1,17 @@
-// ui.js (Corrected)
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Element References ---
   const hamburger = document.querySelector('.hamburger-menu');
   const mobileNav = document.querySelector('.mobile-nav');
   const overlay = document.querySelector('.mobile-nav-overlay');
-
-  const pwaBanner = document.getElementById('pwa-banner');
-  const pwaInstallBtn = document.getElementById('pwa-install-btn');
-  const pwaCancelBtn = document.getElementById('pwa-cancel-btn');
-
   const loginPrompt = document.getElementById('loginPrompt');
   const loginCancelBtn = document.getElementById('loginPromptCancel');
+  const installAppPrompt = document.getElementById('install-app-prompt');
+  const installAppBtn = document.getElementById('install-app-btn');
+  const installAppCancel = document.getElementById('install-app-cancel');
 
-  // --- Auth State (using a simple local flag) ---
   function isUserLoggedIn() {
-    // Note: This is separate from the actual Firebase auth state.
     return !!localStorage.getItem("userLoggedIn");
   }
 
-  // --- Mobile Navigation ---
   if (hamburger && mobileNav && overlay) {
     const openMenu = () => {
       mobileNav.classList.add('active');
@@ -37,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Login Prompt Logic ---
   function showLoginPrompt() {
     if (!loginPrompt) return;
     const alreadyDismissed = localStorage.getItem("loginDismissed");
@@ -53,29 +45,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loginCancelBtn?.addEventListener('click', hideLoginPrompt);
 
-  // --- PWA Installation Banner ---
   let deferredPrompt = null;
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    if (!localStorage.getItem("pwaDismissed") && pwaBanner) {
-      pwaBanner.style.display = "block";
-      setTimeout(() => { pwaBanner.style.bottom = "0"; }, 60);
-    }
+    showInstallPromptIfNeeded();
   });
 
-  function hidePWABanner() {
-    if (!pwaBanner) return;
-    pwaBanner.style.bottom = "-120px";
-    setTimeout(() => { pwaBanner.style.display = "none"; }, 500);
-    localStorage.setItem("pwaDismissed", "true");
+  function showInstallPromptIfNeeded() {
+    if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) {
+      return;
+    }
+    const lastDismissed = localStorage.getItem('installPromptDismissedAt');
+    const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+    if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) {
+      return;
+    }
+    if (installAppPrompt) {
+      installAppPrompt.style.display = "flex";
+    }
   }
 
-  pwaCancelBtn?.addEventListener("click", hidePWABanner);
+  function hideInstallPrompt() {
+    if (installAppPrompt) {
+      installAppPrompt.style.display = "none";
+    }
+    localStorage.setItem('installPromptDismissedAt', Date.now());
+  }
 
-  pwaInstallBtn?.addEventListener("click", async () => {
-    hidePWABanner();
+  installAppCancel?.addEventListener('click', hideInstallPrompt);
+
+  installAppBtn?.addEventListener('click', async () => {
     if (deferredPrompt) {
+      hideInstallPrompt();
       deferredPrompt.prompt();
       await deferredPrompt.userChoice;
       deferredPrompt = null;
@@ -83,24 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener("appinstalled", () => {
-    hidePWABanner();
-    console.log("PWA installed successfully");
+    if (installAppPrompt) installAppPrompt.style.display = "none";
+    localStorage.removeItem('installPromptDismissedAt');
   });
 
-  // --- Timers for prompts ---
-  setTimeout(() => {
-    if (!isUserLoggedIn() && !localStorage.getItem("loginDismissed")) {
-      showLoginPrompt();
-    }
-  }, 10000);
-  
-  setTimeout(() => {
-    if (!localStorage.getItem("pwaDismissed") && deferredPrompt && pwaBanner) {
-      pwaBanner.style.display = "block";
-    }
-  }, 35000);
+  setTimeout(showLoginPrompt, 10000);
 
-  // --- Service Worker Registration ---
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js")
