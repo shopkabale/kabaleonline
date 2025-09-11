@@ -80,3 +80,18 @@ footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20
 .chat-form { display:flex; margin:1rem 0; }
 .chat-form input { flex:1; padding:0.8rem; border-radius:20px; border:1px solid #ccc; }
 .chat-form button { padding:0.8rem 1.2rem; margin-left:0.5rem; border:none; border-radius:20px; background:var(--primary-color); color:#fff; cursor:pointer; font-weight: bold; }
+.install-prompt-popup {
+  display: none; /* Initially hidden */
+  position: fixed;
+  z-index: 10000;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  color: #333;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 320px;
+}
