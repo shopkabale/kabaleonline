@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-            const fcmToken = await getToken(messaging, { vapidKey: 'PASTE_YOUR_VAPID_KEY_HERE' });
+            const fcmToken = await getToken(messaging, { vapidKey: 'BI4n6x1SWzRR7tG-zNBHLEnKFJRLItYVAcQB5x4UV53jiKSFh8KLF9e2RQfO295XfedJ4IqOUMenSB3wHFakC1E' });
             if (fcmToken) {
                 const userId = auth.currentUser.uid;
                 await setDoc(doc(db, 'fcmTokens', userId), { token: fcmToken });
