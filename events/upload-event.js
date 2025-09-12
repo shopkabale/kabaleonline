@@ -65,6 +65,19 @@ eventForm.addEventListener('submit', async (e) => {
 
         const docRef = await addDoc(collection(db, 'events'), eventData);
         
+        // --- THIS IS THE UPDATED TRIGGER ---
+        // Manually trigger the bulk-sync function to update Algolia.
+        console.log("Triggering Algolia sync function...");
+        fetch('/.netlify/functions/syncToAlgolia') // Correctly points to your function
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Failed to trigger Algolia sync.");
+                } else {
+                    console.log("Algolia sync triggered successfully.");
+                }
+            })
+            .catch(err => console.error("Error triggering sync function:", err));
+        
         alert(`Event submitted successfully!`);
         eventForm.reset();
         window.location.href = `/events/detail.html?id=${docRef.id}`;
