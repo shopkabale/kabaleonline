@@ -175,6 +175,17 @@
     visibility: visible;
     transition: opacity 0.3s ease;
 }
+@keyframes fadeInScaleUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 
     </style>
 </head>
@@ -370,6 +381,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    animation: fadeInScaleUp 0.4s ease-out;
     width: 90%;
     max-width: 350px;
     background: #ffc107;
@@ -390,6 +402,7 @@
     </div>
   </div>
 </div>
+
 
 
     <script type="module" src="ui.js"></script>
