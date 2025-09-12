@@ -93,31 +93,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (installAppPrompt) installAppPrompt.style.display = "none";
     localStorage.removeItem('installPromptDismissedAt');
   });
-  
+
+  // --- NEW --- This function is now updated for OneSignal
   async function requestNotificationPermission() {
-    if (!auth.currentUser) {
-        alert("Please log in to enable notifications.");
-        return;
-    }
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            const fcmToken = await getToken(messaging, { vapidKey: 'BI4n6x1SWzRR7tG-zNBHLEnKFJRLItYVAcQB5x4UV53jiKSFh8KLF9e2RQfO295XfedJ4IqOUMenSB3wHFakC1E' });
-            if (fcmToken) {
-                const userId = auth.currentUser.uid;
-                await setDoc(doc(db, 'fcmTokens', userId), { token: fcmToken });
-                alert('Notifications have been enabled!');
-            }
-        } else {
-            alert('Notification permission was denied.');
-        }
-    } catch (error) {
-        console.error('Error getting notification permission:', error);
-    }
+    // OneSignal handles everything with this one line
+    OneSignal.Slidedown.promptPush();
   }
 
   notificationsBtn?.addEventListener('click', requestNotificationPermission);
   
+  // --- NEW --- Checks if running as an installed PWA and prompts for notifications on first launch
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    const alreadyPrompted = localStorage.getItem('notificationPromptedAfterInstall');
+    if (!alreadyPrompted) {
+      // Wait a couple of seconds for the app to settle, then ask
+      setTimeout(() => {
+        requestNotificationPermission();
+      }, 2000);
+      localStorage.setItem('notificationPromptedAfterInstall', 'true');
+    }
+  }
+
   setTimeout(showLoginPrompt, 10000);
 
   if ("serviceWorker" in navigator) {
