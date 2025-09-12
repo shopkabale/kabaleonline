@@ -1,4 +1,4 @@
-// sw.js (CLEANED UP - ONLY FOR CACHING)
+// sw.js (CORRECTED AND CLEANED UP FOR CACHING)
 
 const CACHE_NAME = 'kabaleonline-cache-v7';
 const IMAGE_CACHE = 'kabaleonline-images-v1';
@@ -41,7 +41,6 @@ const OPTIONAL_FILES = [
   '/sell/sell.js', '/sell/styles.css'
 ];
 
-
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -72,7 +71,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const req = event.request;
-  const url = new URL(req.url);
 
   if (req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
@@ -109,21 +107,31 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // --- THIS IS THE CORRECTED BLOCK ---
   event.respondWith(
     caches.match(req).then(cacheRes => {
-      return (
-        cacheRes ||
-        fetch(req).then(networkRes => {
-          if (OPTIONAL_FILES.includes(url.pathname)) {
-            caches.open(CACHE_NAME).then(cache => cache.put(req, networkRes.clone()));
-          }
-          return networkRes;
-        })
-      );
+      // If we find the request in the cache, return it immediately.
+      if (cacheRes) {
+        return cacheRes;
+      }
+
+      // If not in cache, go to the network.
+      return fetch(req).then(networkRes => {
+        // Check if this is a file we want to cache.
+        if (OPTIONAL_FILES.includes(new URL(req.url).pathname)) {
+          // Clone the response right away before the browser can use it.
+          const cacheClone = networkRes.clone();
+          // Open the cache and put the cloned response in it.
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(req, cacheClone);
+          });
+        }
+        // Return the original response for the browser to use.
+        return networkRes;
+      });
     })
   );
 });
-
 
 function limitCacheSize(cacheName, maxItems) {
   caches.open(cacheName).then(cache => {
