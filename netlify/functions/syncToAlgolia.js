@@ -18,17 +18,23 @@ const algoliaClient = algoliasearch(
     process.env.ALGOLIA_APP_ID, 
     process.env.ALGOLIA_ADMIN_API_KEY // Use the ADMIN key for writing/syncing
 );
-const index = algoliaClient.initIndex('products'); // Make sure this matches your Algolia index name
+
+// I've renamed 'index' to 'productsIndex' for clarity, but the functionality is identical.
+const productsIndex = algoliaClient.initIndex('products');
+
+// --- ADDED FOR EVENTS ---
+// Initialize a new Algolia index for your events
+const eventsIndex = algoliaClient.initIndex('events'); 
+// ----------------------
 
 exports.handler = async (event) => {
     try {
+        // --- THIS IS YOUR EXISTING CODE FOR PRODUCTS (UNCHANGED) ---
         const productsSnapshot = await db.collection('products').get();
         const algoliaObjects = productsSnapshot.docs.map(doc => {
             const data = doc.data();
-            // Algolia requires a unique 'objectID' for each record.
-            // Firestore's document ID is the perfect choice for this.
             return {
-                objectID: doc.id, // This is a crucial field for Algolia
+                objectID: doc.id,
                 name: data.name,
                 name_lowercase: data.name_lowercase,
                 description: data.description,
@@ -36,19 +42,41 @@ exports.handler = async (event) => {
                 price: data.price,
                 listing_type: data.listing_type,
                 sellerId: data.sellerId,
-                sellerName: data.sellerName, // <-- Line added
+                sellerName: data.sellerName,
                 imageUrls: data.imageUrls,
-                isSold: data.isSold || false, // <-- THE FIX IS HERE
-                createdAt: data.createdAt ? data.createdAt.toMillis() : null // Convert Firestore Timestamp to milliseconds for Algolia
+                isSold: data.isSold || false,
+                createdAt: data.createdAt ? data.createdAt.toMillis() : null
             };
         });
+        await productsIndex.saveObjects(algoliaObjects);
+        // --- END OF EXISTING CODE ---
 
-        // Save all product data to Algolia in a single batch
-        await index.saveObjects(algoliaObjects);
+
+        // --- ADDED FOR EVENTS ---
+        // Fetch all documents from the 'events' collection
+        const eventsSnapshot = await db.collection('events').get();
+        const algoliaEventObjects = eventsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                objectID: doc.id,
+                title: data.title,
+                description: data.description,
+                location: data.location,
+                date: data.date,
+                price: data.price,
+                imageUrl: data.imageUrl,
+                uploaderId: data.uploaderId,
+                createdAt: data.createdAt ? data.createdAt.toMillis() : null
+            };
+        });
+        // Save all event data to the 'events' index in Algolia
+        await eventsIndex.saveObjects(algoliaEventObjects);
+        // ----------------------
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: "Data synced to Algolia successfully." }),
+            // Updated the success message slightly to reflect both collections
+            body: JSON.stringify({ message: "Products and Events synced to Algolia successfully." }),
         };
     } catch (error) {
         console.error("Algolia sync error:", error);
