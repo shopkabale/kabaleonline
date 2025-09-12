@@ -6,9 +6,24 @@ import { collection, query, where, onSnapshot, collectionGroup } from "https://w
 const notificationBell = document.getElementById('notification-bell');
 const notificationCountEl = document.getElementById('notification-count');
 
+let unreadChats = 0;
+let unansweredQanda = 0;
+
+function updateBadge() {
+  const total = unreadChats + unansweredQanda;
+  if (!notificationCountEl) return;
+  if (total > 0) {
+    notificationCountEl.textContent = String(total);
+    notificationCountEl.style.display = 'inline-block';
+  } else {
+    notificationCountEl.style.display = 'none';
+  }
+}
+
 function listenForNotifications(userId) {
   if (!userId) return;
-  // Unread chats
+
+  // 🔹 Unread chats
   const chatsQ = query(collection(db, 'chats'), where('users', 'array-contains', userId));
   onSnapshot(chatsQ, (snap) => {
     let unread = 0;
@@ -21,33 +36,23 @@ function listenForNotifications(userId) {
         if (lastUpdatedMillis > lastReadMillis) unread++;
       }
     });
-    updateBadge(unread);
+    unreadChats = unread;
+    updateBadge();
   }, (err) => console.error('Chats notify error:', err));
 
-  // Unanswered Q&A (collectionGroup 'qanda' where sellerId == userId && answer == null)
+  // 🔹 Unanswered Q&A (collectionGroup 'qanda' where sellerId == userId && answer == null)
   try {
-    const qandaQ = query(collectionGroup(db, 'qanda'), where('sellerId', '==', userId), where('answer', '==', null));
+    const qandaQ = query(
+      collectionGroup(db, 'qanda'),
+      where('sellerId', '==', userId),
+      where('answer', '==', null)
+    );
     onSnapshot(qandaQ, (snap) => {
-      const unanswered = snap.size || 0;
-      // Combine with unread; (we'll read current badge value)
-      const current = parseInt(notificationCountEl?.textContent || '0') || 0;
-      // Attempt to show sum; we will instead compute fresh by calling chats listener again,
-      // but to keep it simple we add unanswered to badge
-      updateBadge(current + unanswered);
+      unansweredQanda = snap.size || 0;
+      updateBadge();
     }, (err) => console.warn('Q&A notify error:', err));
   } catch (err) {
-    // collectionGroup may be restricted by rules — ignore if it errors
     console.warn('Could not register qanda listener (might be permission/index issue):', err);
-  }
-}
-
-function updateBadge(count) {
-  if (!notificationCountEl) return;
-  if (count > 0) {
-    notificationCountEl.textContent = String(count);
-    notificationCountEl.style.display = 'inline-block';
-  } else {
-    notificationCountEl.style.display = 'none';
   }
 }
 
@@ -55,6 +60,8 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     listenForNotifications(user.uid);
   } else {
-    updateBadge(0);
+    unreadChats = 0;
+    unansweredQanda = 0;
+    updateBadge();
   }
 });
