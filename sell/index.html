@@ -471,7 +471,7 @@
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Listing</h2>
                 <form id="product-form">
-                    <p id="product-form-message" class="success-message" style="display: none;"></p>
+                    
                     <input type="hidden" id="productId">
                     <div class="form-group"><label>What are you listing?</label><div class="listing-type-selector"><input type="radio" id="type-item" name="listing_type" value="item" checked><label for="type-item">An Item</label><input type="radio" id="type-service" name="listing_type" value="service"><label for="type-service">A Service</label></div></div>
                     <div class="form-group"><label for="product-name">Name</label><input type="text" id="product-name" required></div>
@@ -482,6 +482,7 @@
                     <div class="form-group"><label for="whatsapp-number">WhatsApp Number</label><input type="tel" id="whatsapp-number" required></div>
                     <div class="form-group"><label for="product-image-1">Main Image</label><input type="file" id="product-image-1" accept="image/*"></div>
                     <div class="form-group"><label for="product-image-2">Optional Second Image</label><input type="file" id="product-image-2" accept="image/*"></div>
+<p id="product-form-message" class="success-message" style="display: none;"></p>
                     <button type="submit" id="submit-btn" class="cta-button">Add Product</button>
                 </form>
             </div>
