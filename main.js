@@ -1,152 +1,113 @@
-// --- DOM Element References ---
-const productGrid = document.getElementById('product-grid');
-const searchInput = document.getElementById('search-input');
-const listingsTitle = document.getElementById('listings-title');
-const searchBtn = document.getElementById('search-btn');
-const loadMoreBtn = document.getElementById('load-more-btn');
+// main.js
+import { db } from "./firebase.js";
+import { collection, query, orderBy, where, limit, getDocs, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// --- State Management ---
+// DOM Elements
+const productGrid = document.getElementById("productGrid");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const searchInput = document.getElementById("searchInput");
+const skeletonContainer = document.getElementById("skeletonContainer");
+
 let currentPage = 0;
-let fetching = false;
-let currentSearchTerm = "";
 let totalPages = 0;
+let currentSearchTerm = "";
+let lastVisibleDoc = null;
+let currentTypeFilter = new URLSearchParams(window.location.search).get("type") || null;
 
-const urlParams = new URLSearchParams(window.location.search);
-const listingTypeFilter = urlParams.get('type');
-
-function renderSkeletonLoaders(count) {
-    let skeletons = '';
-    for (let i = 0; i < count; i++) {
-        skeletons += `
-            <div class="skeleton-card">
-                <div class="skeleton-image"></div>
-                <div class="skeleton-text">
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line skeleton-line-short"></div>
-                </div>
-            </div>
-        `;
-    }
-    productGrid.innerHTML = skeletons;
+// === 🔹 Algolia Fetch with Fallback ===
+async function fetchListingsFromAlgolia(searchTerm = "", page = 0) {
+  try {
+    const response = await fetch(`/.netlify/functions/search?query=${encodeURIComponent(searchTerm)}&page=${page}&type=${currentTypeFilter || ""}`);
+    if (!response.ok) throw new Error("Algolia fetch failed");
+    const data = await response.json();
+    totalPages = data.nbPages;
+    return data.hits;
+  } catch (error) {
+    console.warn("⚠️ Algolia failed, falling back to Firestore:", error);
+    return fetchListingsFromFirestore(searchTerm);
+  }
 }
 
-async function fetchProducts(isNewSearch = false) {
-    if (fetching) return;
-    fetching = true;
-    loadMoreBtn.disabled = true;
+// === 🔹 Firestore Fallback ===
+async function fetchListingsFromFirestore(searchTerm = "") {
+  let q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(12));
 
-    if (isNewSearch) {
-        renderSkeletonLoaders(12);
-        loadMoreBtn.style.display = 'none';
-    } else {
-        loadMoreBtn.textContent = 'Loading more...';
-    }
+  if (currentTypeFilter) {
+    q = query(collection(db, "products"), where("type", "==", currentTypeFilter), orderBy("createdAt", "desc"), limit(12));
+  }
 
-    let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentSearchTerm)}&page=${currentPage}`;
-    if (listingTypeFilter) {
-        url += `&type=${listingTypeFilter}`;
-    }
+  if (lastVisibleDoc) {
+    q = query(q, startAfter(lastVisibleDoc));
+  }
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            const errorBody = await response.json();
-            throw new Error(`Network response was not ok. Status: ${response.status}. Message: ${errorBody.error}`);
-        }
+  const snapshot = await getDocs(q);
+  lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
 
-        const data = await response.json();
-        const { products } = data;
-        totalPages = data.totalPages;
-
-        if (isNewSearch) {
-            productGrid.innerHTML = '';
-        }
-
-        if (products.length === 0 && isNewSearch) {
-            productGrid.innerHTML = '<p>No listings match your criteria.</p>';
-        } else {
-            renderProducts(products);
-        }
-
-        if (currentPage + 1 < totalPages) {
-            loadMoreBtn.style.display = 'block';
-        } else {
-            loadMoreBtn.style.display = 'none';
-        }
-
-    } catch (error) {
-        console.error("--- DETAILED FETCH ERROR ---", error);
-        if(isNewSearch) {
-            productGrid.innerHTML = `<p>Sorry, could not load listings. Please check the browser console (F12 or right-click -> Inspect -> Console) for detailed errors and try again.</p>`;
-        }
-    } finally {
-        fetching = false;
-        loadMoreBtn.textContent = 'Load More';
-        loadMoreBtn.disabled = false;
-    }
-}
-
-function renderProducts(productsToDisplay) {
-    const fragment = document.createDocumentFragment();
-    productsToDisplay.forEach(product => {
-        const primaryImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
-        const isSold = product.isSold || false;
-
-        // --- THIS IS THE MODIFIED LOGIC ---
-        // Conditionally create the seller info HTML.
-        // If product.sellerName exists, the HTML is created. Otherwise, sellerInfoHtml remains an empty string.
-        let sellerInfoHtml = '';
-        if (product.sellerName) {
-            sellerInfoHtml = `<p class="seller-info">By: ${product.sellerName}</p>`;
-        }
-        // --- END OF MODIFIED LOGIC ---
-
-        const productLink = document.createElement('a');
-        if (isSold) {
-            productLink.href = 'javascript:void(0)';
-            productLink.style.cursor = 'default';
-        } else {
-            productLink.href = `product.html?id=${product.id}`;
-        }
-        productLink.className = 'product-card-link';
-
-        // The sellerInfoHtml variable is now used here. It will be blank if there's no name.
-        productLink.innerHTML = `
-            <div class="product-card ${isSold ? 'is-sold' : ''}">
-                ${isSold ? '<div class="sold-out-tag">SOLD</div>' : ''}
-                <img src="${primaryImage}" alt="${product.name}" loading="lazy" onerror="this.src='https://placehold.co/400x400/e0e0e0/777?text=Error'">
-                <h3>${product.name}</h3>
-                <p class="price">UGX ${product.price.toLocaleString()}</p>
-                ${sellerInfoHtml}
-            </div>`;
-        fragment.appendChild(productLink);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    .filter(product => {
+      if (searchTerm) {
+        return product.title?.toLowerCase().includes(searchTerm.toLowerCase());
+      }
+      return true;
     });
-    productGrid.appendChild(fragment);
 }
 
-function handleNewSearch() {
+// === 🔹 Render Product Card ===
+function renderProductCard(product) {
+  const isSold = product.isSold ? `<span class="badge badge-danger">Sold</span>` : `<span class="badge badge-success">Available</span>`;
+
+  return `
+    <div class="product-card">
+      <img src="${product.images?.[0] || '/default.jpg'}" alt="${product.title}">
+      <div class="product-info">
+        <h3>${product.title}</h3>
+        <p>${product.description?.slice(0, 80) || ""}...</p>
+        <p><strong>UGX ${product.price?.toLocaleString() || "Negotiable"}</strong></p>
+        ${isSold}
+      </div>
+    </div>
+  `;
+}
+
+// === 🔹 Load Listings ===
+async function loadListings(reset = false) {
+  if (reset) {
+    productGrid.innerHTML = "";
     currentPage = 0;
-    currentSearchTerm = searchInput.value;
-    fetchProducts(true);
+    lastVisibleDoc = null;
+  }
+
+  skeletonContainer.style.display = "block";
+
+  const products = await fetchListingsFromAlgolia(currentSearchTerm, currentPage);
+
+  skeletonContainer.style.display = "none";
+
+  if (!products || products.length === 0) {
+    if (reset) productGrid.innerHTML = "<p>No products found.</p>";
+    loadMoreBtn.style.display = "none";
+    return;
+  }
+
+  products.forEach(product => {
+    productGrid.insertAdjacentHTML("beforeend", renderProductCard(product));
+  });
+
+  currentPage++;
+  loadMoreBtn.style.display = (currentPage < totalPages || lastVisibleDoc) ? "block" : "none";
 }
 
-searchBtn.addEventListener('click', handleNewSearch);
-searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        handleNewSearch();
-    }
+// === 🔹 Event Listeners ===
+searchInput?.addEventListener("input", e => {
+  currentSearchTerm = e.target.value.trim();
+  loadListings(true);
 });
 
-loadMoreBtn.addEventListener('click', () => {
-    currentPage++;
-    fetchProducts(false);
+loadMoreBtn?.addEventListener("click", () => {
+  loadListings();
 });
 
-if (listingTypeFilter === 'service') {
-    listingsTitle.textContent = 'Services';
-    document.title = "Kabale Online | Services";
-} else {
-    listingsTitle.textContent = 'All Items';
-}
-fetchProducts(true);
+// === 🔹 Init ===
+document.addEventListener("DOMContentLoaded", () => {
+  loadListings(true);
+});
