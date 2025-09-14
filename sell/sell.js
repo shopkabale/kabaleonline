@@ -86,31 +86,6 @@ const toggleLoading = (button, isLoading, originalText) => {
     }
 };
 
-/**
- * Retry wrapper for Algolia sync trigger with exponential backoff.
- * Keeps the same non-blocking behavior (fire-and-forget) when called without awaiting.
- * Default: 5 attempts, starting delay 1000ms.
- */
-async function triggerAlgoliaSync(retries = 5, delay = 1000) {
-    for (let attempt = 0; attempt < retries; attempt++) {
-        try {
-            const response = await fetch('/.netlify/functions/syncToAlgolia');
-            if (response.ok) {
-                console.log('Algolia sync triggered successfully on attempt', attempt + 1);
-                return true;
-            } else {
-                console.warn(`Algolia sync attempt ${attempt + 1} failed with status ${response.status}`);
-            }
-        } catch (err) {
-            console.error(`Algolia sync attempt ${attempt + 1} error:`, err);
-        }
-        const waitTime = delay * Math.pow(2, attempt); // exponential backoff: 1s, 2s, 4s...
-        await new Promise(res => setTimeout(res, waitTime));
-    }
-    console.error('Algolia sync failed after all retries.');
-    return false;
-}
-
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         await user.reload();
@@ -486,13 +461,17 @@ productForm.addEventListener('submit', async (e) => {
             await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false }); 
         }
 
-        // Trigger Algolia sync with retry (fire-and-forget so UI isn't blocked)
-        triggerAlgoliaSync(5, 1000)
-            .then(ok => {
-                if (!ok) console.error("Algolia sync failed after retries.");
+        // This is the automated sync trigger
+        fetch('/.netlify/functions/syncToAlgolia')
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Failed to trigger Algolia sync.");
+                } else {
+                    console.log("Algolia sync triggered successfully.");
+                }
             })
             .catch(err => {
-                console.error("Error during Algolia sync retries:", err);
+                console.error("Error triggering Algolia sync:", err);
             });
 
         showMessage(productFormMessage, 'Listing submitted successfully!', false); 
@@ -523,7 +502,7 @@ async function fetchSellerProducts(uid) {
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
     if (querySnapshot.empty) { sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell' to get started!</p>"; return; }
-
+    
     // MODIFIED: Logic to display sold status and toggle button
     querySnapshot.forEach((doc) => {
         const product = doc.data(); 
