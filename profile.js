@@ -1,3 +1,26 @@
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * @param {string} url The original Cloudinary URL.
+ * @param {'thumbnail'|'full'} type The desired transformation type.
+ * @returns {string} The new, transformed URL.
+ */
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+}
+
+
 import { db } from './firebase.js';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -5,7 +28,6 @@ const profileHeader = document.getElementById('profile-header');
 const sellerProductGrid = document.getElementById('seller-product-grid');
 const listingsTitle = document.getElementById('listings-title');
 
-// NEW: Element references for the reviews section
 const reviewsSection = document.getElementById('reviews-section');
 const avgRatingSummary = document.getElementById('average-rating-summary');
 const reviewsList = document.getElementById('reviews-list');
@@ -17,11 +39,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!sellerId) {
         profileHeader.innerHTML = '<h1>Seller not found.</h1>';
         listingsTitle.style.display = 'none';
-        reviewsSection.style.display = 'none'; // Hide reviews if no seller
+        reviewsSection.style.display = 'none';
         return;
     }
 
-    // --- 1. Fetch and Display Seller Profile (Your Original Logic) ---
     try {
         const userDocRef = doc(db, 'users', sellerId);
         const userDoc = await getDoc(userDocRef);
@@ -29,7 +50,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             const sellerName = userData.name || 'Seller';
-            // ... (rest of your variable declarations)
             const sellerLocation = userData.location;
             const sellerInstitution = userData.institution;
             const sellerBio = userData.bio;
@@ -37,7 +57,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const whatsappNumber = userData.whatsapp;
             const badges = userData.badges || [];
 
-            // ... (rest of your HTML building logic)
             let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p>📍 From ${sellerLocation}</p>`;
             if (sellerInstitution) detailsHTML += `<p>🎓 ${sellerInstitution}</p>`;
@@ -78,7 +97,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         reviewsSection.style.display = 'none';
     }
 
-    // --- 2. NEW: Fetch and Display Reviews ---
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
@@ -109,7 +127,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
     }
 
-    // --- 3. Fetch and Display Seller's Listings (Your Original Logic) ---
     try {
         const q = query(
             collection(db, "products"), 
@@ -126,9 +143,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const productLink = document.createElement('a');
                 productLink.href = `product.html?id=${doc.id}`;
                 productLink.className = 'product-card-link';
+
+                // ✨ OPTIMIZATION: Create a thumbnail for the profile grid
+                const originalImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
+                const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
+
                 productLink.innerHTML = `
                     <div class="product-card">
-                        <img src="${(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
+                        <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
                         <h3>${product.name}</h3>
                         <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
                     </div>
