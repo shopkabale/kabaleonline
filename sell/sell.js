@@ -1,3 +1,26 @@
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * @param {string} url The original Cloudinary URL.
+ * @param {'thumbnail'|'full'} type The desired transformation type.
+ * @returns {string} The new, transformed URL.
+ */
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+}
+
+
 import { auth, db } from '../firebase.js';
 import {
 GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword,
@@ -414,9 +437,6 @@ showProductFormBtn.textContent = isVisible ? 'Close Form' : 'Sell';
 if (!isVisible) { productForm.reset(); productIdInput.value = ''; submitBtn.textContent = 'Add Product'; updateCategoryOptions(); }
 });
 
-// =========================================================================
-// === MODIFIED SECTION START ===
-// =========================================================================
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -426,28 +446,24 @@ productForm.addEventListener('submit', async (e) => {
     const messageEl = document.getElementById('product-form-message');
     const editingProductId = productIdInput.value;
 
-    // --- Start of feedback logic ---
     toggleLoading(productSubmitBtn, true, 'Submitting');
     messageEl.style.display = 'block';
-    messageEl.className = 'info-message'; // Use a blue/neutral color for this
+    messageEl.className = 'info-message';
     messageEl.innerHTML = 'Submitting your listing... 🚀';
 
-    // Set up timed messages for longer waits
     const timeout1 = setTimeout(() => {
         messageEl.innerHTML = 'Finalizing details... ✨';
     }, 4000);
 
     const timeout2 = setTimeout(() => {
-        messageEl.className = 'warning-message'; // Use a yellow color for this
+        messageEl.className = 'warning-message';
         messageEl.innerHTML = 'Just a moment longer, almost there... ⏳';
     }, 9000);
-    
-    // Helper to clear all our pending messages
+
     const clearTimeouts = () => {
         clearTimeout(timeout1);
         clearTimeout(timeout2);
     };
-    // --- End of feedback logic ---
 
     try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -455,7 +471,6 @@ productForm.addEventListener('submit', async (e) => {
         const isVerified = userData.isVerified || false;
         const sellerName = userData.name || user.email;
 
-        // Gather form data
         const productName = document.getElementById('product-name').value;
         const productPrice = document.getElementById('product-price').value;
         const productCategory = document.getElementById('product-category').value;
@@ -465,7 +480,6 @@ productForm.addEventListener('submit', async (e) => {
         const imageFile1 = document.getElementById('product-image-1').files[0];
         const imageFile2 = document.getElementById('product-image-2').files[0];
 
-        // Handle image uploads
         let finalImageUrls = [];
         if (editingProductId) {
             const docSnap = await getDoc(doc(db, 'products', editingProductId));
@@ -479,7 +493,6 @@ productForm.addEventListener('submit', async (e) => {
             throw new Error('At least one image is required.');
         }
 
-        // Prepare product data object
         const productData = {
             listing_type: document.querySelector('[name=listing_type]:checked').value,
             name: productName,
@@ -497,20 +510,17 @@ productForm.addEventListener('submit', async (e) => {
         };
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
 
-        // Save to Firestore
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
         } else {
             await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false });
         }
 
-        // Trigger serverless function for search indexing
         fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
 
-        // --- Success Message ---
         clearTimeouts();
         showMessage(messageEl, 'Success! Your listing is live! 🎉✅', false);
-        
+
         productForm.reset();
         setTimeout(() => {
             productFormContainer.style.display = 'none';
@@ -519,19 +529,13 @@ productForm.addEventListener('submit', async (e) => {
         }, 2000);
 
     } catch (error) {
-        // --- Error Message ---
         clearTimeouts();
         showMessage(messageEl, `Oops! Failed to submit: ${error.message} ❌`, true);
 
     } finally {
-        // --- Cleanup ---
         toggleLoading(productSubmitBtn, false, editingProductId ? 'Update Product' : 'Add Product');
     }
 });
-// =========================================================================
-// === MODIFIED SECTION END ===
-// =========================================================================
-
 
 async function uploadImageToCloudinary(file) {
 const response = await fetch('/.netlify/functions/generate-signature');
@@ -546,37 +550,44 @@ const uploadData = await uploadResponse.json(); return uploadData.secure_url;
 }
 
 async function fetchSellerProducts(uid) {
-if (!uid) return;
-const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
-const querySnapshot = await getDocs(q);
-sellerProductsList.innerHTML = '';
-if (querySnapshot.empty) { sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell' to get started!</p>"; return; }
+    if (!uid) return;
+    const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    sellerProductsList.innerHTML = '';
+    if (querySnapshot.empty) {
+        sellerProductsList.innerHTML = "<p>You haven't added any products yet. Click 'Sell' to get started!</p>";
+        return;
+    }
 
-querySnapshot.forEach((doc) => {  
-    const product = doc.data();   
-    const productId = doc.id;  
-    const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';  
-    const isSold = product.isSold || false;
+    querySnapshot.forEach((doc) => {
+        const product = doc.data();
+        const productId = doc.id;
+        
+        // ✨ OPTIMIZATION: Create a thumbnail for the dashboard grid
+        const originalImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
+        const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
+        
+        const isSold = product.isSold || false;
 
-    const productCard = document.createElement('div');   
-    productCard.className = 'product-card';  
-    productCard.innerHTML = `  
-        <img src="${primaryImage}" alt="${product.name}" class="${isSold ? 'sold-item' : ''}">  
-        <h3>${product.name} ${isSold ? '<span class="sold-tag-dashboard">(Sold)</span>' : ''}</h3>  
-        <p class="price">UGX ${product.price.toLocaleString()}</p>  
-        <div class="seller-controls">  
-            <button class="edit-btn">Edit</button>  
-            <button class="delete-btn">Delete</button>  
-            <button class="toggle-sold-btn">${isSold ? 'Mark as Available' : 'Mark as Sold'}</button>  
-        </div>  
-    `;  
-    productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));  
-    productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));  
-    productCard.querySelector('.toggle-sold-btn').addEventListener('click', () => toggleSoldStatus(productId, isSold));  
-    sellerProductsList.appendChild(productCard);  
-});
-
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `  
+            <img src="${thumbnailUrl}" alt="${product.name}" class="${isSold ? 'sold-item' : ''}" loading="lazy">  
+            <h3>${product.name} ${isSold ? '<span class="sold-tag-dashboard">(Sold)</span>' : ''}</h3>  
+            <p class="price">UGX ${product.price.toLocaleString()}</p>  
+            <div class="seller-controls">  
+                <button class="edit-btn">Edit</button>  
+                <button class="delete-btn">Delete</button>  
+                <button class="toggle-sold-btn">${isSold ? 'Mark as Available' : 'Mark as Sold'}</button>  
+            </div>  
+        `;
+        productCard.querySelector('.edit-btn').addEventListener('click', () => populateFormForEdit(productId, product));
+        productCard.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(productId));
+        productCard.querySelector('.toggle-sold-btn').addEventListener('click', () => toggleSoldStatus(productId, isSold));
+        sellerProductsList.appendChild(productCard);
+    });
 }
+
 
 async function toggleSoldStatus(productId, currentStatus) {
 const productRef = doc(db, 'products', productId);
