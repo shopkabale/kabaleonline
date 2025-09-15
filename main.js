@@ -1,4 +1,26 @@
-// main.js
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * @param {string} url The original Cloudinary URL.
+ * @param {'thumbnail'|'full'} type The desired transformation type.
+ * @returns {string} The new, transformed URL.
+ */
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+}
+
+
 import { db } from "./firebase.js";
 import { collection, query, orderBy, where, limit, getDocs, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -92,10 +114,13 @@ function renderProducts(productsToDisplay, isNewSearch = false) {
 
   const fragment = document.createDocumentFragment();
   productsToDisplay.forEach(product => {
-    const primaryImage =
+    const originalImage =
       product.images?.[0] ||
       product.imageUrls?.[0] ||
       "https://placehold.co/400x400/e0e0e0/777?text=No+Image";
+    
+    // ✨ OPTIMIZATION: Create a tiny, lazy-loaded thumbnail URL
+    const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
 
     const isSold = product.isSold || false;
 
@@ -116,7 +141,7 @@ function renderProducts(productsToDisplay, isNewSearch = false) {
     productLink.innerHTML = `
       <div class="product-card ${isSold ? "is-sold" : ""}">
         ${isSold ? '<div class="sold-out-tag">SOLD</div>' : ""}
-        <img src="${primaryImage}" alt="${product.title || product.name}" loading="lazy"
+        <img src="${thumbnailUrl}" alt="${product.title || product.name}" loading="lazy"
           onerror="this.src='https://placehold.co/400x400/e0e0e0/777?text=Error'">
         <h3>${product.title || product.name}</h3>
         <p class="price">UGX ${product.price ? product.price.toLocaleString() : "Negotiable"}</p>
