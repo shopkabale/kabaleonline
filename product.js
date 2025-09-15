@@ -1,3 +1,26 @@
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * @param {string} url The original Cloudinary URL.
+ * @param {'thumbnail'|'full'} type The desired transformation type.
+ * @returns {string} The new, transformed URL.
+ */
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+}
+
+
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
@@ -49,9 +72,14 @@ function renderProductDetails(product, seller) {
     productElement.className = 'product-detail-container';
     const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hello, I'm interested in your listing for '${product.name}' on Kabale Online.`;
 
+    // ✨ OPTIMIZATION: Generate optimized URLs for the full-size images
+    const optimizedImagesHtml = (product.imageUrls || [])
+        .map(url => `<img src="${getCloudinaryTransformedUrl(url, 'full')}" alt="${product.name}" loading="lazy">`)
+        .join('');
+
     productElement.innerHTML = `
         <div class="product-images">
-            ${(product.imageUrls || []).map(url => `<img src="${url}" alt="${product.name}">`).join('')}
+            ${optimizedImagesHtml}
         </div>
         <div class="product-info">
             <div class="product-title-header">
@@ -84,11 +112,11 @@ function renderProductDetails(product, seller) {
 
     // --- SETUP BUTTONS ---
     setupShareButton(product);
-    
+
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
     }
-    
+
     if (currentUser && currentUser.uid === product.sellerId) {
         const contactBtn = productElement.querySelector('#contact-seller-btn');
         contactBtn.style.pointerEvents = 'none';
@@ -100,7 +128,7 @@ function renderProductDetails(product, seller) {
 function setupShareButton(product) {
     const shareBtn = document.getElementById('share-btn');
     if (!shareBtn) return;
-    
+
     shareBtn.addEventListener('click', async () => {
         const shareData = {
             title: product.name,
@@ -125,11 +153,11 @@ async function setupWishlistButton(product) {
     const wishlistBtn = document.getElementById('wishlist-btn');
     if (!wishlistBtn) return;
     wishlistBtn.style.display = 'flex';
-    
+
     const wishlistRef = doc(db, 'users', currentUser.uid, 'wishlist', productId);
     const wishlistSnap = await getDoc(wishlistRef);
     let isInWishlist = wishlistSnap.exists();
-    
+
     function updateButtonState() {
         if (isInWishlist) {
             wishlistBtn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
@@ -139,7 +167,7 @@ async function setupWishlistButton(product) {
             wishlistBtn.classList.remove('active');
         }
     }
-    
+
     updateButtonState();
 
     wishlistBtn.addEventListener('click', async () => {
