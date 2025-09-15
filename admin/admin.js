@@ -1,3 +1,26 @@
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * @param {string} url The original Cloudinary URL.
+ * @param {'thumbnail'|'full'} type The desired transformation type.
+ * @returns {string} The new, transformed URL.
+ */
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+}
+
+
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
@@ -108,12 +131,11 @@ async function toggleUserVerification(uid, newStatus) {
     }
 }
 
-// THIS IS THE CORRECTED FUNCTION
 async function fetchAllProducts() {
     allProductsList.innerHTML = ''; // Clear previous listings
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
-    
+
     if (querySnapshot.empty) {
         allProductsList.innerHTML = "<p>No products found on the site.</p>";
         return;
@@ -123,20 +145,21 @@ async function fetchAllProducts() {
         const product = doc.data();
         const productId = doc.id;
         const isDeal = product.isDeal || false;
-        
-        const primaryImage = (product.imageUrls && product.imageUrls.length > 0) 
+
+        // ✨ OPTIMIZATION: Create a thumbnail for the admin grid
+        const originalImage = (product.imageUrls && product.imageUrls.length > 0) 
             ? product.imageUrls[0] 
             : 'placeholder.webp';
+        const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
 
         const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller">✔️</span>' : '';
         const sellerName = product.sellerName || product.sellerEmail;
 
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
-        
-        // THIS IS THE CORRECT HTML THAT WAS MISSING
+
         productCard.innerHTML = `
-            <img src="${primaryImage}" alt="${product.name}">
+            <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
             <h3>${product.name}</h3>
             <p class="price">UGX ${product.price.toLocaleString()}</p>
             <p style="font-size: 0.8em; color: grey; padding: 0 15px;">
@@ -157,7 +180,7 @@ async function fetchAllProducts() {
         productCard.querySelector('.admin-delete').addEventListener('click', (e) => {
             deleteProductAsAdmin(e.target.dataset.id, e.target.dataset.name);
         });
-        
+
         allProductsList.appendChild(productCard);
     });
 }
