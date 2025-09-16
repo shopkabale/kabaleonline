@@ -11,11 +11,10 @@
       gtag('config', 'G-5XQRYNC9TW');
     </script>
 
-    <title>Edit Event | Kabale Online</title> 
+    <title>Edit Event | Kabale Online</title>
     <link rel="icon" href="/favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* --- Copied from detail.html for consistency --- */
         :root {
             --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
             --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
@@ -49,14 +48,14 @@
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: 500;}
         .back-link:hover { text-decoration: underline; }
 
-        /* ✨ --- NEW FORM STYLES --- ✨ */
+        /* --- FORM STYLES --- */
         .form-container { max-width: 700px; margin: auto; background: var(--card-bg); padding: 25px 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
         .form-container h1 { text-align: center; margin-top: 0; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
         input[type="text"], input[type="date"], input[type="time"], input[type="number"], textarea, input[type="file"] {
             width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: #fdfdfd;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s; font-size: 1em;
         }
         input:focus, textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); outline: none; }
         .submit-btn { width: 100%; padding: 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
@@ -155,4 +154,21 @@
         <div class="container">
             <div class="footer-logo">Kabale <span>Online</span></div>
             <p class="footer-tagline">Your Community Marketplace</p>
-            <div class
+            <div class="footer-socials">
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+    
+    <script type="module" src="/events/edit-event.js"></script>
+    <script type="module" src="/ui.js"></script>
+</body>
+</html>
