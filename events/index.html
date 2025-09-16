@@ -54,22 +54,13 @@
         .page-header p { font-size: 1.1em; color: var(--text-light); }
         .post-event-btn { display: inline-block; background-color: var(--accent-color); color: var(--text-dark); padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: bold; margin-top: 15px; }
         
-        /* ✨ LIVE CLOCK STYLES */
-        .live-clock {
-            font-size: 0.9em;
-            color: var(--text-light);
-            background-color: var(--border-color);
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
         /* ✨ CALENDAR STYLES */
         .calendar-wrapper { max-width: 950px; margin: 20px auto; background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--shadow); overflow: hidden; }
-        .calendar-header { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; padding: 15px 20px; background-color: #f8f9fa; border-bottom: 1px solid var(--border-color); }
-        #calendar-title { font-size: 1.2em; font-weight: 600; text-align: center; flex-basis: 100%; order: 1; }
-        .calendar-nav { display: flex; justify-content: center; flex-basis: 100%; order: 2; }
+        .calendar-header { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 15px 20px; background-color: #f8f9fa; border-bottom: 1px solid var(--border-color); }
+        .calendar-title-group { text-align: center; flex-basis: 100%; order: 1; }
+        #calendar-title { font-size: 1.2em; font-weight: 600; margin: 0; }
+        .live-clock { font-size: 0.8em; color: var(--text-light); margin-top: 4px; }
+        .calendar-nav { display: flex; justify-content: center; flex-basis: 100%; order: 2; margin-top: 5px; }
         .calendar-view-toggle { display: flex; justify-content: center; flex-basis: 100%; order: 3; }
         .calendar-nav button, .calendar-view-toggle button { background-color: transparent; border: 1px solid #ced4da; color: var(--text-light); padding: 6px 12px; margin: 0 2px; border-radius: 6px; cursor: pointer; }
         .calendar-view-toggle button.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
@@ -78,24 +69,23 @@
         .key-item { display: flex; align-items: center; gap: 8px; }
         .key-color { width: 15px; height: 15px; border-radius: 4px; }
         
-        /* DESKTOP RESPONSIVE HEADER */
         @media (min-width: 768px) {
             .calendar-header { flex-wrap: nowrap; justify-content: space-between; }
-            #calendar-title { flex-basis: auto; order: 2; font-size: 1.5em; }
-            .calendar-nav { flex-basis: auto; order: 1; }
+            .calendar-title-group { flex-basis: auto; order: 2; }
+            #calendar-title { font-size: 1.5em; }
+            .calendar-nav { flex-basis: auto; order: 1; margin-top: 0;}
             .calendar-view-toggle { flex-basis: auto; order: 3; }
             #calendar { padding: 20px; }
         }
         
-        /* FULLCALENDAR THEME */
         :root { --fc-border-color: var(--border-color); --fc-today-bg-color: transparent; }
         .fc .fc-daygrid-day-number { font-size: 1em; padding: 8px; }
         .fc .fc-daygrid-day.fc-day-today { background-color: var(--accent-color) !important; background-image: none !important; }
         .fc .fc-day-today .fc-daygrid-day-number { color: var(--text-dark); font-weight: bold; }
         .fc .fc-event { padding: 3px 6px; border-radius: 4px; font-weight: 500; cursor: pointer; border: none !important; color: white !important; }
         .fc .event-future { background-color: var(--primary-color) !important; }
-        .fc .event-today { background-color: #28a745 !important; /* Green */ }
-        .fc .event-past { background-color: #6c757d !important; /* Grey */ opacity: 0.8; }
+        .fc .event-today { background-color: #28a745 !important; }
+        .fc .event-past { background-color: #6c757d !important; opacity: 0.8; }
         .fc .event-past .fc-event-title { text-decoration: line-through; }
     </style>
 </head>
@@ -133,7 +123,6 @@
         <div class="page-header">
             <h1>Events in Kabale</h1>
             <p>Discover what's happening in and around town.</p>
-            <div id="live-clock" class="live-clock">Loading time...</div>
             <a href="/events/upload.html" class="post-event-btn"><i class="fa-solid fa-plus"></i> Post Your Event</a>
         </div>
 
@@ -144,7 +133,10 @@
                     <button id="today-btn">Today</button>
                     <button id="next-btn" title="Next"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <h2 id="calendar-title">Loading...</h2>
+                <div class="calendar-title-group">
+                    <h2 id="calendar-title">Loading...</h2>
+                    <div id="live-clock" class="live-clock">Loading time...</div>
+                </div>
                 <div class="calendar-view-toggle">
                     <button id="month-view-btn" class="active">Month</button>
                     <button id="week-view-btn">Week</button>
@@ -159,7 +151,23 @@
         </div>
     </main>
 
-    <footer class="footer">></footer>
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-socials">
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
 
     <script type="module" src="/firebase.js"></script>
     <script type="module" src="/events/events-list.js"></script>
