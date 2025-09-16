@@ -1,9 +1,3 @@
-/**
- * Creates an optimized and transformed Cloudinary URL.
- * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail'|'full'|'grid_item'} type The desired transformation type.
- * @returns {string} The new, transformed URL.
- */
 function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
@@ -89,7 +83,6 @@ async function fetchRentals() {
             card.className = 'rental-card';
             card.href = `detail.html?id=${rental.id}`;
 
-            // ✨ OPTIMIZATION: Create an optimized URL for the hostel grid item
             const originalImage = (rental.imageUrls && rental.imageUrls.length > 0) ? rental.imageUrls[0] : '../placeholder.webp';
             const optimizedImage = getCloudinaryTransformedUrl(originalImage, 'grid_item');
 
