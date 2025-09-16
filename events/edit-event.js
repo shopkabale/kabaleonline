@@ -17,8 +17,7 @@ const locationInput = document.getElementById('event-location');
 const priceInput = document.getElementById('event-price');
 const imageInput = document.getElementById('event-image');
 
-// Helper to re-use the Cloudinary function (make sure it's accessible or copy it here)
-// This assumes you have a similar function available globally or imported.
+// This function must be available, e.g., from a shared utility file or copied here.
 async function uploadImageToCloudinary(file) {
     try {
         const response = await fetch('/.netlify/functions/generate-signature');
@@ -40,9 +39,14 @@ async function uploadImageToCloudinary(file) {
 }
 
 function showFeedback(message, type = 'info') {
+    if (!feedbackEl) return;
     feedbackEl.textContent = message;
-    feedbackEl.className = `feedback-message feedback-${type}`; 
+    feedbackEl.className = `feedback-message feedback-${type}`;
     feedbackEl.style.display = 'block';
+}
+
+function hideFeedback() {
+    if (feedbackEl) feedbackEl.style.display = 'none';
 }
 
 // --- MAIN LOGIC ---
@@ -50,12 +54,13 @@ function showFeedback(message, type = 'info') {
 // Get Event ID from URL
 const urlParams = new URLSearchParams(window.location.search);
 const eventId = urlParams.get('id');
-let existingImageUrl = ''; // To store the old image URL
+let existingImageUrl = '';
 
 // 1. Function to fetch and populate form data
-async function populateForm() {
+async function populateForm(user) {
+    console.log("Attempting to populate form for event ID:", eventId);
     if (!eventId) {
-        showFeedback("No event ID provided. Cannot edit.", "error");
+        showFeedback("No event ID provided in URL. Cannot edit.", "error");
         editForm.style.display = 'none';
         return;
     }
@@ -65,29 +70,37 @@ async function populateForm() {
         const docSnap = await getDoc(eventRef);
 
         if (!docSnap.exists()) {
-            throw new Error("Event not found.");
+            throw new Error("This event could not be found.");
         }
 
         const event = docSnap.data();
+        console.log("Found event data:", event);
 
         // Security check: Ensure the current user is the owner
-        const user = auth.currentUser;
-        if (!user || user.uid !== event.uploaderId) {
+        if (user.uid !== event.uploaderId) {
+            console.error("Permission Denied. Current user UID:", user.uid, "Event uploader UID:", event.uploaderId);
             throw new Error("You do not have permission to edit this event.");
         }
 
-        // Populate the form
-        titleInput.value = event.title;
-        descriptionInput.value = event.description;
-        dateInput.value = event.date;
-        timeInput.value = event.time;
-        locationInput.value = event.location;
-        priceInput.value = event.price;
+        console.log("User has permission. Populating form fields...");
+        // Populate the form with all the previous data
+        titleInput.value = event.title || '';
+        descriptionInput.value = event.description || '';
+        dateInput.value = event.date || '';
+        timeInput.value = event.time || '';
+        locationInput.value = event.location || '';
+        priceInput.value = event.price || 0;
         existingImageUrl = event.imageUrl; // Store the current image URL
+        
+        console.log("Form population complete.");
+        showFeedback("Data loaded successfully. You can now edit your event.", "success");
+        setTimeout(hideFeedback, 3000); // Hide message after 3 seconds
 
     } catch (error) {
+        console.error("Error populating form:", error);
         showFeedback(error.message, "error");
-        submitBtn.disabled = true; // Disable the form if there's an error
+        submitBtn.disabled = true; // Disable the form if there's a critical error
+        submitBtn.style.cursor = 'not-allowed';
     }
 }
 
@@ -96,15 +109,20 @@ editForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
     submitBtn.textContent = 'Updating...';
+    hideFeedback();
 
     try {
         const imageFile = imageInput.files[0];
         let newImageUrl = existingImageUrl;
 
-        // If a new image is selected, upload it
+        // Feedback Step: Check for new image
         if (imageFile) {
-            showFeedback("Uploading new image...", "info");
+            console.log("New image detected. Starting upload...");
+            showFeedback("Uploading new poster...", "info");
             newImageUrl = await uploadImageToCloudinary(imageFile);
+            console.log("New image uploaded:", newImageUrl);
+        } else {
+            console.log("No new image. Keeping existing URL:", existingImageUrl);
         }
 
         // Prepare the data to update
@@ -120,14 +138,14 @@ editForm.addEventListener('submit', async (e) => {
             lastModified: serverTimestamp() // Good practice to track updates
         };
 
-        // Update the document in Firestore
+        // Feedback Step: Saving data
+        showFeedback("Saving your changes...", "info");
         const eventRef = doc(db, 'events', eventId);
         await updateDoc(eventRef, updatedData);
+        console.log("Firestore document updated successfully.");
         
-        // Trigger Algolia sync (optional, but good if you have it)
-        fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering sync:", err));
-
-        showFeedback("✅ Event updated successfully! Redirecting...", "success");
+        // Final Feedback: Success and redirect
+        showFeedback("✅ Event updated successfully! Taking you back...", "success");
 
         setTimeout(() => {
             window.location.href = `/events/detail.html?id=${eventId}`;
@@ -144,10 +162,11 @@ editForm.addEventListener('submit', async (e) => {
 // 3. Initial call to populate the form when the page loads
 auth.onAuthStateChanged(user => {
     if (user) {
-        populateForm();
+        console.log("User is logged in. UID:", user.uid);
+        populateForm(user);
     } else {
+        console.log("No user is logged in.");
         showFeedback("You must be logged in to edit an event.", "error");
         editForm.style.display = 'none';
     }
 });
-
