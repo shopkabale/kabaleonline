@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-5XQRYNC9TW');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rental Details | Kabale Online</title>
@@ -38,22 +30,40 @@
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
         .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.8em; font-weight: bold; }
         .site-title span { color: var(--primary-color); }
-        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: var(--card-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; transition: left 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: var(--card-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .mobile-nav.active { left: 0; }
-        .mobile-nav a { display: flex; align-items: center; gap: 15px; padding: 15px 20px; text-decoration: none; color: var(--text-dark); border-bottom: 1px solid #f0f0f0; }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid #e9ecef; font-size: 1.2em; font-weight: bold; }
+        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
+        .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
+        .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
-        /* ✨ Styles for new elements */
         .location-text { font-size: 1.1em; color: var(--text-muted); margin-top: 5px; }
         .location-text i { color: var(--primary-color); margin-right: 5px; }
         #map { height: 300px; width: 100%; background-color: #e9ecef; border-radius: 8px; z-index: 1; }
+        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; } .footer-logo span { color: var(--accent-color); }
+        .footer-socials { margin-bottom: 25px; } .footer-socials a { color: white; font-size: 22px; margin: 0 12px; }
+        .footer-links { margin-bottom: 25px; } .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
     </style>
 </head>
 <body>
 <div class="mobile-nav-overlay"></div>
 <nav class="mobile-nav">
-    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
-    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+    <div class="mobile-nav-header">Kabale Online</div>
+    <div class="mobile-nav-links">
+        <a href="/"><i class="fa-solid fa-store"></i> All Items</a>
+        <a href="/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
+        <a href="/?type=service"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+        <a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+    </div>
+    <div class="mobile-nav-footer">
+        <a href="/sell/" class="post-button">Post Something Free</a>
+    </div>
 </nav>
 <header class="sticky-header">
     <div class="header-top-bar">
@@ -70,7 +80,6 @@
             <div class="rental-details-card-content">
                 <h1 id="rental-title">Loading title...</h1>
                 <p class="location-text"><i class="fas fa-map-marker-alt"></i> <span id="rental-location">Loading location...</span></p>
-
                 <div>
                     <h2>Details</h2>
                     <p><strong>Price:</strong> <span id="rental-price">...</span></p>
@@ -80,12 +89,10 @@
                     <h2>Amenities</h2>
                     <ul id="amenities-list"><li>Loading amenities...</li></ul>
                 </div>
-                
                 <div class="map-container" style="display: none;">
                     <h2>Location Map</h2>
                     <div id="map"></div>
                 </div>
-
                 <div class="contact-info">
                     <h2>Contact Information</h2>
                     <p><strong>Contact Person:</strong> <span id="contact-name">...</span></p>
@@ -99,6 +106,23 @@
         </div>
     </div>
 </main>
+<footer>
+    <div class="container">
+        <div class="footer-logo">Kabale <span>Online</span></div>
+        <p class="footer-tagline">Your Community Marketplace</p>
+        <div class="footer-socials">
+            <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        </div>
+        <div class="footer-links">
+            <a href="/about.html">About</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/contact.html">Contact</a>
+        </div>
+        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </div>
+</footer>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module" src="../ui.js"></script>
 <script type="module" src="detail.js"></script>
