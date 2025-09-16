@@ -10,6 +10,47 @@ const ownerActionsContainer = document.getElementById('owner-actions');
 const chatBtn = document.getElementById('chat-with-uploader-btn');
 const loginPrompt = document.getElementById('login-for-chat-prompt');
 
+// ✨ 1. NEW FUNCTION TO SET UP THE SHARE BUTTON
+async function setupShareButton(event) {
+    const shareBtn = document.getElementById('share-btn');
+    if (!shareBtn) return;
+
+    // Show the button now that we have the event data
+    shareBtn.style.display = 'flex';
+
+    shareBtn.addEventListener('click', async () => {
+        const shareData = {
+            title: event.title,
+            text: `Check out this event on Kabale Online: ${event.title}`,
+            url: window.location.href,
+        };
+
+        try {
+            // Use the native Web Share API if available
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                // Fallback to copying the link to the clipboard
+                await navigator.clipboard.writeText(window.location.href);
+                
+                // Provide visual feedback
+                const originalIcon = shareBtn.innerHTML;
+                shareBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                shareBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    shareBtn.innerHTML = originalIcon;
+                    shareBtn.classList.remove('copied');
+                }, 2000); // Revert after 2 seconds
+            }
+        } catch (err) {
+            console.error("Share failed:", err);
+            alert("Could not share. Please copy the link manually.");
+        }
+    });
+}
+
+
 async function deleteEvent(eventId) {
     if (confirm('Are you sure you want to permanently delete this event?')) {
         try {
@@ -38,14 +79,13 @@ async function fetchEventDetails() {
 
         if (docSnap.exists()) {
             const event = docSnap.data();
-            
-            // Populate the page with event data
+
             document.title = `${event.title} | Kabale Online`; 
             eventTitle.textContent = event.title;
-            eventBannerImg.src = event.imageUrl;
+            eventBannerImg.src = event.imageUrl; // Consider using your Cloudinary helper here too!
             eventBannerImg.alt = event.title;
             const fullDate = new Date(event.date + 'T00:00:00');
-            
+
             eventMeta.innerHTML = `
                 <div class="meta-item">
                     <i class="fa-solid fa-calendar-day"></i>
@@ -62,22 +102,22 @@ async function fetchEventDetails() {
             `;
             eventDescription.textContent = event.description;
 
-            // Logic to show the correct button based on who is viewing the page
             const user = auth.currentUser;
 
             if (user && user.uid === event.uploaderId) {
-                // Case 1: The viewer is the owner of the event -> Show Delete Button
                 const deleteButtonHTML = `<button id="delete-event-btn" class="action-btn" style="background-color: #dc3545; color: white; margin-top: 10px;"><i class="fa-solid fa-trash"></i> Delete Event</button>`;
                 ownerActionsContainer.innerHTML = deleteButtonHTML;
                 document.getElementById('delete-event-btn').addEventListener('click', () => deleteEvent(eventId));
             } else if (user) {
-                // Case 2: The viewer is logged in, but NOT the owner -> Show Chat Button
                 chatBtn.href = `/chat.html?recipientId=${event.uploaderId}`;
                 chatBtn.style.display = 'block';
             } else {
-                // Case 3: The viewer is not logged in -> Show Login Prompt
                 loginPrompt.style.display = 'block';
             }
+            
+            // ✨ 2. CALL THE SHARE BUTTON SETUP FUNCTION
+            setupShareButton(event);
+
         } else {
             eventTitle.textContent = "Event Not Found";
         }
