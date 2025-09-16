@@ -2,6 +2,24 @@ import { auth, db } from '/firebase.js';
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const eventForm = document.getElementById('event-form');
+const feedbackEl = document.getElementById('feedback-message');
+
+/**
+ * ✨ 1. NEW HELPER FUNCTION FOR DISPLAYING FEEDBACK
+ * @param {string} message The text to display.
+ * @param {'info'|'warning'|'success'|'error'} type The type of message, for styling.
+ */
+function showFeedback(message, type = 'info') {
+    if (!feedbackEl) return;
+    feedbackEl.textContent = message;
+    // Sets the class based on type e.g., "feedback-message feedback-success"
+    feedbackEl.className = `feedback-message feedback-${type}`; 
+    feedbackEl.style.display = 'block';
+}
+
+function hideFeedback() {
+    if (feedbackEl) feedbackEl.style.display = 'none';
+}
 
 async function uploadImageToCloudinary(file) {
     try {
@@ -29,12 +47,21 @@ eventForm.addEventListener('submit', async (e) => {
     const submitBtn = eventForm.querySelector('.submit-btn');
 
     if (!user) {
-        alert("You must be logged in to post an event.");
+        showFeedback("You must be logged in to post an event.", "error");
         return;
     }
-    
+
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
+    hideFeedback(); // Hide any previous messages
+
+    // ✨ 2. IMPLEMENT MULTI-STAGE FEEDBACK WITH TIMEOUTS
+    showFeedback("Initializing submission...", "info");
+
+    // Show a warning if it takes too long (e.g., > 8 seconds)
+    const warningTimeout = setTimeout(() => {
+        showFeedback("This is taking a bit longer than expected. Please wait...", "warning");
+    }, 8000);
 
     try {
         const title = document.getElementById('event-title').value;
@@ -47,8 +74,13 @@ eventForm.addEventListener('submit', async (e) => {
 
         if (!imageFile) throw new Error("An event image or poster is required.");
         if (!title || !date || !time || !location) throw new Error("Please fill out all required fields.");
-
+        
+        showFeedback("Uploading image poster...", "info");
         const imageUrl = await uploadImageToCloudinary(imageFile);
+
+        // Clear the warning timeout if the upload was fast
+        clearTimeout(warningTimeout);
+        showFeedback("Finishing up...", "info");
 
         const eventData = {
             title: title,
@@ -64,28 +96,25 @@ eventForm.addEventListener('submit', async (e) => {
         };
 
         const docRef = await addDoc(collection(db, 'events'), eventData);
-        
-        // Manually trigger the bulk-sync function to update Algolia.
-        console.log("Triggering Algolia sync function...");
-        fetch('/.netlify/functions/syncToAlgolia')
-            .then(response => {
-                if (!response.ok) {
-                    console.error("Failed to trigger Algolia sync.");
-                } else {
-                    console.log("Algolia sync triggered successfully.");
-                }
-            })
-            .catch(err => console.error("Error triggering sync function:", err));
-        
-        alert(`Event submitted successfully!`);
-        eventForm.reset();
-        window.location.href = `/events/detail.html?id=${docRef.id}`;
+
+        // Trigger Algolia sync in the background (no need to wait for it)
+        fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering sync:", err));
+
+        // ✨ 3. SHOW CUSTOM SUCCESS MESSAGE AND REDIRECT
+        showFeedback("✅ Event posted successfully! Taking you to the event page...", "success");
+
+        setTimeout(() => {
+            window.location.href = `/events/detail.html?id=${docRef.id}`;
+        }, 2500); // Wait 2.5 seconds before redirecting
 
     } catch (error) {
         console.error("Error submitting event:", error);
-        alert(`Failed to submit event: ${error.message}`);
-    } finally {
+        // ✨ 4. SHOW ERROR MESSAGE IN THE FEEDBACK ELEMENT
+        clearTimeout(warningTimeout); // Clear timeout on error too
+        showFeedback(`Failed to submit: ${error.message}`, "error");
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Event';
-    }
+    } 
+    // We removed the 'finally' block because the success case now handles the redirect,
+    // and the error case needs to keep the button enabled and message visible.
 });
