@@ -1,3 +1,27 @@
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * @param {string} url The original Cloudinary URL.
+ * @param {'thumbnail'|'full'|'grid_item'} type The desired transformation type.
+ * @returns {string} The new, transformed URL.
+ */
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto',
+        grid_item: 'c_scale,w_400,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+}
+
+
 import { db } from '../firebase.js';
 import { collection, query, orderBy, getDocs, where, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -8,19 +32,17 @@ const filterSort = document.getElementById('filter-sort');
 const applyFiltersBtn = document.getElementById('apply-rental-filters');
 
 async function fetchRentals() {
-    // Show a loading message immediately
     if (rentalGrid) {
         rentalGrid.innerHTML = '<p>Loading listings...</p>';
     } else {
         console.error("Fatal Error: rental-grid element not found.");
-        return; // Stop if the main container is missing
+        return;
     }
 
     try {
         let q = collection(db, 'rentals');
         const constraints = [];
 
-        // 1. Build database query based on filters
         if (filterType && filterType.value) {
             constraints.push(where('listingType', '==', filterType.value));
         }
@@ -33,11 +55,9 @@ async function fetchRentals() {
         } else if (sortBy === 'price-desc') {
             constraints.push(orderBy('price', 'desc'));
         } else {
-            // Default sort if nothing is selected
             constraints.push(orderBy('createdAt', 'desc'));
         }
 
-        // Apply all constraints to the query
         q = query(q, ...constraints, limit(30));
         const querySnapshot = await getDocs(q);
 
@@ -46,7 +66,6 @@ async function fetchRentals() {
             return;
         }
 
-        // 2. Process results and apply client-side text filter for location
         let results = [];
         querySnapshot.forEach(doc => {
             results.push({ id: doc.id, ...doc.data() });
@@ -64,17 +83,18 @@ async function fetchRentals() {
             return;
         }
 
-        // 3. Display the final results
         rentalGrid.innerHTML = '';
         results.forEach(rental => {
             const card = document.createElement('a');
             card.className = 'rental-card';
             card.href = `detail.html?id=${rental.id}`;
 
-            const primaryImage = (rental.imageUrls && rental.imageUrls.length > 0) ? rental.imageUrls[0] : '../placeholder.webp';
+            // ✨ OPTIMIZATION: Create an optimized URL for the hostel grid item
+            const originalImage = (rental.imageUrls && rental.imageUrls.length > 0) ? rental.imageUrls[0] : '../placeholder.webp';
+            const optimizedImage = getCloudinaryTransformedUrl(originalImage, 'grid_item');
 
             card.innerHTML = `
-                <img src="${primaryImage}" alt="${rental.title}">
+                <img src="${optimizedImage}" alt="${rental.title}" loading="lazy">
                 <div class="rental-card-content">
                     <div class="rental-card-title">${rental.title}</div>
                     <div class="rental-card-price">UGX ${rental.price.toLocaleString()} / ${rental.priceFrequency.replace('per ', '')}</div>
@@ -85,14 +105,11 @@ async function fetchRentals() {
         });
 
     } catch (error) {
-        // This block runs if Firestore fails (e.g., missing index)
         console.error("Error fetching rentals:", error);
         rentalGrid.innerHTML = '<p>Could not load listings. A database index might be missing. Please check the console for errors.</p>';
     }
 }
 
-// --- Event Listeners ---
-// Check if filter elements exist before adding listeners
 if (applyFiltersBtn) {
     applyFiltersBtn.addEventListener('click', fetchRentals);
 }
@@ -100,5 +117,4 @@ if (filterSort) {
     filterSort.addEventListener('change', fetchRentals);
 }
 
-// Initial fetch when the page first loads
 document.addEventListener('DOMContentLoaded', fetchRentals);
