@@ -3,7 +3,6 @@ import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/fir
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Get references to all our new custom elements
     const calendarEl = document.getElementById('calendar');
     const calendarTitleEl = document.getElementById('calendar-title');
     const prevBtn = document.getElementById('prev-btn');
@@ -12,17 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthViewBtn = document.getElementById('month-view-btn');
     const weekViewBtn = document.getElementById('week-view-btn');
 
-    // A palette of professional colors for events
     const eventColors = ['#007bff', '#28a745', '#fd7e14', '#6f42c1', '#dc3545'];
 
     async function fetchEventsAndRenderCalendar() {
         try {
-            // 1. Fetch events from Firestore
             const eventsCollection = collection(db, 'events');
             const q = query(eventsCollection, orderBy('date', 'asc'));
             const querySnapshot = await getDocs(q);
 
-            // 2. Format events for FullCalendar and assign a color from our palette
             let colorIndex = 0;
             const events = querySnapshot.docs.map(doc => {
                 const data = doc.data();
@@ -33,26 +29,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: data.title || data.name,
                     start: data.date,
                     url: `/events/detail.html?id=${doc.id}`,
-                    color: color, // Assign the color
-                    borderColor: color // Use same color for border
+                    color: color,
+                    borderColor: color
                 };
             });
             
-            // ✨ FIX: Clear the "Loading..." message before rendering
             calendarEl.innerHTML = '';
 
-            // 3. Create a new FullCalendar instance
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                headerToolbar: false, // We disable the default header
+                headerToolbar: false,
                 events: events,
                 
-                // Update our custom title whenever the view or date changes
+                // ✨ THIS MAKES THE CALENDAR FIT THE SCREEN BETTER
+                height: 'auto',
+
                 datesSet: function(viewInfo) {
                     calendarTitleEl.innerText = viewInfo.view.title;
                 },
 
-                // Handle clicks on events
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
                     if (info.event.url) {
@@ -61,10 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // 4. Render the calendar
             calendar.render();
 
-            // 5. Wire up our custom button event listeners
             prevBtn.addEventListener('click', () => calendar.prev());
             nextBtn.addEventListener('click', () => calendar.next());
             todayBtn.addEventListener('click', () => calendar.today());
@@ -80,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 weekViewBtn.classList.add('active');
                 monthViewBtn.classList.remove('active');
             });
-
 
         } catch (error) {
             console.error("Error fetching events or rendering calendar:", error);
