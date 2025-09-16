@@ -16,20 +16,32 @@ if (!global._firebaseApp) {
 const db = getFirestore();
 const algoliaClient = algoliasearch(
     process.env.ALGOLIA_APP_ID, 
-    process.env.ALGOLIA_ADMIN_API_KEY // Use the ADMIN key for writing/syncing
+    process.env.ALGOLIA_ADMIN_API_KEY
 );
 
-// I've renamed 'index' to 'productsIndex' for clarity, but the functionality is identical.
 const productsIndex = algoliaClient.initIndex('products');
-
-// --- ADDED FOR EVENTS ---
-// Initialize a new Algolia index for your events
 const eventsIndex = algoliaClient.initIndex('events'); 
-// ----------------------
 
 exports.handler = async (event) => {
     try {
-        // --- THIS IS YOUR EXISTING CODE FOR PRODUCTS (UNCHANGED) ---
+        // ---- NEW: HANDLE SPECIFIC ACTIONS LIKE DELETE ----
+        // Check if the request is a POST request with a body
+        if (event.httpMethod === 'POST' && event.body) {
+            const body = JSON.parse(event.body);
+
+            // If the action is 'delete', remove the object from the products index
+            if (body.action === 'delete' && body.objectID) {
+                await productsIndex.deleteObject(body.objectID);
+                return {
+                    statusCode: 200,
+                    body: JSON.stringify({ message: `Product ${body.objectID} deleted from Algolia.` }),
+                };
+            }
+        }
+        
+        // ---- IF NOT A SPECIFIC ACTION, RUN THE FULL SYNC (YOUR EXISTING CODE) ----
+        
+        // Sync Products
         const productsSnapshot = await db.collection('products').get();
         const algoliaObjects = productsSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -49,11 +61,8 @@ exports.handler = async (event) => {
             };
         });
         await productsIndex.saveObjects(algoliaObjects);
-        // --- END OF EXISTING CODE ---
 
-
-        // --- ADDED FOR EVENTS ---
-        // Fetch all documents from the 'events' collection
+        // Sync Events
         const eventsSnapshot = await db.collection('events').get();
         const algoliaEventObjects = eventsSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -69,15 +78,13 @@ exports.handler = async (event) => {
                 createdAt: data.createdAt ? data.createdAt.toMillis() : null
             };
         });
-        // Save all event data to the 'events' index in Algolia
         await eventsIndex.saveObjects(algoliaEventObjects);
-        // ----------------------
 
         return {
             statusCode: 200,
-            // Updated the success message slightly to reflect both collections
-            body: JSON.stringify({ message: "Products and Events synced to Algolia successfully." }),
+            body: JSON.stringify({ message: "Full sync for Products and Events completed successfully." }),
         };
+        
     } catch (error) {
         console.error("Algolia sync error:", error);
         return {
