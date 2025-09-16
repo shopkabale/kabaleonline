@@ -23,11 +23,19 @@
             --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
             --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
             --border-color: #e9ecef; --border-radius: 12px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+            
+            /* ✨ New Calendar Colors */
+            --calendar-bg: #ffffff;
+            --calendar-border: #dee2e6;
+            --calendar-today-bg: #eaf3ff;
+            --event-color-1: #007bff;
+            --event-color-2: #28a745;
+            --event-color-3: #fd7e14;
+            --event-color-4: #6f42c1;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
-        .header-content-wrapper { display: flex; flex-direction: column; }
         .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; }
         .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
         .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
@@ -35,46 +43,113 @@
         .header-spacer { flex-grow: 1; }
         .header-icons { display: flex; align-items: center; gap: 18px; }
         .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
-        /* Removed header-search-bar styles as it's no longer here */
-        .page-container { padding-top: 80px; padding-bottom: 20px; } /* Adjusted padding */
-        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
-        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .page-container { padding-top: 80px; padding-bottom: 20px; }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
         .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .mobile-nav.active { left: 0; }
         .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
         .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
-        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; }
         .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
         .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
         .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
         footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; } .footer-logo span { color: var(--accent-color); }
-        .footer-socials { margin-bottom: 25px; } .footer-socials a { color: white; font-size: 22px; margin: 0 12px; }
-        .footer-links { margin-bottom: 25px; } .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
         .page-header { text-align: center; margin-bottom: 30px; }
-        .page-header h1 { font-size: 2.2em; color: var(--text-dark); margin-bottom: 5px;}
+        .page-header h1 { font-size: 2.2em; margin-bottom: 5px;}
         .page-header p { font-size: 1.1em; color: var(--text-light); }
-        .post-event-btn { display: inline-block; background-color: var(--accent-color); color: var(--text-dark); padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: bold; margin-top: 15px; transition: background-color 0.3s; }
-        .post-event-btn:hover { background-color: #e6ac00; }
-        
-        /* ✨ 2. ADD STYLES FOR THE CALENDAR */
-        #calendar {
-            max-width: 900px;
+        .post-event-btn { display: inline-block; background-color: var(--accent-color); color: var(--text-dark); padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: bold; margin-top: 15px; }
+
+        /* ✨ NEW LEGENDARY CALENDAR LAYOUT ✨ */
+        .calendar-wrapper {
+            max-width: 950px;
             margin: 20px auto;
-            padding: 15px;
-            background-color: white;
+            background-color: var(--calendar-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            overflow: hidden;
         }
-        /* Style calendar links to match your theme */
-        .fc-event {
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid var(--calendar-border);
+        }
+        #calendar-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .calendar-nav button, .calendar-view-toggle button {
+            background-color: transparent;
+            border: 1px solid #ced4da;
+            color: var(--text-light);
+            padding: 6px 12px;
+            margin: 0 2px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
         }
-        .fc a { /* This prevents the default blue link color */
+        .calendar-nav button:hover, .calendar-view-toggle button:hover {
+            background-color: #e9ecef;
+        }
+        .calendar-view-toggle button.active {
+            background-color: var(--primary-color);
             color: white;
-            text-decoration: none;
+            border-color: var(--primary-color);
         }
+        #calendar {
+            padding: 20px;
+        }
+
+        /* FullCalendar Theme Customization */
+        :root {
+            --fc-border-color: var(--calendar-border);
+            --fc-daygrid-event-dot-width: 8px;
+            --fc-list-event-dot-width: 10px;
+            --fc-event-bg-color: var(--primary-color);
+            --fc-event-border-color: var(--primary-color);
+            --fc-event-text-color: #fff;
+            --fc-more-link-bg-color: #f1f3f5;
+            --fc-more-link-text-color: var(--text-dark);
+            --fc-today-bg-color: var(--calendar-today-bg);
+        }
+        .fc .fc-daygrid-day-number {
+            font-size: 1em;
+            padding: 8px;
+            font-weight: 500;
+        }
+        .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin: 4px;
+        }
+        .fc .fc-event {
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+        }
+        .fc .fc-event:hover {
+            transform: scale(1.05);
+        }
+        .fc-h-event {
+            background-color: var(--fc-event-bg-color) !important;
+            border-color: var(--fc-event-border-color) !important;
+        }
+
     </style>
 </head>
 <body>
@@ -82,32 +157,18 @@
     <div class="mobile-nav-overlay"></div>
 
     <header class="sticky-header">
-        <div class="header-content-wrapper">
-            <div class="header-top-bar">
-                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-                <a href="/" class="site-title">Kabale <span>Online</span></a>
-                <div class="header-spacer"></div>
-                <div class="header-icons">
-                    <a href="/inbox.html" aria-label="Notifications"><i class="fa-regular fa-bell"></i></a>
-                    <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-                </div>
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-spacer"></div>
+            <div class="header-icons">
+                <a href="/inbox.html" aria-label="Notifications"><i class="fa-regular fa-bell"></i></a>
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
             </div>
-            </div>
+        </div>
     </header>
 
-    <nav class="mobile-nav">
-        <div class="mobile-nav-header">Kabale Online</div>
-        <div class="mobile-nav-links">
-            <a href="/"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="/?type=service"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-            <a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-        </div>
-        <div class="mobile-nav-footer">
-            <a href="/sell/" class="post-button">Post Something Free</a>
-        </div>
-    </nav>
+    <nav class="mobile-nav"></nav>
 
     <main class="container page-container">
         <div class="page-header">
@@ -116,28 +177,26 @@
             <a href="/events/upload.html" class="post-event-btn"><i class="fa-solid fa-plus"></i> Post Your Event</a>
         </div>
 
-        <section id="calendar">
-            <p style="text-align: center; padding: 20px;">Loading calendar...</p> 
-        </section>
+        <div class="calendar-wrapper">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button id="prev-btn" title="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button id="today-btn">Today</button>
+                    <button id="next-btn" title="Next"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <h2 id="calendar-title"></h2>
+                <div class="calendar-view-toggle">
+                    <button id="month-view-btn" class="active">Month</button>
+                    <button id="week-view-btn">Week</button>
+                </div>
+            </div>
+            <div id="calendar">
+                <p style="text-align: center; padding: 40px;">Loading calendar...</p> 
+            </div>
+        </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-logo">Kabale <span>Online</span></div>
-            <p class="footer-tagline">Your Community Marketplace</p>
-            <div class="footer-socials">
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            </div>
-            <div class="footer-links">
-                <a href="/about.html">About</a>
-                <a href="/terms.html">Terms</a>
-                <a href="/contact.html">Contact</a>
-            </div>
-            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-        </div>
-    </footer>
+    <footer></footer>
 
     <script type="module" src="/firebase.js"></script>
     <script type="module" src="/events/events-list.js"></script>
