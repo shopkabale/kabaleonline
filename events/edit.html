@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5XQRYNC9TW');
+    </script>
+
+    <title>Edit Event | Kabale Online</title> 
+    <link rel="icon" href="/favicon.webp" type="image/webp">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- Copied from detail.html for consistency --- */
+        :root {
+            --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
+            --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
+            --border-color: #e9ecef; --border-radius: 12px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 15px; }
+
+        /* --- HEADER & NAV STYLES --- */
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; max-width: 1200px; margin: 0 auto; }
+        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
+        .site-title span { color: var(--accent-color); }
+        .header-spacer { flex-grow: 1; }
+        .header-icons { display: flex; align-items: center; gap: 18px; }
+        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
+        .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
+        .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
+        
+        /* --- PAGE & CONTENT STYLES --- */
+        .page-container { padding-top: 80px; padding-bottom: 20px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: 500;}
+        .back-link:hover { text-decoration: underline; }
+
+        /* ✨ --- NEW FORM STYLES --- ✨ */
+        .form-container { max-width: 700px; margin: auto; background: var(--card-bg); padding: 25px 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
+        .form-container h1 { text-align: center; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
+        input[type="text"], input[type="date"], input[type="time"], input[type="number"], textarea, input[type="file"] {
+            width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: #fdfdfd;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); outline: none; }
+        .submit-btn { width: 100%; padding: 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .submit-btn:hover { background-color: #0056b3; }
+        .submit-btn:disabled { background-color: #aaa; cursor: not-allowed; }
+        .feedback-message { padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; text-align: center; }
+        .feedback-success { background-color: #d4edda; color: #155724; }
+        .feedback-error { background-color: #f8d7da; color: #721c24; }
+        .feedback-info { background-color: #cce5ff; color: #004085; }
+        
+        /* --- FOOTER STYLES --- */
+        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; } .footer-logo span { color: var(--accent-color); }
+        .footer-tagline { color: var(--text-light); font-size: 0.95em; margin-bottom: 25px; }
+        .footer-socials { margin-bottom: 25px; } .footer-socials a { color: white; font-size: 22px; margin: 0 12px; }
+        .footer-links { margin-bottom: 25px; } .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-nav-overlay"></div>
+
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-spacer"></div>
+            <div class="header-icons">
+                <a href="/inbox.html" aria-label="Notifications"><i class="fa-regular fa-bell"></i></a>
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="/?type=service"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/sell/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
+
+    <main class="container page-container">
+        <a href="/events/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to All Events</a>
+        
+        <div class="form-container">
+            <h1><i class="fa-solid fa-pen-to-square"></i> Edit Event</h1>
+            <p style="text-align:center; color: var(--text-light); margin-top: -10px; margin-bottom: 25px;">Make changes to your event details below.</p>
+            
+            <div id="feedback-message" class="feedback-message"></div>
+
+            <form id="edit-event-form">
+                <div class="form-group">
+                    <label for="event-title">Event Title</label>
+                    <input type="text" id="event-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description" rows="5"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Location</label>
+                    <input type="text" id="event-location" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-price">Price (UGX)</label>
+                    <input type="number" id="event-price" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="event-image">Update Poster/Image</label>
+                    <input type="file" id="event-image" accept="image/*">
+                    <small style="color: var(--text-light); margin-top: 5px; display: block;">Leave this empty to keep the current image.</small>
+                </div>
+                
+                <button type="submit" class="submit-btn">Update Event</button>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class
