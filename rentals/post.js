@@ -22,6 +22,11 @@ const submitBtn = document.getElementById('submit-btn');
 const successMessage = document.getElementById('success-message');
 const formWrapper = document.getElementById('form-wrapper');
 const loginPrompt = document.getElementById('login-prompt');
+const geocodeBtn = document.getElementById('geocode-btn');
+const locationInput = document.getElementById('location');
+const geocodeStatus = document.getElementById('geocode-status');
+const latitudeInput = document.getElementById('latitude');
+const longitudeInput = document.getElementById('longitude');
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -30,6 +35,40 @@ onAuthStateChanged(auth, (user) => {
     } else {
         formWrapper.style.display = 'none';
         loginPrompt.style.display = 'block';
+    }
+});
+
+geocodeBtn.addEventListener('click', async () => {
+    const address = locationInput.value;
+    if (!address) {
+        geocodeStatus.textContent = "Please enter an address first.";
+        geocodeStatus.style.color = 'red';
+        return;
+    }
+    geocodeStatus.textContent = "Finding location...";
+    geocodeStatus.style.color = 'inherit';
+
+    const query = `${address}, Uganda`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Location search failed.');
+        
+        const data = await response.json();
+        if (data.length === 0) throw new Error('Location not found.');
+        
+        const location = data[0];
+        latitudeInput.value = location.lat;
+        longitudeInput.value = location.lon;
+        geocodeStatus.textContent = "✅ Location found!";
+        geocodeStatus.style.color = 'green';
+
+    } catch (error) {
+        geocodeStatus.textContent = "❌ Could not find location. Please be more specific.";
+        geocodeStatus.style.color = 'red';
+        latitudeInput.value = '';
+        longitudeInput.value = '';
     }
 });
 
@@ -69,12 +108,15 @@ rentalForm.addEventListener('submit', async (e) => {
             contactPhone: document.getElementById('contactPhone').value,
             imageUrls: imageUrls,
             posterId: user.uid,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            latitude: Number(latitudeInput.value) || null,
+            longitude: Number(longitudeInput.value) || null
         };
 
         await addDoc(collection(db, 'rentals'), rentalData);
         successMessage.style.display = 'block';
         rentalForm.reset();
+        geocodeStatus.textContent = '';
         window.scrollTo(0, 0);
 
     } catch (error) {
