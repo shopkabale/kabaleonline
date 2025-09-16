@@ -562,11 +562,11 @@ async function fetchSellerProducts(uid) {
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const productId = doc.id;
-        
+
         // ✨ OPTIMIZATION: Create a thumbnail for the dashboard grid
         const originalImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '';
         const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
-        
+
         const isSold = product.isSold || false;
 
         const productCard = document.createElement('div');
@@ -618,14 +618,35 @@ window.scrollTo(0, 0);
 }
 
 async function deleteProduct(productId) {
-if (confirm('Are you sure you want to delete this product?')) {
-try {
-await deleteDoc(doc(db, 'products', productId));
-showMessage(dashboardMessage, 'Product deleted successfully.', false);
-fetchSellerProducts(auth.currentUser.uid);
-} catch (error) { showMessage(dashboardMessage, 'Failed to delete product.'); }
+    if (confirm('Are you sure you want to delete this product?')) {
+        try {
+            // 1. Delete the document from Firestore (as before)
+            await deleteDoc(doc(db, 'products', productId));
+
+            // 2. NEW: Tell Algolia to delete the corresponding record
+            // We send the productId, which should be the objectID in Algolia
+            await fetch('/.netlify/functions/syncToAlgolia', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'delete',
+                    objectID: productId
+                }),
+            });
+
+            // 3. Update the UI (as before)
+            showMessage(dashboardMessage, 'Product deleted successfully.', false);
+            fetchSellerProducts(auth.currentUser.uid);
+
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            showMessage(dashboardMessage, 'Failed to delete product. Check console for details.');
+        }
+    }
 }
-}
+
 function normalizeWhatsAppNumber(phone) {
 let cleaned = ('' + phone).replace(/\D/g, '');
 if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
