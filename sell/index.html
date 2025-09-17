@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5XQRYNC9TW');
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard | Kabale Online</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#007bff">
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -15,7 +26,7 @@
             --text-dark: #34495e;
             --border-color: #e9ecef;
         }
-        
+
         body {
             /* Added padding-top to prevent content from hiding under the fixed header */
             padding-top: 70px;
@@ -67,9 +78,9 @@
             font-size: 22px;
             text-decoration: none;
         }
-        
+
         .desktop-nav { display: none; }
-        
+
           /* Style for the mobile navigation menu to match the image */
 /* Mobile nav sidebar */
 .mobile-nav {
@@ -83,6 +94,18 @@
     z-index: 1100;
     padding-top: 60px; /* space for header */
     transition: left 0.3s ease;
+}
+
+.info-message {
+    color: #00529B;
+    background-color: #BDE5F8;
+    /* Add padding, border, etc. */
+}
+
+.warning-message {
+    color: #9F6000;
+    background-color: #FEEFB3;
+    /* Add padding, border, etc. */
 }
 
 /* Show when .active is toggled by ui.js */
@@ -136,32 +159,211 @@
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+
+        /* New styles for the dashboard profile section */
+        #user-profile-info {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #user-profile-info .profile-header-flex {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #user-profile-info .profile-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #007bff;
+        }
+
+        .verified-badge-svg {
+            width: 20px;
+            height: 20px;
+            fill: #28a745;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        .badges-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge-icon {
+            padding: 4px 8px;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-icon.verified {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* NEW QA SECTION STYLES */
+        #qa-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        #qa-list .qa-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        #qa-list .qa-item:last-child {
+            border-bottom: none;
+        }
+
+        .qa-question {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .qa-answer {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #6c757d;
+            border-radius: 4px;
+        }
+
+        .qa-form {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .qa-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+/* --- REQUIRED CSS FOR THE OVERLAY AND MENU --- */
+
+/* The dark background overlay */
+.mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1090; /* Must be below the nav menu */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+/* The state when the menu is open */
+.mobile-nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+}
+
+/* The navigation menu itself (already in your code, but shown for context) */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hidden off-screen */
+    width: 280px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 1100; /* Must be above the overlay */
+    transition: left 0.3s ease;
+}
+
+/* The state when the menu is open */
+.mobile-nav.active {
+    left: 0; /* Slides the menu into view */
+}
+
+/* --- NEW: STYLES FOR SOLD ITEMS IN DASHBOARD --- */
+#seller-products-list .product-card img.sold-item {
+    opacity: 0.6;
+    filter: grayscale(80%);
+}
+#seller-products-list .product-card .sold-tag-dashboard {
+    color: #d9534f; /* A shade of red */
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+.seller-controls .toggle-sold-btn {
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 5px;
+    width: 100%;
+}
+
+
     </style>
 </head>
 <body>
+    <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
+      <div class="header-content-wrapper">
         <div class="header-top-bar">
-            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-            <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <nav class="desktop-nav">
-                </nav>
-            <div class="header-icons">
-                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-                <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
-            </div>
+          <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+          <a href="/" class="site-title">Kabale <span>Online</span></a>
+          <div class="header-spacer"></div>
+          <div class="header-icons">
+            <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+          </div>
         </div>
-        <nav class="mobile-nav">
-    <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-    <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-    <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-    <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-    <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
-    <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
-    <hr>
-    <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
-    <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
-</nav>
+
+        <nav class="desktop-nav"></nav>
+      </div>
     </header>
+
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+<a href="/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
+
+            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/sell/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
 
     <div class="container page-content">
         <div id="auth-container">
@@ -216,6 +418,18 @@
                  <h1>Your Dashboard</h1>
                  <p>Welcome, <strong id="seller-email"></strong>!</p>
             </div>
+
+            <div id="user-profile-info">
+                <div class="profile-header-flex">
+                    <img id="user-profile-photo" src="placeholder.webp" alt="Profile Photo" class="profile-photo">
+                    <div class="profile-details-text">
+                        <h2 id="user-display-name">Loading...</h2>
+                        <div id="user-badges" class="badges-container"></div>
+                    </div>
+                </div>
+                <p id="user-profile-bio" class="profile-bio" style="display:none;"></p>
+                <a href="/profile.html?sellerId=" id="view-public-profile-btn" class="cta-button" style="margin-top: 15px;">View Public Profile</a>
+            </div>
             <p id="dashboard-message" class="success-message" style="display: none;"></p>
             <div id="complete-profile-section" style="display: none;">
                 <h2>Complete Your Profile!</h2>
@@ -236,14 +450,28 @@
                 <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
                 <p style="margin-top: 15px;">You have referred <span id="user-referral-count" style="font-weight: bold; color: #28a745;">0</span> new members.</p>
             </div>
-            <p class="instruction-text"><b>To sell:</b> Click 'Sell', fill in the details, and add your item!</p>
-            <button id="show-product-form-btn" class="cta-button">Sell</button>
-            <button id="logout-btn">Logout</button>
+
+            <div id="qa-section" style="margin-top: 30px;">
+                <h2 style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-comment-dots"></i> Questions for You (<span id="qa-count">0</span>)
+                </h2>
+                <div id="qa-list">
+                    <p>Loading questions...</p>
+                </div>
+            </div>
+
+            <p class="instruction-text"><b>Manage your listings and messages below.</b></p>
+            <div class="dashboard-actions" style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
+                <button id="show-product-form-btn" class="cta-button">Sell an Item</button>
+                <a href="/inbox.html" class="cta-button" style="background-color: #5a6268; text-decoration: none;">My Inbox</a>
+                <button id="logout-btn" style="background-color: #dc3545;">Logout</button>
+            </div>
             <button id="reset-password-btn">Change Password</button>
+
             <div id="product-form-container" style="display: none;">
                 <h2>Add/Edit Listing</h2>
                 <form id="product-form">
-                    <p id="product-form-message" class="success-message" style="display: none;"></p>
+                    
                     <input type="hidden" id="productId">
                     <div class="form-group"><label>What are you listing?</label><div class="listing-type-selector"><input type="radio" id="type-item" name="listing_type" value="item" checked><label for="type-item">An Item</label><input type="radio" id="type-service" name="listing_type" value="service"><label for="type-service">A Service</label></div></div>
                     <div class="form-group"><label for="product-name">Name</label><input type="text" id="product-name" required></div>
@@ -254,6 +482,7 @@
                     <div class="form-group"><label for="whatsapp-number">WhatsApp Number</label><input type="tel" id="whatsapp-number" required></div>
                     <div class="form-group"><label for="product-image-1">Main Image</label><input type="file" id="product-image-1" accept="image/*"></div>
                     <div class="form-group"><label for="product-image-2">Optional Second Image</label><input type="file" id="product-image-2" accept="image/*"></div>
+<p id="product-form-message" class="success-message" style="display: none;"></p>
                     <button type="submit" id="submit-btn" class="cta-button">Add Product</button>
                 </form>
             </div>
@@ -262,6 +491,8 @@
         </div>
     </div>
     <footer>
+<button id="enable-notifications-btn">Enable Notifications</button>
+
         <div class="kabale-contact-info-section">
             <h3 class="kabale-contact-title">Get in Touch</h3>
             <div class="kabale-contact-details">
@@ -276,6 +507,32 @@
         </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
+
+<div id="pwa-banner" style="
+    display:none;
+    position:fixed;
+    bottom:-120px; /* start hidden below screen */
+    left:0;
+    width:100%;
+    background:#007bff;
+    color:#fff;
+    box-shadow:0 -2px 10px rgba(0,0,0,0.2);
+    padding:15px;
+    font-family:sans-serif;
+    z-index:9999;
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+    transition: bottom 0.5s ease-in-out;
+">
+  <div style="display:flex; flex-direction:column; gap:5px;">
+    <strong style="font-size:16px;">KABALE ONLINE APP</strong>
+    <span style="font-size:14px;">Install Kabale Online for faster access, offline use, and under 1 MB!</span>
+    <div style="margin-top:8px; display:flex; gap:10px;">
+      <button id="pwa-install-btn" style="flex:1; background:#fff; color:#007bff; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">Install</button>
+      <button id="pwa-cancel-btn" style="flex:1; background:transparent; border:1px solid #fff; color:#fff; padding:8px 10px; border-radius:6px; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
     <script type="module" src="sell.js"></script>
     <script type="module" src="../shared.js"></script>
     <script type="module" src="../ui.js"></script>
