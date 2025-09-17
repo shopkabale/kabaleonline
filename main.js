@@ -1,226 +1,101 @@
-/**
- * Creates an optimized and transformed Cloudinary URL.
- * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail'|'full'} type The desired transformation type.
- * @returns {string} The new, transformed URL.
- */
-function getCloudinaryTransformedUrl(url, type) {
-    if (!url || !url.includes('res.cloudinary.com')) {
-        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+// In main.js - The new and improved function to fetch and filter products
+
+import { db } from './firebase.js';
+import { collection, query, where, getDocs, limit, orderBy, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+const productGrid = document.getElementById('product-grid');
+const loadMoreBtn = document.getElementById('load-more-btn');
+const listingsTitle = document.getElementById('listings-title');
+let lastVisible; // Keeps track of the last document for pagination
+
+async function fetchProducts(loadMore = false) {
+    if (!productGrid) return; // Stop if the product grid isn't on the page
+
+    loadMoreBtn.disabled = true;
+    loadMoreBtn.textContent = 'Loading...';
+
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        const type = urlParams.get('type');
+
+        let productsQuery;
+        const baseCollection = collection(db, 'products');
+        
+        // --- THIS IS THE NEW FILTERING LOGIC ---
+        if (category) {
+            listingsTitle.textContent = `Items in "${category}"`;
+            productsQuery = query(baseCollection, where('category', '==', category), orderBy('createdAt', 'desc'), limit(12));
+        } else if (type) {
+            listingsTitle.textContent = `Available Services`;
+            productsQuery = query(baseCollection, where('listing_type', '==', type), orderBy('createdAt', 'desc'), limit(12));
+        } else {
+            // Default query for the homepage if no filters are applied
+            listingsTitle.textContent = 'Recent Items';
+            productsQuery = query(baseCollection, orderBy('createdAt', 'desc'), limit(12));
+        }
+        
+        // Handle pagination for the "Load More" button
+        if (loadMore && lastVisible) {
+            productsQuery = query(productsQuery, startAfter(lastVisible));
+        }
+        // --- END OF NEW LOGIC ---
+
+        const documentSnapshots = await getDocs(productsQuery);
+
+        if (!loadMore) {
+            productGrid.innerHTML = ''; // Clear grid only on the first load
+        }
+        
+        if (documentSnapshots.empty && !loadMore) {
+             productGrid.innerHTML = '<p style="text-align: center; width: 100%;">No items found for this filter.</p>';
+             loadMoreBtn.style.display = 'none';
+             return;
+        }
+
+        documentSnapshots.forEach(doc => {
+            const product = doc.data();
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            
+            // This is your product card structure. You can customize it as needed.
+            const imageUrl = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : 'placeholder.webp';
+            productCard.innerHTML = `
+                <a href="/product.html?id=${doc.id}" class="product-card-link">
+                    <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                    <div class="product-card-info">
+                        <h3>${product.name}</h3>
+                        <p class="price">UGX ${product.price.toLocaleString()}</p>
+                    </div>
+                </a>
+            `;
+            productGrid.appendChild(productCard);
+        });
+
+        // Update the last visible document for the next "Load More" click
+        lastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+        
+        // Show or hide the "Load More" button
+        if (documentSnapshots.docs.length < 12) {
+            loadMoreBtn.style.display = 'none';
+        } else {
+            loadMoreBtn.style.display = 'block';
+        }
+
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        productGrid.innerHTML = '<p>Could not load items. Please try again later.</p>';
+    } finally {
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = 'Load More';
     }
-    const transformations = {
-        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
-        full: 'c_limit,w_800,h_800,f_auto,q_auto'
-    };
-    const transformString = transformations[type] || transformations.thumbnail;
-    const urlParts = url.split('/upload/');
-    if (urlParts.length !== 2) {
-        return url;
-    }
-    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
 
-
-import { db } from "./firebase.js";
-import { collection, query, orderBy, where, limit, getDocs, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-// --- DOM Element References ---
-const productGrid = document.getElementById("product-grid");
-const searchInput = document.getElementById("search-input");
-const listingsTitle = document.getElementById("listings-title");
-const searchBtn = document.getElementById("search-btn");
-const loadMoreBtn = document.getElementById("load-more-btn");
-
-// --- State Management ---
-let currentPage = 0;
-let fetching = false;
-let currentSearchTerm = "";
-let totalPages = 0;
-let lastVisibleDoc = null;
-
-const urlParams = new URLSearchParams(window.location.search);
-const listingTypeFilter = urlParams.get("type");
-
-// --- Skeleton Loader ---
-function renderSkeletonLoaders(count) {
-  let skeletons = "";
-  for (let i = 0; i < count; i++) {
-    skeletons += `
-      <div class="skeleton-card">
-        <div class="skeleton-image"></div>
-        <div class="skeleton-text">
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line skeleton-line-short"></div>
-        </div>
-      </div>
-    `;
-  }
-  productGrid.innerHTML = skeletons;
-}
-
-// --- Algolia Fetch with Fallback ---
-async function fetchFromAlgolia(page = 0) {
-  let url = `/.netlify/functions/search?searchTerm=${encodeURIComponent(currentSearchTerm)}&page=${page}`;
-  if (listingTypeFilter) {
-    url += `&type=${listingTypeFilter}`;
-  }
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      const errorBody = await response.json();
-      throw new Error(`Algolia error: ${response.status} - ${errorBody.error}`);
-    }
-    return await response.json();
-  } catch (err) {
-    console.warn("⚠️ Algolia fetch failed, using Firestore fallback:", err);
-    return { products: await fetchFromFirestore(), totalPages: 1 };
-  }
-}
-
-// --- Firestore Fallback ---
-async function fetchFromFirestore() {
-  let q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(12));
-
-  if (listingTypeFilter) {
-    q = query(
-      collection(db, "products"),
-      where("type", "==", listingTypeFilter),
-      orderBy("createdAt", "desc"),
-      limit(12)
-    );
-  }
-
-  if (lastVisibleDoc) {
-    q = query(q, startAfter(lastVisibleDoc));
-  }
-
-  const snapshot = await getDocs(q);
-  lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
-
-  return snapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() }))
-    .filter(product => {
-      if (currentSearchTerm) {
-        return product.title?.toLowerCase().includes(currentSearchTerm.toLowerCase());
-      }
-      return true;
-    });
-}
-
-// --- Render Products ---
-function renderProducts(productsToDisplay, isNewSearch = false) {
-  if (isNewSearch) productGrid.innerHTML = "";
-
-  const fragment = document.createDocumentFragment();
-  productsToDisplay.forEach(product => {
-    const originalImage =
-      product.images?.[0] ||
-      product.imageUrls?.[0] ||
-      "https://placehold.co/400x400/e0e0e0/777?text=No+Image";
+// Initial load when the page is ready
+document.addEventListener('DOMContentLoaded', () => {
+    fetchProducts();
     
-    // ✨ OPTIMIZATION: Create a tiny, lazy-loaded thumbnail URL
-    const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
-
-    const isSold = product.isSold || false;
-
-    let sellerInfoHtml = "";
-    if (product.sellerName) {
-      sellerInfoHtml = `<p class="seller-info">By: ${product.sellerName}</p>`;
+    if(loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => fetchProducts(true));
     }
-
-    const productLink = document.createElement("a");
-    if (isSold) {
-      productLink.href = "javascript:void(0)";
-      productLink.style.cursor = "default";
-    } else {
-      productLink.href = `product.html?id=${product.id}`;
-    }
-    productLink.className = "product-card-link";
-
-    productLink.innerHTML = `
-      <div class="product-card ${isSold ? "is-sold" : ""}">
-        ${isSold ? '<div class="sold-out-tag">SOLD</div>' : ""}
-        <img src="${thumbnailUrl}" alt="${product.title || product.name}" loading="lazy"
-          onerror="this.src='https://placehold.co/400x400/e0e0e0/777?text=Error'">
-        <h3>${product.title || product.name}</h3>
-        <p class="price">UGX ${product.price ? product.price.toLocaleString() : "Negotiable"}</p>
-        ${sellerInfoHtml}
-      </div>
-    `;
-    fragment.appendChild(productLink);
-  });
-  productGrid.appendChild(fragment);
-}
-
-// --- Fetch Products Controller ---
-async function fetchProducts(isNewSearch = false) {
-  if (fetching) return;
-  fetching = true;
-  loadMoreBtn.disabled = true;
-
-  if (isNewSearch) {
-    renderSkeletonLoaders(12);
-    loadMoreBtn.style.display = "none";
-    currentPage = 0;
-    lastVisibleDoc = null;
-  } else {
-    loadMoreBtn.textContent = "Loading more...";
-  }
-
-  try {
-    const data = await fetchFromAlgolia(currentPage);
-    const products = data.products || [];
-    totalPages = data.totalPages || 1;
-
-    if (products.length === 0 && isNewSearch) {
-      productGrid.innerHTML = "<p>No listings match your criteria.</p>";
-    } else {
-      renderProducts(products, isNewSearch);
-    }
-
-    if (currentPage + 1 < totalPages || lastVisibleDoc) {
-      loadMoreBtn.style.display = "block";
-    } else {
-      loadMoreBtn.style.display = "none";
-    }
-  } catch (error) {
-    console.error("--- DETAILED FETCH ERROR ---", error);
-    if (isNewSearch) {
-      productGrid.innerHTML = `<p>Sorry, could not load listings. Please try again later.</p>`;
-    }
-  } finally {
-    fetching = false;
-    loadMoreBtn.textContent = "Load More";
-    loadMoreBtn.disabled = false;
-  }
-}
-
-// --- Search Handlers ---
-function handleNewSearch() {
-  currentSearchTerm = searchInput.value;
-  fetchProducts(true);
-}
-
-searchBtn?.addEventListener("click", handleNewSearch);
-searchInput?.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    handleNewSearch();
-  }
 });
-
-loadMoreBtn?.addEventListener("click", () => {
-  currentPage++;
-  fetchProducts(false);
-});
-
-// --- Init ---
-if (listingTypeFilter === "service") {
-  listingsTitle.textContent = "Services";
-  document.title = "Kabale Online | Services";
-} else {
-  listingsTitle.textContent = "All Items";
-}
-
-fetchProducts(true);
