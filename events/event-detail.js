@@ -1,5 +1,3 @@
-// /events/event-detail.js
-
 import { auth, db } from '/firebase.js';
 import { doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -11,6 +9,74 @@ const eventDescription = document.getElementById('event-description');
 const ownerActionsContainer = document.getElementById('owner-actions');
 const chatBtn = document.getElementById('chat-with-uploader-btn');
 const loginPrompt = document.getElementById('login-for-chat-prompt');
+
+// ✨ --- NEW FUNCTION: Injects CSS for the full-screen image modal --- ✨
+function injectModalStyles() {
+    // Check if styles are already injected to avoid duplicates
+    if (document.getElementById('image-modal-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'image-modal-styles';
+    style.innerHTML = `
+        /* Adds a pointer cursor to show the image is clickable */
+        .expandable-image {
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .expandable-image:hover {
+            transform: scale(1.02); /* Slight zoom effect on hover */
+        }
+        /* The full-screen black overlay */
+        .image-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        /* The image inside the overlay */
+        .image-modal-overlay img {
+            max-width: 90vw;  /* Max width is 90% of viewport width */
+            max-height: 90vh; /* Max height is 90% of viewport height */
+            object-fit: contain;
+            border-radius: 5px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ✨ --- NEW FUNCTION: Makes the banner image clickable --- ✨
+function makeImageExpandable(imgElement) {
+    // Add the class that makes the cursor a pointer
+    imgElement.classList.add('expandable-image');
+
+    // Listen for a click on the image
+    imgElement.addEventListener('click', () => {
+        // Create the modal overlay div
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'image-modal-overlay';
+
+        // Create the image element for the modal
+        const modalImage = document.createElement('img');
+        modalImage.src = imgElement.src;
+        modalImage.alt = imgElement.alt;
+
+        // Add the image to the overlay, and the overlay to the page
+        modalOverlay.appendChild(modalImage);
+        document.body.appendChild(modalOverlay);
+
+        // To close the modal, the user can click anywhere on the overlay
+        modalOverlay.addEventListener('click', () => {
+            document.body.removeChild(modalOverlay);
+        });
+    });
+}
 
 // (The setupShareButton function remains unchanged)
 async function setupShareButton(event) {
@@ -77,6 +143,10 @@ async function fetchEventDetails() {
             eventTitle.textContent = event.title;
             eventBannerImg.src = event.imageUrl;
             eventBannerImg.alt = event.title;
+
+            // ✨ --- MODIFICATION: Call the new function to make the image expandable --- ✨
+            makeImageExpandable(eventBannerImg);
+
             const fullDate = new Date(event.date + 'T00:00:00');
 
             eventMeta.innerHTML = `
@@ -97,23 +167,11 @@ async function fetchEventDetails() {
 
             const user = auth.currentUser;
 
-            // ✨ --- THIS IS THE CRITICAL SECTION --- ✨
-            // This 'if' block checks if the user is the owner.
-            // If true, it creates the HTML for the Edit and Delete buttons.
             if (user && user.uid === event.uploaderId) {
-                
-                // This line creates the Edit button as a link (<a> tag) to the new edit page.
-                // It passes the event's ID in the URL so the edit page knows which event to load.
                 const editButtonHTML = `<a href="/events/edit.html?id=${eventId}" class="action-btn" style="background-color: #ffc107; color: #212529;"><i class="fa-solid fa-pen-to-square"></i> Edit Event</a>`;
-                
                 const deleteButtonHTML = `<button id="delete-event-btn" class="action-btn" style="background-color: #dc3545; color: white; margin-top: 10px;"><i class="fa-solid fa-trash"></i> Delete Event</button>`;
-                
-                // Here, we inject both buttons into the 'owner-actions' container in your detail.html
                 ownerActionsContainer.innerHTML = editButtonHTML + deleteButtonHTML;
-                
-                // Finally, we attach the click listener for the delete button.
                 document.getElementById('delete-event-btn').addEventListener('click', () => deleteEvent(eventId));
-
             } else if (user) {
                 chatBtn.href = `/chat.html?recipientId=${event.uploaderId}`;
                 chatBtn.style.display = 'block';
@@ -121,7 +179,6 @@ async function fetchEventDetails() {
                 loginPrompt.style.display = 'block';
             }
 
-            // Call the share button setup function
             setupShareButton(event);
 
         } else {
@@ -135,3 +192,6 @@ async function fetchEventDetails() {
 
 // Initial call to run the function when the page loads
 fetchEventDetails();
+
+// ✨ --- MODIFICATION: Call the function to add the necessary CSS to the page --- ✨
+injectModalStyles();
