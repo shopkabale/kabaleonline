@@ -136,6 +136,20 @@
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+.mobile-nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1050;
+  display: none;
+}
+
+.mobile-nav-overlay.active {
+  display: block;
+}
     </style>
 </head>
 <body>
@@ -151,6 +165,7 @@
             </div>
         </div>
         <nav class="mobile-nav">
+
     <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
     <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
     <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
@@ -161,6 +176,7 @@
     <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
     <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
 </nav>
+<div class="mobile-nav-overlay"></div>
     </header>
 
     <div class="container page-content">
