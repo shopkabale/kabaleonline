@@ -50,63 +50,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loginCancelBtn?.addEventListener('click', hideLoginPrompt);
 
-  let deferredPrompt = null;
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    showInstallPromptIfNeeded();
-  });
+  // --- NEW --- We only want to handle installation on the main website, not subdomains.
+  const isMainDomain = window.location.hostname === 'www.kabaleonline.com' || window.location.hostname === 'kabaleonline.com';
 
-  function showInstallPromptIfNeeded() {
-    if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) {
-      return;
+  if (isMainDomain) {
+    let deferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallPromptIfNeeded();
+    });
+
+    function showInstallPromptIfNeeded() {
+      if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) {
+        return;
+      }
+      const lastDismissed = localStorage.getItem('installPromptDismissedAt');
+      const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+      if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) {
+        return;
+      }
+      if (installAppPrompt) {
+        installAppPrompt.style.display = "flex";
+      }
     }
-    const lastDismissed = localStorage.getItem('installPromptDismissedAt');
-    const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
-    if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) {
-      return;
+
+    function hideInstallPrompt() {
+      if (installAppPrompt) {
+        installAppPrompt.style.display = "none";
+      }
+      localStorage.setItem('installPromptDismissedAt', Date.now());
     }
-    if (installAppPrompt) {
-      installAppPrompt.style.display = "flex";
-    }
-  }
 
-  function hideInstallPrompt() {
-    if (installAppPrompt) {
-      installAppPrompt.style.display = "none";
-    }
-    localStorage.setItem('installPromptDismissedAt', Date.now());
-  }
+    installAppCancel?.addEventListener('click', hideInstallPrompt);
 
-  installAppCancel?.addEventListener('click', hideInstallPrompt);
+    installAppBtn?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        hideInstallPrompt();
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
 
-  installAppBtn?.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      hideInstallPrompt();
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    }
-  });
+    window.addEventListener("appinstalled", () => {
+      if (installAppPrompt) installAppPrompt.style.display = "none";
+      localStorage.removeItem('installPromptDismissedAt');
+    });
+  } // --- NEW --- End of the isMainDomain check
 
-  window.addEventListener("appinstalled", () => {
-    if (installAppPrompt) installAppPrompt.style.display = "none";
-    localStorage.removeItem('installPromptDismissedAt');
-  });
-
-  // --- NEW --- This function is now updated for OneSignal
   async function requestNotificationPermission() {
-    // OneSignal handles everything with this one line
     OneSignal.Slidedown.promptPush();
   }
 
   notificationsBtn?.addEventListener('click', requestNotificationPermission);
   
-  // --- NEW --- Checks if running as an installed PWA and prompts for notifications on first launch
   if (window.matchMedia('(display-mode: standalone)').matches) {
     const alreadyPrompted = localStorage.getItem('notificationPromptedAfterInstall');
     if (!alreadyPrompted) {
-      // Wait a couple of seconds for the app to settle, then ask
       setTimeout(() => {
         requestNotificationPermission();
       }, 2000);
