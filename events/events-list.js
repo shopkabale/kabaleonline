@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- ELEMENT REFERENCES ---
     const calendarEl = document.getElementById('calendar');
-    const eventListEl = document.getElementById('events-list');
     const calendarTitleEl = document.getElementById('calendar-title');
     const clockEl = document.getElementById('live-clock');
     
@@ -105,7 +104,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const listHTML = allEvents.map(event => {
+        // Sort events from newest to oldest for the list view
+        const sortedEvents = [...allEvents].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const listHTML = sortedEvents.map(event => {
             const eventDate = new Date(event.date + 'T00:00:00');
             let statusClass = 'event-card-future';
             if (eventDate < today) statusClass = 'event-card-past';
@@ -149,7 +151,13 @@ document.addEventListener('DOMContentLoaded', function() {
             calendarViewContainer.classList.add('active');
             listViewBtn.classList.remove('active');
             calendarViewBtn.classList.add('active');
-            calendarSubView.style.display = 'flex'; // Show Month/Week buttons
+            calendarSubView.style.display = 'flex';
+            
+            // ✨ --- FIX --- ✨
+            // Tell the calendar to recalculate its size when it becomes visible again.
+            if (calendarInstance) {
+                calendarInstance.updateSize();
+            }
         });
 
         listViewBtn.addEventListener('click', () => {
@@ -157,8 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
             listViewContainer.classList.add('active');
             calendarViewBtn.classList.remove('active');
             listViewBtn.classList.add('active');
-            calendarSubView.style.display = 'none'; // Hide Month/Week buttons
-            renderList();
+            calendarSubView.style.display = 'none';
+            renderList(); // Render the list when switching to it
         });
 
         // Calendar Controls (only work if calendar is initialized)
