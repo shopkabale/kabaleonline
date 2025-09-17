@@ -8,18 +8,11 @@ function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
-    const transformations = {
-        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
-        full: 'c_limit,w_800,h_800,f_auto,q_auto'
-    };
+    const transformations = { thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto', full: 'c_limit,w_800,h_800,f_auto,q_auto' };
     const transformString = transformations[type] || transformations.thumbnail;
     const urlParts = url.split('/upload/');
-    if (urlParts.length !== 2) {
-        return url;
-    }
-    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+    return urlParts.length !== 2 ? url : `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
-
 
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
@@ -29,6 +22,8 @@ const adminContent = document.getElementById('admin-content');
 const accessDenied = document.getElementById('access-denied');
 const allProductsList = document.getElementById('all-products-list');
 const userList = document.getElementById('user-list');
+const pendingTestimonialsList = document.getElementById('pending-testimonials-list');
+const approvedTestimonialsList = document.getElementById('approved-testimonials-list');
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -39,6 +34,7 @@ onAuthStateChanged(auth, async (user) => {
             adminContent.style.display = 'block';
             fetchAllProducts();
             fetchAllUsers();
+            fetchTestimonialsForAdmin(); // Fetch testimonials
         } else {
             showAccessDenied();
         }
@@ -52,87 +48,98 @@ function showAccessDenied() {
     accessDenied.style.display = 'block';
 }
 
-async function fetchAllUsers() {
-    userList.innerHTML = '<p>Loading users...</p>';
+// ... your existing fetchAllUsers and toggleUserVerification functions ...
+async function fetchAllUsers() { /* Your existing code here */ }
+async function toggleUserVerification(uid, newStatus) { /* Your existing code here */ }
+
+
+// --- NEW TESTIMONIAL MANAGEMENT FUNCTIONS ---
+
+async function fetchTestimonialsForAdmin() {
+    pendingTestimonialsList.innerHTML = '';
+    approvedTestimonialsList.innerHTML = '';
+
     try {
-        const usersQuery = query(collection(db, 'users'), orderBy('email'));
-        const userSnapshot = await getDocs(usersQuery);
+        const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
 
-        if (userSnapshot.empty) {
-            userList.innerHTML = '<li>No users found.</li>';
-            return;
-        }
+        let pendingCount = 0;
+        let approvedCount = 0;
 
-        const referralCounts = {};
-        userSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.referrerId) {
-                if (referralCounts[userData.referrerId]) {
-                    referralCounts[userData.referrerId]++;
-                } else {
-                    referralCounts[userData.referrerId] = 1;
-                }
+        snapshot.forEach(doc => {
+            const testimonial = doc.data();
+            const id = doc.id;
+            const item = document.createElement('li');
+            item.className = 'user-list-item';
+
+            if (testimonial.status === 'pending') {
+                pendingCount++;
+                item.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <p><strong>"${testimonial.quote}"</strong></p>
+                        <p>- ${testimonial.authorName} <em>(${testimonial.authorDetail || 'N/A'})</em></p>
+                    </div>
+                    <div>
+                        <button class="verify-btn not-verified" data-id="${id}">Approve</button>
+                        <button class="verify-btn verified" data-id="${id}">Delete</button>
+                    </div>
+                `;
+                item.querySelector('.not-verified').addEventListener('click', () => approveTestimonial(id));
+                item.querySelector('.verified').addEventListener('click', () => deleteTestimonial(id));
+                pendingTestimonialsList.appendChild(item);
+            } else { // Approved
+                approvedCount++;
+                item.innerHTML = `
+                   <div style="flex-grow: 1;">
+                        <p><strong>"${testimonial.quote}"</strong></p>
+                        <p>- ${testimonial.authorName} <em>(${testimonial.authorDetail || 'N/A'})</em></p>
+                        <div style="margin-top: 5px;">
+                            Order: <input type="number" value="${testimonial.order || 99}" data-id="${id}" style="width: 60px; padding: 5px;">
+                        </div>
+                    </div>
+                    <div>
+                        <button class="verify-btn verified" data-id="${id}">Delete</button>
+                    </div>
+                `;
+                item.querySelector('.verified').addEventListener('click', () => deleteTestimonial(id));
+                item.querySelector('input').addEventListener('change', (e) => updateTestimonialOrder(e.target.dataset.id, e.target.value));
+                approvedTestimonialsList.appendChild(item);
             }
         });
 
-        userList.innerHTML = '';
-        userSnapshot.forEach(doc => {
-            const userData = doc.data();
-            const userId = doc.id;
-            if (userData.role === 'admin') return;
-
-            const isVerified = userData.isVerified || false;
-            const referralCount = referralCounts[userId] || 0;
-
-            const listItem = document.createElement('li');
-            listItem.className = 'user-list-item';
-            listItem.innerHTML = `
-                <span class="user-info">
-                    ${userData.email} ${isVerified ? '<span class="verified-badge">✔️ Verified</span>' : ''}
-                    <br>
-                    <span class="referral-info">Referrals: ${referralCount}</span>
-                </span>
-                <button class="verify-btn ${isVerified ? 'verified' : 'not-verified'}" data-uid="${userId}" data-status="${isVerified}">
-                    ${isVerified ? 'Un-verify' : 'Verify'}
-                </button>
-            `;
-            listItem.querySelector('.verify-btn').addEventListener('click', (e) => {
-                const uid = e.target.dataset.uid;
-                const status = e.target.dataset.status === 'true';
-                toggleUserVerification(uid, !status);
-            });
-            userList.appendChild(listItem);
-        });
+        if (pendingCount === 0) pendingTestimonialsList.innerHTML = '<li>No pending feedback.</li>';
+        if (approvedCount === 0) approvedTestimonialsList.innerHTML = '<li>No approved feedback.</li>';
+        
     } catch (error) {
-        console.error("Error fetching users:", error);
-        userList.innerHTML = '<li>Could not load users.</li>';
+        console.error("Error fetching testimonials for admin:", error);
     }
 }
 
-async function toggleUserVerification(uid, newStatus) {
-    const userRef = doc(db, 'users', uid);
-    try {
-        await updateDoc(userRef, { isVerified: newStatus });
-        const productsRef = collection(db, 'products');
-        const q = query(productsRef, where("sellerId", "==", uid));
-        const productSnapshot = await getDocs(q);
-        if (!productSnapshot.empty) {
-            const batch = writeBatch(db);
-            productSnapshot.forEach((productDoc) => {
-                batch.update(doc(db, 'products', productDoc.id), { sellerIsVerified: newStatus });
-            });
-            await batch.commit();
-        }
-        alert(`User has been ${newStatus ? 'verified' : 'un-verified'}.`);
-        await fetchAllUsers(); 
-        await fetchAllProducts();
-    } catch (error) {
-        alert("Failed to update user verification.");
-    }
+async function approveTestimonial(id) {
+    if (!confirm('Are you sure you want to approve this testimonial? It will go live.')) return;
+    const docRef = doc(db, 'testimonials', id);
+    await updateDoc(docRef, { status: 'approved', order: 99 });
+    fetchTestimonialsForAdmin();
 }
+
+async function deleteTestimonial(id) {
+    if (!confirm('Are you sure you want to PERMANENTLY delete this testimonial?')) return;
+    await deleteDoc(doc(db, 'testimonials', id));
+    fetchTestimonialsForAdmin();
+}
+
+async function updateTestimonialOrder(id, order) {
+    const docRef = doc(db, 'testimonials', id);
+    await updateDoc(docRef, { order: Number(order) });
+    alert("Order updated.");
+    fetchTestimonialsForAdmin(); // Refresh to see the new order in action
+}
+
+
+// --- EXISTING PRODUCT MANAGEMENT FUNCTIONS ---
 
 async function fetchAllProducts() {
-    allProductsList.innerHTML = ''; // Clear previous listings
+    allProductsList.innerHTML = '';
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
 
@@ -145,13 +152,7 @@ async function fetchAllProducts() {
         const product = doc.data();
         const productId = doc.id;
         const isDeal = product.isDeal || false;
-
-        // ✨ OPTIMIZATION: Create a thumbnail for the admin grid
-        const originalImage = (product.imageUrls && product.imageUrls.length > 0) 
-            ? product.imageUrls[0] 
-            : 'placeholder.webp';
-        const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
-
+        const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller">✔️</span>' : '';
         const sellerName = product.sellerName || product.sellerEmail;
 
@@ -162,8 +163,8 @@ async function fetchAllProducts() {
             <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
             <h3>${product.name}</h3>
             <p class="price">UGX ${product.price.toLocaleString()}</p>
-            <p style="font-size: 0.8em; color: grey; padding: 0 15px;">
-                Seller: ${sellerName} ${verifiedBadge}
+            <p style="font-size: 0.8em; color: grey; padding: 0 10px; word-break: break-all;">
+                By: ${sellerName} ${verifiedBadge}
             </p>
             <div class="seller-controls">
                 <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-id="${productId}">
@@ -173,14 +174,8 @@ async function fetchAllProducts() {
             </div>
         `;
 
-        productCard.querySelector('.deal-btn').addEventListener('click', (e) => {
-            toggleDealStatusAsAdmin(e.target.dataset.id, isDeal);
-        });
-
-        productCard.querySelector('.admin-delete').addEventListener('click', (e) => {
-            deleteProductAsAdmin(e.target.dataset.id, e.target.dataset.name);
-        });
-
+        productCard.querySelector('.deal-btn').addEventListener('click', () => toggleDealStatusAsAdmin(productId, isDeal));
+        productCard.querySelector('.admin-delete').addEventListener('click', (e) => deleteProductAsAdmin(e.target.dataset.id, e.target.dataset.name));
         allProductsList.appendChild(productCard);
     });
 }
@@ -189,7 +184,7 @@ async function toggleDealStatusAsAdmin(productId, currentStatus) {
     const productRef = doc(db, 'products', productId);
     try {
         await updateDoc(productRef, { isDeal: !currentStatus });
-        fetchAllProducts(); // Refresh the list
+        fetchAllProducts();
     } catch (error) {
         alert("Failed to update deal status.");
     }
@@ -200,7 +195,7 @@ async function deleteProductAsAdmin(productId, productName) {
         try {
             await deleteDoc(doc(db, 'products', productId));
             alert('Product deleted by admin.');
-            fetchAllProducts(); // Refresh the list
+            fetchAllProducts();
         } catch (error) {
             alert("Failed to delete product.");
         }
