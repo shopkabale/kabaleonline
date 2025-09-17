@@ -1,11 +1,67 @@
 # netlify.toml
+
 [build]
   functions = "netlify/functions/"
-  publish = "." # This tells Netlify to publish the contents of the root folder
-# redirect rule 
+  publish = "."
+
+# Rule for the main www domain
+[[redirects]]
+  from = "https://www.kabaleonline.com/*"
+  to = "/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "https://kabaleonline.com/*"
+  to = "/:splat"
   status = 200
-  force = false
+  force = true
+
+# Rule for the Admin section
+[[redirects]]
+  from = "https://admin.kabaleonline.com/*"
+  to = "/admin/:splat"
+  status = 200
+  force = true
+
+# Rule for the Blog section
+[[redirects]]
+  from = "https://blog.kabaleonline.com/*"
+  to = "/blog/:splat"
+  status = 200
+  force = true
+
+# Rule for the Events section
+[[redirects]]
+  from = "https://events.kabaleonline.com/*"
+  to = "/events/:splat"
+  status = 200
+  force = true
+
+# Rule for the Lost & Found section
+[[redirects]]
+  from = "https://lost-and-found.kabaleonline.com/*"
+  to = "/lost-and-found/:splat"
+  status = 200
+  force = true
+
+# Rule for the Rentals section
+[[redirects]]
+  from = "https://rentals.kabaleonline.com/*"
+  to = "/rentals/:splat"
+  status = 200
+  force = true
+
+# Rule for the Requests section
+[[redirects]]
+  from = "https://requests.kabaleonline.com/*"
+  to = "/requests/:splat"
+  status = 200
+  force = true
+
+# Rule for the Sell section
+[[redirects]]
+  from = "https://sell.kabaleonline.com/*"
+  to = "/sell/:splat"
+  status = 200
+  force = true
