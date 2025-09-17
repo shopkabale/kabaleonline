@@ -251,11 +251,14 @@
             background-color: transparent; 
             border: 1px solid #ced4da; 
             color: var(--text-dark); 
-            padding: 6px 12px; 
+            padding: 8px 14px; 
             margin: 0 2px; 
             border-radius: 6px; 
             cursor: pointer; 
             font-size: 0.9em; 
+            display: inline-flex; /* ✨ Alignment Fix */
+            align-items: center;  /* ✨ Alignment Fix */
+            gap: 8px;             /* ✨ Spacing Fix */
         }
         .main-view-toggle button.active, .calendar-controls button.active { 
             background-color: var(--primary-color); 
@@ -300,128 +303,40 @@
             --fc-border-color: var(--border-color); 
             --fc-today-bg-color: transparent; 
         }
-        .fc .fc-daygrid-day-number { 
-            font-size: 1em; 
-            padding: 8px; 
-        }
-        .fc .fc-daygrid-day.fc-day-today { 
-            background-color: var(--accent-color) !important; 
-            background-image: none !important; 
-        }
-        .fc .fc-day-today .fc-daygrid-day-number { 
-            color: var(--text-dark); 
-            font-weight: bold; 
-        }
-        .fc .fc-event { 
-            padding: 3px 6px; 
-            border-radius: 4px; 
-            font-weight: 500; 
-            cursor: pointer; 
-            border: none !important; 
-            color: white !important; 
-        }
+        .fc .fc-daygrid-day-number { font-size: 1em; padding: 8px; }
+        .fc .fc-daygrid-day.fc-day-today { background-color: var(--accent-color) !important; background-image: none !important; }
+        .fc .fc-day-today .fc-daygrid-day-number { color: var(--text-dark); font-weight: bold; }
+        .fc .fc-event { padding: 3px 6px; border-radius: 4px; font-weight: 500; cursor: pointer; border: none !important; color: white !important; }
         .fc .event-future { background-color: var(--primary-color) !important; }
         .fc .event-today { background-color: #28a745 !important; }
         .fc .event-past { background-color: #6c757d !important; opacity: 0.8; }
         .fc .event-past .fc-event-title { text-decoration: line-through; }
         
         /* --- LIST VIEW STYLES --- */
-        .event-list-container { 
-            padding: 10px; 
-        }
-        .event-card { 
-            display: flex; 
-            flex-direction: column; 
-            background-color: transparent; 
-            border: 1px solid var(--border-color); 
-            border-radius: var(--border-radius); 
-            margin-bottom: 15px; 
-            text-decoration: none; 
-            color: var(--text-dark); 
-            transition: box-shadow 0.2s ease, transform 0.2s ease; 
-        }
-        .event-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: var(--shadow); 
-        }
-        .event-card-header { 
-            padding: 15px; 
-            border-bottom: 1px solid var(--border-color); 
-        }
-        .event-card-header h3 { 
-            margin: 0; 
-            font-size: 1.2em; 
-        }
-        .event-card-body { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            padding: 15px; 
-            font-size: 0.95em; 
-        }
-        .event-meta-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            color: var(--text-light); 
-        }
-        .event-meta-item i { 
-            width: 16px; 
-            text-align: center; 
-            color: var(--primary-color); 
-        }
+        .event-list-container { padding: 10px; }
+        .event-card { display: flex; flex-direction: column; background-color: transparent; border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 15px; text-decoration: none; color: var(--text-dark); transition: box-shadow 0.2s ease, transform 0.2s ease; }
+        .event-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .event-card-header { padding: 15px; border-bottom: 1px solid var(--border-color); }
+        .event-card-header h3 { margin: 0; font-size: 1.2em; }
+        .event-card-body { display: flex; flex-direction: column; gap: 10px; padding: 15px; font-size: 0.95em; }
+        .event-meta-item { display: flex; align-items: center; gap: 10px; color: var(--text-light); }
+        .event-meta-item i { width: 16px; text-align: center; color: var(--primary-color); }
         .event-card.event-card-today { border-left: 4px solid #28a745; }
         .event-card.event-card-future { border-left: 4px solid var(--primary-color); }
         .event-card.event-card-past { border-left: 4px solid #6c757d; opacity: 0.7; }
         .event-card.event-card-past h3 { text-decoration: line-through; }
-        .no-events-message { 
-            text-align: center; 
-            padding: 40px; 
-            color: var(--text-light); 
-        }
+        .no-events-message { text-align: center; padding: 40px; color: var(--text-light); }
         
         /* --- FOOTER STYLES --- */
-        footer { 
-            background-color: var(--text-dark); 
-            color: white; 
-            padding: 40px 15px 20px; 
-            text-align: center; 
-            margin-top: 30px; 
-        }
-        .footer-logo { 
-            font-size: 1.8em; 
-            font-weight: bold; 
-            margin-bottom: 10px; 
-        }
-        .footer-logo span { 
-            color: var(--accent-color); 
-        }
-        .footer-tagline {
-            margin-top: -5px;
-            color: var(--text-light);
-            margin-bottom: 20px;
-        }
-        .footer-socials { 
-            margin-bottom: 25px; 
-        }
-        .footer-socials a { 
-            color: white; 
-            font-size: 22px; 
-            margin: 0 12px; 
-        }
-        .footer-links { 
-            margin-bottom: 25px; 
-        }
-        .footer-links a { 
-            color: #bdc3c7; 
-            margin: 0 10px; 
-            text-decoration: none; 
-            font-size: 0.9em; 
-        }
-        .footer-copyright { 
-            font-size: 0.8em; 
-            color: var(--text-light); 
-        }
+        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--accent-color); }
+        .footer-tagline { margin-top: -5px; color: var(--text-light); margin-bottom: 20px; }
+        .footer-socials { margin-bottom: 25px; }
+        .footer-socials a { color: white; font-size: 22px; margin: 0 12px; }
+        .footer-links { margin-bottom: 25px; }
+        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
     </style>
 </head>
 <body>
@@ -479,8 +394,12 @@
                 </div>
 
                 <div class="main-view-toggle">
-                    <button id="calendar-view-btn" class="active" title="Calendar View"><i class="fa-solid fa-calendar-days"></i></button>
-                    <button id="list-view-btn" title="List View"><i class="fa-solid fa-list"></i></button>
+                    <button id="calendar-view-btn" class="active" title="Calendar View">
+                        <i class="fa-solid fa-calendar-days"></i> Calendar View
+                    </button>
+                    <button id="list-view-btn" title="List View">
+                        <i class="fa-solid fa-list"></i> List View
+                    </button>
                 </div>
             </div>
             
