@@ -35,7 +35,7 @@ function initializeAdminPanel() {
     fetchAllUsers();
     fetchAllProducts();
     fetchTestimonialsForAdmin();
-    setupEventListeners();
+    setupGlobalEventListeners(); // Changed to a more robust setup
 }
 
 // --- USER MANAGEMENT ---
@@ -118,7 +118,7 @@ async function fetchAllProducts() {
         allProductsList.innerHTML = "<p>No products found on the site.</p>";
         return;
     }
-    allProductsList.innerHTML = '';
+    allProductsList.innerHTML = ''; // Clear loading message now that products are coming
     querySnapshot.forEach((doc) => {
         const product = doc.data();
         const isDeal = product.isDeal || false;
@@ -126,8 +126,11 @@ async function fetchAllProducts() {
 
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
+        // Using a placeholder image if imageUrls[0] is not available or valid
+        const imageUrl = product.imageUrls?.[0] || 'https://placehold.co/200'; 
+        
         productCard.innerHTML = `
-            <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" alt="${product.name}" loading="lazy">
+            <img src="${imageUrl}" alt="${product.name}" loading="lazy">
             <h3>${product.name}</h3>
             <p class="price">UGX ${product.price.toLocaleString()}</p>
             <p style="font-size:0.8em;color:grey;padding:0 5px;word-break:break-all;">By: ${product.sellerName || 'N/A'} ${verifiedBadge}</p>
@@ -143,128 +146,170 @@ async function fetchAllProducts() {
 }
 
 async function toggleDealStatusAsAdmin(productId, currentStatus) {
-    const newStatus = !JSON.parse(currentStatus);
-    await updateDoc(doc(db, 'products', productId), { isDeal: newStatus });
-    fetchAllProducts();
+    const newStatus = !JSON.parse(currentStatus); // Parse boolean status correctly
+    try {
+        await updateDoc(doc(db, 'products', productId), { isDeal: newStatus });
+        fetchAllProducts(); // Re-fetch to update button state immediately
+    } catch (error) {
+        console.error("Failed to toggle deal status:", error);
+        alert("Error updating deal status. Check console for details.");
+    }
 }
 
 async function deleteProductAsAdmin(productId, productName) {
     if (confirm(`ADMIN: Are you sure you want to delete "${productName}"? This is permanent.`)) {
-        await deleteDoc(doc(db, 'products', productId));
-        fetchAllProducts();
+        try {
+            await deleteDoc(doc(db, 'products', productId));
+            fetchAllProducts();
+        } catch (error) {
+            console.error("Failed to delete product:", error);
+            alert("Error deleting product. Check console for details.");
+        }
     }
 }
 
 // --- TESTIMONIAL MANAGEMENT ---
 async function fetchTestimonialsForAdmin() {
-    pendingTestimonialsList.innerHTML = '';
-    approvedTestimonialsList.innerHTML = '';
+    pendingTestimonialsList.innerHTML = '<p>Loading...</p>';
+    approvedTestimonialsList.innerHTML = '<p>Loading...</p>';
 
     const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    try {
+        const snapshot = await getDocs(q);
 
-    let pendingCount = 0;
-    let approvedCount = 0;
+        let pendingHtml = '';
+        let approvedHtml = '';
+        let pendingCount = 0;
+        let approvedCount = 0;
 
-    snapshot.forEach(doc => {
-        const testimonial = doc.data();
-        const item = document.createElement('li');
-        item.className = 'user-list-item';
+        snapshot.forEach(doc => {
+            const testimonial = doc.data();
+            const id = doc.id;
 
-        if (testimonial.status === 'pending') {
-            pendingCount++;
-            item.innerHTML = `
-                <div style="flex-grow: 1;">
-                    <p><strong>"${testimonial.quote}"</strong></p>
-                    <p>- ${testimonial.authorName} <em>(${testimonial.authorDetail || 'N/A'})</em></p>
-                </div>
-                <div class="testimonial-controls">
-                    <button class="action-btn green" data-action="approve-testimonial" data-id="${doc.id}">Approve</button>
-                    <button class="action-btn red" data-action="delete-testimonial" data-id="${doc.id}">Delete</button>
-                </div>
-            `;
-            pendingTestimonialsList.appendChild(item);
-        } else { // Approved
-            approvedCount++;
-            item.innerHTML = `
-               <div style="flex-grow: 1;">
-                    <p><strong>"${testimonial.quote}"</strong></p>
-                    <p>- ${testimonial.authorName} <em>(${testimonial.authorDetail || 'N/A'})</em></p>
-                    <div style="margin-top: 5px;">
-                        Order: <input type="number" value="${testimonial.order || 99}" data-action="update-order" data-id="${doc.id}" style="width: 60px; padding: 5px;">
-                    </div>
-                </div>
-                <div class="testimonial-controls">
-                    <button class="action-btn red" data-action="delete-testimonial" data-id="${doc.id}">Delete</button>
-                </div>
-            `;
-            approvedTestimonialsList.appendChild(item);
-        }
-    });
+            if (testimonial.status === 'pending') {
+                pendingCount++;
+                pendingHtml += `
+                    <li class="user-list-item">
+                        <div style="flex-grow: 1;">
+                            <p><strong>"${testimonial.quote}"</strong></p>
+                            <p>- ${testimonial.authorName} <em>(${testimonial.authorDetail || 'N/A'})</em></p>
+                        </div>
+                        <div class="testimonial-controls">
+                            <button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>
+                            <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
+                        </div>
+                    </li>
+                `;
+            } else { // Approved
+                approvedCount++;
+                approvedHtml += `
+                   <li class="user-list-item">
+                       <div style="flex-grow: 1;">
+                            <p><strong>"${testimonial.quote}"</strong></p>
+                            <p>- ${testimonial.authorName} <em>(${testimonial.authorDetail || 'N/A'})</em></p>
+                            <div style="margin-top: 5px;">
+                                Order: <input type="number" value="${testimonial.order || 99}" data-action="update-order" data-id="${id}" style="width: 60px; padding: 5px;">
+                            </div>
+                        </div>
+                        <div class="testimonial-controls">
+                            <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
+                        </div>
+                   </li>
+                `;
+            }
+        });
 
-    if (pendingCount === 0) pendingTestimonialsList.innerHTML = '<li>No pending feedback.</li>';
-    if (approvedCount === 0) approvedTestimonialsList.innerHTML = '<li>No approved feedback.</li>';
+        pendingTestimonialsList.innerHTML = pendingCount > 0 ? pendingHtml : '<li>No pending feedback.</li>';
+        approvedTestimonialsList.innerHTML = approvedCount > 0 ? approvedHtml : '<li>No approved feedback.</li>';
+
+    } catch (error) {
+        console.error("Error fetching testimonials for admin:", error);
+        pendingTestimonialsList.innerHTML = '<li>Error loading pending feedback.</li>';
+        approvedTestimonialsList.innerHTML = '<li>Error loading approved feedback.</li>';
+    }
 }
 
 async function approveTestimonial(id) {
-    await updateDoc(doc(db, 'testimonials', id), { status: 'approved', order: 99 });
-    fetchTestimonialsForAdmin();
+    if (confirm('Approve this testimonial? It will appear on the homepage.')) {
+        try {
+            await updateDoc(doc(db, 'testimonials', id), { status: 'approved', order: 99 });
+            fetchTestimonialsForAdmin(); // Refresh list
+        } catch (error) {
+            console.error("Error approving testimonial:", error);
+            alert("Failed to approve testimonial.");
+        }
+    }
 }
 
 async function deleteTestimonial(id) {
     if (confirm('Permanently delete this testimonial?')) {
-        await deleteDoc(doc(db, 'testimonials', id));
-        fetchTestimonialsForAdmin();
+        try {
+            await deleteDoc(doc(db, 'testimonials', id));
+            fetchTestimonialsForAdmin(); // Refresh list
+        } catch (error) {
+            console.error("Error deleting testimonial:", error);
+            alert("Failed to delete testimonial.");
+        }
     }
 }
 
 async function updateTestimonialOrder(id, order) {
-    await updateDoc(doc(db, 'testimonials', id), { order: Number(order) });
+    try {
+        await updateDoc(doc(db, 'testimonials', id), { order: Number(order) });
+        // No alert, as it's a minor change. Could add a temporary visual cue.
+    } catch (error) {
+        console.error("Error updating testimonial order:", error);
+        alert("Failed to update testimonial order.");
+    }
 }
 
-// --- EVENT LISTENER SETUP (EVENT DELEGATION) ---
-function setupEventListeners() {
-    // Products Grid Listener
+// --- GLOBAL EVENT LISTENER SETUP (EVENT DELEGATION) ---
+function setupGlobalEventListeners() {
+    // Products List Listener (for "Make/Remove Deal" and "Delete" buttons)
     allProductsList.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
+        
         const { action, id, status, name } = target.dataset;
 
-        if (action === 'toggle-deal') toggleDealStatusAsAdmin(id, status);
-        if (action === 'delete-product') deleteProductAsAdmin(id, name);
+        if (action === 'toggle-deal') {
+            toggleDealStatusAsAdmin(id, status);
+        } else if (action === 'delete-product') {
+            deleteProductAsAdmin(id, name);
+        }
     });
 
-    // Users List Listener
+    // Users List Listener (for "Verify/Un-verify" buttons)
     userList.addEventListener('click', (e) => {
         const target = e.target.closest('button');
-        if (!target) return;
-        const { action, uid, status } = target.dataset;
-
-        if (action === 'toggle-verify') toggleUserVerification(uid, status);
+        if (!target || target.dataset.action !== 'toggle-verify') return;
+        
+        toggleUserVerification(target.dataset.uid, target.dataset.status);
     });
 
-    // Testimonials Listeners
+    // Pending Testimonials List Listener
     pendingTestimonialsList.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
+        
         const { action, id } = target.dataset;
-
         if (action === 'approve-testimonial') approveTestimonial(id);
         if (action === 'delete-testimonial') deleteTestimonial(id);
     });
 
+    // Approved Testimonials List Listener (for "Delete" buttons and order input)
     approvedTestimonialsList.addEventListener('click', (e) => {
         const target = e.target.closest('button');
-        if (!target) return;
-        const { action, id } = target.dataset;
-
-        if (action === 'delete-testimonial') deleteTestimonial(id);
+        if (!target || target.dataset.action !== 'delete-testimonial') return;
+        
+        deleteTestimonial(target.dataset.id);
     });
 
     approvedTestimonialsList.addEventListener('change', (e) => {
-        const target = e.target.closest('input');
+        const target = e.target.closest('input[type="number"]');
         if (!target || target.dataset.action !== 'update-order') return;
         
         updateTestimonialOrder(target.dataset.id, target.value);
     });
 }
+
