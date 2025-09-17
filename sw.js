@@ -1,6 +1,6 @@
 // sw.js (Original Version)
 
-const CACHE_NAME = 'kabaleonline-cache-v7'; // You can keep the version or change it
+const CACHE_NAME = 'kabaleonline-cache-v8'; // You can keep the version or change it
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
 const CORE_FILES = [
