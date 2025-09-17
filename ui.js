@@ -50,61 +50,56 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loginCancelBtn?.addEventListener('click', hideLoginPrompt);
 
-  // --- NEW --- We only want to handle installation on the main website, not subdomains.
-  const isMainDomain = window.location.hostname === 'www.kabaleonline.com' || window.location.hostname === 'kabaleonline.com';
+  let deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallPromptIfNeeded();
+  });
 
-  if (isMainDomain) {
-    let deferredPrompt = null;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      showInstallPromptIfNeeded();
-    });
-
-    function showInstallPromptIfNeeded() {
-      if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) {
-        return;
-      }
-      const lastDismissed = localStorage.getItem('installPromptDismissedAt');
-      const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
-      if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) {
-        return;
-      }
-      if (installAppPrompt) {
-        installAppPrompt.style.display = "flex";
-      }
+  function showInstallPromptIfNeeded() {
+    if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) {
+      return;
     }
-
-    function hideInstallPrompt() {
-      if (installAppPrompt) {
-        installAppPrompt.style.display = "none";
-      }
-      localStorage.setItem('installPromptDismissedAt', Date.now());
+    const lastDismissed = localStorage.getItem('installPromptDismissedAt');
+    const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+    if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) {
+      return;
     }
+    if (installAppPrompt) {
+      installAppPrompt.style.display = "flex";
+    }
+  }
 
-    installAppCancel?.addEventListener('click', hideInstallPrompt);
+  function hideInstallPrompt() {
+    if (installAppPrompt) {
+      installAppPrompt.style.display = "none";
+    }
+    localStorage.setItem('installPromptDismissedAt', Date.now());
+  }
 
-    installAppBtn?.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        hideInstallPrompt();
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      }
-    });
+  installAppCancel?.addEventListener('click', hideInstallPrompt);
 
-    window.addEventListener("appinstalled", () => {
-      if (installAppPrompt) installAppPrompt.style.display = "none";
-      localStorage.removeItem('installPromptDismissedAt');
-    });
-  } // --- NEW --- End of the isMainDomain check
+  installAppBtn?.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      hideInstallPrompt();
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    if (installAppPrompt) installAppPrompt.style.display = "none";
+    localStorage.removeItem('installPromptDismissedAt');
+  });
 
   async function requestNotificationPermission() {
     OneSignal.Slidedown.promptPush();
   }
 
   notificationsBtn?.addEventListener('click', requestNotificationPermission);
-  
+
   if (window.matchMedia('(display-mode: standalone)').matches) {
     const alreadyPrompted = localStorage.getItem('notificationPromptedAfterInstall');
     if (!alreadyPrompted) {
