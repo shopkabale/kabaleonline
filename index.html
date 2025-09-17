@@ -47,7 +47,7 @@
         });
       });
     </script>
-    
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -136,9 +136,7 @@
         .cta-button i { font-size: 20px; width: 25px; text-align: center; }
         footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-        
-        /* --- NEW SECTION STYLES --- */
-        .category-section, .how-it-works-section, .testimonial-section { margin-top: 40px; }
+        .category-section, .how-it-works-section, .testimonial-section, .deals-section { margin-top: 40px; }
         .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--card-bg); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-dark); box-shadow: var(--shadow); transition: transform 0.2s ease; text-align: center; }
         .category-item:hover { transform: translateY(-5px); }
@@ -155,14 +153,22 @@
         .testimonial-author { font-weight: bold; text-align: right; }
         .testimonial-author span { font-weight: normal; color: var(--text-light); font-size: 0.9em; }
         
+        /* --- NEW DEALS CAROUSEL STYLES --- */
+        .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; /* Firefox */ }
+        .deals-carousel-wrapper::-webkit-scrollbar { display: none; /* Safari and Chrome */ }
+        .deals-grid { display: flex; gap: 15px; }
+        .deals-grid .product-card { flex: 0 0 160px; /* Ensures cards don't shrink */ width: 160px; }
+        .deals-grid .product-card h3 { font-size: 0.85rem; }
+        .deals-grid .product-card .price { font-size: 1rem; }
+
         @media (min-width: 768px) {
             .product-grid { grid-template-columns: repeat(3, 1fr); }
             .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .category-grid { grid-template-columns: repeat(6, 1fr); }
             .how-it-works-container { flex-direction: row; justify-content: space-around; }
             .testimonial-grid { flex-direction: row; }
+            .deals-grid .product-card { flex: 0 0 200px; width: 200px; }
         }
-        /* ... Your other original styles ... */
     </style>
 </head>
 <body>
@@ -212,7 +218,7 @@
             <h1>More Than a Marketplace</h1>
             <p>The #1 community platform for items, services, rentals, and more in Kabale.</p>
             <div class="hero-buttons">
-                <a href="/" class="hero-btn hero-browse">Browse Products</a>
+                <a href="#listings-title" class="hero-btn hero-browse">Browse Products</a>
                 <a href="/sell/" class="hero-btn hero-start-selling">Post Something</a>
             </div>
         </section>
@@ -228,6 +234,14 @@
                 <a href="/?category=Other" class="category-item"><i class="fa-solid fa-shapes"></i><span>Other</span></a>
             </div>
         </section>
+        
+        <section class="deals-section" id="deals-section" style="display: none;">
+            <h2 class="section-title">Today's Top Deals</h2>
+            <div class="deals-carousel-wrapper">
+                <div id="deals-grid" class="deals-grid">
+                    </div>
+            </div>
+        </section>
 
         <main>
             <h2 id="listings-title" class="section-title">Recent Items</h2>
@@ -236,7 +250,7 @@
                 <button id="load-more-btn" class="load-more-btn" style="display: none;">Load More</button>
             </div>
         </main>
-        
+
         <section class="how-it-works-section">
             <h2 class="section-title" style="text-align: center;">How It Works</h2>
             <div class="how-it-works-container">
@@ -258,12 +272,13 @@
                 <div class="cta-item"><a href="/sell/" class="cta-button"><i class="fa-solid fa-plus-circle"></i>Post an Ad</a></div>
                 <div class="cta-item"><a href="/requests/view.html" class="cta-button"><i class="fa-solid fa-clipboard-list"></i>Request an Item</a></div>
                 <div class="cta-item"><a href="/submit-story.html" class="cta-button"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
+                <div class="cta-item"><a href="/submit-testimonial.html" class="cta-button"><i class="fa-solid fa-comments"></i>Share Feedback</a></div>
                 <div class="cta-item"><a href="/lost-and-found/" class="cta-button"><i class="fa-solid fa-magnifying-glass"></i>Report Lost & Found</a></div>
                 <div class="cta-item"><a href="/rentals/" class="cta-button"><i class="fa-solid fa-house"></i>List a Rental</a></div>
             </div>
         </div>
     </div>
-    
+
     <footer>
         <div class="container">
             <div class="footer-logo">Kabale <span>Online</span></div>
