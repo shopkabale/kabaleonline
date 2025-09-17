@@ -6,6 +6,7 @@
  */
 function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
+        // Fallback to a local or placeholder image if Cloudinary URL is invalid
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
@@ -15,7 +16,7 @@ function getCloudinaryTransformedUrl(url, type) {
     const transformString = transformations[type] || transformations.thumbnail;
     const urlParts = url.split('/upload/');
     if (urlParts.length !== 2) {
-        return url;
+        return url; // Return original if split fails (shouldn't happen with valid Cloudinary URL)
     }
     return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
@@ -30,9 +31,8 @@ const searchInput = document.getElementById("search-input");
 const listingsTitle = document.getElementById("listings-title");
 const searchBtn = document.getElementById("search-btn");
 const loadMoreBtn = document.getElementById("load-more-btn");
-const dealsSection = document.getElementById("deals-section");
-const dealsGrid = document.getElementById("deals-grid");
-
+const dealsSection = document.getElementById("deals-section"); // Ensure this is in index.html
+const dealsGrid = document.getElementById("deals-grid");     // Ensure this is in index.html
 
 // --- State Management ---
 let fetching = false;
@@ -41,20 +41,34 @@ let lastVisibleDoc = null;
 const urlParams = new URLSearchParams(window.location.search);
 const listingTypeFilter = urlParams.get("type");
 const categoryFilter = urlParams.get("category");
+const searchTermFilter = urlParams.get("q"); // For general search
 
-// --- Firestore Fetch (Products) ---
-async function fetchFromFirestore(isNewSearch = true) {
+// --- Firestore Fetch (Products for Main Grid) ---
+async function fetchMainProducts(isNewSearch = true) {
   let q;
   const baseCollection = collection(db, "products");
-  const baseConstraints = [where("isSold", "==", false), orderBy("createdAt", "desc"), limit(12)];
+  let constraints = [where("isSold", "==", false), orderBy("createdAt", "desc"), limit(12)];
 
-  if (categoryFilter) {
-    q = query(baseCollection, where("category", "==", categoryFilter), ...baseConstraints);
+  if (searchTermFilter) {
+      // For basic search, you might need a full-text search solution like Algolia or a less efficient Firestore 'array-contains' if you pre-tokenize.
+      // For now, we'll just show recent if a general search term is used.
+      // More advanced search is outside the scope of simple Firestore queries.
+      // A more robust solution for search requires a dedicated search service.
+       listingsTitle.textContent = `Search results for "${searchTermFilter}"`;
+  } else if (categoryFilter) {
+    constraints.unshift(where("category", "==", categoryFilter));
+    listingsTitle.textContent = `Items in "${categoryFilter}"`;
+    document.title = `Kabale Online | ${categoryFilter}`;
   } else if (listingTypeFilter) {
-    q = query(baseCollection, where("listing_type", "==", listingTypeFilter), ...baseConstraints);
+    constraints.unshift(where("listing_type", "==", listingTypeFilter));
+    listingsTitle.textContent = listingTypeFilter === "service" ? "Services" : "Recent Items";
+    document.title = `Kabale Online | ${listingTypeFilter === "service" ? "Services" : "Recent Items"}`;
   } else {
-    q = query(baseCollection, ...baseConstraints);
+    listingsTitle.textContent = "Recent Items";
+    document.title = "Kabale Online | #1 Marketplace to Buy, Sell & Rent in Kabale";
   }
+
+  q = query(baseCollection, ...constraints);
 
   if (!isNewSearch && lastVisibleDoc) {
     q = query(q, startAfter(lastVisibleDoc));
@@ -66,9 +80,11 @@ async function fetchFromFirestore(isNewSearch = true) {
 }
 
 
-// --- Render Products ---
-function renderProducts(productsToDisplay, isNewSearch = false, targetGrid = productGrid) {
-  if (isNewSearch) targetGrid.innerHTML = "";
+// --- Render Products to a Specific Grid ---
+function renderProducts(productsToDisplay, isNewRender = false, targetGrid) {
+  if (!targetGrid) return; // Defensive check
+
+  if (isNewRender) targetGrid.innerHTML = ""; // Clear existing only on new fetches
 
   const fragment = document.createDocumentFragment();
   productsToDisplay.forEach(product => {
@@ -91,71 +107,81 @@ function renderProducts(productsToDisplay, isNewSearch = false, targetGrid = pro
   targetGrid.appendChild(fragment);
 }
 
-// --- Fetch Products Controller ---
-async function fetchProducts(isNewSearch = true) {
+// --- Fetch & Render Main Products ---
+async function fetchAndRenderMainProducts(isNewSearch = true) {
   if (fetching) return;
   fetching = true;
-  loadMoreBtn.disabled = true;
+  if(loadMoreBtn) loadMoreBtn.disabled = true;
 
   if (isNewSearch) {
-    productGrid.innerHTML = '';
-    loadMoreBtn.style.display = "none";
+    if(productGrid) productGrid.innerHTML = '';
+    if(loadMoreBtn) loadMoreBtn.style.display = "none";
     lastVisibleDoc = null;
   } else {
-    loadMoreBtn.textContent = "Loading more...";
+    if(loadMoreBtn) loadMoreBtn.textContent = "Loading more...";
   }
 
   try {
-    const products = await fetchFromFirestore(isNewSearch);
+    const products = await fetchMainProducts(isNewSearch);
 
     if (products.length === 0 && isNewSearch) {
-      productGrid.innerHTML = "<p>No listings match your criteria.</p>";
+      if(productGrid) productGrid.innerHTML = "<p>No listings match your criteria.</p>";
     } else {
-      renderProducts(products, isNewSearch);
+      renderProducts(products, isNewSearch, productGrid);
     }
 
-    if (products.length === 12) {
-      loadMoreBtn.style.display = "block";
+    if (products.length === 12) { // If we got the limit, there might be more
+      if(loadMoreBtn) loadMoreBtn.style.display = "block";
     } else {
-      loadMoreBtn.style.display = "none";
+      if(loadMoreBtn) loadMoreBtn.style.display = "none";
     }
   } catch (error) {
-    console.error("Error fetching products:", error);
-    if (isNewSearch) {
+    console.error("Error fetching main products:", error);
+    if (isNewSearch && productGrid) {
       productGrid.innerHTML = `<p>Sorry, could not load listings. Please try again later.</p>`;
     }
   } finally {
     fetching = false;
-    loadMoreBtn.textContent = "Load More";
-    loadMoreBtn.disabled = false;
+    if(loadMoreBtn) {
+      loadMoreBtn.textContent = "Load More";
+      loadMoreBtn.disabled = false;
+    }
   }
 }
 
-// --- NEW: Fetch Deals ---
+// --- NEW: Fetch & Render Deals ---
 async function fetchDeals() {
-    if (!dealsGrid || !dealsSection) return;
+    if (!dealsGrid || !dealsSection) {
+        console.warn("Deals grid or section not found on page.");
+        return;
+    }
+    
+    // Hide initially, show only if deals are found
+    dealsSection.style.display = 'none';
+
     try {
         const dealsQuery = query(
             collection(db, 'products'),
             where('isDeal', '==', true),
             where('isSold', '==', false),
-            orderBy('createdAt', 'desc'),
-            limit(8)
+            orderBy('createdAt', 'desc'), // Use createdAt or a specific 'dealPriority' field
+            limit(8) // Limit number of deals shown
         );
         const snapshot = await getDocs(dealsQuery);
 
         if (snapshot.empty) {
+            console.log("No deals found.");
             dealsSection.style.display = 'none';
             return;
         }
         
         const deals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProducts(deals, true, dealsGrid);
-        dealsSection.style.display = 'block';
+        renderProducts(deals, true, dealsGrid); // isNewRender = true to clear previous content
+        dealsSection.style.display = 'block'; // Only show if deals are present
 
     } catch (error) {
         console.error("Error fetching deals:", error);
-        dealsSection.style.display = 'none';
+        dealsSection.style.display = 'none'; // Ensure it's hidden on error
     }
 }
 
@@ -165,7 +191,6 @@ async function fetchTestimonials() {
     if (!testimonialGrid) return;
 
     try {
-        // MODIFIED: This query now only gets approved testimonials
         const testimonialsQuery = query(
             collection(db, 'testimonials'), 
             where('status', '==', 'approved'),
@@ -200,27 +225,23 @@ async function fetchTestimonials() {
 // --- Search Handler ---
 function handleNewSearch(event) {
     event.preventDefault();
-    const searchTerm = searchInput.value;
-    if (searchTerm.trim() !== "") {
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm !== "") {
          window.location.href = `/?q=${encodeURIComponent(searchTerm)}`;
+    } else {
+        // If search input is empty, clear search filter and reload
+        window.location.href = `/`; 
     }
 }
 
+// --- Event Listeners ---
 if (searchBtn) searchBtn.addEventListener("click", handleNewSearch);
 if (searchInput) searchInput.addEventListener("keydown", e => e.key === "Enter" && handleNewSearch(e));
-if (loadMoreBtn) loadMoreBtn.addEventListener("click", () => fetchProducts(false));
+if (loadMoreBtn) loadMoreBtn.addEventListener("click", () => fetchAndRenderMainProducts(false));
 
-// --- Init ---
+// --- Init on DOM Ready ---
 document.addEventListener('DOMContentLoaded', () => {
-    if (categoryFilter) {
-      listingsTitle.textContent = `Items in "${categoryFilter}"`;
-      document.title = `Kabale Online | ${categoryFilter}`;
-    } else if (listingTypeFilter === "service") {
-      listingsTitle.textContent = "Services";
-      document.title = "Kabale Online | Services";
-    }
-
-    fetchDeals(); // Fetch deals for the carousel
-    fetchProducts(true);
-    fetchTestimonials();
+    fetchDeals(); // Fetch deals first
+    fetchAndRenderMainProducts(true); // Then main products
+    fetchTestimonials(); // Then testimonials
 });
