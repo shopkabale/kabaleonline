@@ -2,6 +2,7 @@ import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// --- DOM ELEMENT REFERENCES ---
 const adminContent = document.getElementById('admin-content');
 const accessDenied = document.getElementById('access-denied');
 const allProductsList = document.getElementById('all-products-list');
@@ -32,13 +33,14 @@ function showAccessDenied() {
 }
 
 function initializeAdminPanel() {
+    setupGlobalEventListeners();
     fetchAllUsers();
     fetchAllProducts();
     fetchTestimonialsForAdmin();
-    setupGlobalEventListeners(); // Changed to a more robust setup
 }
 
-// --- USER MANAGEMENT ---
+// --- DATA FETCHING FUNCTIONS ---
+
 async function fetchAllUsers() {
     userList.innerHTML = '<p>Loading users...</p>';
     try {
@@ -50,32 +52,18 @@ async function fetchAllUsers() {
             return;
         }
 
-        const referralCounts = {};
-        userSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.referrerId) {
-                referralCounts[userData.referrerId] = (referralCounts[userData.referrerId] || 0) + 1;
-            }
-        });
-
         userList.innerHTML = '';
         userSnapshot.forEach(doc => {
             const userData = doc.data();
-            const userId = doc.id;
             if (userData.role === 'admin') return;
-
             const isVerified = userData.isVerified || false;
-            const referralCount = referralCounts[userId] || 0;
-
             const listItem = document.createElement('li');
             listItem.className = 'user-list-item';
             listItem.innerHTML = `
                 <span class="user-info">
                     ${userData.email} ${isVerified ? '<span class="verified-badge">✔️ Verified</span>' : ''}
-                    <br>
-                    <span class="referral-info">Referrals: ${referralCount}</span>
                 </span>
-                <button class="action-btn ${isVerified ? 'red' : 'green'}" data-action="toggle-verify" data-uid="${userId}" data-status="${isVerified}">
+                <button class="action-btn ${isVerified ? 'red' : 'green'}" data-action="toggle-verify" data-uid="${doc.id}" data-status="${isVerified}">
                     ${isVerified ? 'Un-verify' : 'Verify'}
                 </button>
             `;
@@ -87,105 +75,54 @@ async function fetchAllUsers() {
     }
 }
 
-async function toggleUserVerification(uid, currentStatus) {
-    const newStatus = !JSON.parse(currentStatus);
-    const userRef = doc(db, 'users', uid);
-    try {
-        await updateDoc(userRef, { isVerified: newStatus });
-        const batch = writeBatch(db);
-        const q = query(collection(db, 'products'), where("sellerId", "==", uid));
-        const productSnapshot = await getDocs(q);
-        productSnapshot.forEach((productDoc) => {
-            batch.update(doc(db, 'products', productDoc.id), { sellerIsVerified: newStatus });
-        });
-        await batch.commit();
-        alert(`User has been ${newStatus ? 'verified' : 'un-verified'}.`);
-        fetchAllUsers(); 
-        fetchAllProducts();
-    } catch (error) {
-        console.error("Verification toggle failed:", error);
-        alert("Failed to update user verification.");
-    }
-}
-
-// --- PRODUCT MANAGEMENT ---
 async function fetchAllProducts() {
     allProductsList.innerHTML = '<p>Loading products...</p>';
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-        allProductsList.innerHTML = "<p>No products found on the site.</p>";
-        return;
-    }
-    allProductsList.innerHTML = ''; // Clear loading message now that products are coming
-    querySnapshot.forEach((doc) => {
-        const product = doc.data();
-        const isDeal = product.isDeal || false;
-        const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller">✔️</span>' : '';
-
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        // Using a placeholder image if imageUrls[0] is not available or valid
-        const imageUrl = product.imageUrls?.[0] || 'https://placehold.co/200'; 
-        
-        productCard.innerHTML = `
-            <img src="${imageUrl}" alt="${product.name}" loading="lazy">
-            <h3>${product.name}</h3>
-            <p class="price">UGX ${product.price.toLocaleString()}</p>
-            <p style="font-size:0.8em;color:grey;padding:0 5px;word-break:break-all;">By: ${product.sellerName || 'N/A'} ${verifiedBadge}</p>
-            <div class="seller-controls">
-                <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${doc.id}" data-status="${isDeal}">
-                    ${isDeal ? 'Remove Deal' : 'Make Deal'}
-                </button>
-                <button class="admin-delete" data-action="delete-product" data-id="${doc.id}" data-name="${product.name}">Delete</button>
-            </div>
-        `;
-        allProductsList.appendChild(productCard);
-    });
-}
-
-async function toggleDealStatusAsAdmin(productId, currentStatus) {
-    const newStatus = !JSON.parse(currentStatus); // Parse boolean status correctly
     try {
-        await updateDoc(doc(db, 'products', productId), { isDeal: newStatus });
-        fetchAllProducts(); // Re-fetch to update button state immediately
-    } catch (error) {
-        console.error("Failed to toggle deal status:", error);
-        alert("Error updating deal status. Check console for details.");
-    }
-}
+        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
 
-async function deleteProductAsAdmin(productId, productName) {
-    if (confirm(`ADMIN: Are you sure you want to delete "${productName}"? This is permanent.`)) {
-        try {
-            await deleteDoc(doc(db, 'products', productId));
-            fetchAllProducts();
-        } catch (error) {
-            console.error("Failed to delete product:", error);
-            alert("Error deleting product. Check console for details.");
+        if (querySnapshot.empty) {
+            allProductsList.innerHTML = "<p>No products found on the site.</p>";
+            return;
         }
+        allProductsList.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const product = doc.data();
+            const isDeal = product.isDeal || false;
+            const verifiedBadge = product.sellerIsVerified ? '<span title="Verified Seller">✔️</span>' : '';
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.innerHTML = `
+                <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" alt="${product.name}" loading="lazy">
+                <h3>${product.name}</h3>
+                <p class="price">UGX ${product.price.toLocaleString()}</p>
+                <p style="font-size:0.8em;color:grey;padding:0 5px;word-break:break-all;">By: ${product.sellerName || 'N/A'} ${verifiedBadge}</p>
+                <div class="seller-controls">
+                    <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${doc.id}" data-status="${isDeal}">
+                        ${isDeal ? 'Remove Deal' : 'Make Deal'}
+                    </button>
+                    <button class="admin-delete" data-action="delete-product" data-id="${doc.id}" data-name="${product.name}">Delete</button>
+                </div>
+            `;
+            allProductsList.appendChild(productCard);
+        });
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        allProductsList.innerHTML = "<p>Could not load products. Please refresh.</p>";
     }
 }
 
-// --- TESTIMONIAL MANAGEMENT ---
 async function fetchTestimonialsForAdmin() {
     pendingTestimonialsList.innerHTML = '<p>Loading...</p>';
     approvedTestimonialsList.innerHTML = '<p>Loading...</p>';
-
-    const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
     try {
+        const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
 
-        let pendingHtml = '';
-        let approvedHtml = '';
-        let pendingCount = 0;
-        let approvedCount = 0;
-
+        let pendingHtml = '', approvedHtml = '', pendingCount = 0, approvedCount = 0;
         snapshot.forEach(doc => {
             const testimonial = doc.data();
             const id = doc.id;
-
             if (testimonial.status === 'pending') {
                 pendingCount++;
                 pendingHtml += `
@@ -200,7 +137,7 @@ async function fetchTestimonialsForAdmin() {
                         </div>
                     </li>
                 `;
-            } else { // Approved
+            } else {
                 approvedCount++;
                 approvedHtml += `
                    <li class="user-list-item">
@@ -218,98 +155,127 @@ async function fetchTestimonialsForAdmin() {
                 `;
             }
         });
-
         pendingTestimonialsList.innerHTML = pendingCount > 0 ? pendingHtml : '<li>No pending feedback.</li>';
         approvedTestimonialsList.innerHTML = approvedCount > 0 ? approvedHtml : '<li>No approved feedback.</li>';
-
     } catch (error) {
-        console.error("Error fetching testimonials for admin:", error);
-        pendingTestimonialsList.innerHTML = '<li>Error loading pending feedback.</li>';
-        approvedTestimonialsList.innerHTML = '<li>Error loading approved feedback.</li>';
+        console.error("Error fetching testimonials:", error);
     }
 }
 
-async function approveTestimonial(id) {
-    if (confirm('Approve this testimonial? It will appear on the homepage.')) {
-        try {
-            await updateDoc(doc(db, 'testimonials', id), { status: 'approved', order: 99 });
-            fetchTestimonialsForAdmin(); // Refresh list
-        } catch (error) {
-            console.error("Error approving testimonial:", error);
-            alert("Failed to approve testimonial.");
-        }
-    }
-}
+// --- ACTION HANDLER FUNCTIONS ---
 
-async function deleteTestimonial(id) {
-    if (confirm('Permanently delete this testimonial?')) {
-        try {
-            await deleteDoc(doc(db, 'testimonials', id));
-            fetchTestimonialsForAdmin(); // Refresh list
-        } catch (error) {
-            console.error("Error deleting testimonial:", error);
-            alert("Failed to delete testimonial.");
-        }
-    }
-}
-
-async function updateTestimonialOrder(id, order) {
+async function handleToggleDeal(button) {
+    const productId = button.dataset.id;
+    const currentStatus = button.dataset.status === 'true';
+    const newStatus = !currentStatus;
+    button.disabled = true;
+    button.textContent = 'Updating...';
     try {
-        await updateDoc(doc(db, 'testimonials', id), { order: Number(order) });
-        // No alert, as it's a minor change. Could add a temporary visual cue.
+        await updateDoc(doc(db, 'products', productId), { isDeal: newStatus });
+        button.dataset.status = newStatus;
+        button.textContent = newStatus ? 'Remove Deal' : 'Make Deal';
+        button.classList.toggle('on-deal', newStatus);
     } catch (error) {
-        console.error("Error updating testimonial order:", error);
-        alert("Failed to update testimonial order.");
+        console.error("Failed to toggle deal status:", error);
+        alert("Error updating deal status.");
+        button.textContent = currentStatus ? 'Remove Deal' : 'Make Deal';
+    } finally {
+        button.disabled = false;
     }
 }
 
-// --- GLOBAL EVENT LISTENER SETUP (EVENT DELEGATION) ---
-function setupGlobalEventListeners() {
-    // Products List Listener (for "Make/Remove Deal" and "Delete" buttons)
-    allProductsList.addEventListener('click', (e) => {
-        const target = e.target.closest('button');
-        if (!target) return;
-        
-        const { action, id, status, name } = target.dataset;
-
-        if (action === 'toggle-deal') {
-            toggleDealStatusAsAdmin(id, status);
-        } else if (action === 'delete-product') {
-            deleteProductAsAdmin(id, name);
+async function handleDeleteProduct(button) {
+    const productId = button.dataset.id;
+    const productName = button.dataset.name;
+    if (confirm(`ADMIN: Are you sure you want to delete "${productName}"?`)) {
+        try {
+            await deleteDoc(doc(db, 'products', productId));
+            button.closest('.product-card').remove();
+        } catch (error) {
+            console.error("Failed to delete product:", error);
+            alert("Error deleting product.");
         }
+    }
+}
+
+async function handleToggleVerify(button) {
+    const uid = button.dataset.uid;
+    const currentStatus = button.dataset.status === 'true';
+    const newStatus = !currentStatus;
+    const userRef = doc(db, 'users', uid);
+    try {
+        await updateDoc(userRef, { isVerified: newStatus });
+        const batch = writeBatch(db);
+        const q = query(collection(db, 'products'), where("sellerId", "==", uid));
+        const productSnapshot = await getDocs(q);
+        productSnapshot.forEach((productDoc) => {
+            batch.update(doc(db, 'products', productDoc.id), { sellerIsVerified: newStatus });
+        });
+        await batch.commit();
+        alert(`User has been ${newStatus ? 'verified' : 'un-verified'}.`);
+        fetchAllUsers();
+        fetchAllProducts();
+    } catch (error) {
+        console.error("Verification toggle failed:", error);
+        alert("Failed to update user verification.");
+    }
+}
+
+async function handleApproveTestimonial(button) {
+    const id = button.dataset.id;
+    if (confirm('Approve this testimonial?')) {
+        await updateDoc(doc(db, 'testimonials', id), { status: 'approved', order: 99 });
+        fetchTestimonialsForAdmin();
+    }
+}
+
+async function handleDeleteTestimonial(button) {
+    const id = button.dataset.id;
+    if (confirm('Permanently delete this testimonial?')) {
+        await deleteDoc(doc(db, 'testimonials', id));
+        fetchTestimonialsForAdmin();
+    }
+}
+
+async function handleUpdateOrder(input) {
+    const id = input.dataset.id;
+    const order = Number(input.value);
+    await updateDoc(doc(db, 'testimonials', id), { order: order });
+}
+
+// --- GLOBAL EVENT LISTENER SETUP (Fully Implemented) ---
+function setupGlobalEventListeners() {
+    allProductsList.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'toggle-deal') handleToggleDeal(button);
+        if (action === 'delete-product') handleDeleteProduct(button);
     });
 
-    // Users List Listener (for "Verify/Un-verify" buttons)
     userList.addEventListener('click', (e) => {
-        const target = e.target.closest('button');
-        if (!target || target.dataset.action !== 'toggle-verify') return;
-        
-        toggleUserVerification(target.dataset.uid, target.dataset.status);
+        const button = e.target.closest('button');
+        if (!button || button.dataset.action !== 'toggle-verify') return;
+        handleToggleVerify(button);
     });
 
-    // Pending Testimonials List Listener
     pendingTestimonialsList.addEventListener('click', (e) => {
-        const target = e.target.closest('button');
-        if (!target) return;
-        
-        const { action, id } = target.dataset;
-        if (action === 'approve-testimonial') approveTestimonial(id);
-        if (action === 'delete-testimonial') deleteTestimonial(id);
+        const button = e.target.closest('button');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'approve-testimonial') handleApproveTestimonial(button);
+        if (action === 'delete-testimonial') handleDeleteTestimonial(button);
     });
 
-    // Approved Testimonials List Listener (for "Delete" buttons and order input)
     approvedTestimonialsList.addEventListener('click', (e) => {
-        const target = e.target.closest('button');
-        if (!target || target.dataset.action !== 'delete-testimonial') return;
-        
-        deleteTestimonial(target.dataset.id);
+        const button = e.target.closest('button');
+        if (!button || button.dataset.action !== 'delete-testimonial') return;
+        handleDeleteTestimonial(button);
     });
 
     approvedTestimonialsList.addEventListener('change', (e) => {
-        const target = e.target.closest('input[type="number"]');
-        if (!target || target.dataset.action !== 'update-order') return;
-        
-        updateTestimonialOrder(target.dataset.id, target.value);
+        const input = e.target.closest('input[type="number"]');
+        if (!input || input.dataset.action !== 'update-order') return;
+        handleUpdateOrder(input);
     });
 }
-
