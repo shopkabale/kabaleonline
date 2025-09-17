@@ -1,52 +1,68 @@
-// sw.js (CORRECTED AND CLEANED UP FOR CACHING)
+// sw.js (The MAIN service worker in your root directory)
 
-const CACHE_NAME = 'kabaleonline-cache-v7';
+const CACHE_NAME = 'kabaleonline-cache-v8'; // Incremented cache version
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
-const CORE_FILES = [
-  '/', '/index.html', '/offline.html',
-  '/styles.css', '/main.js',
-  '/auth.js', '/firebase.js',
-  '/nav.js', '/ui.js',
-  '/manifest.json', '/favicon.webp',
-  '/icons/192.png', '/icons/512.png'
-];
-
-const OPTIONAL_FILES = [
-  '/about.html', '/product.html', '/profile.html',
-  '/stories.html', '/submit-story.html', '/terms.html',
-  '/displayStories.js', '/postStory.js', '/profile.js', '/shared.js',
-  '/auth.html',
-  '/chat.html',
-  '/chat.js',
-  '/inbox.html',
-  '/inbox.js',
-  '/product.js',
-  '/style.css',
-  '/wishlist.html',
-  '/wishlist.js',
-  '/blog/', '/blog/index.html',
-  '/blog/how-to-sell-fast.html',
-  '/blog/how-to-spot-a-scam.html',
-  '/lost-and-found/', '/lost-and-found/index.html',
-  '/lost-and-found/post.html',
-  '/lost-and-found/main.js', '/lost-and-found/post.js',
-  '/rentals/', '/rentals/index.html',
-  '/rentals/detail.html', '/rentals/post.html',
-  '/rentals/main.js', '/rentals/detail.js', '/rentals/post.js',
-  '/requests/', '/requests/index.html',
-  '/requests/view.html',
-  '/requests/requests.js', '/requests/view.js',
-  '/sell/', '/sell/index.html',
-  '/sell/sell.js', '/sell/styles.css'
-];
+// --- File Manifest ---
+// This object lists all the files that belong to each section.
+const fileManifest = {
+  www: [
+    '/', '/index.html', '/offline.html', '/styles.css', '/main.js',
+    '/auth.js', '/firebase.js', '/nav.js', '/ui.js', '/manifest.json',
+    '/favicon.webp', '/icons/192.png', '/icons/512.png',
+    '/about.html', '/product.html', '/profile.html',
+    '/stories.html', '/submit-story.html', '/terms.html',
+    '/displayStories.js', '/postStory.js', '/profile.js', '/shared.js',
+    '/auth.html', '/chat.html', '/chat.js', '/inbox.html',
+    '/inbox.js', '/product.js', '/style.css', '/wishlist.html', '/wishlist.js'
+  ],
+  blog: [
+    '/index.html', '/how-to-sell-fast.html', '/how-to-spot-a-scam.html',
+    '/manifest.json', '/icons/192.png', '/icons/512.png'
+  ],
+  events: [
+    '/index.html', /* Add all your events files here */
+    '/manifest.json', '/icons/192.png', '/icons/512.png'
+  ],
+  'lost-and-found': [
+    '/index.html', '/post.html', '/main.js', '/post.js',
+    '/manifest.json', '/icons/192.png', '/icons/512.png'
+  ],
+  rentals: [
+    '/index.html', '/detail.html', '/post.html',
+    '/main.js', '/detail.js', '/post.js',
+    '/manifest.json', '/icons/192.png', '/icons/512.png'
+  ],
+  requests: [
+    '/index.html', '/view.html', '/requests.js', '/view.js',
+    '/manifest.json', '/icons/192.png', '/icons/512.png'
+  ],
+  sell: [
+    '/index.html', '/sell.js', '/styles.css',
+    '/manifest.json', '/icons/192.png', '/icons/512.png'
+  ]
+};
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
+      // Determine the current subdomain
+      const hostname = self.location.hostname;
+      let subdomain = 'www'; // Default
+      if (hostname.includes('blog.')) subdomain = 'blog';
+      else if (hostname.includes('events.')) subdomain = 'events';
+      else if (hostname.includes('lost-and-found.')) subdomain = 'lost-and-found';
+      else if (hostname.includes('rentals.')) subdomain = 'rentals';
+      else if (hostname.includes('requests.')) subdomain = 'requests';
+      else if (hostname.includes('sell.')) subdomain = 'sell';
+
+      // Get the correct list of files to cache from the manifest
+      const filesToCache = fileManifest[subdomain] || [];
+      console.log(`Installing SW for ${subdomain}. Caching ${filesToCache.length} files.`);
+
       return Promise.all(
-        CORE_FILES.map(url =>
-          cache.add(url).catch(err => console.warn('Skipped', url, err))
+        filesToCache.map(url =>
+          cache.add(url).catch(err => console.warn(`Skipped caching: ${url}`, err))
         )
       );
     })
@@ -54,6 +70,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+// Activate event remains the same
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames =>
@@ -69,64 +86,48 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+// Fetch event can remain mostly the same, as it handles general cases
 self.addEventListener('fetch', event => {
   const req = event.request;
 
+  // Handle HTML pages with a network-first strategy
   if (req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(req)
-        .then(networkRes =>
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(req, networkRes.clone());
-            return networkRes;
-          })
-        )
-        .catch(() =>
-          caches.match(req).then(cacheRes => cacheRes || caches.match('/offline.html'))
-        )
+        .then(networkRes => {
+          const cacheClone = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, cacheClone));
+          return networkRes;
+        })
+        .catch(() => caches.match(req).then(cacheRes => cacheRes || caches.match('/offline.html')))
     );
     return;
   }
 
+  // Handle images with a cache-first strategy
   if (req.destination === 'image') {
     event.respondWith(
-      caches.open(IMAGE_CACHE).then(async cache => {
-        const cached = await cache.match(req);
-        if (cached) return cached;
-
-        try {
-          const networkRes = await fetch(req);
-          cache.put(req, networkRes.clone());
-          limitCacheSize(IMAGE_CACHE, 50);
+      caches.match(req).then(cacheRes => {
+        return cacheRes || fetch(req).then(networkRes => {
+          const cacheClone = networkRes.clone();
+          caches.open(IMAGE_CACHE).then(cache => {
+            cache.put(req, cacheClone);
+            limitCacheSize(IMAGE_CACHE, 50);
+          });
           return networkRes;
-        } catch (err) {
-          return caches.match('/icons/192.png');
-        }
-      })
+        });
+      }).catch(() => caches.match('/icons/192.png'))
     );
     return;
   }
 
-  // --- THIS IS THE CORRECTED BLOCK ---
+  // Handle other assets (CSS, JS) with a cache-first strategy
   event.respondWith(
     caches.match(req).then(cacheRes => {
-      // If we find the request in the cache, return it immediately.
-      if (cacheRes) {
-        return cacheRes;
-      }
-
-      // If not in cache, go to the network.
-      return fetch(req).then(networkRes => {
-        // Check if this is a file we want to cache.
-        if (OPTIONAL_FILES.includes(new URL(req.url).pathname)) {
-          // Clone the response right away before the browser can use it.
-          const cacheClone = networkRes.clone();
-          // Open the cache and put the cloned response in it.
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(req, cacheClone);
-          });
-        }
-        // Return the original response for the browser to use.
+      return cacheRes || fetch(req).then(networkRes => {
+        // Optional: you could add a check here to only cache files from the manifest
+        const cacheClone = networkRes.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, cacheClone));
         return networkRes;
       });
     })
