@@ -9,8 +9,8 @@ function getCloudinaryTransformedUrl(url, type) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
-        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
-        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+        thumbnail: 'c_fill,g_auto,w_200,h_200,dpr_auto,f_auto,q_auto:low',
+        full: 'c_limit,w_800,h_800,dpr_auto,f_auto,q_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
     const urlParts = url.split('/upload/');
@@ -22,7 +22,7 @@ function getCloudinaryTransformedUrl(url, type) {
 
 // --- FIREBASE IMPORTS ---
 import { db } from "./firebase.js";
-import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, orderBy, limit, getDocs, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENT REFERENCES ---
 const productGrid = document.getElementById("product-grid");
@@ -33,6 +33,8 @@ const dealsGrid = document.getElementById("deals-grid");
 
 // --- STATE ---
 let fetching = false;
+let lastVisible = null;
+let activeFilters = null;
 
 // --- RENDER FUNCTION ---
 function renderProducts(productsToDisplay, targetGrid, isNewRender = false) {
@@ -85,31 +87,82 @@ async function fetchDeals() {
     }
 }
 
-// --- FETCH MAIN PRODUCT GRID (RANDOM ORDER) ---
-async function fetchMainProducts() {
+// --- FETCH MAIN PRODUCT GRID WITH PAGINATION ---
+async function fetchMainProducts(isLoadMore = false) {
     if (fetching) return;
     fetching = true;
-    loadMoreBtn.style.display = "none"; // No load more for random products
 
-    listingsTitle.textContent = "All Items";
-    productGrid.innerHTML = ""; // Clear old items
+    if (!isLoadMore) {
+        productGrid.innerHTML = "";
+        listingsTitle.textContent = "All Items";
+        lastVisible = null;
+    }
 
     try {
-        const snapshot = await getDocs(collection(db, "products"));
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get("category");
+        const type = urlParams.get("type");
+        const search = urlParams.get("q");
+
+        let qRef = collection(db, "products");
+        let filters = [];
+
+        if (category) {
+            filters.push(where("category", "==", category));
+            listingsTitle.textContent = category;
+        }
+
+        if (type) {
+            filters.push(where("type", "==", type));
+            listingsTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        }
+
+        // Base query
+        let q;
+        if (filters.length > 0) {
+            q = query(qRef, ...filters, where("isSold", "==", false), orderBy("createdAt", "desc"), limit(12));
+        } else {
+            q = query(qRef, where("isSold", "==", false), orderBy("createdAt", "desc"), limit(12));
+        }
+
+        if (isLoadMore && lastVisible) {
+            q = query(q, startAfter(lastVisible));
+        }
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty && !isLoadMore) {
+            productGrid.innerHTML = "<p>No listings found.</p>";
+            loadMoreBtn.style.display = "none";
+            return;
+        }
+
         let products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Shuffle randomly
-        products = products.sort(() => Math.random() - 0.5);
-
-        if (products.length === 0) {
-            productGrid.innerHTML = "<p>No listings found.</p>";
-        } else {
-            renderProducts(products, productGrid, true);
+        if (search) {
+            listingsTitle.textContent = `Results for "${search}"`;
+            products = products.filter(p =>
+                p.name?.toLowerCase().includes(search.toLowerCase()) ||
+                p.description?.toLowerCase().includes(search.toLowerCase())
+            );
         }
+
+        if (!isLoadMore) {
+            renderProducts(products, productGrid, true);
+        } else {
+            renderProducts(products, productGrid, false);
+        }
+
+        // Save last doc for pagination
+        lastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+        // Show or hide Load More
+        loadMoreBtn.style.display = snapshot.docs.length < 12 ? "none" : "block";
 
     } catch (error) {
         console.error("Error fetching products:", error);
-        productGrid.innerHTML = `<p>Sorry, could not load listings. Please try again later.</p>`;
+        if (!isLoadMore) {
+            productGrid.innerHTML = `<p>Sorry, could not load listings. Please try again later.</p>`;
+        }
     } finally {
         fetching = false;
     }
@@ -150,6 +203,10 @@ async function fetchTestimonials() {
 // --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchDeals();
-    fetchMainProducts(); // Randomized All Products
+    fetchMainProducts(); // First page
     fetchTestimonials();
+
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener("click", () => fetchMainProducts(true));
+    }
 });
