@@ -34,12 +34,16 @@ const dealsGrid = document.getElementById("deals-grid");
 // --- STATE ---
 let fetching = false;
 let lastVisible = null;
-let activeFilters = null;
+let activeFilters = { category: null, type: null };
 
 // --- RENDER FUNCTION ---
 function renderProducts(productsToDisplay, targetGrid, isNewRender = false) {
     if (isNewRender) {
         targetGrid.innerHTML = "";
+    }
+    if (productsToDisplay.length === 0 && isNewRender) {
+        targetGrid.innerHTML = "<p>No listings found.</p>";
+        return;
     }
     const fragment = document.createDocumentFragment();
     productsToDisplay.forEach(product => {
@@ -71,98 +75,98 @@ async function fetchDeals() {
             limit(8)
         );
         const snapshot = await getDocs(dealsQuery);
-
         if (snapshot.empty) {
             dealsSection.style.display = 'none';
             return;
         }
-
         const deals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProducts(deals, dealsGrid, true);
         dealsSection.style.display = 'block';
-
     } catch (error) {
         console.error("Error fetching deals:", error);
         dealsSection.style.display = 'none';
     }
 }
 
-// --- FETCH MAIN PRODUCT GRID WITH PAGINATION ---
-async function fetchMainProducts(isLoadMore = false) {
+// --- SEARCH PRODUCTS VIA ALGOLIA ---
+async function searchProducts(searchQuery) {
     if (fetching) return;
     fetching = true;
+    productGrid.innerHTML = "<p>Searching...</p>";
+    listingsTitle.textContent = `Results for "${searchQuery}"`;
+    loadMoreBtn.style.display = "none"; // No pagination for search results
 
-    if (!isLoadMore) {
-        productGrid.innerHTML = "";
-        listingsTitle.textContent = "All Items";
-        lastVisible = null;
+    try {
+        // Using the correct endpoint that matches your 'search.js' function
+        const response = await fetch(`/.netlify/functions/search?q=${encodeURIComponent(searchQuery)}`);
+        
+        if (!response.ok) {
+            throw new Error(`Search failed with status: ${response.status}`);
+        }
+        
+        // Your search function returns an object { products: [], totalPages: X }
+        const { products } = await response.json(); 
+        renderProducts(products, productGrid, true); 
+    } catch (error) {
+        console.error("Error searching products:", error);
+        productGrid.innerHTML = `<p>Sorry, the search could not be completed. Please try again later.</p>`;
+    } finally {
+        fetching = false;
     }
+}
+
+// --- FETCH PRODUCTS FROM FIRESTORE (FOR BROWSING) ---
+async function fetchBrowseProducts(isLoadMore = false) {
+    if (fetching) return;
+    fetching = true;
 
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const category = urlParams.get("category");
         const type = urlParams.get("type");
-        const search = urlParams.get("q");
+
+        const filtersChanged = (category !== activeFilters.category) || (type !== activeFilters.type);
+
+        if (filtersChanged) {
+            isLoadMore = false;
+            productGrid.innerHTML = "";
+            lastVisible = null;
+            activeFilters = { category, type };
+        }
 
         let qRef = collection(db, "products");
-        let filters = [];
+        let queryConstraints = [where("isSold", "==", false), orderBy("createdAt", "desc")];
 
-        if (category) {
-            filters.push(where("category", "==", category));
-            listingsTitle.textContent = category;
-        }
-
-        if (type) {
-            filters.push(where("type", "==", type));
-            listingsTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-        }
-
-        // Base query
-        let q;
-        if (filters.length > 0) {
-            q = query(qRef, ...filters, where("isSold", "==", false), orderBy("createdAt", "desc"), limit(12));
+        if (activeFilters.category) {
+            queryConstraints.push(where("category", "==", activeFilters.category));
+            listingsTitle.textContent = activeFilters.category;
+        } else if (activeFilters.type) {
+            queryConstraints.push(where("listing_type", "==", activeFilters.type));
+            listingsTitle.textContent = activeFilters.type.charAt(0).toUpperCase() + activeFilters.type.slice(1);
         } else {
-            q = query(qRef, where("isSold", "==", false), orderBy("createdAt", "desc"), limit(12));
+            listingsTitle.textContent = "All Items";
         }
 
         if (isLoadMore && lastVisible) {
-            q = query(q, startAfter(lastVisible));
+            queryConstraints.push(startAfter(lastVisible));
         }
+        queryConstraints.push(limit(12));
 
+        const q = query(qRef, ...queryConstraints);
         const snapshot = await getDocs(q);
-        if (snapshot.empty && !isLoadMore) {
-            productGrid.innerHTML = "<p>No listings found.</p>";
-            loadMoreBtn.style.display = "none";
-            return;
+
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(products, productGrid, !isLoadMore);
+
+        if (!snapshot.empty) {
+            lastVisible = snapshot.docs[snapshot.docs.length - 1];
         }
 
-        let products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        if (search) {
-            listingsTitle.textContent = `Results for "${search}"`;
-            products = products.filter(p =>
-                p.name?.toLowerCase().includes(search.toLowerCase()) ||
-                p.description?.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-
-        if (!isLoadMore) {
-            renderProducts(products, productGrid, true);
-        } else {
-            renderProducts(products, productGrid, false);
-        }
-
-        // Save last doc for pagination
-        lastVisible = snapshot.docs[snapshot.docs.length - 1];
-
-        // Show or hide Load More
         loadMoreBtn.style.display = snapshot.docs.length < 12 ? "none" : "block";
 
     } catch (error) {
         console.error("Error fetching products:", error);
-        if (!isLoadMore) {
-            productGrid.innerHTML = `<p>Sorry, could not load listings. Please try again later.</p>`;
-        }
+        productGrid.innerHTML = `<p>Sorry, could not load listings. Please try again later.</p>`;
     } finally {
         fetching = false;
     }
@@ -203,10 +207,19 @@ async function fetchTestimonials() {
 // --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchDeals();
-    fetchMainProducts(); // First page
     fetchTestimonials();
 
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener("click", () => fetchMainProducts(true));
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get("q");
+
+    if (searchQuery) {
+        // If there's a search query, use the Algolia search function
+        searchProducts(searchQuery);
+    } else {
+        // Otherwise, fetch products from Firestore for browsing
+        fetchBrowseProducts();
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener("click", () => fetchBrowseProducts(true));
+        }
     }
 });
