@@ -153,7 +153,49 @@
         .testimonial-text { font-style: italic; color: var(--text-light); margin: 0 0 15px; }
         .testimonial-author { font-weight: bold; text-align: right; }
         .testimonial-author span { font-weight: normal; color: var(--text-light); font-size: 0.9em; }
-        
+        /* ADD THIS TO YOUR EXISTING <style> TAG */
+
+.pagination {
+    display: none; /* Hidden by default, JS will show it */
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 12px;
+}
+
+.pagination button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    background-color: #0056b3; /* A darker shade of your primary color */
+}
+
+.pagination button:disabled {
+    cursor: not-allowed;
+    background-color: #a0a0a0;
+    opacity: 0.7;
+}
+
+.pagination span {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+}
+
         /* --- NEW DEALS CAROUSEL STYLES --- */
         .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; /* Firefox */ }
         .deals-carousel-wrapper::-webkit-scrollbar { display: none; /* Safari and Chrome */ }
@@ -247,9 +289,13 @@
         <main>
             <h2 id="listings-title" class="section-title">Recent Items</h2>
             <div id="product-grid" class="product-grid"></div>
-            <div class="pagination-container" style="text-align: center; margin-top: 30px;">
-                <button id="load-more-btn" class="load-more-btn" style="display: none;">Load More</button>
-            </div>
+
+            <div id="pagination-container" class="pagination">
+    <button id="prev-page-btn" disabled>&laquo; Previous</button>
+    <span id="page-indicator">Page 1 of 1</span>
+    <button id="next-page-btn" disabled>Next &raquo;</button>
+</div>
+
         </main>
 
         <section class="how-it-works-section">
