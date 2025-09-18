@@ -2,11 +2,11 @@
 // Firebase Imports
 // ===========================
 import { auth, db } from '../firebase.js';
-import { 
-    onAuthStateChanged 
+import {
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { 
-    collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc 
+import {
+    collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // ===========================
@@ -170,7 +170,7 @@ async function handleDeleteProduct(button) {
 
     try {
         await deleteDoc(doc(db, 'products', id));
-        fetchAllProducts();
+        fetchAllProducts(); // Refresh the list
     } catch (e) {
         console.error("Error deleting product:", e);
         alert("Could not delete product.");
@@ -195,25 +195,22 @@ async function fetchTestimonialsForAdmin() {
             const t = docSnap.data();
             const id = docSnap.id;
 
+            const itemHTML = `
+                <li class="user-list-item">
+                    <div><p><strong>"${t.quote}"</strong></p>
+                    <p>- ${t.authorName}</p></div>
+                    <div class="testimonial-controls">
+                        ${t.status === 'pending' ? 
+                            `<button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>` : ''
+                        }
+                        <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
+                    </div>
+                </li>`;
+
             if (t.status === 'pending') {
-                pending += `
-                    <li class="user-list-item">
-                        <div><p><strong>"${t.quote}"</strong></p>
-                        <p>- ${t.authorName}</p></div>
-                        <div class="testimonial-controls">
-                            <button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>
-                            <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
-                        </div>
-                    </li>`;
+                pending += itemHTML;
             } else {
-                approved += `
-                    <li class="user-list-item">
-                        <div><p><strong>"${t.quote}"</strong></p>
-                        <p>- ${t.authorName}</p></div>
-                        <div class="testimonial-controls">
-                            <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
-                        </div>
-                    </li>`;
+                approved += itemHTML;
             }
         });
 
@@ -224,8 +221,62 @@ async function fetchTestimonialsForAdmin() {
     }
 }
 
+
+// --- NEW FUNCTION START ---
 // ===========================
-// Global Event Listeners
+// Approve Testimonial
+// ===========================
+async function handleApproveTestimonial(button) {
+    const testimonialId = button.dataset.id;
+    if (!testimonialId) return;
+
+    button.disabled = true;
+    button.textContent = 'Approving...';
+
+    try {
+        await updateDoc(doc(db, 'testimonials', testimonialId), {
+            status: 'approved',
+            order: Date.now()
+        });
+        fetchTestimonialsForAdmin(); // Refresh the lists
+    } catch (e) {
+        console.error("Error approving testimonial:", e);
+        alert("Could not approve testimonial.");
+        button.textContent = 'Approve';
+        button.disabled = false;
+    }
+}
+// --- NEW FUNCTION END ---
+
+
+// --- NEW FUNCTION START ---
+// ===========================
+// Delete Testimonial
+// ===========================
+async function handleDeleteTestimonial(button) {
+    const testimonialId = button.dataset.id;
+    if (!testimonialId) return;
+
+    if (!confirm("Are you sure you want to delete this testimonial permanently?")) {
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Deleting...';
+
+    try {
+        await deleteDoc(doc(db, 'testimonials', testimonialId));
+        fetchTestimonialsForAdmin(); // Refresh the lists
+    } catch (e) {
+        console.error("Error deleting testimonial:", e);
+        alert("Could not delete testimonial.");
+    }
+}
+// --- NEW FUNCTION END ---
+
+
+// ===========================
+// Global Event Listeners (NOW CORRECTED)
 // ===========================
 function setupGlobalEventListeners() {
     allProductsList.addEventListener('click', (e) => {
@@ -239,19 +290,26 @@ function setupGlobalEventListeners() {
         const btn = e.target.closest('button');
         if (!btn) return;
         if (btn.dataset.action === 'toggle-verify') {
-            // TODO: implement verify toggle
+            alert('User verification function has not been implemented yet.');
         }
     });
 
     pendingTestimonialsList.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
-        // TODO: implement approve/delete testimonial
+        if (btn.dataset.action === 'approve-testimonial') {
+            handleApproveTestimonial(btn);
+        }
+        if (btn.dataset.action === 'delete-testimonial') {
+            handleDeleteTestimonial(btn);
+        }
     });
 
     approvedTestimonialsList.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
-        // TODO: implement delete testimonial
+        if (btn.dataset.action === 'delete-testimonial') {
+            handleDeleteTestimonial(btn);
+        }
     });
 }
