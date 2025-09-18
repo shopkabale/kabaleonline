@@ -3,51 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnostic Test - Kabale Online</title>
+    <title>Kabale Online - Under Maintenance</title>
     <style>
-        :root {
-            --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
-            --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
-            --border-color: #e9ecef; --border-radius: 12px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+        /* Reset & basic styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
-        .section-title { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
-        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-        .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
-        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; }
-        .product-card .price { margin: 0 15px 15px; font-size: 1rem; color: var(--text-light); }
-        h4 { font-size: 1.2em; }
-        hr { border: 0; border-top: 1px solid var(--border-color); }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            text-align: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        /* Spinner Animation */
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #e0e0e0;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+
+        /* Footer note animation */
+        .note {
+            font-size: 0.9rem;
+            color: #555;
+            opacity: 0;
+            animation: fadeIn 2s forwards 1s;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Blinking dots animation */
+        .dots::after {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-left: 5px;
+            border-radius: 50%;
+            background: #007bff;
+            animation: blink 1s infinite alternate;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <main>
-            <h1 id="listings-title" class="section-title">Diagnostic Test Results</h1>
-
-            <div id="algolia-test-area">
-                <h2>1. Testing Algolia Search Function</h2>
-                <div id="algolia-results-grid" class="product-grid">
-                    <p>Running test...</p>
-                </div>
-            </div>
-
-            <hr style="margin: 40px 0;">
-
-            <div id="firestore-test-area">
-                <h2>2. Testing Direct Firestore Database</h2>
-                <div id="firestore-results-grid" class="product-grid">
-                    <p>Running test...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="main.js"></script>
-
+    <div class="spinner"></div>
+    <h1>Kabale Online is Under Maintenance<span class="dots"></span></h1>
+    <p>Please check back in 30 minutes for updates.</p>
+    <div class="note">We apologize for the inconvenience and appreciate your patience.</div>
 </body>
 </html>
