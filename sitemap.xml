@@ -6,26 +6,138 @@
 
    <url>
       <loc>https://www.kabaleonline.com/</loc>
-      <lastmod>2025-08-30T13:07:00+00:00</lastmod>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
       <priority>1.00</priority>
    </url>
-
    <url>
       <loc>https://www.kabaleonline.com/about</loc>
-      <lastmod>2025-08-30T13:07:00+00:00</lastmod>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
       <priority>0.80</priority>
    </url>
-
+   <url>
+      <loc>https://www.kabaleonline.com/auth</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+    <url>
+      <loc>https://www.kabaleonline.com/chat</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/inbox</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/offline</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.70</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/product</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/profile</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+    <url>
+      <loc>https://www.kabaleonline.com/stories</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/submit-story</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+    <url>
+      <loc>https://www.kabaleonline.com/submit-testimonial</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
    <url>
       <loc>https://www.kabaleonline.com/terms</loc>
-      <lastmod>2025-08-30T13:07:00+00:00</lastmod>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+    <url>
+      <loc>https://www.kabaleonline.com/wishlist</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
       <priority>0.80</priority>
    </url>
 
    <url>
       <loc>https://www.kabaleonline.com/sell</loc>
-      <lastmod>2025-08-30T13:07:00+00:00</lastmod>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.90</priority>
+   </url>
+
+   <url>
+      <loc>https://www.kabaleonline.com/blog</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
       <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/blog/how-to-sell-fast</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/blog/how-to-spot-a-scam</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+
+   <url>
+      <loc>https://www.kabaleonline.com/events</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/events/detail</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/events/edit</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/events/upload</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+
+   <url>
+      <loc>https://www.kabaleonline.com/rentals</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/rentals/detail</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/rentals/post</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
+   </url>
+
+   <url>
+      <loc>https://www.kabaleonline.com/requests</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://www.kabaleonline.com/requests/view</loc>
+      <lastmod>2025-09-18T13:27:00+03:00</lastmod>
+      <priority>0.64</priority>
    </url>
 
 </urlset>
