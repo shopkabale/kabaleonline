@@ -31,7 +31,7 @@ exports.handler = async (event) => {
 
     try {
         const searchOptions = {
-            hitsPerPage: 12, // Sets the number of items per page
+            hitsPerPage: 20, // Sets the number of items per page
             page: parseInt(page, 10)
         };
 
