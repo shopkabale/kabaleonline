@@ -133,7 +133,8 @@ async function fetchBrowseProducts(isLoadMore = false) {
         }
 
         let qRef = collection(db, "products");
-        let queryConstraints = [where("isSold", "==", false), orderBy("createdAt", "desc")];
+        // **FIX:** We removed orderBy("createdAt", "desc") from this line.
+        let queryConstraints = [where("isSold", "==", false)];
 
         if (activeFilters.category) {
             queryConstraints.push(where("category", "==", activeFilters.category));
