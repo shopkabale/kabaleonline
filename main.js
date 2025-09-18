@@ -94,17 +94,15 @@ async function searchProducts(searchQuery) {
     fetching = true;
     productGrid.innerHTML = "<p>Searching...</p>";
     listingsTitle.textContent = `Results for "${searchQuery}"`;
-    loadMoreBtn.style.display = "none"; // No pagination for search results
+    loadMoreBtn.style.display = "none";
 
     try {
-        // Using the correct endpoint that matches your 'search.js' function
         const response = await fetch(`/.netlify/functions/search?q=${encodeURIComponent(searchQuery)}`);
         
         if (!response.ok) {
             throw new Error(`Search failed with status: ${response.status}`);
         }
         
-        // Your search function returns an object { products: [], totalPages: X }
         const { products } = await response.json(); 
         renderProducts(products, productGrid, true); 
     } catch (error) {
@@ -213,10 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchQuery = urlParams.get("q");
 
     if (searchQuery) {
-        // If there's a search query, use the Algolia search function
         searchProducts(searchQuery);
     } else {
-        // Otherwise, fetch products from Firestore for browsing
         fetchBrowseProducts();
         if (loadMoreBtn) {
             loadMoreBtn.addEventListener("click", () => fetchBrowseProducts(true));
