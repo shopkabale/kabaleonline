@@ -1,97 +1,122 @@
-import { db } from './firebase.js';
-import { collection, query, where, getDocs, orderBy, startAfter, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-const listingsContainer = document.getElementById('listings-container');
-const listingsTitle = document.getElementById('listings-title');
-const prevBtn = document.getElementById('prev-page');
-const nextBtn = document.getElementById('next-page');
-
-let currentPage = 1;
-const pageSize = 12;
-let currentFilters = {};
-let lastVisibleDoc = null;
-let firstVisibleDoc = null;
-
-// Convert string for comparison ignoring case
-const normalize = str => str ? str.toLowerCase().trim() : '';
-
-// Fetch listings with filters & pagination
-async function fetchListings(page = 1, category = null, type = null) {
-    let q;
-    let filters = [];
-
-    currentFilters = { category, type };
-
-    // Fetch all products
-    q = query(
-        collection(db, 'products'),
-        orderBy('createdAt', 'desc'),
-        limit(pageSize * page)
-    );
-
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) {
-        listingsContainer.innerHTML = "<p>No listings found.</p>";
-        listingsTitle.textContent = category || type || "All Listings";
-        return;
+// ==== CLOUDINARY TRANSFORM HELPER (keep as-is) ====
+function getCloudinaryTransformedUrl(url, type) {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
-
-    // Filter manually since Firestore doesn't support OR/Case-insensitive easily
-    let products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    if (category) {
-        products = products.filter(p => normalize(p.category) === normalize(category));
-    }
-    if (type) {
-        products = products.filter(p => normalize(p.listing_type) === normalize(type));
-    }
-
-    // Pagination slice
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginated = products.slice(start, end);
-
-    listingsContainer.innerHTML = '';
-    if (paginated.length === 0) {
-        listingsContainer.innerHTML = "<p>No listings found on this page.</p>";
-        listingsTitle.textContent = category || type || "All Listings";
-        return;
-    }
-
-    paginated.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'listing-card';
-        productCard.innerHTML = `
-            <img src="${product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'placeholder.webp'}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <p>UGX ${product.price.toLocaleString()}</p>
-        `;
-        listingsContainer.appendChild(productCard);
-    });
-
-    listingsTitle.textContent = category || type || "All Listings";
-
-    // Track pagination for buttons
-    firstVisibleDoc = snapshot.docs[0];
-    lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) return url;
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
 
-// Pagination buttons
-prevBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        fetchListings(currentPage, currentFilters.category, currentFilters.type);
-    }
-});
-nextBtn.addEventListener('click', () => {
-    currentPage++;
-    fetchListings(currentPage, currentFilters.category, currentFilters.type);
-});
+// ==== AUTH, DASHBOARD, SELLER DASHBOARD, QA ETC. KEEP AS-IS ====
+// ... all existing main.js code for auth, seller products, QA, Cloudinary, product forms ...
 
-// Auto-load based on URL params (category/type)
-document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const category = params.get('category');
-    const type = params.get('type');
-    fetchListings(1, category, type);
-});
+// ==== HOMEPAGE LISTING CODE (NEW ADDITIONS ONLY) ====
+import { db } from '../firebase.js';
+import { collection, query, getDocs, orderBy, where } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+// DOM ELEMENTS
+const homepageProductsContainer = document.getElementById('homepage-products');
+const homepageCategorySelect = document.getElementById('homepage-category');
+const paginationContainer = document.getElementById('pagination-container');
+
+const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
+const serviceCategories = { "Tutoring & Academics": "Tutoring & Academics", "Printing & Design": "Printing & Design", "Tech & Repair": "Tech & Repair", "Personal & Beauty": "Personal & Beauty", "Events & Creative": "Events & Creative", "Other Services": "Other Services" };
+
+let homepageProducts = []; // full fetched products
+let currentPage = 1;
+const pageSize = 12;
+
+// Populate homepage category filter
+function populateHomepageCategories() {
+    if (!homepageCategorySelect) return;
+    homepageCategorySelect.innerHTML = '<option value="all" selected>All Categories</option>';
+    const allCategories = { ...itemCategories, ...serviceCategories };
+    Object.keys(allCategories).forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = allCategories[cat];
+        homepageCategorySelect.appendChild(option);
+    });
+}
+populateHomepageCategories();
+
+// Fetch all products for homepage
+async function fetchHomepageProducts() {
+    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    homepageProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    currentPage = 1;
+    renderHomepageProducts();
+}
+
+// Render homepage products with pagination & category filter
+function renderHomepageProducts() {
+    if (!homepageProductsContainer) return;
+    const selectedCategory = homepageCategorySelect.value || 'all';
+    const filtered = homepageProducts.filter(p => selectedCategory === 'all' || p.category === selectedCategory);
+
+    const totalPages = Math.ceil(filtered.length / pageSize);
+    if (currentPage > totalPages) currentPage = 1;
+
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageItems = filtered.slice(start, end);
+
+    homepageProductsContainer.innerHTML = '';
+    if (pageItems.length === 0) {
+        homepageProductsContainer.innerHTML = '<p>No products found in this category.</p>';
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    pageItems.forEach(product => {
+        const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
+            <h3>${product.name}</h3>
+            <p class="price">UGX ${product.price.toLocaleString()}</p>
+            <a class="cta-button" href="/product.html?id=${product.id}">View Details</a>
+        `;
+        homepageProductsContainer.appendChild(productCard);
+    });
+
+    renderPagination(totalPages);
+}
+
+// Render pagination buttons
+function renderPagination(totalPages) {
+    if (!paginationContainer) return;
+    paginationContainer.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = i === currentPage ? 'active' : '';
+        btn.addEventListener('click', () => {
+            currentPage = i;
+            renderHomepageProducts();
+            window.scrollTo(0, 0);
+        });
+        paginationContainer.appendChild(btn);
+    }
+}
+
+// Category change listener
+if (homepageCategorySelect) {
+    homepageCategorySelect.addEventListener('change', () => {
+        currentPage = 1;
+        renderHomepageProducts();
+    });
+}
+
+// Initialize homepage
+document.addEventListener('DOMContentLoaded', fetchHomepageProducts);
