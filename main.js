@@ -11,12 +11,9 @@ function getCloudinaryTransformedUrl(url, type) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
-        // MODIFIED: Increased size to 400x400 for better quality
-        // AFTER
-thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
-
+        // CORRECTED LINE: Removed ':good' to fix the 400 Bad Request error
+        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
         full: 'c_limit,w_800,h_800,f_auto,q_auto',
-        // NEW: Low-quality image placeholder for lazy loading
         placeholder: 'c_fill,g_auto,w_20,h_20,e_blur:100,q_auto:lowest,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -54,7 +51,7 @@ const state = {
     filters: { type: '', category: '' }
 };
 
-// --- NEW: SKELETON LOADER RENDERER ---
+// --- SKELETON LOADER RENDERER ---
 /**
  * Renders a specified number of skeleton loader cards into a container.
  * @param {HTMLElement} container The element to append skeletons to.
@@ -76,7 +73,7 @@ function renderSkeletonLoaders(container, count) {
     container.appendChild(fragment);
 }
 
-// --- NEW: LAZY LOADING WITH INTERSECTION OBSERVER ---
+// --- LAZY LOADING WITH INTERSECTION OBSERVER ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -126,7 +123,7 @@ function renderProducts(productsToDisplay) {
         fragment.appendChild(productLink);
     });
     productGrid.appendChild(fragment);
-    observeLazyImages(); // NEW: Tell the observer to watch the new images
+    observeLazyImages(); // Tell the observer to watch the new images
 }
 
 // --- FETCH FROM ALGOLIA ---
@@ -134,7 +131,6 @@ async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
     
-    // MODIFIED: Show skeleton loaders instead of text
     renderSkeletonLoaders(productGrid, 12); 
     
     updatePaginationUI();
@@ -236,7 +232,6 @@ function initializeStateFromURL() {
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     
-    // MODIFIED: Show skeletons for the deals section
     renderSkeletonLoaders(dealsGrid, 5);
     dealsSection.style.display = 'block';
 
@@ -275,7 +270,7 @@ async function fetchDeals() {
             fragment.appendChild(productLink);
         });
         dealsGrid.appendChild(fragment);
-        observeLazyImages(); // NEW: Watch deal images too
+        observeLazyImages(); // Watch deal images too
 
     } catch (error) {
         console.error("Error fetching deals:", error);
