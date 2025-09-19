@@ -139,6 +139,8 @@ async function fetchAndRenderProducts(isLoadMore = false) {
     if (state.isFetching) return;
     state.isFetching = true;
 
+    console.log("DEBUG: Trying to fetch products now..."); // <-- DEBUG LINE 2
+
     if (!isLoadMore) {
         productGrid.innerHTML = "";
     }
@@ -309,6 +311,8 @@ function initializeStateFromURL() {
  * Main entry point: runs when the DOM is fully loaded.
  */
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DEBUG: Script has started!"); // <-- DEBUG LINE 1
+
     // Initial data fetches for different sections
     fetchDeals();
     fetchTestimonials();
