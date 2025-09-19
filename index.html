@@ -212,54 +212,6 @@
             .testimonial-grid { flex-direction: row; }
             .deals-grid .product-card { flex: 0 0 200px; width: 200px; }
         }
-/* ADD THIS TO YOUR EXISTING <style> TAG FOR SKELETONS */
-
-.skeleton {
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-}
-
-.skeleton .skeleton-img,
-.skeleton .skeleton-text {
-    background-color: #e0e0e0;
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden;
-}
-
-.skeleton .skeleton-img::before,
-.skeleton .skeleton-text::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150px;
-    height: 100%;
-    width: 150px;
-    background: linear-gradient(to right, transparent 0%, #f0f0f0 50%, transparent 100%);
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(350px); }
-}
-
-.skeleton .skeleton-img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-}
-
-.skeleton .skeleton-text {
-    height: 1em;
-    margin: 15px;
-}
-
-.skeleton .skeleton-text.short {
-    width: 60%;
-    margin-top: 5px;
-    height: 1.2em;
-}
-
     </style>
 </head>
 <body>
@@ -338,10 +290,11 @@
             <h2 id="listings-title" class="section-title">Recent Items</h2>
             <div id="product-grid" class="product-grid"></div>
 
-            <div class="pagination" id="pagination-container">
-    <button id="load-more-btn" class="load-more-btn" style="display: none;">Load More</button>
+            <div id="pagination-container" class="pagination">
+    <button id="prev-page-btn" disabled>&laquo; Previous</button>
+    <span id="page-indicator">Page 1 of 1</span>
+    <button id="next-page-btn" disabled>Next &raquo;</button>
 </div>
-
 
         </main>
 
