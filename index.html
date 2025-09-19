@@ -195,6 +195,53 @@
     padding: 40px;
     color: var(--text-light);
 }
+/* --- SKELETON LOADER & LAZY LOAD STYLES --- */
+.skeleton-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.skeleton-image, .skeleton-text {
+    background-color: #e0e0e0;
+    background-image: linear-gradient(
+      90deg,
+      #e0e0e0 0px,
+      #f0f0f0 40px,
+      #e0e0e0 80px
+    );
+    background-size: 250px;
+    animation: skeleton-shimmer 1.5s infinite linear;
+}
+
+.skeleton-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.skeleton-text {
+    height: 1.2rem;
+    margin: 12px 15px 0;
+    border-radius: 4px;
+}
+
+.skeleton-text.w-75 { width: 75%; }
+.skeleton-text.w-50 { width: 50%; margin-top: 10px; margin-bottom: 15px; }
+
+@keyframes skeleton-shimmer {
+    0% { background-position: -150px; }
+    100% { background-position: 150px; }
+}
+
+/* Lazy Loading Image Transition */
+.product-card img.lazy {
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+.product-card img.lazy.loaded {
+    opacity: 1;
+}
 
         /* --- NEW DEALS CAROUSEL STYLES --- */
         .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; /* Firefox */ }
