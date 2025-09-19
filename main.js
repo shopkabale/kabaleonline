@@ -11,7 +11,7 @@ function getCloudinaryTransformedUrl(url, type) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
-        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
+        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
         full: 'c_limit,w_800,h_800,f_auto,q_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -35,7 +35,7 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-const loadMoreBtn = document.getElementById("load-more-btn");
+const loadMoreBtn = document.getElementById("load-more-btn"); // The "Load More" button
 
 // --- APPLICATION STATE ---
 const state = {
@@ -44,35 +44,23 @@ const state = {
     isFetching: false,
     searchTerm: '',
     filters: {
-        type: '',
-        category: ''
+        type: '', // e.g., 'item' or 'service'
+        category: '' // e.g., 'electronics'
     }
 };
 
-// --- UI & RENDER FUNCTIONS ---
-function renderSkeletons(count = 6) {
-    let skeletons = '';
-    for (let i = 0; i < count; i++) {
-        skeletons += `
-            <div class="product-card skeleton">
-                <div class="skeleton-img"></div>
-                <div class="skeleton-text"></div>
-                <div class="skeleton-text short"></div>
-            </div>
-        `;
+// --- RENDER FUNCTION ---
+// Modified to append products instead of replacing them
+function renderProducts(productsToDisplay, isNewSearch = false) {
+    if (isNewSearch) {
+        productGrid.innerHTML = ""; // Clear grid only for a new search/filter
     }
-    productGrid.innerHTML += skeletons;
-}
 
-function renderProducts(productsToDisplay) {
-    const skeletons = productGrid.querySelectorAll('.skeleton');
-    skeletons.forEach(s => s.remove());
-
-    if (productsToDisplay.length === 0 && state.currentPage === 0) {
-        productGrid.innerHTML = `<p class="loading-indicator">No listings found.</p>`;
+    if (productsToDisplay.length === 0 && isNewSearch) {
+        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
     }
-    
+
     const fragment = document.createDocumentFragment();
     productsToDisplay.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
@@ -88,44 +76,23 @@ function renderProducts(productsToDisplay) {
         `;
         fragment.appendChild(productLink);
     });
-    
     productGrid.appendChild(fragment);
 }
 
-function updateLoadMoreButton() {
-    if (state.currentPage < state.totalPages - 1) {
-        loadMoreBtn.style.display = 'block';
-    } else {
-        loadMoreBtn.style.display = 'none';
-    }
-}
-
-function updateListingsTitle() {
-    let title = "Recent Items";
-    if (state.filters.category) {
-        title = state.filters.category;
-    } else if (state.filters.type) {
-        title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`;
-    }
-    if (state.searchTerm) {
-        title = `Results for "${state.searchTerm}"`;
-    }
-    listingsTitle.textContent = title;
-}
-
-
-// --- DATA FETCHING ---
-async function fetchAndRenderProducts(isLoadMore = false) {
+// --- FETCH FROM ALGOLIA ---
+// The isNewSearch flag determines whether to clear the grid or add to it
+async function fetchAndRenderProducts(isNewSearch = false) {
     if (state.isFetching) return;
     state.isFetching = true;
 
-    if (!isLoadMore) {
-        productGrid.innerHTML = "";
+    if (isNewSearch) {
+        productGrid.innerHTML = `<p class="loading-indicator">Searching for listings...</p>`;
+        state.currentPage = 0; // Reset page for new search
     }
     
-    renderSkeletons(isLoadMore ? 3 : 6); 
-    loadMoreBtn.style.display = 'none';
-    updateListingsTitle();
+    loadMoreBtn.textContent = 'Loading...';
+    loadMoreBtn.style.display = 'block';
+    loadMoreBtn.disabled = true;
 
     try {
         const params = new URLSearchParams({ page: state.currentPage });
@@ -133,27 +100,93 @@ async function fetchAndRenderProducts(isLoadMore = false) {
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
         
-        const fetchUrl = `/.netlify/functions/search?${params.toString()}`;
-        const response = await fetch(fetchUrl);
-        
+        const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
 
         const { products, totalPages } = await response.json();
         state.totalPages = totalPages;
-        renderProducts(products);
+        
+        renderProducts(products, isNewSearch);
 
     } catch (error) {
-        console.error("Error fetching listings:", error);
-        productGrid.innerHTML = `<p class="loading-indicator">Could not load listings.</p>`;
+        console.error("Error fetching from Algolia:", error);
+        productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again later.</p>`;
     } finally {
         state.isFetching = false;
         updateLoadMoreButton();
-        if (!isLoadMore) {
-           window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
-        }
     }
 }
 
+// --- UI UPDATE FUNCTIONS ---
+function updateLoadMoreButton() {
+    // Show the button if there are more pages to load
+    if (state.currentPage < state.totalPages - 1) {
+        loadMoreBtn.textContent = 'Load More';
+        loadMoreBtn.style.display = 'block';
+        loadMoreBtn.disabled = false;
+    } else {
+        loadMoreBtn.style.display = 'none'; // Hide if on the last page
+    }
+}
+
+function updateListingsTitle() {
+    let title = "All Listings";
+    if (state.filters.category) {
+        title = state.filters.category;
+    } else if (state.filters.type) {
+        title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`;
+    }
+    
+    if (state.searchTerm) {
+        title = `Results for "${state.searchTerm}"`;
+    }
+
+    listingsTitle.textContent = title;
+}
+
+// --- EVENT HANDLERS ---
+function handleSearch() {
+    const term = searchInput.value.trim();
+    state.searchTerm = term;
+    state.filters.type = '';
+    state.filters.category = '';
+    updateListingsTitle();
+    fetchAndRenderProducts(true); // `true` for new search
+}
+
+function handleFilterLinkClick(event) {
+    const link = event.target.closest('a[href*="?"]');
+    if (!link) return;
+
+    event.preventDefault();
+
+    const url = new URL(link.href);
+    state.filters.type = url.searchParams.get('type') || '';
+    state.filters.category = url.searchParams.get('category') || '';
+    state.searchTerm = '';
+    searchInput.value = '';
+    updateListingsTitle();
+    fetchAndRenderProducts(true); // `true` for new filter
+
+    document.querySelector('.mobile-nav')?.classList.remove('active');
+    document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
+}
+
+function handleLoadMore() {
+    if (state.currentPage < state.totalPages - 1) {
+        state.currentPage++; // Go to the next page
+        fetchAndRenderProducts(false); // `false` to append results
+    }
+}
+
+function initializeStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    state.filters.type = params.get('type') || '';
+    state.filters.category = params.get('category') || '';
+    state.searchTerm = params.get('q') || '';
+}
+
+// --- FETCH DEALS ---
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     try {
@@ -197,6 +230,8 @@ async function fetchDeals() {
     }
 }
 
+
+// --- FETCH TESTIMONIALS ---
 async function fetchTestimonials() {
     const testimonialGrid = document.getElementById('testimonial-grid');
     if (!testimonialGrid) return;
@@ -228,68 +263,36 @@ async function fetchTestimonials() {
     }
 }
 
-
-// --- EVENT HANDLERS & INITIALIZATION ---
-function handleSearch() {
-    const term = searchInput.value.trim();
-    if (state.searchTerm === term) return;
-
-    state.searchTerm = term;
-    state.currentPage = 0;
-    state.filters.type = '';
-    state.filters.category = '';
-    fetchAndRenderProducts(false);
-}
-
-function handleFilterLinkClick(event) {
-    const link = event.target.closest('a[href*="?"]');
-    if (!link) return;
-
-    event.preventDefault();
-
-    const url = new URL(link.href);
-    const type = url.searchParams.get('type') || '';
-    const category = url.searchParams.get('category') || '';
-
-    state.filters.type = type;
-    state.filters.category = category;
-    state.currentPage = 0;
-    state.searchTerm = '';
-    searchInput.value = '';
-    fetchAndRenderProducts(false);
-
-    document.querySelector('.mobile-nav')?.classList.remove('active');
-    document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
-}
-
-function initializeStateFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    state.filters.type = params.get('type') || '';
-    state.filters.category = params.get('category') || '';
-    state.searchTerm = params.get('q') || '';
-}
-
+// --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchDeals();
     fetchTestimonials();
+    
     initializeStateFromURL();
-    fetchAndRenderProducts(false);
+    updateListingsTitle();
+    fetchAndRenderProducts(true);
 
+    // --- EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSearch();
-        }
+        if (e.key === 'Enter') handleSearch();
     });
 
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
+    
+    loadMoreBtn.addEventListener('click', handleLoadMore);
 
-    loadMoreBtn.addEventListener('click', () => {
-        if (state.currentPage < state.totalPages - 1) {
-            state.currentPage++;
-            fetchAndRenderProducts(true);
-        }
-    });
+    // --- SERVICE WORKER REGISTRATION ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
 });
