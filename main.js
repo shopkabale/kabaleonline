@@ -35,7 +35,7 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-const loadMoreBtn = document.getElementById("load-more-btn"); // The "Load More" button
+const loadMoreBtn = document.getElementById("load-more-btn");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -44,16 +44,15 @@ const state = {
     isFetching: false,
     searchTerm: '',
     filters: {
-        type: '', // e.g., 'item' or 'service'
-        category: '' // e.g., 'electronics'
+        type: '',
+        category: ''
     }
 };
 
 // --- RENDER FUNCTION ---
-// Modified to append products instead of replacing them
 function renderProducts(productsToDisplay, isNewSearch = false) {
     if (isNewSearch) {
-        productGrid.innerHTML = ""; // Clear grid only for a new search/filter
+        productGrid.innerHTML = "";
     }
 
     if (productsToDisplay.length === 0 && isNewSearch) {
@@ -80,14 +79,13 @@ function renderProducts(productsToDisplay, isNewSearch = false) {
 }
 
 // --- FETCH FROM ALGOLIA ---
-// The isNewSearch flag determines whether to clear the grid or add to it
 async function fetchAndRenderProducts(isNewSearch = false) {
     if (state.isFetching) return;
     state.isFetching = true;
 
     if (isNewSearch) {
         productGrid.innerHTML = `<p class="loading-indicator">Searching for listings...</p>`;
-        state.currentPage = 0; // Reset page for new search
+        state.currentPage = 0;
     }
     
     loadMoreBtn.textContent = 'Loading...';
@@ -105,12 +103,7 @@ async function fetchAndRenderProducts(isNewSearch = false) {
 
         const { products, totalPages } = await response.json();
         
-        // --- DEBUG LINE ADDED HERE ---
-        console.log('Server Response:', { products: products.length, totalPages: totalPages });
-        // --- END OF DEBUG LINE ---
-
         state.totalPages = totalPages;
-        
         renderProducts(products, isNewSearch);
 
     } catch (error) {
@@ -124,13 +117,12 @@ async function fetchAndRenderProducts(isNewSearch = false) {
 
 // --- UI UPDATE FUNCTIONS ---
 function updateLoadMoreButton() {
-    // Show the button if there are more pages to load
     if (state.currentPage < state.totalPages - 1) {
         loadMoreBtn.textContent = 'Load More';
         loadMoreBtn.style.display = 'block';
         loadMoreBtn.disabled = false;
     } else {
-        loadMoreBtn.style.display = 'none'; // Hide if on the last page
+        loadMoreBtn.style.display = 'none';
     }
 }
 
@@ -156,13 +148,12 @@ function handleSearch() {
     state.filters.type = '';
     state.filters.category = '';
     updateListingsTitle();
-    fetchAndRenderProducts(true); // `true` for new search
+    fetchAndRenderProducts(true);
 }
 
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a[href*="?"]');
     if (!link) return;
-
     event.preventDefault();
 
     const url = new URL(link.href);
@@ -171,7 +162,7 @@ function handleFilterLinkClick(event) {
     state.searchTerm = '';
     searchInput.value = '';
     updateListingsTitle();
-    fetchAndRenderProducts(true); // `true` for new filter
+    fetchAndRenderProducts(true);
 
     document.querySelector('.mobile-nav')?.classList.remove('active');
     document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
@@ -179,8 +170,8 @@ function handleFilterLinkClick(event) {
 
 function handleLoadMore() {
     if (state.currentPage < state.totalPages - 1) {
-        state.currentPage++; // Go to the next page
-        fetchAndRenderProducts(false); // `false` to append results
+        state.currentPage++;
+        fetchAndRenderProducts(false);
     }
 }
 
@@ -195,13 +186,7 @@ function initializeStateFromURL() {
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     try {
-        const dealsQuery = query(
-            collection(db, 'products'),
-            where('isDeal', '==', true),
-            where('isSold', '==', false),
-            orderBy('createdAt', 'desc'),
-            limit(8)
-        );
+        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
 
         if (snapshot.empty) {
@@ -241,12 +226,7 @@ async function fetchTestimonials() {
     const testimonialGrid = document.getElementById('testimonial-grid');
     if (!testimonialGrid) return;
     try {
-        const testimonialsQuery = query(
-            collection(db, 'testimonials'), 
-            where('status', '==', 'approved'),
-            orderBy('order', 'asc'), 
-            limit(2)
-        );
+        const testimonialsQuery = query(collection(db, 'testimonials'), where('status', '==', 'approved'), orderBy('order', 'asc'), limit(2));
         const querySnapshot = await getDocs(testimonialsQuery);
         if (querySnapshot.empty) {
             testimonialGrid.closest('.testimonial-section').style.display = 'none';
