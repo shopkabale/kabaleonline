@@ -11,7 +11,7 @@ function getCloudinaryTransformedUrl(url, type) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
-        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
         full: 'c_limit,w_800,h_800,f_auto,q_auto',
         // CORRECTED LINE: Simplified the placeholder to fix the 400 error.
         placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
