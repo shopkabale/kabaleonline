@@ -157,7 +157,7 @@ async function fetchAndRenderProducts() {
 }
 
     }
-}
+
 
 // --- UI UPDATE FUNCTIONS ---
 function updatePaginationUI() {
