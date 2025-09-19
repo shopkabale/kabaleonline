@@ -148,11 +148,14 @@ async function fetchAndRenderProducts() {
         console.error("Error fetching from Algolia:", error);
         productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again later.</p>`;
     } finally {
-        state.isFetching = false;
-        updatePaginationUI();
-        if (state.currentPage === 0) {
-           window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
-        }
+    state.isFetching = false;
+    updatePaginationUI();
+    // Only scroll if the user is on page 2 or higher (not the initial load).
+    if (state.currentPage > 0) {
+        window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+    }
+}
+
     }
 }
 
