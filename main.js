@@ -3,7 +3,7 @@
 /**
  * Creates an optimized and transformed Cloudinary URL.
  * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail'|'full'} type The desired transformation type.
+ * @param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
  * @returns {string} The new, transformed URL.
  */
 function getCloudinaryTransformedUrl(url, type) {
@@ -11,8 +11,11 @@ function getCloudinaryTransformedUrl(url, type) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
-        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
-        full: 'c_limit,w_800,h_800,f_auto,q_auto'
+        // MODIFIED: Increased size to 400x400 for better quality
+        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto:good',
+        full: 'c_limit,w_800,h_800,f_auto,q_auto',
+        // NEW: Low-quality image placeholder for lazy loading
+        placeholder: 'c_fill,g_auto,w_20,h_20,e_blur:100,q_auto:lowest,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
     const urlParts = url.split('/upload/');
@@ -35,8 +38,6 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-
-// Pagination Elements
 const paginationContainer = document.getElementById("pagination-container");
 const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
@@ -48,15 +49,59 @@ const state = {
     totalPages: 1,
     isFetching: false,
     searchTerm: '',
-    filters: {
-        type: '', // e.g., 'item' or 'service'
-        category: '' // e.g., 'electronics'
-    }
+    filters: { type: '', category: '' }
 };
+
+// --- NEW: SKELETON LOADER RENDERER ---
+/**
+ * Renders a specified number of skeleton loader cards into a container.
+ * @param {HTMLElement} container The element to append skeletons to.
+ * @param {number} count The number of skeletons to create.
+ */
+function renderSkeletonLoaders(container, count) {
+    container.innerHTML = ''; // Clear previous content
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+        const skeletonCard = document.createElement('div');
+        skeletonCard.className = 'skeleton-card';
+        skeletonCard.innerHTML = `
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text w-75"></div>
+            <div class="skeleton-text w-50"></div>
+        `;
+        fragment.appendChild(skeletonCard);
+    }
+    container.appendChild(fragment);
+}
+
+// --- NEW: LAZY LOADING WITH INTERSECTION OBSERVER ---
+const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src; // Load the high-quality image
+            img.onload = () => {
+                img.classList.add('loaded'); // Add class for fade-in effect
+            };
+            img.onerror = () => { // Fallback if image fails to load
+                 img.src = 'https://placehold.co/400x400/e0e0e0/777?text=Error';
+                 img.classList.add('loaded');
+            };
+            observer.unobserve(img); // Stop observing once loaded
+        }
+    });
+}, { rootMargin: "0px 0px 200px 0px" }); // Start loading when 200px away from viewport
+
+function observeLazyImages() {
+    const imagesToLoad = document.querySelectorAll('img.lazy');
+    imagesToLoad.forEach(img => {
+        lazyImageObserver.observe(img);
+    });
+}
 
 // --- RENDER FUNCTION ---
 function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = ""; // Clear previous results
+    productGrid.innerHTML = "";
     if (productsToDisplay.length === 0) {
         productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
@@ -64,12 +109,14 @@ function renderProducts(productsToDisplay) {
     const fragment = document.createDocumentFragment();
     productsToDisplay.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
+        const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
+        
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
         productLink.innerHTML = `
           <div class="product-card">
-            <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
+            <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
           </div>
@@ -77,13 +124,17 @@ function renderProducts(productsToDisplay) {
         fragment.appendChild(productLink);
     });
     productGrid.appendChild(fragment);
+    observeLazyImages(); // NEW: Tell the observer to watch the new images
 }
 
-// --- NEW: FETCH FROM ALGOLIA ---
+// --- FETCH FROM ALGOLIA ---
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
-    productGrid.innerHTML = `<p class="loading-indicator">Searching for listings...</p>`;
+    
+    // MODIFIED: Show skeleton loaders instead of text
+    renderSkeletonLoaders(productGrid, 12); 
+    
     updatePaginationUI();
     updateListingsTitle();
 
@@ -106,8 +157,9 @@ async function fetchAndRenderProducts() {
     } finally {
         state.isFetching = false;
         updatePaginationUI();
-        // Scroll to the top of the listings grid after fetching
-        window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+        if (state.currentPage === 0) {
+           window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+        }
     }
 }
 
@@ -128,51 +180,45 @@ function updateListingsTitle() {
     if (state.filters.category) {
         title = state.filters.category;
     } else if (state.filters.type) {
-        // Capitalize first letter
         title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`;
     }
-    
     if (state.searchTerm) {
         title = `Results for "${state.searchTerm}"`;
     }
-
     listingsTitle.textContent = title;
 }
 
 // --- EVENT HANDLERS ---
 function handleSearch() {
     const term = searchInput.value.trim();
-    if (state.searchTerm === term) return; // No change, do nothing
+    if (state.searchTerm === term) return;
     
     state.searchTerm = term;
     state.currentPage = 0;
-    state.filters.type = ''; // Reset filters when a new search is performed
+    state.filters.type = '';
     state.filters.category = '';
     
     fetchAndRenderProducts();
 }
 
 function handleFilterLinkClick(event) {
-    // Find the closest ancestor `<a>` tag that has a query string in its href
     const link = event.target.closest('a[href*="?"]');
-    if (!link) return; // If the click was not on a relevant link, do nothing
+    if (!link) return;
 
-    event.preventDefault(); // IMPORTANT: Stop the browser from navigating to the link's URL
+    event.preventDefault();
 
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
     
-    // Reset state for the new filter
     state.filters.type = type;
     state.filters.category = category;
     state.currentPage = 0;
-    state.searchTerm = ''; // Clear any search term when a filter link is clicked
+    state.searchTerm = '';
     searchInput.value = '';
 
     fetchAndRenderProducts();
 
-    // If the mobile nav is open, close it after a filter is clicked
     document.querySelector('.mobile-nav')?.classList.remove('active');
     document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
 }
@@ -182,14 +228,16 @@ function initializeStateFromURL() {
     state.filters.type = params.get('type') || '';
     state.filters.category = params.get('category') || '';
     state.searchTerm = params.get('q') || '';
-    
-    // Optional: Clean the URL so refreshing the page doesn't re-apply the filter
-    // history.replaceState(null, '', window.location.pathname);
 }
 
 // --- FETCH DEALS ---
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
+    
+    // MODIFIED: Show skeletons for the deals section
+    renderSkeletonLoaders(dealsGrid, 5);
+    dealsSection.style.display = 'block';
+
     try {
         const dealsQuery = query(
             collection(db, 'products'),
@@ -205,19 +253,19 @@ async function fetchDeals() {
             return;
         }
 
-        // The original renderProducts function had a third argument `isNewRender`.
-        // We'll create a temporary render function for deals to avoid complexity.
         dealsGrid.innerHTML = "";
         const fragment = document.createDocumentFragment();
         snapshot.docs.forEach(doc => {
             const product = { id: doc.id, ...doc.data() };
             const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
+            const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
+
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
             productLink.innerHTML = `
               <div class="product-card">
-                <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
+                 <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
                 <h3>${product.name}</h3>
                 <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
               </div>
@@ -225,14 +273,13 @@ async function fetchDeals() {
             fragment.appendChild(productLink);
         });
         dealsGrid.appendChild(fragment);
-        dealsSection.style.display = 'block';
+        observeLazyImages(); // NEW: Watch deal images too
 
     } catch (error) {
         console.error("Error fetching deals:", error);
         dealsSection.style.display = 'none';
     }
 }
-
 
 // --- FETCH TESTIMONIALS ---
 async function fetchTestimonials() {
@@ -268,30 +315,24 @@ async function fetchTestimonials() {
 
 // --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
-    // These functions can run independently as they populate separate sections
     fetchDeals();
     fetchTestimonials();
     
-    // Check URL for pre-filled filters on page load (e.g., from an external link)
     initializeStateFromURL();
-    
-    // Initial fetch for the main grid based on URL parameters or default state
     fetchAndRenderProducts();
 
     // --- EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent form submission if it's in a form
+            e.preventDefault();
             handleSearch();
         }
     });
 
-    // Listen for clicks on the parent containers to catch clicks on the filter links
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
 
-    // Pagination button listeners
     prevPageBtn.addEventListener('click', () => {
         if (state.currentPage > 0) {
             state.currentPage--;
