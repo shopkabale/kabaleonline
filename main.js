@@ -50,11 +50,6 @@ const state = {
 };
 
 // --- UI & RENDER FUNCTIONS ---
-
-/**
- * Renders skeleton placeholders in the product grid.
- * @param {number} count The number of skeletons to render. Defaults to 6.
- */
 function renderSkeletons(count = 6) {
     let skeletons = '';
     for (let i = 0; i < count; i++) {
@@ -69,16 +64,12 @@ function renderSkeletons(count = 6) {
     productGrid.innerHTML += skeletons;
 }
 
-/**
- * Renders the actual product cards in the grid.
- * @param {Array} productsToDisplay Array of product objects.
- */
 function renderProducts(productsToDisplay) {
     const skeletons = productGrid.querySelectorAll('.skeleton');
     skeletons.forEach(s => s.remove());
 
     if (productsToDisplay.length === 0 && state.currentPage === 0) {
-        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+        productGrid.innerHTML = `<p class="loading-indicator">No listings found.</p>`;
         return;
     }
     
@@ -101,9 +92,6 @@ function renderProducts(productsToDisplay) {
     productGrid.appendChild(fragment);
 }
 
-/**
- * Updates the visibility of the "Load More" button based on the current page state.
- */
 function updateLoadMoreButton() {
     if (state.currentPage < state.totalPages - 1) {
         loadMoreBtn.style.display = 'block';
@@ -112,9 +100,6 @@ function updateLoadMoreButton() {
     }
 }
 
-/**
- * Updates the main listing title based on current filters or search terms.
- */
 function updateListingsTitle() {
     let title = "Recent Items";
     if (state.filters.category) {
@@ -130,16 +115,9 @@ function updateListingsTitle() {
 
 
 // --- DATA FETCHING ---
-
-/**
- * Fetches products from the backend (Algolia via Netlify function) and renders them.
- * @param {boolean} isLoadMore Indicates if the fetch is from a "Load More" click.
- */
 async function fetchAndRenderProducts(isLoadMore = false) {
     if (state.isFetching) return;
     state.isFetching = true;
-
-    console.log("DEBUG: Trying to fetch products now..."); // <-- DEBUG LINE 2
 
     if (!isLoadMore) {
         productGrid.innerHTML = "";
@@ -147,7 +125,6 @@ async function fetchAndRenderProducts(isLoadMore = false) {
     
     renderSkeletons(isLoadMore ? 3 : 6); 
     loadMoreBtn.style.display = 'none';
-
     updateListingsTitle();
 
     try {
@@ -156,11 +133,7 @@ async function fetchAndRenderProducts(isLoadMore = false) {
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
         
-        // --- NEW DEBUG LINES ---
         const fetchUrl = `/.netlify/functions/search?${params.toString()}`;
-        console.log("DEBUG: Fetching this URL:", fetchUrl);
-
-        // --- MODIFIED LINE ---
         const response = await fetch(fetchUrl);
         
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
@@ -170,8 +143,8 @@ async function fetchAndRenderProducts(isLoadMore = false) {
         renderProducts(products);
 
     } catch (error) {
-        console.error("Error fetching from Algolia:", error);
-        productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again.</p>`;
+        console.error("Error fetching listings:", error);
+        productGrid.innerHTML = `<p class="loading-indicator">Could not load listings.</p>`;
     } finally {
         state.isFetching = false;
         updateLoadMoreButton();
@@ -181,9 +154,6 @@ async function fetchAndRenderProducts(isLoadMore = false) {
     }
 }
 
-/**
- * Fetches special deal items from Firestore.
- */
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     try {
@@ -227,9 +197,6 @@ async function fetchDeals() {
     }
 }
 
-/**
- * Fetches approved testimonials from Firestore.
- */
 async function fetchTestimonials() {
     const testimonialGrid = document.getElementById('testimonial-grid');
     if (!testimonialGrid) return;
@@ -263,10 +230,6 @@ async function fetchTestimonials() {
 
 
 // --- EVENT HANDLERS & INITIALIZATION ---
-
-/**
- * Handles the search action.
- */
 function handleSearch() {
     const term = searchInput.value.trim();
     if (state.searchTerm === term) return;
@@ -278,10 +241,6 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
-/**
- * Handles clicks on filter links in the nav and category grid.
- * @param {Event} event The click event.
- */
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a[href*="?"]');
     if (!link) return;
@@ -303,9 +262,6 @@ function handleFilterLinkClick(event) {
     document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
 }
 
-/**
- * Initializes the application state from URL query parameters.
- */
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     state.filters.type = params.get('type') || '';
@@ -313,21 +269,12 @@ function initializeStateFromURL() {
     state.searchTerm = params.get('q') || '';
 }
 
-/**
- * Main entry point: runs when the DOM is fully loaded.
- */
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DEBUG: Script has started!"); // <-- DEBUG LINE 1
-
-    // Initial data fetches for different sections
     fetchDeals();
     fetchTestimonials();
-    
-    // Set initial state from URL and fetch main product listings
     initializeStateFromURL();
     fetchAndRenderProducts(false);
 
-    // Set up event listeners
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
