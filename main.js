@@ -104,6 +104,11 @@ async function fetchAndRenderProducts(isNewSearch = false) {
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
 
         const { products, totalPages } = await response.json();
+        
+        // --- DEBUG LINE ADDED HERE ---
+        console.log('Server Response:', { products: products.length, totalPages: totalPages });
+        // --- END OF DEBUG LINE ---
+
         state.totalPages = totalPages;
         
         renderProducts(products, isNewSearch);
