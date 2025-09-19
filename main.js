@@ -12,7 +12,9 @@ function getCloudinaryTransformedUrl(url, type) {
     }
     const transformations = {
         // MODIFIED: Increased size to 400x400 for better quality
-        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto:good',
+        // AFTER
+thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
+
         full: 'c_limit,w_800,h_800,f_auto,q_auto',
         // NEW: Low-quality image placeholder for lazy loading
         placeholder: 'c_fill,g_auto,w_20,h_20,e_blur:100,q_auto:lowest,f_auto'
