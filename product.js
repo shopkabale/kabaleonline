@@ -111,7 +111,7 @@ function renderProductDetails(product, seller) {
     productDetailContent.appendChild(productElement);
 
     // --- SETUP BUTTONS ---
-    setupShareButton(product);
+    setupShareButton(product, seller); // MODIFIED: Pass the seller object too
 
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
@@ -125,26 +125,53 @@ function renderProductDetails(product, seller) {
     }
 }
 
-function setupShareButton(product) {
+/**
+ * Sets up the share button with a detailed, formatted message.
+ * @param {object} product The product data object.
+ * @param {object} seller The seller data object.
+ */
+function setupShareButton(product, seller) { // MODIFIED: Function signature accepts seller
     const shareBtn = document.getElementById('share-btn');
     if (!shareBtn) return;
 
     shareBtn.addEventListener('click', async () => {
+        // 1. Truncate the description to keep the message clean
+        let shortDescription = product.description;
+        if (shortDescription && shortDescription.length > 120) {
+            shortDescription = shortDescription.substring(0, 120) + '...';
+        }
+
+        // 2. Construct the new, attractive share text
+        // Using backticks (`) for a multi-line string. The asterisks will create bold text on WhatsApp.
+        const shareText = `*PRODUCT DETAILS*\n` +
+                        `\n` +
+                        `*Seller:* ${seller.name || 'Seller'}\n` +
+                        `*Price:* UGX ${product.price.toLocaleString()}\n` +
+                        `*Description:* ${shortDescription}\n` +
+                        `\n` +
+                        `*Link:* ${window.location.href}\n` +
+                        `\n` +
+                        `#kabaleonline_market`;
+
         const shareData = {
-            title: product.name,
-            text: `Check out this listing on Kabale Online: ${product.name}`,
-            url: window.location.href
+            title: `Check out: ${product.name}`, // Title for apps like email
+            text: shareText, // The detailed text for apps like WhatsApp, Messenger, etc.
+            url: window.location.href // URL is included in the text, but good practice to have it here too
         };
+
         try {
             if (navigator.share) {
                 await navigator.share(shareData);
             } else {
-                // Fallback for desktop browsers
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard!');
+                // 3. Improve the fallback for desktop browsers
+                await navigator.clipboard.writeText(shareText);
+                alert('Product details copied to clipboard!'); // More accurate message
             }
         } catch (err) {
             console.error("Share failed:", err);
+            // In case of error, you could still try to copy just the URL
+            await navigator.clipboard.writeText(window.location.href);
+            alert('Sharing failed. Link copied to clipboard instead.');
         }
     });
 }
