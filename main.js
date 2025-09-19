@@ -155,8 +155,14 @@ async function fetchAndRenderProducts(isLoadMore = false) {
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
+        
+        // --- NEW DEBUG LINES ---
+        const fetchUrl = `/.netlify/functions/search?${params.toString()}`;
+        console.log("DEBUG: Fetching this URL:", fetchUrl);
 
-        const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
+        // --- MODIFIED LINE ---
+        const response = await fetch(fetchUrl);
+        
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
 
         const { products, totalPages } = await response.json();
