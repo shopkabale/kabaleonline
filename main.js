@@ -11,7 +11,7 @@ function getCloudinaryTransformedUrl(url, type) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
     const transformations = {
-        thumbnail: 'c_fill,g_auto,w_250,h_250,f_auto,q_auto',
+        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
         full: 'c_limit,w_800,h_800,f_auto,q_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -35,12 +35,7 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-
-// Pagination Elements
-const paginationContainer = document.getElementById("pagination-container");
-const prevPageBtn = document.getElementById("prev-page-btn");
-const nextPageBtn = document.getElementById("next-page-btn");
-const pageIndicator = document.getElementById("page-indicator");
+const loadMoreBtn = document.getElementById("load-more-btn");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -49,18 +44,44 @@ const state = {
     isFetching: false,
     searchTerm: '',
     filters: {
-        type: '', // e.g., 'item' or 'service'
-        category: '' // e.g., 'electronics'
+        type: '',
+        category: ''
     }
 };
 
-// --- RENDER FUNCTION ---
+// --- UI & RENDER FUNCTIONS ---
+
+/**
+ * Renders skeleton placeholders in the product grid.
+ * @param {number} count The number of skeletons to render. Defaults to 6.
+ */
+function renderSkeletons(count = 6) {
+    let skeletons = '';
+    for (let i = 0; i < count; i++) {
+        skeletons += `
+            <div class="product-card skeleton">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+            </div>
+        `;
+    }
+    productGrid.innerHTML += skeletons;
+}
+
+/**
+ * Renders the actual product cards in the grid.
+ * @param {Array} productsToDisplay Array of product objects.
+ */
 function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = ""; // Clear previous results
-    if (productsToDisplay.length === 0) {
+    const skeletons = productGrid.querySelectorAll('.skeleton');
+    skeletons.forEach(s => s.remove());
+
+    if (productsToDisplay.length === 0 && state.currentPage === 0) {
         productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
     }
+    
     const fragment = document.createDocumentFragment();
     productsToDisplay.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
@@ -76,15 +97,55 @@ function renderProducts(productsToDisplay) {
         `;
         fragment.appendChild(productLink);
     });
+    
     productGrid.appendChild(fragment);
 }
 
-// --- NEW: FETCH FROM ALGOLIA ---
-async function fetchAndRenderProducts() {
+/**
+ * Updates the visibility of the "Load More" button based on the current page state.
+ */
+function updateLoadMoreButton() {
+    if (state.currentPage < state.totalPages - 1) {
+        loadMoreBtn.style.display = 'block';
+    } else {
+        loadMoreBtn.style.display = 'none';
+    }
+}
+
+/**
+ * Updates the main listing title based on current filters or search terms.
+ */
+function updateListingsTitle() {
+    let title = "Recent Items";
+    if (state.filters.category) {
+        title = state.filters.category;
+    } else if (state.filters.type) {
+        title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`;
+    }
+    if (state.searchTerm) {
+        title = `Results for "${state.searchTerm}"`;
+    }
+    listingsTitle.textContent = title;
+}
+
+
+// --- DATA FETCHING ---
+
+/**
+ * Fetches products from the backend (Algolia via Netlify function) and renders them.
+ * @param {boolean} isLoadMore Indicates if the fetch is from a "Load More" click.
+ */
+async function fetchAndRenderProducts(isLoadMore = false) {
     if (state.isFetching) return;
     state.isFetching = true;
-    productGrid.innerHTML = `<p class="loading-indicator">Searching for listings...</p>`;
-    updatePaginationUI();
+
+    if (!isLoadMore) {
+        productGrid.innerHTML = "";
+    }
+    
+    renderSkeletons(isLoadMore ? 3 : 6); 
+    loadMoreBtn.style.display = 'none';
+
     updateListingsTitle();
 
     try {
@@ -92,7 +153,7 @@ async function fetchAndRenderProducts() {
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
-        
+
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
 
@@ -102,92 +163,19 @@ async function fetchAndRenderProducts() {
 
     } catch (error) {
         console.error("Error fetching from Algolia:", error);
-        productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again later.</p>`;
+        productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again.</p>`;
     } finally {
         state.isFetching = false;
-        updatePaginationUI();
-        // Scroll to the top of the listings grid after fetching
-        window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+        updateLoadMoreButton();
+        if (!isLoadMore) {
+           window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+        }
     }
 }
 
-// --- UI UPDATE FUNCTIONS ---
-function updatePaginationUI() {
-    if (state.totalPages > 1) {
-        paginationContainer.style.display = 'flex';
-        pageIndicator.textContent = `Page ${state.currentPage + 1} of ${state.totalPages}`;
-        prevPageBtn.disabled = state.isFetching || state.currentPage === 0;
-        nextPageBtn.disabled = state.isFetching || state.currentPage >= state.totalPages - 1;
-    } else {
-        paginationContainer.style.display = 'none';
-    }
-}
-
-function updateListingsTitle() {
-    let title = "All Listings";
-    if (state.filters.category) {
-        title = state.filters.category;
-    } else if (state.filters.type) {
-        // Capitalize first letter
-        title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`;
-    }
-    
-    if (state.searchTerm) {
-        title = `Results for "${state.searchTerm}"`;
-    }
-
-    listingsTitle.textContent = title;
-}
-
-// --- EVENT HANDLERS ---
-function handleSearch() {
-    const term = searchInput.value.trim();
-    if (state.searchTerm === term) return; // No change, do nothing
-    
-    state.searchTerm = term;
-    state.currentPage = 0;
-    state.filters.type = ''; // Reset filters when a new search is performed
-    state.filters.category = '';
-    
-    fetchAndRenderProducts();
-}
-
-function handleFilterLinkClick(event) {
-    // Find the closest ancestor `<a>` tag that has a query string in its href
-    const link = event.target.closest('a[href*="?"]');
-    if (!link) return; // If the click was not on a relevant link, do nothing
-
-    event.preventDefault(); // IMPORTANT: Stop the browser from navigating to the link's URL
-
-    const url = new URL(link.href);
-    const type = url.searchParams.get('type') || '';
-    const category = url.searchParams.get('category') || '';
-    
-    // Reset state for the new filter
-    state.filters.type = type;
-    state.filters.category = category;
-    state.currentPage = 0;
-    state.searchTerm = ''; // Clear any search term when a filter link is clicked
-    searchInput.value = '';
-
-    fetchAndRenderProducts();
-
-    // If the mobile nav is open, close it after a filter is clicked
-    document.querySelector('.mobile-nav')?.classList.remove('active');
-    document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
-}
-
-function initializeStateFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    state.filters.type = params.get('type') || '';
-    state.filters.category = params.get('category') || '';
-    state.searchTerm = params.get('q') || '';
-    
-    // Optional: Clean the URL so refreshing the page doesn't re-apply the filter
-    // history.replaceState(null, '', window.location.pathname);
-}
-
-// --- FETCH DEALS ---
+/**
+ * Fetches special deal items from Firestore.
+ */
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     try {
@@ -205,8 +193,6 @@ async function fetchDeals() {
             return;
         }
 
-        // The original renderProducts function had a third argument `isNewRender`.
-        // We'll create a temporary render function for deals to avoid complexity.
         dealsGrid.innerHTML = "";
         const fragment = document.createDocumentFragment();
         snapshot.docs.forEach(doc => {
@@ -233,8 +219,9 @@ async function fetchDeals() {
     }
 }
 
-
-// --- FETCH TESTIMONIALS ---
+/**
+ * Fetches approved testimonials from Firestore.
+ */
 async function fetchTestimonials() {
     const testimonialGrid = document.getElementById('testimonial-grid');
     if (!testimonialGrid) return;
@@ -266,43 +253,86 @@ async function fetchTestimonials() {
     }
 }
 
-// --- INITIALIZE PAGE ---
+
+// --- EVENT HANDLERS & INITIALIZATION ---
+
+/**
+ * Handles the search action.
+ */
+function handleSearch() {
+    const term = searchInput.value.trim();
+    if (state.searchTerm === term) return;
+
+    state.searchTerm = term;
+    state.currentPage = 0;
+    state.filters.type = '';
+    state.filters.category = '';
+    fetchAndRenderProducts(false);
+}
+
+/**
+ * Handles clicks on filter links in the nav and category grid.
+ * @param {Event} event The click event.
+ */
+function handleFilterLinkClick(event) {
+    const link = event.target.closest('a[href*="?"]');
+    if (!link) return;
+
+    event.preventDefault();
+
+    const url = new URL(link.href);
+    const type = url.searchParams.get('type') || '';
+    const category = url.searchParams.get('category') || '';
+
+    state.filters.type = type;
+    state.filters.category = category;
+    state.currentPage = 0;
+    state.searchTerm = '';
+    searchInput.value = '';
+    fetchAndRenderProducts(false);
+
+    document.querySelector('.mobile-nav')?.classList.remove('active');
+    document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
+}
+
+/**
+ * Initializes the application state from URL query parameters.
+ */
+function initializeStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    state.filters.type = params.get('type') || '';
+    state.filters.category = params.get('category') || '';
+    state.searchTerm = params.get('q') || '';
+}
+
+/**
+ * Main entry point: runs when the DOM is fully loaded.
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    // These functions can run independently as they populate separate sections
+    // Initial data fetches for different sections
     fetchDeals();
     fetchTestimonials();
     
-    // Check URL for pre-filled filters on page load (e.g., from an external link)
+    // Set initial state from URL and fetch main product listings
     initializeStateFromURL();
-    
-    // Initial fetch for the main grid based on URL parameters or default state
-    fetchAndRenderProducts();
+    fetchAndRenderProducts(false);
 
-    // --- EVENT LISTENERS ---
+    // Set up event listeners
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent form submission if it's in a form
+            e.preventDefault();
             handleSearch();
         }
     });
 
-    // Listen for clicks on the parent containers to catch clicks on the filter links
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
 
-    // Pagination button listeners
-    prevPageBtn.addEventListener('click', () => {
-        if (state.currentPage > 0) {
-            state.currentPage--;
-            fetchAndRenderProducts();
-        }
-    });
-
-    nextPageBtn.addEventListener('click', () => {
+    loadMoreBtn.addEventListener('click', () => {
         if (state.currentPage < state.totalPages - 1) {
             state.currentPage++;
-            fetchAndRenderProducts();
+            fetchAndRenderProducts(true);
         }
     });
 });
