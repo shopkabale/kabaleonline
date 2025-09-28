@@ -2,213 +2,306 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>You're Offline | Kabale Online</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <title>You are Offline - Kabale Online</title>
+    <meta name="description" content="It looks like you're offline. While you wait for your connection to return, enjoy a game on Kabale Online.">
     <link rel="icon" href="/favicon.webp" type="image/webp">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 
     <style>
+        /* --- BRANDING STYLES FROM KABALEONLINE.COM --- */
         :root {
-            --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
-            --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
-            --border-color: #e9ecef; --border-radius: 12px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+            --primary-color: #007bff; 
+            --accent-color: #ffc107; 
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff; 
+            --text-dark: #34495e; 
+            --text-light: #7f8c8d;
+            --border-color: #e9ecef; 
+            --border-radius: 12px; 
+            --shadow: 0 4px 15px rgba(0,0,0,0.07);
+
+            /* Game specific colors */
+            --game-bg: #87CEEB; /* Sky Blue */
+            --bird-color: var(--accent-color);
+            --pipe-color: var(--primary-color);
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-color); 
+            color: var(--text-dark); 
+            line-height: 1.6; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+        /* --- Simplified Header --- */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            padding: 12px 0;
+        }
+
+        .simple-site-title {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--text-dark); /* This makes "Kabale" black */
+        }
         
-        /* --- HEADER & NAV STYLES --- */
-        .sticky-header { position: sticky; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
-        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; }
-        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
-        .site-title span { color: var(--accent-color); }
-        .header-spacer { flex-grow: 1; }
-        .header-icons { display: flex; align-items: center; gap: 18px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
-        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
-        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
-        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
-        .mobile-nav.active { left: 0; }
-        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
-        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
-        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; }
-        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
-        .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
-        .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
+        .simple-site-title span {
+            color: var(--accent-color); /* This makes "Online" yellow */
+        }
         
-        /* --- FOOTER STYLES --- */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: auto; }
-        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; } .footer-logo span { color: var(--accent-color); }
-        .footer-socials { margin-bottom: 25px; } .footer-socials a { color: white; font-size: 22px; margin: 0 12px; }
-        .footer-links { margin-bottom: 25px; } .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-        .footer-copyright { font-size: 0.8em; color: var(--text-light); }
-        
-        /* --- ✨ OFFLINE PAGE STYLES --- */
-        .offline-container {
+        /* --- Main Content --- */
+        .page-container { 
+            padding-top: 100px; /* Adjusted padding for the new header */
+            padding-bottom: 40px; 
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 40px 20px;
         }
-        .offline-container h1 {
-            font-size: 2.5em;
-            color: var(--text-dark);
-            margin-top: 30px;
+
+        .offline-message h1 {
+            font-size: 1.8rem;
             margin-bottom: 10px;
         }
-        .offline-container p {
-            font-size: 1.1em;
+        .offline-message p {
+            font-size: 1rem;
             color: var(--text-light);
-            max-width: 400px;
             margin-bottom: 30px;
         }
-        .retry-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1em;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .retry-btn:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
 
-        /* --- ✨ OFFLINE ANIMATION --- */
-        .offline-icon {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            color: var(--primary-color);
+        /* --- Game Styles --- */
+        #gameCanvas {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--game-bg);
+            display: block;
+            margin: 0 auto;
+            box-shadow: var(--shadow);
+            max-width: 100%;
         }
-        .wifi-slash {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 8px;
-            background-color: #dc3545;
-            transform: translate(-50%, -50%) rotate(45deg);
-            z-index: 10;
-            border-radius: 4px;
+        
+        .instructions {
+             font-family: 'Press Start 2P', cursive;
+             margin-top: 20px;
+             font-size: 0.8rem;
+             color: var(--text-light);
         }
-        .wifi-slash::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: #dc3545;
-            transform: rotate(90deg);
-            border-radius: 4px;
+        
+        /* --- Footer --- */
+        footer { 
+            background-color: var(--text-dark); 
+            color: white; 
+            padding: 40px 15px 20px; 
+            text-align: center; 
         }
-        .wifi-wave {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 6px solid currentColor;
-            border-radius: 50%;
-            opacity: 0;
-            border-color: currentColor transparent transparent transparent;
-            animation: pulse 3s infinite;
-        }
-        .wifi-wave.wave-1 { width: 40px; height: 40px; animation-delay: 0s; }
-        .wifi-wave.wave-2 { width: 80px; height: 80px; animation-delay: 0.5s; }
-        .wifi-wave.wave-3 { width: 120px; height: 120px; animation-delay: 1s; }
+        .footer-logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; }
+        .footer-tagline { font-size: 0.9em; color: #bdc3c7; margin-top: 0; margin-bottom: 20px;}
+        .footer-socials { margin-bottom: 20px; }
+        .footer-socials a { color: white; font-size: 20px; margin: 0 12px; text-decoration: none; }
+        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+        .footer-copyright { margin-top: 20px; font-size: 0.8em; color: #95a5a6; }
 
-        @keyframes pulse {
-            0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateX(-50%) scale(1); opacity: 0; }
-        }
     </style>
 </head>
 <body>
-
     <header class="sticky-header">
-        <div class="header-top-bar">
-            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-            <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <div class="header-spacer"></div>
-            <div class="header-icons">
-                <a href="/inbox.html" aria-label="Notifications"><i class="fa-regular fa-bell"></i></a>
-                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-            </div>
-        </div>
+        <div class="simple-site-title">Kabale <span>Online</span></div>
     </header>
 
-    <nav class="mobile-nav">
-        <div class="mobile-nav-header">Kabale Online</div>
-        <div class="mobile-nav-links">
-            <a href="/"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="/?type=service"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-            <a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+    <div class="container page-container">
+        <div class="offline-message">
+            <h1>No Internet Connection</h1>
+            <p>It looks like you're offline. Enjoy a game while you wait to reconnect.</p>
         </div>
-        <div class="mobile-nav-footer">
-            <a href="/sell/" class="post-button">Post Something Free</a>
-        </div>
-    </nav>
+        
+        <canvas id="gameCanvas"></canvas>
+        <div class="instructions">Tap or Press Space to Flap</div>
+    </div>
 
-    <main class="container offline-container">
-        <div class="offline-icon">
-            <div class="wifi-slash"></div>
-            <div class="wifi-wave wave-1"></div>
-            <div class="wifi-wave wave-2"></div>
-            <div class="wifi-wave wave-3"></div>
-        </div>
-        <h1>You're Offline</h1>
-        <p>It seems your internet connection is unavailable. This page was saved for you, but we can't load any new content right now.</p>
-        <button id="retry-btn" class="retry-btn">Try to Reconnect</button>
-    </main>
-    
     <footer>
         <div class="container">
-            <div class="footer-logo">Kabale <span>Online</span></div>
+            <div class="footer-logo">Kabale Online</div>
             <p class="footer-tagline">Your Community Marketplace</p>
             <div class="footer-socials">
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                 <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
             <div class="footer-links">
-                <a href="/about.html">About</a>
-                <a href="/terms.html">Terms</a>
-                <a href="/contact.html">Contact</a>
+                <a href="#" onclick="window.location.reload()">Reload Page</a>
+                <a href="#">Terms</a>
+                <a href="#">Contact</a>
             </div>
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
 
     <script>
-        // Script for the retry button
-        document.getElementById('retry-btn').addEventListener('click', () => {
-            window.location.reload();
+        // NOTE: Interactive header/footer elements are disabled on this offline page.
+        // The main purpose is brand consistency.
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // --- Game Configuration ---
+            const bird = { x: 50, y: 150, width: 34, height: 24, gravity: 0.6, lift: -10, velocity: 0 };
+            const pipe = { gap: 150, width: 52, speed: 3 };
+            let pipes = [], score = 0, highScore = localStorage.getItem('pixelRusherHighScore') || 0, frameCount = 0, isGameOver = true;
+            
+            // --- Asset Colors from CSS variables ---
+            const birdColor = getComputedStyle(document.documentElement).getPropertyValue('--bird-color').trim();
+            const pipeColor = getComputedStyle(document.documentElement).getPropertyValue('--pipe-color').trim();
+
+            function setCanvasSize() {
+                const maxWidth = 500;
+                const containerWidth = document.querySelector('.page-container').clientWidth;
+                canvas.width = Math.min(maxWidth, containerWidth);
+                canvas.height = canvas.width * 0.8; 
+                bird.y = canvas.height / 2;
+                bird.velocity = 0;
+            }
+
+            function drawBird() {
+                ctx.fillStyle = birdColor;
+                ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(bird.x + 22, bird.y + 6, 6, 6);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(bird.x + 24, bird.y + 8, 2, 2);
+            }
+
+            function drawPipes() {
+                ctx.fillStyle = pipeColor;
+                pipes.forEach(p => {
+                    ctx.fillRect(p.x, 0, pipe.width, p.y);
+                    ctx.fillRect(p.x, p.y + pipe.gap, pipe.width, canvas.height - (p.y + pipe.gap));
+                });
+            }
+
+            function drawScore() {
+                ctx.font = "24px 'Press Start 2P'";
+                ctx.fillStyle = "white";
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 4;
+                ctx.textAlign = "center";
+                ctx.strokeText(score, canvas.width / 2, 50);
+                ctx.fillText(score, canvas.width / 2, 50);
+            }
+            
+            function drawStartMessage() {
+                 if (!isGameOver) return;
+                 ctx.font = "20px 'Press Start 2P'";
+                 ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                 ctx.textAlign = "center";
+                 ctx.fillText("Tap to Start", canvas.width / 2, canvas.height / 2 - 20);
+                 if (highScore > 0) {
+                     ctx.font = "16px 'Press Start 2P'";
+                     ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 20);
+                 }
+            }
+
+            function update() {
+                if (isGameOver) return;
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+                
+                if (frameCount % 90 === 0) {
+                    const pipeY = Math.floor(Math.random() * (canvas.height - pipe.gap - 80)) + 40;
+                    pipes.push({ x: canvas.width, y: pipeY });
+                }
+
+                pipes.forEach(p => {
+                    p.x -= pipe.speed;
+                    if (!p.passed && p.x + pipe.width < bird.x) {
+                        score++;
+                        p.passed = true;
+                    }
+                });
+
+                pipes = pipes.filter(p => p.x + pipe.width > 0);
+                if (checkCollision()) endGame();
+                frameCount++;
+            }
+
+            function checkCollision() {
+                if (bird.y + bird.height > canvas.height || bird.y < 0) return true;
+                for (const p of pipes) {
+                    if (bird.x < p.x + pipe.width && bird.x + bird.width > p.x && (bird.y < p.y || bird.y + bird.height > p.y + pipe.gap)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBird();
+                drawPipes();
+                update();
+                drawScore();
+                drawStartMessage();
+                if (!isGameOver) requestAnimationFrame(loop);
+            }
+            
+            function flap() { bird.velocity = bird.lift; }
+
+            function startGame() {
+                isGameOver = false;
+                score = 0;
+                pipes = [];
+                frameCount = 0;
+                bird.y = canvas.height / 2;
+                bird.velocity = 0;
+                flap();
+                loop();
+            }
+
+            function endGame() {
+                isGameOver = true;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('pixelRusherHighScore', highScore);
+                }
+            }
+
+            function handleInput(e) {
+                e.preventDefault();
+                if (isGameOver) startGame(); else flap();
+            }
+
+            window.addEventListener('resize', () => { setCanvasSize(); drawStartMessage(); drawBird(); });
+            document.addEventListener('keydown', (e) => { if (e.code === 'Space') handleInput(e); });
+            canvas.addEventListener('mousedown', handleInput);
+            canvas.addEventListener('touchstart', handleInput);
+
+            setCanvasSize();
+            drawStartMessage();
+            drawBird();
         });
-
-        // Script for the mobile navigation (hamburger menu)
-        const hamburger = document.querySelector('.hamburger-menu');
-        const mobileNav = document.querySelector('.mobile-nav');
-        const navOverlay = document.querySelector('.mobile-nav-overlay');
-
-        function toggleNav() {
-            mobileNav.classList.toggle('active');
-            navOverlay.classList.toggle('active');
-        }
-
-        if (hamburger && mobileNav && navOverlay) {
-            hamburger.addEventListener('click', toggleNav);
-            navOverlay.addEventListener('click', toggleNav);
-        }
     </script>
 </body>
 </html>
+
