@@ -86,6 +86,7 @@ resetPasswordBtn.addEventListener('click', async () => {
 // This function is needed for profile photo uploads
 async function uploadImageToCloudinary(file) {
     try {
+        // NOTE: This assumes your Netlify function is at the root. If not, adjust the path.
         const response = await fetch('/.netlify/functions/generate-signature');
         if (!response.ok) throw new Error('Failed to get signature.');
         
