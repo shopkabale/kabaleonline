@@ -23,6 +23,7 @@
         .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
         .mobile-nav a i { margin-right: 15px; font-size: 18px; color: #007bff; }
         .mobile-nav a.post-button, .mobile-nav a.login-button { font-weight: bold; color: #007bff; }
+        .mobile-nav a:hover { background-color: #f8f9fa; }
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; display: none; }
         .mobile-nav-overlay.active { display: block; }
         .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
@@ -31,6 +32,24 @@
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+
+        /* --- PROFILE PAGE STYLES --- */
+        .profile-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 30px; margin-top: 20px; }
+        .profile-header { text-align: center; margin-bottom: 25px; }
+        .profile-header img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); }
+        .profile-info-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e9ecef; }
+        .profile-info-item:last-child { border-bottom: none; }
+        .profile-info-item .label { font-weight: bold; color: var(--text-dark); }
+        .profile-info-item .value { color: #6c757d; text-align: right; }
+        .profile-actions { text-align: center; margin-top: 30px; }
+        .form-actions { display: flex; gap: 10px; justify-content: center; }
+        .hidden { display: none !important; }
+        .glowing-btn { animation: glowing 2s infinite; }
+        @keyframes glowing {
+            0% { box-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color); }
+            50% { box-shadow: 0 0 20px var(--primary-color), 0 0 30px var(--primary-color); }
+            100% { box-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color); }
+        }
     </style>
 </head>
 <body>
@@ -60,34 +79,54 @@
 
     <div class="container page-content">
         <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
-        <h1>My Profile</h1>
-        <p>View and update your personal information here.</p>
+        <h1>Your Profile</h1>
         
         <div id="profile-loader" style="text-align:center; padding: 50px;">
             <p>Loading Your Profile...</p>
         </div>
         
-        <div id="profile-content" style="display: none;">
-             <form id="profile-form">
-                <p id="profile-update-message" style="display: none;"></p>
-                <div class="form-group">
-                    <label for="profile-photo">Profile Photo</label>
-                    <img id="profile-photo-preview" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Profile preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin-bottom: 10px;">
-                    <input type="file" id="profile-photo" accept="image/*">
+        <div id="profile-content" class="hidden">
+            <p id="profile-update-message" style="display: none;"></p>
+            
+            <div class="profile-card">
+                <div id="profile-display-view">
+                    <div class="profile-header">
+                        <img id="display-photo" src="https://placehold.co/120x120/e0e0e0/777?text=U" alt="Profile photo">
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-info-item"><span class="label">Full Name</span><span id="display-name" class="value"></span></div>
+                        <div class="profile-info-item"><span class="label">Email</span><span id="display-email" class="value"></span></div>
+                        <div class="profile-info-item"><span class="label">WhatsApp</span><span id="display-whatsapp" class="value"></span></div>
+                        <div class="profile-info-item"><span class="label">Location</span><span id="display-location" class="value"></span></div>
+                        <div class="profile-info-item"><span class="label">Bio</span><span id="display-bio" class="value"></span></div>
+                    </div>
+                    <div class="profile-actions">
+                        <button id="edit-profile-btn" class="cta-button glowing-btn">Edit Profile</button>
+                    </div>
                 </div>
-                <div class="form-group"><label for="profile-name">Your Full Name</label><input type="text" id="profile-name" required></div>
-                <div class="form-group"><label for="profile-email">Email (Cannot be changed)</label><input type="email" id="profile-email" disabled></div>
-                <div class="form-group"><label for="profile-whatsapp">WhatsApp (Cannot be changed)</label><input type="tel" id="profile-whatsapp" disabled></div>
-                <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" required></div>
-                <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3" placeholder="Tell buyers a little about yourself."></textarea></div>
-                <button type="submit" id="update-profile-btn" class="cta-button">Save and Update Profile</button>
-            </form>
+
+                <form id="profile-form" class="hidden">
+                    <div class="form-group">
+                        <label for="profile-photo">Change Profile Photo</label>
+                        <input type="file" id="profile-photo" accept="image/*">
+                    </div>
+                    <div class="form-group"><label for="profile-name">Your Full Name</label><input type="text" id="profile-name" required></div>
+                    <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" required></div>
+                    <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3"></textarea></div>
+                    <div class="form-actions">
+                        <button type="submit" id="update-profile-btn" class="cta-button">Save Changes</button>
+                        <button type="button" id="cancel-edit-btn" class="auth-button" style="background-color: #6c757d;">Cancel</button>
+                    </div>
+                </form>
+            </div>
 
             <hr style="margin: 30px 0;">
 
-            <h2>Account Security</h2>
-            <button id="reset-password-btn" class="auth-button">Change Password</button>
-            <p class="instruction-text" style="font-size: 0.9em; margin-top: 5px;">We'll send a password reset link to your email address.</p>
+            <div class="profile-card">
+                <h2>Account Security</h2>
+                <button id="reset-password-btn" class="auth-button">Change Password</button>
+                <p class="instruction-text" style="font-size: 0.9em; margin-top: 5px;">We'll send a password reset link to your email address.</p>
+            </div>
         </div>
     </div>
 
