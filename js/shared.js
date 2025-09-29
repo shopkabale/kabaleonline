@@ -2,25 +2,28 @@ import { auth } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 // --- PAGE PROTECTION ---
-// List of pages that require a user to be logged in.
+// This is the most important new feature. It automatically manages access to your pages.
+
+// An array of all pages that require a user to be logged in.
 const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/'];
-// List of pages that should NOT be accessible if the user is already logged in.
+// An array of pages that a logged-in user should NOT see (they get redirected away).
 const publicOnlyPages = ['/login/', '/signup/'];
 
 onAuthStateChanged(auth, (user) => {
+    // Get the user's current URL path (e.g., "/dashboard/").
     const currentPage = window.location.pathname;
 
     if (user) {
-        // User is logged in
+        // --- CASE 1: The user IS logged in. ---
         if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
-            // If they are on a login/signup page, redirect to the dashboard.
+            // If they try to visit the login or signup page, automatically send them to their dashboard.
             console.log("User is logged in. Redirecting from public page to dashboard.");
             window.location.replace('/dashboard/');
         }
     } else {
-        // User is not logged in
+        // --- CASE 2: The user is NOT logged in. ---
         if (protectedPages.some(page => currentPage.startsWith(page))) {
-            // If they are on a protected page, redirect to the login page.
+            // If they try to visit any protected page, automatically send them to the login page.
             console.log("User is not logged in. Redirecting from protected page to login.");
             window.location.replace('/login/');
         }
@@ -29,26 +32,27 @@ onAuthStateChanged(auth, (user) => {
 
 
 // --- SHARED UTILITY FUNCTIONS ---
+// These are helper functions used by multiple scripts to avoid repeating code.
 
 /**
- * Displays a message in a specified element.
- * @param {HTMLElement} element The element to display the message in.
- * @param {string} message The message to display.
- * @param {boolean} [isError=true] Whether the message is an error.
+ * Displays a message in a specified element (like an error or success box).
+ * @param {HTMLElement} element The HTML element to show the message in.
+ * @param {string} message The message content. Supports emojis.
+ * @param {boolean} [isError=true] Toggles between error (red) and success (green) styling.
  */
 export function showMessage(element, message, isError = true) {
     if (!element) return;
-    element.innerHTML = message; // Use innerHTML for emojis
+    element.innerHTML = message; // Use innerHTML to render emojis correctly
     element.className = isError ? 'error-message' : 'success-message';
     element.style.display = 'block';
     setTimeout(() => { element.style.display = 'none'; }, 5000);
 }
 
 /**
- * Toggles the loading state of a button.
- * @param {HTMLButtonElement} button The button element.
- * @param {boolean} isLoading Whether to show the loading state.
- * @param {string} originalText The original text of the button.
+ * Toggles the loading state of a button, showing a spinner.
+ * @param {HTMLButtonElement} button The button to toggle.
+ * @param {boolean} isLoading True to show the loader, false to return to normal.
+ * @param {string} originalText The button's original text to restore.
  */
 export function toggleLoading(button, isLoading, originalText) {
     if (!button) return;
@@ -64,9 +68,9 @@ export function toggleLoading(button, isLoading, originalText) {
 }
 
 /**
- * Normalizes a Ugandan WhatsApp number to the 256 format.
- * @param {string} phone The phone number string.
- * @returns {string} The normalized phone number.
+ * Normalizes a Ugandan WhatsApp number to the required 256xxxxxxxxx format.
+ * @param {string} phone The phone number string from an input.
+ * @returns {string} The correctly formatted phone number.
  */
 export function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
@@ -77,10 +81,10 @@ export function normalizeWhatsAppNumber(phone) {
 }
 
 /**
- * Creates an optimized and transformed Cloudinary URL.
- * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail'|'full'} type The desired transformation type.
- * @returns {string} The new, transformed URL.
+ * Creates an optimized and transformed Cloudinary URL for images.
+ * @param {string} url The original Cloudinary image URL.
+ * @param {'thumbnail'|'full'} type The desired size ('thumbnail' or 'full').
+ * @returns {string} The new, transformed image URL.
  */
 export function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
