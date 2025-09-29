@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile | Kabale Online</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Paste the full <style> block from the template here */
+        <style>
+        /* --- NEW HEADER & NAV STYLES --- */
+        :root {
+            --primary-color: #007bff;
+            --accent-color: #ffc107;
+            --text-dark: #34495e;
+            --border-color: #e9ecef;
+        }
+
+        body {
+            /* Added padding-top to prevent content from hiding under the fixed header */
+            padding-top: 70px;
+        }
+
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+        }
+
+        .hamburger-menu {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .site-title {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+        .site-title span {
+            color: var(--accent-color);
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .header-icons a {
+            color: var(--text-dark);
+            font-size: 22px;
+            text-decoration: none;
+        }
+
+        .desktop-nav { display: none; }
+
+          /* Style for the mobile navigation menu to match the image */
+/* Mobile nav sidebar */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: -260px; /* hidden by default */
+    width: 260px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 1100;
+    padding-top: 60px; /* space for header */
+    transition: left 0.3s ease;
+}
+
+/* Show when .active is toggled by ui.js */
+.mobile-nav.active {
+    left: 0;
+}
+
+/* Links inside sidebar */
+.mobile-nav a {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1em;
+}
+
+.mobile-nav a i {
+    margin-right: 15px;
+    font-size: 18px;
+    color: #007bff; /* blue icons */
+}
+
+/* Special buttons */
+.mobile-nav a.post-button,
+.mobile-nav a.login-button {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Hover effect */
+.mobile-nav a:hover {
+    background-color: #f8f9fa;
+}
+     /* --- END OF NEW HEADER STYLES --- */
+
+        /* Existing styles for the sell page */
+        .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
+        .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
+        .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
+        #email-verification-prompt { text-align: center; padding: 30px; background-color: #fffbe6; border: 1px solid #ffeeba; border-radius: 8px; margin-top: 40px; }
+        #email-verification-prompt h2 { margin-top: 0; color: #856404; }
+        #email-verification-prompt .user-email { font-weight: bold; color: #333; }
+        .referral-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .referral-code { background-color: #fff; border: 2px dashed #007bff; padding: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 10px; color: #007bff; user-select: all; cursor: pointer; }
+        #complete-profile-section { background-color: #e9f5ff; border: 1px solid #bce8f1; border-radius: 8px; padding: 25px; margin: 25px 0; }
+        #complete-profile-section h2 { margin-top: 0; color: #0056b3; text-align: center; }
+        #complete-profile-section p { text-align: center; margin-top: -10px; color: #666; margin-bottom: 25px; }
+        #complete-profile-form label { font-weight: bold; display: block; margin-bottom: 5px; text-align: left; }
+        .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+.mobile-nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1050;
+  display: none;
+}
+
+.mobile-nav-overlay.active {
+  display: block;
+}
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                </nav>
+            <div class="header-icons">
+                <a href="/sell/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <a href="/sell/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+
+    <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+    <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+    <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+    <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+    <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+    <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
+    <hr>
+    <a href="/sell/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+    <a href="/sell/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
+</nav>
+<div class="mobile-nav-overlay"></div>
+    </header>
+
+    <div class="container page-content">
+        <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
+        <h1>Your Profile</h1>
+        <p>View and update your personal information here.</p>
+        
+        <div id="profile-loader" style="text-align:center; padding: 50px;">
+            <p>Loading Profile...</p>
+        </div>
+        
+        <div id="profile-content" style="display: none;">
+             <form id="complete-profile-form">
+                <p id="profile-update-message" style="display: none;"></p>
+                <div class="form-group">
+                    <label for="profile-photo">Profile Photo</label>
+                    <img id="profile-photo-preview" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Profile preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin-bottom: 10px;">
+                    <input type="file" id="profile-photo" accept="image/*">
+                </div>
+                <div class="form-group"><label for="profile-name">Your Full Name</label><input type="text" id="profile-name" required></div>
+                <div class="form-group"><label for="profile-email">Email (Cannot be changed)</label><input type="email" id="profile-email" disabled></div>
+                <div class="form-group"><label for="profile-whatsapp">WhatsApp (Cannot be changed)</label><input type="tel" id="profile-whatsapp" disabled></div>
+                <div class="form-group"><label for="profile-location">Your Location</label><input type="text" id="profile-location" required></div>
+                <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3" placeholder="Tell buyers a little about yourself."></textarea></div>
+                <button type="submit" id="update-profile-btn" class="cta-button">Save and Update Profile</button>
+            </form>
+
+            <hr style="margin: 30px 0;">
+
+            <h2>Account Security</h2>
+            <button id="reset-password-btn" class="auth-button">Change Password</button>
+            <p class="instruction-text">We'll send a password reset link to your email address.</p>
+        </div>
+    </div>
+
+        <footer>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Get in Touch</h3>
+            <div class="kabale-contact-details">
+                <p class="kabale-contact-item">📞 +256 784655792</p>
+                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+            </div>
+            <div class="kabale-footer-links">
+                <a href="/about.html" class="kabale-footer-link">About Us</a>
+                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
+    <script type="module" src="/js/shared.js"></script>
+    <script type="module" src="script.js"></script>
+    <script type="module" src="/js/ui.js"></script>
+</body>
+</html>
