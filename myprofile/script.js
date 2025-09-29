@@ -3,24 +3,39 @@ import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading } from '../js/shared.js';
 
-const profileForm = document.getElementById('profile-form');
-const updateBtn = document.getElementById('update-profile-btn');
-const resetPasswordBtn = document.getElementById('reset-password-btn');
-const messageEl = document.getElementById('profile-update-message');
+// --- DOM ELEMENTS ---
 const loader = document.getElementById('profile-loader');
 const content = document.getElementById('profile-content');
-const photoPreview = document.getElementById('profile-photo-preview');
+const messageEl = document.getElementById('profile-update-message');
+const resetPasswordBtn = document.getElementById('reset-password-btn');
+
+// Display View Elements
+const profileDisplayView = document.getElementById('profile-display-view');
+const displayPhoto = document.getElementById('display-photo');
+const displayName = document.getElementById('display-name');
+const displayEmail = document.getElementById('display-email');
+const displayWhatsapp = document.getElementById('display-whatsapp');
+const displayLocation = document.getElementById('display-location');
+const displayBio = document.getElementById('display-bio');
+const editProfileBtn = document.getElementById('edit-profile-btn');
+
+// Edit Form Elements
+const profileForm = document.getElementById('profile-form');
+const updateBtn = document.getElementById('update-profile-btn');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
+const inputName = document.getElementById('profile-name');
+const inputLocation = document.getElementById('profile-location');
+const inputBio = document.getElementById('profile-bio');
+const inputPhoto = document.getElementById('profile-photo');
 
 let currentUser = null;
 
-// This script only loads data for the currently logged-in user.
-// It does NOT look for an ID in the URL.
+// --- AUTHENTICATION & DATA LOADING ---
 auth.onAuthStateChanged((user) => {
     if (user) {
         currentUser = user;
         loadProfileData(user);
     }
-    // If the user is not logged in, shared.js will redirect them to /login/
 });
 
 async function loadProfileData(user) {
@@ -29,50 +44,75 @@ async function loadProfileData(user) {
 
     if (docSnap.exists()) {
         const data = docSnap.data();
-        document.getElementById('profile-name').value = data.name || '';
-        document.getElementById('profile-email').value = data.email || '';
-        document.getElementById('profile-whatsapp').value = data.whatsapp || '';
-        document.getElementById('profile-location').value = data.location || '';
-        document.getElementById('profile-bio').value = data.bio || '';
-        photoPreview.src = data.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
+        // Populate the display view
+        displayPhoto.src = data.profilePhotoUrl || 'https://placehold.co/120x120/e0e0e0/777?text=U';
+        displayName.textContent = data.name || 'N/A';
+        displayEmail.textContent = data.email || 'N/A';
+        displayWhatsapp.textContent = data.whatsapp || 'N/A';
+        displayLocation.textContent = data.location || 'N/A';
+        displayBio.textContent = data.bio || 'No bio provided.';
+        
+        // Populate the hidden edit form
+        inputName.value = data.name || '';
+        inputLocation.value = data.location || '';
+        inputBio.value = data.bio || '';
     }
-    loader.style.display = 'none';
-    content.style.display = 'block';
+    loader.classList.add('hidden');
+    content.classList.remove('hidden');
 }
 
+// --- EVENT LISTENERS ---
+
+// Switch to "Edit Mode"
+editProfileBtn.addEventListener('click', () => {
+    profileDisplayView.classList.add('hidden');
+    profileForm.classList.remove('hidden');
+});
+
+// Cancel editing and switch back to "Display Mode"
+cancelEditBtn.addEventListener('click', () => {
+    profileForm.classList.add('hidden');
+    profileDisplayView.classList.remove('hidden');
+    // Optional: Reset form fields if user made changes then canceled
+    loadProfileData(currentUser); 
+});
+
+// Handle form submission to update profile
 profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentUser) return;
 
     toggleLoading(updateBtn, true, 'Saving...');
     try {
-        const name = document.getElementById('profile-name').value;
-        const location = document.getElementById('profile-location').value;
-        const bio = document.getElementById('profile-bio').value;
-        const photoFile = document.getElementById('profile-photo').files[0];
-        
         const dataToUpdate = { 
-            name: name, 
-            location: location, 
-            bio: bio 
+            name: inputName.value, 
+            location: inputLocation.value, 
+            bio: inputBio.value 
         };
         
+        const photoFile = inputPhoto.files[0];
         if (photoFile) {
             const photoUrl = await uploadImageToCloudinary(photoFile);
             dataToUpdate.profilePhotoUrl = photoUrl;
-            photoPreview.src = photoUrl; // Update preview immediately
         }
 
         await updateDoc(doc(db, 'users', currentUser.uid), dataToUpdate);
+        await loadProfileData(currentUser); // Reload all data to reflect changes
+        
+        // Switch back to display mode and show success
+        profileForm.classList.add('hidden');
+        profileDisplayView.classList.remove('hidden');
         showMessage(messageEl, 'Profile updated successfully!', false);
+
     } catch (error) {
         console.error("Error updating profile: ", error);
         showMessage(messageEl, 'Failed to update profile. Please try again.', true);
     } finally {
-        toggleLoading(updateBtn, false, 'Save and Update Profile');
+        toggleLoading(updateBtn, false, 'Save Changes');
     }
 });
 
+// Handle password reset request
 resetPasswordBtn.addEventListener('click', async () => {
     if (!currentUser) return;
     try {
@@ -83,29 +123,25 @@ resetPasswordBtn.addEventListener('click', async () => {
     }
 });
 
-// This function is needed for profile photo uploads
+
+// --- UTILITY FUNCTIONS ---
 async function uploadImageToCloudinary(file) {
     try {
-        // NOTE: This assumes your Netlify function is at the root. If not, adjust the path.
         const response = await fetch('/.netlify/functions/generate-signature');
         if (!response.ok) throw new Error('Failed to get signature.');
-        
         const { signature, timestamp, cloudname, apikey } = await response.json();
         const formData = new FormData();
         formData.append('file', file);
         formData.append('api_key', apikey);
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
-        
         const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-        
         if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
-        
         const uploadData = await uploadResponse.json();
         return uploadData.secure_url;
     } catch (error) {
         console.error("Error in Cloudinary upload process: ", error);
-        throw error; // Re-throw the error to be caught by the form handler
+        throw error;
     }
 }
