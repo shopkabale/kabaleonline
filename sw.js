@@ -1,6 +1,6 @@
 // sw.js (Upgraded Version)
 
-const CACHE_NAME = 'kabaleonline-cache-v11'; // IMPORTANT: Version bumped to trigger update
+const CACHE_NAME = 'kabaleonline-cache-v14'; // IMPORTANT: Version bumped to trigger update
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
 // A single, comprehensive list of all essential app files.
