@@ -10,7 +10,7 @@ async function fetchSellerProducts(uid) {
     const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     sellerProductsList.innerHTML = '';
-    
+
     if (querySnapshot.empty) {
         sellerProductsList.innerHTML = "<p>You haven't added any products yet. <a href='/upload/'>Click here to get started!</a></p>";
         return;
@@ -47,21 +47,36 @@ sellerProductsList.addEventListener('click', async (e) => {
         window.location.href = `/upload/?editId=${productId}`;
     }
 
+    // --- UPDATED DELETE LOGIC ---
     if (target.classList.contains('delete-btn')) {
-        if (confirm('Are you sure you want to delete this product?')) {
+        if (confirm('Are you sure you want to delete this product permanently? This cannot be undone.')) {
             try {
+                // Step 1: Delete from Firestore
                 await deleteDoc(doc(db, 'products', productId));
+
+                // Step 2: Tell the search index to delete its copy
                 await fetch('/.netlify/functions/syncToAlgolia', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'delete', objectID: productId }),
+                    headers: {
+                        'Content-Type': 'application/json', // This header is important
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        objectID: productId
+                    }),
                 });
-                showMessage(dashboardMessage, 'Product deleted successfully.', false);
+
+                // Step 3: Update the UI
+                showMessage(dashboardMessage, 'Product deleted successfully from all systems.', false);
                 fetchSellerProducts(auth.currentUser.uid);
+
             } catch (error) {
-                showMessage(dashboardMessage, 'Failed to delete product.');
+                console.error("Error during product deletion:", error);
+                showMessage(dashboardMessage, 'Failed to delete product. Please try again.');
             }
         }
     }
+    // --- END OF UPDATED LOGIC ---
 
     if (target.classList.contains('toggle-sold-btn')) {
         const currentStatus = target.dataset.sold === 'true';
