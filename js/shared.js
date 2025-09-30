@@ -5,7 +5,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 // This is the most important new feature. It automatically manages access to your pages.
 
 // An array of all pages that require a user to be logged in.
-const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/'];
+const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/'];
 // An array of pages that a logged-in user should NOT see (they get redirected away).
 const publicOnlyPages = ['/login/', '/signup/'];
 
