@@ -1,9 +1,8 @@
 // sw.js (Corrected Version)
 
-const CACHE_NAME = 'kabaleonline-cache-v12'; // Or v12 if you've made other changes
+const CACHE_NAME = 'kabaleonline-cache-v13'; // Or v12 if you've made other changes
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
-// A single, comprehensive list of all essential app files.
 const APP_SHELL_FILES = [
   // Core App Shell
   '/', 
@@ -22,31 +21,19 @@ const APP_SHELL_FILES = [
   '/ui.js',
 
   // New Dashboard Pages & Scripts
-  '/dashboard/', '/dashboard/index.html', '/dashboard/script.js',
-  '/login/', '/login/index.html', '/login/script.js',
-  '/signup/', '/signup/index.html', '/signup/script.js',
-  '/profile/', '/profile/index.html', '/profile/script.js',
-  '/products/', '/products/index.html', '/products/script.js',
-  '/upload/', '/upload/index.html', '/upload/script.js',
-  '/referrals/', '/referrals/index.html', '/referrals/script.js',
-  '/settings/', '/settings/index.html', '/settings/script.js',
-  '/admin/', '/admin/index.html', '/admin/admin.js',
-  
-  // Other existing pages
-  '/about.html', 
-  '/product.html', '/product.js',
-  '/terms.html',
-  '/blog/', '/blog/index.html',
-  '/rentals/', '/rentals/index.html'
+  '/dashboard/', '/profile/', '/referrals/', '/products/', '/upload/', '/settings/', '/login/', '/signup/', '/admin/'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('Service Worker: Caching App Shell');
-      return cache.addAll(APP_SHELL_FILES).catch(err => {
-        console.error("Failed to cache a file during install:", err);
-      });
+      // Use addAll for atomic caching, but catch errors for individual files if needed
+      return Promise.all(
+        APP_SHELL_FILES.map(url => {
+          return cache.add(url).catch(err => console.warn(`Failed to cache ${url}:`, err));
+        })
+      );
     })
   );
   self.skipWaiting();
@@ -71,8 +58,9 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
 
-  // --- FIX ---
-  // Only handle GET requests. Ignore all others (like POST to Firestore).
+  // --- THIS IS THE FIX ---
+  // Only handle GET requests and requests from our own origin.
+  // This ignores all other requests, like POSTs to Firestore's API.
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) {
     return;
   }
