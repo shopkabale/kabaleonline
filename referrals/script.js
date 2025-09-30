@@ -1,5 +1,5 @@
 import { auth, db } from '../js/auth.js';
-import { collection, query, where, getDocs, doc, getDoc, writeBatch, increment, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, increment, arrayUnion, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading } from '../js/shared.js';
 
 // --- DOM ELEMENTS ---
@@ -29,45 +29,57 @@ auth.onAuthStateChanged(async (user) => {
         currentUser = user;
         await syncAndLoadReferralData(user);
     }
-    // If not logged in, shared.js handles the redirection.
 });
 
 async function syncAndLoadReferralData(user) {
     const userDocRef = doc(db, 'users', user.uid);
     try {
-        // STEP 1: Sync Balance by checking for new, uncredited referrals
+        // First, get the referrer's current data to see who has already been credited
+        const userDocBeforeSync = await getDoc(userDocRef);
+        const creditedReferrals = userDocBeforeSync.data()?.creditedReferrals || [];
+
+        // Find all users referred by the current user
         const q = query(collection(db, 'users'), where('referrerId', '==', user.uid));
         const referralsSnapshot = await getDocs(q);
         
-        const batch = writeBatch(db);
         let newBalanceToAdd = 0;
+        let newCreditedReferrals = [];
+
         for (const referredUserDoc of referralsSnapshot.docs) {
-            const referredUserData = referredUserDoc.data();
-            if (!referredUserData.referralCreditAwarded) {
-                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserDoc.id));
+            const referredUserId = referredUserDoc.id;
+            
+            // Check if this referral has already been credited
+            if (!creditedReferrals.includes(referredUserId)) {
+                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserId));
                 const productsSnapshot = await getDocs(productsQuery);
                 
+                // Check if any of the referred user's products have an image
                 let isNowValid = productsSnapshot.docs.some(doc => doc.data().imageUrls?.length > 0);
 
                 if (isNowValid) {
                     newBalanceToAdd += UGX_PER_REFERRAL;
-                    batch.update(doc(db, 'users', referredUserDoc.id), { referralCreditAwarded: true });
+                    newCreditedReferrals.push(referredUserId);
                 }
             }
         }
+
+        // If we found new valid referrals, update the referrer's balance and credited list
         if (newBalanceToAdd > 0) {
-            batch.update(userDocRef, { referralBalanceUGX: increment(newBalanceToAdd) });
-            await batch.commit();
+            await updateDoc(userDocRef, {
+                referralBalanceUGX: increment(newBalanceToAdd),
+                creditedReferrals: arrayUnion(...newCreditedReferrals) // Securely add new IDs to our own list
+            });
         }
 
-        // STEP 2: Load Final Data and Display on the Page
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) throw new Error("Current user not found in database.");
+        // Now, load the final, updated data for display
+        const userDocAfterSync = await getDoc(userDocRef);
+        if (!userDocAfterSync.exists()) throw new Error("Current user not found.");
         
-        const userData = userDoc.data();
+        const userData = userDocAfterSync.data();
         const currentBalance = userData.referralBalanceUGX || 0;
+        const finalCreditedList = userData.creditedReferrals || [];
 
-        // Populate the UI elements
+        // Populate the UI
         referralLinkInput.value = `${window.location.origin}/signup/?ref=${userData.referralCode}`;
         referralBalanceEl.textContent = `${currentBalance.toLocaleString()} UGX`;
         
@@ -77,21 +89,20 @@ async function syncAndLoadReferralData(user) {
         
         payoutButton.disabled = currentBalance < MINIMUM_PAYOUT_UGX;
 
-        const allReferrals = referralsSnapshot.docs.map(doc => doc.data());
-        renderReferralList(allReferrals);
+        const allReferrals = referralsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderReferralList(allReferrals, finalCreditedList);
         createReferralsChart(allReferrals);
 
     } catch (error) {
         console.error("Error loading referral data:", error);
         showMessage(messageEl, 'Failed to load referral data. Please check the console for errors.', true);
     } finally {
-        // This 'finally' block ensures the loader is always hidden, even if errors occur.
         loader.style.display = 'none';
         content.style.display = 'block';
     }
 }
 
-function renderReferralList(allReferrals) {
+function renderReferralList(allReferrals, creditedList) {
     referralListContainer.innerHTML = '';
     referralCountEl.textContent = allReferrals.length;
     if (allReferrals.length === 0) {
@@ -100,7 +111,8 @@ function renderReferralList(allReferrals) {
     }
     noReferralsMessage.style.display = 'none';
     allReferrals.forEach(referral => {
-        const status = referral.referralCreditAwarded ? 'Credited' : 'Pending';
+        const isCredited = creditedList.includes(referral.id);
+        const status = isCredited ? 'Credited' : 'Pending';
         const joinDate = referral.createdAt?.toDate()?.toLocaleDateString() || 'N/A';
         const referralItem = document.createElement('div');
         referralItem.className = 'referral-item';
