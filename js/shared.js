@@ -25,12 +25,6 @@ onAuthStateChanged(auth, (user) => {
 
 // --- SHARED UTILITY FUNCTIONS ---
 
-/**
- * Displays a message in a specified element (like an error or success box).
- * @param {HTMLElement} element The HTML element to show the message in.
- * @param {string} message The message content. Supports emojis.
- * @param {boolean} [isError=true] Toggles between error and success styling.
- */
 export function showMessage(element, message, isError = true) {
     if (!element) return;
     element.innerHTML = message;
@@ -39,12 +33,6 @@ export function showMessage(element, message, isError = true) {
     setTimeout(() => { element.style.display = 'none'; }, 5000);
 }
 
-/**
- * Toggles the loading state of a button, showing a spinner.
- * @param {HTMLButtonElement} button The button to toggle.
- * @param {boolean} isLoading True to show the loader, false to return to normal.
- * @param {string} originalText The button's original text to restore.
- */
 export function toggleLoading(button, isLoading, originalText) {
     if (!button) return;
     if (isLoading) {
@@ -58,11 +46,6 @@ export function toggleLoading(button, isLoading, originalText) {
     }
 }
 
-/**
- * Normalizes a Ugandan WhatsApp number to the required 256xxxxxxxxx format.
- * @param {string} phone The phone number string from an input.
- * @returns {string} The correctly formatted phone number.
- */
 export function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
@@ -71,12 +54,6 @@ export function normalizeWhatsAppNumber(phone) {
     return cleaned;
 }
 
-/**
- * Creates an optimized and transformed Cloudinary URL for images.
- * @param {string} url The original Cloudinary image URL.
- * @param {'thumbnail'|'full'} type The desired size ('thumbnail' or 'full').
- * @returns {string} The new, transformed image URL.
- */
 export function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
@@ -128,11 +105,20 @@ function showLoginPrompt() {
   if (!auth.currentUser) {
     const loginPromptBanner = document.getElementById('login-prompt-banner');
     if (loginPromptBanner) {
+        // --- THIS IS THE UPDATED LOGIC FOR THE ANIMATION ---
         loginPromptBanner.style.display = 'flex';
+        setTimeout(() => {
+            loginPromptBanner.classList.add('visible');
+        }, 10); // Tiny delay to trigger the CSS transition
+        
         const closePromptBtn = document.getElementById('close-prompt-btn');
         if (closePromptBtn) {
             closePromptBtn.addEventListener('click', () => {
-                loginPromptBanner.style.display = 'none';
+                loginPromptBanner.classList.remove('visible');
+                // Hide the element completely after the transition (400ms)
+                setTimeout(() => {
+                    loginPromptBanner.style.display = 'none';
+                }, 400); 
             }, { once: true });
         }
     }
