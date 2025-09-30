@@ -29,47 +29,91 @@
         .mobile-nav a.post-button, .mobile-nav a.login-button { font-weight: bold; color: #007bff; }
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; display: none; }
         .mobile-nav-overlay.active { display: block; }
-        
+
         /* --- PAGE-SPECIFIC STYLES --- */
-        #calendar {
+        .calendar-wrapper {
             background-color: #ffffff;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
-        /* Style FullCalendar buttons to match your site theme */
-        .fc-button-primary {
-            background-color: var(--primary-color) !important;
-            border-color: var(--primary-color) !important;
+
+        /* Custom Calendar Header */
+        .calendar-controls {
+            margin-bottom: 20px;
         }
-        .fc-button-primary:hover {
-            background-color: #0056b3 !important; /* A darker blue */
+        .controls-row-1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        #calendar-title {
+            margin: 0;
+            font-size: 1.6em;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        .view-switcher {
+            display: flex;
+            background-color: #e9ecef;
+            border-radius: 20px;
+            padding: 4px;
+        }
+        .view-btn {
+            background-color: transparent;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #6c757d;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+        .view-btn.active-view {
+            background-color: #ffffff;
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls-row-2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .nav-buttons button {
+            background: none;
+            border: 1px solid #ced4da;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #today-btn {
+            background: none;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            padding: 6px 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        /* FullCalendar Overrides */
+        #calendar {
+            height: auto; /* Adjusts height to content, prevents scrolling */
+        }
+        .fc-daygrid-day-number { font-size: 0.9em; }
+        .fc-col-header-cell-cushion { font-size: 0.8em; font-weight: 600; text-transform: uppercase; }
+        .fc-event { font-size: 0.85em !important; }
 
         /* Event Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            z-index: 1200;
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1200; display: none; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background-color: #fff; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; }
         .modal-content h2 { margin-top: 0; }
         .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-
+        
         /* Loader Styles */
         .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--primary-color); border-radius: 50%; box-shadow: 0 0 0 0 rgba(0, 123, 255, 1); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
@@ -106,7 +150,27 @@
         <p>Click on any date to add a meetup or reminder. Click an existing event to delete it.</p>
 
         <div id="calendar-loader"><div class="loader-pulse"></div></div>
-        <div id="calendar" style="display:none;"></div>
+        
+        <div id="calendar-wrapper" class="calendar-wrapper" style="display:none;">
+            <div class="calendar-controls">
+                <div class="controls-row-1">
+                    <h2 id="calendar-title">September 2025</h2>
+                    <div class="view-switcher">
+                        <button class="view-btn active-view" data-view="dayGridMonth">Month</button>
+                        <button class="view-btn" data-view="timeGridWeek">Week</button>
+                        <button class="view-btn" data-view="timeGridDay">Day</button>
+                    </div>
+                </div>
+                <div class="controls-row-2">
+                    <div class="nav-buttons">
+                        <button id="prev-btn">&lt;</button>
+                        <button id="next-btn" style="margin-left: 5px;">&gt;</button>
+                    </div>
+                    <button id="today-btn">Today</button>
+                </div>
+            </div>
+            <div id="calendar"></div>
+        </div>
     </div>
     
     <div id="event-modal" class="modal-overlay">
