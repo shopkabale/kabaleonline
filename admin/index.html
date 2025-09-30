@@ -5,76 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Panel | Kabale Online</title>
     <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: #f4f7f6; color: #34495e; line-height: 1.6; }
+        :root { --primary-color: #007bff; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: #f4f7f6; color: #34495e; line-height: 1.6; padding-top: 70px; }
+        .sticky-header, .header-top-bar, .hamburger-menu, .site-title, .header-icons, .mobile-nav, .mobile-nav-overlay { /* Your standard header styles */ }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
         .page-welcome h1 { font-size: 1.8em; }
         .admin-section { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 30px; }
-        .admin-section h2 { margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-        
-        /* User List Styles */
+        .admin-section h2 { margin-top: 0; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #34495e; color: #fff; }
         .user-list { list-style-type: none; padding: 0; }
         .user-list-item { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
-        .user-info { font-family: monospace; flex-grow: 1; word-break: break-all; }
-        .verified-badge { color: green; font-weight: bold; }
-        .referral-info { font-size: 0.9em; color: #555; font-style: italic; font-family: sans-serif; }
         .action-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
-        .action-btn.red { background-color: #dc3545; color: white; }
         .action-btn.green { background-color: #28a745; color: white; }
-
-        /* Product Grid Styles (2 Columns) */
-        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
-        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (min-width: 1200px) { .product-grid { grid-template-columns: repeat(5, 1fr); } }
-        
-        .product-card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; text-align: center; display: flex; flex-direction: column; }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
-        .product-card h3 { font-size: 0.9em; margin: 10px; flex-grow: 1; }
-        .product-card .price { font-size: 0.9em; font-weight: bold; color: #007bff; margin: 0 10px 10px; }
-        .seller-controls button { width: calc(100% - 20px); margin: 5px 10px; padding: 8px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; border-radius: 5px; font-size: 0.8em; }
-        .seller-controls .deal-btn.on-deal { background-color: #28a745; color: white; border-color: #28a745; }
-        .admin-delete { background-color: #fbecec; color: #dc3545; border-color: #f5c6cb; }
-
-        /* Testimonial Styles */
-        .testimonial-controls { display: flex; flex-direction: column; gap: 8px; }
-        @media (min-width: 600px) { .testimonial-controls { flex-direction: row; } }
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-paid { color: #2ecc71; font-weight: bold; }
+        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+        .product-card { /* Your product card styles */ }
     </style>
 </head>
 <body>
+    <header class="sticky-header"></header>
+
     <div class="container">
         <div id="access-denied" style="display: none;">
-            <div class="page-welcome">
-                <h1>Access Denied</h1>
-                <p>You do not have permission to view this page. <a href="/">Go Home</a></p>
-            </div>
+            <div class="page-welcome"><h1>Access Denied</h1><p>You do not have permission. <a href="/">Go Home</a></p></div>
         </div>
 
         <div id="admin-content" style="display: none;">
-            <div class="page-welcome">
-                <h1>Super Admin Panel</h1>
-                <p>Moderate all site content here. Changes are live immediately.</p>
-            </div>
+            <div class="page-welcome"><h1>Super Admin Panel</h1><p>Moderate all site content here.</p></div>
 
             <div class="admin-section">
-                <h2>User Management</h2>
-                <ul id="user-list" class="user-list"><p>Loading users...</p></ul>
+                <h2>Payout Requests</h2>
+                <h3>Pending Requests</h3>
+                <table id="pending-requests-table">
+                    <thead><tr><th>User Name</th><th>Email</th><th>Amount (UGX)</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody><p>Loading...</p></tbody>
+                </table>
+                <h3 style="margin-top: 30px;">Completed Requests</h3>
+                <table id="completed-requests-table">
+                    <thead><tr><th>User Name</th><th>Email</th><th>Amount (UGX)</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody><p>Loading...</p></tbody>
+                </table>
             </div>
-            
-            <div class="admin-section">
-                <h2>Testimonial Management</h2>
-                <h3>Pending Approval</h3>
-                <ul id="pending-testimonials-list" class="user-list"><p>Loading...</p></ul>
-                <h3>Approved & Live</h3>
-                <ul id="approved-testimonials-list" class="user-list"><p>Loading...</p></ul>
-            </div>
-
-            <div class="admin-section">
-                <h2>All Products</h2>
-                <div id="all-products-list" class="product-grid"><p>Loading products...</p></div>
-            </div>
+            <div class="admin-section"><h2>User Management</h2><ul id="user-list" class="user-list"><p>Loading users...</p></ul></div>
+            <div class="admin-section"><h2>Testimonial Management</h2><h3>Pending</h3><ul id="pending-testimonials-list" class="user-list"><p>Loading...</p></ul><h3>Approved</h3><ul id="approved-testimonials-list" class="user-list"><p>Loading...</p></ul></div>
+            <div class="admin-section"><h2>All Products</h2><div id="all-products-list" class="product-grid"><p>Loading products...</p></div></div>
         </div>
     </div>
 
+    <footer></footer>
+    
+    <script type="module" src="../js/auth.js"></script>
     <script type="module" src="admin.js"></script>
+    <script type="module" src="../js/ui.js"></script>
 </body>
 </html>
