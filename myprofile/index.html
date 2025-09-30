@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --border-color: #e9ecef; }
+        :root { 
+            --primary-color: #007bff; 
+            --accent-color: #ffc107; 
+            --text-dark: #34495e; 
+            --border-color: #e9ecef;
+            --button-hover-dark: #0056b3; /* Darker blue for hover */
+            --cancel-button-dark: #5a6268; /* Darker grey for hover */
+        }
         body { padding-top: 70px; }
         .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 50px; }
@@ -40,15 +47,94 @@
         .profile-info-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e9ecef; }
         .profile-info-item:last-child { border-bottom: none; }
         .profile-info-item .label { font-weight: bold; color: var(--text-dark); }
-        .profile-info-item .value { color: #6c757d; text-align: right; }
+        .profile-info-item .value { color: #6c757d; text-align: right; word-break: break-all; } /* Added word-break */
         .profile-actions { text-align: center; margin-top: 30px; }
-        .form-actions { display: flex; gap: 10px; justify-content: center; }
+        .form-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; } /* Added margin-top */
         .hidden { display: none !important; }
         .glowing-btn { animation: glowing 2s infinite; }
         @keyframes glowing {
             0% { box-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color); }
             50% { box-shadow: 0 0 20px var(--primary-color), 0 0 30px var(--primary-color); }
             100% { box-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color); }
+        }
+
+        /* --- Profile Form Styling --- */
+        #profile-form .form-group {
+            margin-bottom: 20px;
+        }
+        #profile-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+        #profile-form input[type="text"],
+        #profile-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        #profile-form input[type="file"] {
+            display: block;
+            margin-top: 5px;
+        }
+        #profile-form .cta-button {
+            flex: 1; /* Allow buttons to grow */
+            padding: 12px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        #profile-form .cta-button:hover {
+            background-color: var(--button-hover-dark);
+        }
+        #profile-form .auth-button { /* For the Cancel button */
+            flex: 1; /* Allow buttons to grow */
+            padding: 12px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            background-color: #6c757d; /* Grey for cancel */
+            color: white;
+            border: none;
+        }
+        #profile-form .auth-button:hover {
+            background-color: var(--cancel-button-dark);
+        }
+
+        /* --- Bouncing Loader Animation --- */
+        .bouncing-dots {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: var(--primary-color);
+        }
+        .bouncing-dots span {
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+            margin: 0 2px;
+        }
+        .bouncing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .bouncing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .bouncing-dots span:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -81,8 +167,8 @@
         <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
         <h1>Your Profile</h1>
         
-        <div id="profile-loader" style="text-align:center; padding: 50px;">
-            <p>Loading Your Profile...</p>
+        <div id="profile-loader" class="bouncing-dots">
+            <span>.</span><span>.</span><span>.</span>
         </div>
         
         <div id="profile-content" class="hidden">
@@ -115,7 +201,7 @@
                     <div class="form-group"><label for="profile-bio">Short Bio (Optional)</label><textarea id="profile-bio" rows="3"></textarea></div>
                     <div class="form-actions">
                         <button type="submit" id="update-profile-btn" class="cta-button">Save Changes</button>
-                        <button type="button" id="cancel-edit-btn" class="auth-button" style="background-color: #6c757d;">Cancel</button>
+                        <button type="button" id="cancel-edit-btn" class="auth-button">Cancel</button>
                     </div>
                 </form>
             </div>
