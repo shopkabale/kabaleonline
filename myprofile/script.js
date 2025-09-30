@@ -57,8 +57,8 @@ async function loadProfileData(user) {
         inputLocation.value = data.location || '';
         inputBio.value = data.bio || '';
     }
-    loader.classList.add('hidden');
-    content.classList.remove('hidden');
+    loader.classList.add('hidden'); // Use class to hide loader
+    content.classList.remove('hidden'); // Show content
 }
 
 // --- EVENT LISTENERS ---
