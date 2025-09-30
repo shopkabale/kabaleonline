@@ -7,10 +7,11 @@
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* --- TEMPLATE STYLES --- */
         :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --border-color: #e9ecef; }
-        body { padding-top: 70px; }
+        body { padding-top: 70px; background-color: #f4f7f6; }
         .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 50px; }
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
@@ -29,38 +30,29 @@
         .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
         .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
         .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
-        
-        /* PAGE-SPECIFIC STYLES */
-        .page-header { margin-bottom: 20px; }
-        .page-header p { color: #6c757d; }
+
+        /* --- PAGE-SPECIFIC STYLES --- */
         .info-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 25px; margin-bottom: 30px; }
         .info-card h2 { margin-top: 0; color: var(--text-dark); font-size: 1.5em; }
-        
-        .earnings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .earnings-value { font-size: 2.2em; font-weight: bold; color: var(--primary-color); }
-        .graph-placeholder { width: 100%; height: 150px; background: linear-gradient(to top, #e6f7ff, #ccedff); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #0066cc; font-weight: bold; font-size: 0.9em; border: 1px dashed #b3e0ff; margin-top: 20px; }
-        
-        .referral-link-container { display: flex; align-items: center; gap: 10px; }
-        .referral-link-container input { flex-grow: 1; padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; font-size: 0.9em; background-color: #f8f9fa; }
-        .referral-link-container button { background-color: var(--primary-color); color: white; border: none; border-radius: 8px; padding: 10px 15px; cursor: pointer; transition: background-color 0.2s ease; }
-        
-        .points-value { font-size: 3em; font-weight: bold; color: var(--accent-color); margin: 15px 0; text-align: center; }
+        .balance-value { font-size: 3em; font-weight: bold; color: var(--primary-color); margin: 15px 0; text-align: center; }
         .progress-bar-container { background-color: #e9ecef; border-radius: 15px; height: 15px; margin: 20px 0; overflow: hidden; }
-        .progress-bar { height: 100%; background-color: var(--primary-color); border-radius: 15px; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-bar { height: 100%; background-color: #28a745; border-radius: 15px; width: 0%; transition: width 0.5s ease-in-out; }
         .progress-text { font-size: 0.9em; color: #6c757d; text-align: center; }
-        #redeem-button { display: block; width: 100%; max-width: 250px; margin: 20px auto 0; background-color: #28a745; border: none; border-radius: 8px; padding: 12px 25px; font-size: 1.1em; color: white; cursor: pointer; }
-        #redeem-button:disabled { background-color: #cccccc; cursor: not-allowed; }
-
+        #payout-button { display: block; width: 100%; max-width: 250px; margin: 20px auto 0; background-color: #28a745; border: none; border-radius: 8px; padding: 12px 25px; font-size: 1.1em; color: white; cursor: pointer; }
+        #payout-button:disabled { background-color: #cccccc; cursor: not-allowed; }
         .referral-list-section h2 { margin-top: 40px; }
         .referral-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #e9ecef; }
         .referral-item:last-child { border-bottom: none; }
         .referral-item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; }
-        .referral-details h3 { margin: 0; }
+        .referral-details h3 { margin: 0; font-size: 1em; }
         .referral-details p { margin: 5px 0 0; font-size: 0.85em; color: #6c757d; }
         .referral-status { font-weight: bold; font-size: 0.9em; color: #28a745; }
         .referral-status.pending { color: #ffc107; }
+        .referral-link-container { display: flex; align-items: center; gap: 10px; }
+        .referral-link-container input { flex-grow: 1; padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; font-size: 0.9em; background-color: #f8f9fa; }
+        .referral-link-container button { background-color: var(--primary-color); color: white; border: none; border-radius: 8px; padding: 10px 15px; cursor: pointer; }
 
-        /* Pulsing Circle Loader */
+        /* Loader Styles */
         .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--primary-color); border-radius: 50%; box-shadow: 0 0 0 0 rgba(0, 123, 255, 1); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
     </style>
@@ -92,52 +84,41 @@
 
     <div class="container page-content">
         <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
-        <div class="page-header">
-            <h1>Your Referrals</h1>
-            <p>Track your points, earnings, and invited members here.</p>
-        </div>
+        <h1>Your Referrals</h1>
 
-        <div id="referral-loader">
-            <div class="loader-pulse"></div>
-        </div>
+        <div id="referral-loader"><div class="loader-pulse"></div></div>
 
         <div id="referral-content" style="display:none;">
             <p id="global-message" style="display: none;"></p>
 
             <div class="info-card">
-                <h2>Share Your Link & Earn Cash</h2>
-                <p>Earn <strong>10 points</strong> for every friend who signs up with your link and lists their first item with a photo. The more you share, the more you earn!</p>
-                <div class="referral-link-container">
-                    <input type="text" id="referral-link-input" readonly value="Loading...">
-                    <button id="copy-referral-link-btn"><i class="fa-solid fa-copy"></i> Copy</button>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <h2>Your Progress to $50</h2>
-                <p>Redeem your points for cash once you reach the goal!</p>
-                <div class="points-value" id="current-points">0</div>
+                <h2>Your Referral Balance</h2>
+                <div class="balance-value" id="referral-balance">0 UGX</div>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" id="points-progress-bar"></div>
+                    <div class="progress-bar" id="payout-progress-bar"></div>
                 </div>
-                <p class="progress-text" id="points-progress-text">0 / 1000 points</p>
-                <button id="redeem-button" disabled>Redeem $50</button>
+                <p class="progress-text" id="payout-progress-text">0 / 5,000 UGX to request a payout</p>
+                <button id="payout-button" disabled>Request Payout</button>
             </div>
-
+            
             <div class="info-card">
-                <div class="earnings-header">
-                    <h2>Total Earnings from Referrals</h2>
-                </div>
-                <div class="earnings-value" id="total-earnings">$0.00</div>
-                <div class="graph-placeholder">
-                    <span>Earnings graph coming soon!</span>
-                </div>
+                <h2>Referral Signups Over Time</h2>
+                <canvas id="referralsChart"></canvas>
             </div>
 
             <div class="info-card referral-list-section">
                 <h2>Your Referred Members (<span id="referral-count">0</span>)</h2>
                 <div id="referral-list-container">
                     <p id="no-referrals-message">No members referred yet. Share your link to get started!</p>
+                </div>
+            </div>
+
+             <div class="info-card">
+                <h2>Share Your Link & Earn Cash</h2>
+                <p>Earn **250 UGX** for every friend who signs up and lists their first item with a photo. There's no limit to how much you can earn!</p>
+                <div class="referral-link-container">
+                    <input type="text" id="referral-link-input" readonly value="Loading...">
+                    <button id="copy-referral-link-btn"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             </div>
         </div>
