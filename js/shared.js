@@ -2,29 +2,21 @@ import { auth } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 // --- PAGE PROTECTION ---
-// This is the most important new feature. It automatically manages access to your pages.
-
-// An array of all pages that require a user to be logged in.
-const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/'];
-// An array of pages that a logged-in user should NOT see (they get redirected away).
+// This automatically manages access to your dashboard pages.
+const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/'];
 const publicOnlyPages = ['/login/', '/signup/'];
 
 onAuthStateChanged(auth, (user) => {
-    // Get the user's current URL path (e.g., "/dashboard/").
     const currentPage = window.location.pathname;
 
     if (user) {
-        // --- CASE 1: The user IS logged in. ---
+        // If a logged-in user tries to visit login/signup, send them to their dashboard.
         if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
-            // If they try to visit the login or signup page, automatically send them to their dashboard.
-            console.log("User is logged in. Redirecting from public page to dashboard.");
             window.location.replace('/dashboard/');
         }
     } else {
-        // --- CASE 2: The user is NOT logged in. ---
+        // If a logged-out user tries to visit a protected page, send them to the login page.
         if (protectedPages.some(page => currentPage.startsWith(page))) {
-            // If they try to visit any protected page, automatically send them to the login page.
-            console.log("User is not logged in. Redirecting from protected page to login.");
             window.location.replace('/login/');
         }
     }
@@ -32,17 +24,16 @@ onAuthStateChanged(auth, (user) => {
 
 
 // --- SHARED UTILITY FUNCTIONS ---
-// These are helper functions used by multiple scripts to avoid repeating code.
 
 /**
  * Displays a message in a specified element (like an error or success box).
  * @param {HTMLElement} element The HTML element to show the message in.
  * @param {string} message The message content. Supports emojis.
- * @param {boolean} [isError=true] Toggles between error (red) and success (green) styling.
+ * @param {boolean} [isError=true] Toggles between error and success styling.
  */
 export function showMessage(element, message, isError = true) {
     if (!element) return;
-    element.innerHTML = message; // Use innerHTML to render emojis correctly
+    element.innerHTML = message;
     element.className = isError ? 'error-message' : 'success-message';
     element.style.display = 'block';
     setTimeout(() => { element.style.display = 'none'; }, 5000);
@@ -77,7 +68,7 @@ export function normalizeWhatsAppNumber(phone) {
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
     if (cleaned.startsWith('256')) return cleaned;
     if (cleaned.length === 9) return '256' + cleaned;
-    return cleaned; // Fallback
+    return cleaned;
 }
 
 /**
@@ -101,3 +92,58 @@ export function getCloudinaryTransformedUrl(url, type) {
     }
     return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
+
+
+// --- PWA & LOGIN PROMPT LOGIC ---
+
+let deferredInstallPrompt;
+
+// Listen for the browser's native install prompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+// Function to show the custom PWA install button
+function showPwaInstallPrompt() {
+  const isInstallable = !!deferredInstallPrompt;
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isInstallable && !isInstalled) {
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+      installButton.style.display = 'flex';
+      installButton.addEventListener('click', async () => {
+        installButton.style.display = 'none';
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+      }, { once: true });
+    }
+  }
+}
+
+// Function to show the timed login prompt banner
+function showLoginPrompt() {
+  if (!auth.currentUser) {
+    const loginPromptBanner = document.getElementById('login-prompt-banner');
+    if (loginPromptBanner) {
+        loginPromptBanner.style.display = 'flex';
+        const closePromptBtn = document.getElementById('close-prompt-btn');
+        if (closePromptBtn) {
+            closePromptBtn.addEventListener('click', () => {
+                loginPromptBanner.style.display = 'none';
+            }, { once: true });
+        }
+    }
+  }
+}
+
+// Set timers to run after the page has fully loaded
+window.addEventListener('load', () => {
+    // Show login prompt after 10 seconds
+    setTimeout(showLoginPrompt, 10000);
+    
+    // Show PWA install prompt after 20 seconds
+    setTimeout(showPwaInstallPrompt, 20000);
+});
