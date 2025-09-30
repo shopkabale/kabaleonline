@@ -1,6 +1,6 @@
-// sw.js (Upgraded Version)
+// sw.js (Corrected Version)
 
-const CACHE_NAME = 'kabaleonline-cache-v14'; // IMPORTANT: Version bumped to trigger update
+const CACHE_NAME = 'kabaleonline-cache-v12'; // Or v12 if you've made other changes
 const IMAGE_CACHE = 'kabaleonline-images-v1';
 
 // A single, comprehensive list of all essential app files.
@@ -18,7 +18,7 @@ const APP_SHELL_FILES = [
   '/styles.css', 
   '/firebase.js',
   '/auth.js',
-  '/shared.js', // Added essential shared script
+  '/shared.js',
   '/ui.js',
 
   // New Dashboard Pages & Scripts
@@ -38,14 +38,12 @@ const APP_SHELL_FILES = [
   '/terms.html',
   '/blog/', '/blog/index.html',
   '/rentals/', '/rentals/index.html'
-  // Add any other important pages or scripts here
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('Service Worker: Caching App Shell');
-      // Precaching all essential files for offline functionality.
       return cache.addAll(APP_SHELL_FILES).catch(err => {
         console.error("Failed to cache a file during install:", err);
       });
@@ -59,7 +57,6 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames =>
       Promise.all(
         cacheNames.map(name => {
-          // Delete all old caches except the current app shell and the image cache.
           if (name !== CACHE_NAME && name !== IMAGE_CACHE) {
             console.log('Service Worker: Deleting old cache:', name);
             return caches.delete(name);
@@ -74,51 +71,48 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
 
+  // --- FIX ---
+  // Only handle GET requests. Ignore all others (like POST to Firestore).
+  if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   // Strategy 1: Network First for HTML pages.
-  // This ensures users get the latest page content if they are online.
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
         .then(networkRes => {
-          // If fetch is successful, update the cache with the new version.
           const cacheClone = networkRes.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(req, cacheClone));
           return networkRes;
         })
-        .catch(() => {
-          // If fetch fails (offline), serve the page from the cache.
-          return caches.match(req).then(cacheRes => cacheRes || caches.match('/offline.html'));
-        })
+        .catch(() => caches.match(req).then(cacheRes => cacheRes || caches.match('/offline.html')))
     );
     return;
   }
 
-  // Strategy 2: Cache First for images, with size limit.
-  // This serves images instantly from cache for speed.
+  // Strategy 2: Cache First for images.
   if (req.destination === 'image') {
     event.respondWith(
-      caches.match(req, { cacheName: IMAGE_CACHE }).then(cacheRes => {
-        if (cacheRes) return cacheRes;
-
-        return fetch(req).then(networkRes => {
-          const cacheClone = networkRes.clone();
-          caches.open(IMAGE_CACHE).then(cache => {
-            cache.put(req, cacheClone);
-            limitCacheSize(IMAGE_CACHE, 50); // Keep only the 50 most recent images
-          });
-          return networkRes;
-        }).catch(() => caches.match('/icons/192.png')); // Fallback placeholder
-      })
+        caches.match(req, { cacheName: IMAGE_CACHE }).then(cacheRes => {
+            if (cacheRes) return cacheRes;
+            return fetch(req).then(networkRes => {
+                const cacheClone = networkRes.clone();
+                caches.open(IMAGE_CACHE).then(cache => {
+                    cache.put(req, cacheClone);
+                    limitCacheSize(IMAGE_CACHE, 50);
+                });
+                return networkRes;
+            }).catch(() => caches.match('/icons/192.png'));
+        })
     );
     return;
   }
 
   // Strategy 3: Cache First for all other assets (CSS, JS, fonts).
-  // These files don't change often, so serving from cache is fast and reliable.
   event.respondWith(
     caches.match(req).then(cacheRes => {
       return cacheRes || fetch(req).then(networkRes => {
-        // Dynamically cache other assets if they are fetched.
         const cacheClone = networkRes.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(req, cacheClone));
         return networkRes;
