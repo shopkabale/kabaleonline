@@ -40,41 +40,36 @@
         .card-products .icon { color: #00bcd4; }
         .card-referrals .icon { color: #4caf50; }
         .card-profile .icon { color: #ff9800; }
+        
+        .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 40px; }
+        .quick-link-card { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px 10px; text-align: center; text-decoration: none; color: var(--text-dark); transition: background-color 0.2s, border-color 0.2s; }
+        .quick-link-card:hover { background-color: #e9ecef; border-color: #ced4da; }
+        .quick-link-card i { font-size: 1.5em; display: block; margin-bottom: 8px; color: var(--primary-color); }
+        .quick-link-card span { font-size: 0.8em; font-weight: 500; }
+        
         .dashboard-logout { display: block; width: 150px; margin: 40px auto 0; }
         
-        /* --- NEW PROMO SECTION STYLES --- */
-        .network-promo {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
+        .network-promo { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 25px; text-align: center; }
+        .network-promo h2 { font-size: 1.5em; color: var(--text-dark); margin-top: 0; margin-bottom: 10px; }
+        .network-promo .sso-message { background-color: #e9f5ff; color: #31708f; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; }
+        .network-promo p { color: #6c757d; line-height: 1.6; }
+        .network-promo a { color: var(--primary-color); font-weight: bold; text-decoration: none; }
+        .network-promo a:hover { text-decoration: underline; }
+
+        /* Pulsing Circle Loader */
+        .loader-pulse {
+            width: 50px;
+            height: 50px;
+            margin: 40px auto;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(0, 123, 255, 1);
+            animation: pulse 2s infinite;
         }
-        .network-promo h2 {
-            font-size: 1.5em;
-            color: var(--text-dark);
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-        .network-promo .sso-message {
-            background-color: #e9f5ff;
-            color: #31708f;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        .network-promo p {
-            color: #6c757d;
-            line-height: 1.6;
-        }
-        .network-promo a {
-            color: var(--primary-color);
-            font-weight: bold;
-            text-decoration: none;
-        }
-        .network-promo a:hover {
-            text-decoration: underline;
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
         }
     </style>
 </head>
@@ -104,9 +99,10 @@
     </header>
 
     <div class="container page-content">
-        <div id="dashboard-loader" style="text-align:center; padding: 50px;">
-            <p>Loading Dashboard...</p>
+        <div id="dashboard-loader">
+            <div class="loader-pulse"></div>
         </div>
+        
         <div id="dashboard-content" style="display:none;">
             <div class="dashboard-header">
                 <img id="user-profile-photo" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Seller Profile Photo">
@@ -114,36 +110,33 @@
                 <p>Welcome to your seller dashboard!</p>
             </div>
             <div class="dashboard-grid">
-                <a href="/upload/" class="dashboard-card card-upload">
-                    <div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                    <h3>Upload Item</h3>
-                </a>
-                <a href="/products/" class="dashboard-card card-products">
-                    <div class="icon"><i class="fa-solid fa-box-archive"></i></div>
-                    <h3>Your Products</h3>
-                </a>
-                <a href="/referrals/" class="dashboard-card card-referrals">
-                    <div class="icon"><i class="fa-solid fa-share-nodes"></i></div>
-                    <h3>Referrals</h3>
-                </a>
-                <a href="/myprofile/" class="dashboard-card card-profile">
-                    <div class="icon"><i class="fa-solid fa-user-gear"></i></div>
-                    <h3>Your Profile</h3>
-                </a>
+                <a href="/upload/" class="dashboard-card card-upload"><div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div><h3>Upload Item</h3></a>
+                <a href="/products/" class="dashboard-card card-products"><div class="icon"><i class="fa-solid fa-box-archive"></i></div><h3>Your Products</h3></a>
+                <a href="/referrals/" class="dashboard-card card-referrals"><div class="icon"><i class="fa-solid fa-share-nodes"></i></div><h3>Referrals</h3></a>
+                <a href="/profile/" class="dashboard-card card-profile"><div class="icon"><i class="fa-solid fa-user-gear"></i></div><h3>Your Profile</h3></a>
             </div>
 
+            <hr>
+            <h2 style="text-align:center; margin-top:40px; color:var(--text-dark);">Quick Links</h2>
+            <div class="quick-links-grid">
+                <a href="/rentals/" class="quick-link-card"><i class="fa-solid fa-building"></i><span>Rentals</span></a>
+                <a href="/events/" class="quick-link-card"><i class="fa-solid fa-calendar-star"></i><span>Events</span></a>
+                <a href="/calendar/" class="quick-link-card"><i class="fa-solid fa-calendar-days"></i><span>Calendar</span></a>
+                <a href="https://gigs.kabaleonline.com" class="quick-link-card"><i class="fa-solid fa-briefcase"></i><span>Services</span></a>
+                <a href="/lost-and-found/" class="quick-link-card"><i class="fa-solid fa-magnifying-glass"></i><span>Lost & Found</span></a>
+                <a href="/requests/" class="quick-link-card"><i class="fa-solid fa-clipboard-list"></i><span>Requests</span></a>
+                <a href="/blog/" class="quick-link-card"><i class="fa-solid fa-book-open"></i><span>Blog</span></a>
+                <a href="/inbox/" class="quick-link-card"><i class="fa-solid fa-inbox"></i><span>Inbox</span></a>
+                <a href="/settings/" class="quick-link-card"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
+            </div>
+            <hr style="margin-bottom: 40px;">
+            
             <div class="network-promo">
                 <h2>Explore the Kabale Online Network</h2>
-                <div class="sso-message">
-                    <i class="fa-solid fa-key"></i> Your account works on all our sites!
-                </div>
-                <p>
-                    Have a hostel or room for rent? <a href="/rentals/">List it on our Rentals page</a> to reach thousands of students and residents.
-                </p>
-                <p>
-                    Looking to offer professional services? Visit our new <a href="https://gigs.kabaleonline.com" target="_blank">Gigs & Services Hub</a>. You can also explore our pages for <a href="#">Events</a> and <a href="/lost-and-found/">Lost & Found</a> items.
-                </p>
+                <div class="sso-message"><i class="fa-solid fa-key"></i> Your account works on all our sites!</div>
+                <p>Have a hostel or room for rent? <a href="/rentals/">List it on our Rentals page</a> to reach thousands of students and residents.</p>
             </div>
+
             <button id="logout-btn" class="auth-button dashboard-logout">Logout</button>
         </div>
     </div>
@@ -164,8 +157,8 @@
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
 
-    <script type="module" src="/js/shared.js"></script>
+    <script type="module" src="../js/shared.js"></script>
     <script type="module" src="script.js"></script>
-    <script type="module" src="/js/ui.js"></script>
+    <script type="module" src="../js/ui.js"></script>
 </body>
 </html>
