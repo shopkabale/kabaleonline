@@ -1,5 +1,5 @@
 import { auth, db } from '../js/auth.js';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, runTransaction, writeBatch, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading } from '../js/shared.js';
 
 // --- DOM ELEMENTS ---
@@ -30,70 +30,82 @@ let currentUser = null;
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
-        await loadReferralData(user);
+        await syncAndLoadReferralData(user);
     }
 });
 
-async function loadReferralData(user) {
-    let validReferrals = [];
+/**
+ * Main function to sync new referrals and then display all data.
+ * @param {User} user The currently authenticated Firebase user.
+ */
+async function syncAndLoadReferralData(user) {
     const userDocRef = doc(db, 'users', user.uid);
 
     try {
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) throw new Error("Current user not found in database.");
-        const userData = userDoc.data();
-
-        // 1. Populate Referral Link
-        referralLinkInput.value = `${window.location.origin}/signup/?ref=${userData.referralCode}`;
-
-        // 2. Query for users who were referred by the current user
+        // --- STEP 1: Sync Points ---
+        // Find new valid referrals that haven't been credited yet.
         const q = query(collection(db, 'users'), where('referrerId', '==', user.uid));
         const referralsSnapshot = await getDocs(q);
         
-        referralCountEl.textContent = referralsSnapshot.size;
-        if (referralsSnapshot.empty) {
-            noReferralsMessage.style.display = 'block';
-        } else {
-            noReferralsMessage.style.display = 'none';
-        }
+        const batch = writeBatch(db);
+        let newPointsToAward = 0;
 
-        // 3. Check each referral for the "valid" condition (uploaded an item with a picture)
         for (const referredUserDoc of referralsSnapshot.docs) {
             const referredUserData = referredUserDoc.data();
-            const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserDoc.id));
-            const productsSnapshot = await getDocs(productsQuery);
 
-            let isFoundValid = false;
-            for (const productDoc of productsSnapshot.docs) {
-                if (productDoc.data().imageUrls && productDoc.data().imageUrls.length > 0) {
-                    isFoundValid = true;
-                    break; 
+            // Check if points have already been awarded for this referral
+            if (!referredUserData.pointsAwardedToReferrer) {
+                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserDoc.id));
+                const productsSnapshot = await getDocs(productsQuery);
+                
+                let isNowValid = false;
+                for (const productDoc of productsSnapshot.docs) {
+                    if (productDoc.data().imageUrls && productDoc.data().imageUrls.length > 0) {
+                        isNowValid = true;
+                        break;
+                    }
+                }
+
+                if (isNowValid) {
+                    newPointsToAward += POINTS_PER_REFERRAL;
+                    const referredUserRef = doc(db, 'users', referredUserDoc.id);
+                    batch.update(referredUserRef, { pointsAwardedToReferrer: true });
                 }
             }
-
-            if (isFoundValid) {
-                validReferrals.push({ ...referredUserData, status: 'Valid' });
-            }
         }
-        
-        // 4. Calculate points and update the UI
-        const totalPoints = validReferrals.length * POINTS_PER_REFERRAL;
-        currentPointsEl.textContent = totalPoints;
-        
-        const progressPercentage = Math.min((totalPoints / POINTS_FOR_REDEEM) * 100, 100);
-        pointsProgressBar.style.width = `${progressPercentage}%`;
-        pointsProgressText.textContent = `${totalPoints} / ${POINTS_FOR_REDEEM} points to cash out`;
 
-        // 5. Update earnings and redemption status
+        // If we found new valid referrals, update the referrer's point balance
+        if (newPointsToAward > 0) {
+            batch.update(userDocRef, {
+                referralPoints: increment(newPointsToAward),
+                lifetimeReferralPoints: increment(newPointsToAward)
+            });
+            await batch.commit(); // Commit all updates at once
+        }
+
+        // --- STEP 2: Load Final Data and Display ---
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) throw new Error("Current user not found in database.");
+        
+        const userData = userDoc.data();
+        const currentPoints = userData.referralPoints || 0;
+
+        // Populate Referral Link
+        referralLinkInput.value = `${window.location.origin}/signup/?ref=${userData.referralCode}`;
+
+        // Update Points UI
+        currentPointsEl.textContent = currentPoints;
+        const progressPercentage = Math.min((currentPoints / POINTS_FOR_REDEEM) * 100, 100);
+        pointsProgressBar.style.width = `${progressPercentage}%`;
+        pointsProgressText.textContent = `${currentPoints} / ${POINTS_FOR_REDEEM} points to cash out`;
+        
+        // Update Earnings and Redemption Status
         const totalEarnings = (userData.referralPayouts || 0) * REDEEM_AMOUNT;
         totalEarningsEl.textContent = `$${totalEarnings.toFixed(2)}`;
-        
-        if (totalPoints >= POINTS_FOR_REDEEM) {
-            redeemButton.disabled = false;
-        }
+        redeemButton.disabled = currentPoints < POINTS_FOR_REDEEM;
 
-        // 6. Render the list of all referred members
-        renderReferralList(referralsSnapshot.docs, validReferrals);
+        // Render the list of all referred members
+        renderReferralList(referralsSnapshot.docs);
 
     } catch (error) {
         console.error("Error loading referral data:", error);
@@ -104,14 +116,19 @@ async function loadReferralData(user) {
     }
 }
 
-function renderReferralList(allReferrals, validReferrals) {
+function renderReferralList(allReferrals) {
     referralListContainer.innerHTML = ''; // Clear previous list
-    if (allReferrals.length === 0) return;
+    referralCountEl.textContent = allReferrals.length;
 
+    if (allReferrals.length === 0) {
+        noReferralsMessage.style.display = 'block';
+        return;
+    }
+    
+    noReferralsMessage.style.display = 'none';
     allReferrals.forEach(doc => {
         const referral = doc.data();
-        const isValid = validReferrals.some(valid => valid.email === referral.email);
-        const status = isValid ? 'Valid' : 'Pending';
+        const status = referral.pointsAwardedToReferrer ? 'Valid' : 'Pending';
 
         const referralItem = document.createElement('div');
         referralItem.className = 'referral-item';
@@ -140,7 +157,6 @@ redeemButton.addEventListener('click', async () => {
     if (!confirm(`Are you sure you want to redeem ${POINTS_FOR_REDEEM} points for $${REDEEM_AMOUNT}? The points will be deducted from your account.`)) return;
     
     toggleLoading(redeemButton, true, 'Redeeming...');
-
     const userDocRef = doc(db, 'users', currentUser.uid);
 
     try {
@@ -148,34 +164,21 @@ redeemButton.addEventListener('click', async () => {
             const userDoc = await transaction.get(userDocRef);
             if (!userDoc.exists()) throw new Error("User document not found.");
 
-            // Recalculate valid referrals inside the transaction for data consistency
-            const q = query(collection(db, 'users'), where('referrerId', '==', currentUser.uid));
-            const referralsSnapshot = await getDocs(q);
-            let validReferralCount = 0;
-            for (const referredUserDoc of referralsSnapshot.docs) {
-                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserDoc.id, 'limit', 1));
-                const productsSnapshot = await getDocs(productsQuery);
-                if (!productsSnapshot.empty && productsSnapshot.docs[0].data().imageUrls?.length > 0) {
-                    validReferralCount++;
-                }
-            }
-            const currentPoints = validReferralCount * POINTS_PER_REFERRAL;
-            
+            const currentPoints = userDoc.data().referralPoints || 0;
             if (currentPoints < POINTS_FOR_REDEEM) {
                 throw new Error("You do not have enough points to redeem.");
             }
 
-            // In a real system, you'd deduct points. Here we'll add a payout counter.
-            const newPayoutCount = (userDoc.data().referralPayouts || 0) + 1;
-            
+            // The robust deduction logic
             transaction.update(userDocRef, {
-                referralPayouts: newPayoutCount
+                referralPoints: increment(-POINTS_FOR_REDEEM), // Deduct points
+                referralPayouts: increment(1) // Increment payout counter
             });
-            // NOTE: This is a simplified model. A more robust model would deduct points or mark referrals as "redeemed".
+            // In a real app, this would also trigger a notification to you (the admin)
         });
         
         showMessage(messageEl, `Redemption successful! We will contact you about your $${REDEEM_AMOUNT} payout.`, false);
-        await loadReferralData(currentUser); // Reload data to show updated state
+        await syncAndLoadReferralData(currentUser); // Reload data to show updated state
 
     } catch (error) {
         console.error("Redemption failed:", error);
