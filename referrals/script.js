@@ -15,6 +15,8 @@ const referralListContainer = document.getElementById('referral-list-container')
 const noReferralsMessage = document.getElementById('no-referrals-message');
 const referralLinkInput = document.getElementById('referral-link-input');
 const copyReferralLinkBtn = document.getElementById('copy-referral-link-btn');
+const chartCanvas = document.getElementById('referralsChart');
+let referralsChart = null;
 
 // --- CONFIGURATION ---
 const UGX_PER_REFERRAL = 250;
@@ -27,14 +29,13 @@ auth.onAuthStateChanged(async (user) => {
         currentUser = user;
         await syncAndLoadReferralData(user);
     }
-    // If not logged in, shared.js handles the redirection to the login page.
+    // If not logged in, shared.js handles the redirection.
 });
 
 async function syncAndLoadReferralData(user) {
     const userDocRef = doc(db, 'users', user.uid);
     try {
-        // STEP 1: Sync Balance
-        // Find new valid referrals that haven't been credited yet.
+        // STEP 1: Sync Balance by checking for new, uncredited referrals
         const q = query(collection(db, 'users'), where('referrerId', '==', user.uid));
         const referralsSnapshot = await getDocs(q);
         
@@ -42,24 +43,18 @@ async function syncAndLoadReferralData(user) {
         let newBalanceToAdd = 0;
         for (const referredUserDoc of referralsSnapshot.docs) {
             const referredUserData = referredUserDoc.data();
-
-            // Check if credit has already been awarded for this referral
             if (!referredUserData.referralCreditAwarded) {
                 const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserDoc.id));
                 const productsSnapshot = await getDocs(productsQuery);
                 
-                // Check if any of the referred user's products have an image
                 let isNowValid = productsSnapshot.docs.some(doc => doc.data().imageUrls?.length > 0);
 
                 if (isNowValid) {
                     newBalanceToAdd += UGX_PER_REFERRAL;
-                    // Mark this referred user so they aren't credited again in the future
                     batch.update(doc(db, 'users', referredUserDoc.id), { referralCreditAwarded: true });
                 }
             }
         }
-
-        // If we found new valid referrals, update the referrer's balance in the database
         if (newBalanceToAdd > 0) {
             batch.update(userDocRef, { referralBalanceUGX: increment(newBalanceToAdd) });
             await batch.commit();
@@ -82,13 +77,15 @@ async function syncAndLoadReferralData(user) {
         
         payoutButton.disabled = currentBalance < MINIMUM_PAYOUT_UGX;
 
-        renderReferralList(referralsSnapshot.docs);
+        const allReferrals = referralsSnapshot.docs.map(doc => doc.data());
+        renderReferralList(allReferrals);
+        createReferralsChart(allReferrals);
 
     } catch (error) {
         console.error("Error loading referral data:", error);
         showMessage(messageEl, 'Failed to load referral data. Please check the console for errors.', true);
     } finally {
-        // This 'finally' block ALWAYS runs, ensuring the loader is hidden.
+        // This 'finally' block ensures the loader is always hidden, even if errors occur.
         loader.style.display = 'none';
         content.style.display = 'block';
     }
@@ -97,28 +94,66 @@ async function syncAndLoadReferralData(user) {
 function renderReferralList(allReferrals) {
     referralListContainer.innerHTML = '';
     referralCountEl.textContent = allReferrals.length;
-
     if (allReferrals.length === 0) {
         noReferralsMessage.style.display = 'block';
         return;
     }
-    
     noReferralsMessage.style.display = 'none';
-    allReferrals.forEach(doc => {
-        const referral = doc.data();
+    allReferrals.forEach(referral => {
         const status = referral.referralCreditAwarded ? 'Credited' : 'Pending';
-
+        const joinDate = referral.createdAt?.toDate()?.toLocaleDateString() || 'N/A';
         const referralItem = document.createElement('div');
         referralItem.className = 'referral-item';
         referralItem.innerHTML = `
             <img src="${referral.profilePhotoUrl || 'https://placehold.co/50x50/e0e0e0/777?text=U'}" alt="${referral.name}">
             <div class="referral-details">
                 <h3>${referral.name || 'New User'}</h3>
-                <p>Joined on: ${referral.createdAt.toDate().toLocaleDateString()}</p>
+                <p>Joined on: ${joinDate}</p>
             </div>
             <span class="referral-status ${status.toLowerCase()}">${status}</span>
         `;
         referralListContainer.appendChild(referralItem);
+    });
+}
+
+function createReferralsChart(allReferrals) {
+    const monthlyData = {};
+    allReferrals.forEach(ref => {
+        if (ref.createdAt && ref.createdAt.toDate) {
+            const date = ref.createdAt.toDate();
+            const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+            monthlyData[monthYear] = (monthlyData[monthYear] || 0) + 1;
+        }
+    });
+
+    const sortedLabels = Object.keys(monthlyData).sort((a, b) => new Date(a) - new Date(b));
+    const chartData = sortedLabels.map(label => monthlyData[label]);
+
+    if (referralsChart) {
+        referralsChart.destroy();
+    }
+    referralsChart = new Chart(chartCanvas, {
+        type: 'line',
+        data: {
+            labels: sortedLabels,
+            datasets: [{
+                label: 'New Referrals',
+                data: chartData,
+                borderColor: 'rgba(233, 30, 99, 1)',
+                backgroundColor: 'rgba(233, 30, 99, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(233, 30, 99, 1)',
+                pointBorderColor: '#fff',
+                pointHoverRadius: 7,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(233, 30, 99, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
     });
 }
 
@@ -132,7 +167,7 @@ copyReferralLinkBtn.addEventListener('click', () => {
 
 payoutButton.addEventListener('click', async () => {
     if (!currentUser || payoutButton.disabled) return;
-    if (!confirm(`Are you sure you want to request a payout for your entire balance? Your balance will be reset to zero.`)) return;
+    if (!confirm(`Are you sure you want to request a payout for your entire balance? Your balance will be reset to zero and an admin will review your request.`)) return;
     
     toggleLoading(payoutButton, true, 'Requesting...');
     const userDocRef = doc(db, 'users', currentUser.uid);
@@ -144,7 +179,6 @@ payoutButton.addEventListener('click', async () => {
             throw new Error("Your balance is below the minimum payout amount.");
         }
         
-        // Create a new payout request document for the admin to see
         await addDoc(collection(db, "payoutRequests"), {
             userId: currentUser.uid,
             userName: userDoc.data().name,
@@ -155,11 +189,10 @@ payoutButton.addEventListener('click', async () => {
             requestedAt: serverTimestamp()
         });
 
-        // Reset the user's balance to 0 after creating the request
         await updateDoc(userDocRef, { referralBalanceUGX: 0 });
 
         showMessage(messageEl, `Payout request for ${currentBalance.toLocaleString()} UGX submitted! We will contact you shortly.`, false);
-        await syncAndLoadReferralData(currentUser); // Reload data to show the new zero balance
+        await syncAndLoadReferralData(currentUser);
 
     } catch (error) {
         console.error("Payout request failed:", error);
