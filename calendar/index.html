@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Calendar | Kabale Online</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+
+    <style>
+        /* --- TEMPLATE STYLES --- */
+        :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --border-color: #e9ecef; }
+        body { padding-top: 70px; background-color: #f4f7f6; }
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 50px; }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.6em; font-weight: bold; }
+        .site-title span { color: var(--accent-color); }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+        .desktop-nav { display: none; }
+        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; padding-top: 60px; transition: left 0.3s ease; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: #007bff; }
+        .mobile-nav a.post-button, .mobile-nav a.login-button { font-weight: bold; color: #007bff; }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; display: none; }
+        .mobile-nav-overlay.active { display: block; }
+        
+        /* --- PAGE-SPECIFIC STYLES --- */
+        #calendar {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        /* Style FullCalendar buttons to match your site theme */
+        .fc-button-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .fc-button-primary:hover {
+            background-color: #0056b3 !important; /* A darker blue */
+        }
+
+        /* Event Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 1200;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .modal-content h2 { margin-top: 0; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+        /* Loader Styles */
+        .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--primary-color); border-radius: 50%; box-shadow: 0 0 0 0 rgba(0, 123, 255, 1); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav"></nav>
+            <div class="header-icons">
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <a href="/upload/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+            <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
+            <hr>
+            <a href="/upload/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+            <a href="/login/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
+        </nav>
+        <div class="mobile-nav-overlay"></div>
+    </header>
+
+    <div class="container page-content">
+        <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
+        <h1>Your Seller Calendar</h1>
+        <p>Click on any date to add a meetup or reminder. Click an existing event to delete it.</p>
+
+        <div id="calendar-loader"><div class="loader-pulse"></div></div>
+        <div id="calendar" style="display:none;"></div>
+    </div>
+    
+    <div id="event-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Add Event</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-title">Title</label>
+                    <input type="text" id="event-title" required placeholder="e.g., Meet buyer for phone">
+                </div>
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-event-btn" class="auth-button">Cancel</button>
+                    <button type="submit" class="cta-button">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Get in Touch</h3>
+            <div class="kabale-contact-details">
+                <p class="kabale-contact-item">📞 +256 784655792</p>
+                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+            </div>
+            <div class="kabale-footer-links">
+                <a href="/about.html" class="kabale-footer-link">About Us</a>
+                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
+
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="script.js"></script>
+    <script type="module" src="../js/ui.js"></script>
+</body>
+</html>
