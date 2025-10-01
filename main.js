@@ -1,9 +1,7 @@
-// Filename: main.js
-
 /**
  * Creates an optimized and transformed Cloudinary URL.
  * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail''full'|'placeholder'} type The desired transformation type.
+ * @param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
  * @returns {string} The new, transformed URL.
  */
 function getCloudinaryTransformedUrl(url, type) {
@@ -13,7 +11,6 @@ function getCloudinaryTransformedUrl(url, type) {
     const transformations = {
         thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
         full: 'c_limit,w_800,h_800,f_auto,q_auto',
-        // CORRECTED LINE: Simplified the placeholder to fix the 400 error.
         placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -51,7 +48,7 @@ const state = {
     filters: { type: '', category: '' }
 };
 
-// --- NEW: SKELETON LOADER RENDERER ---
+// --- SKELETON LOADER RENDERER ---
 function renderSkeletonLoaders(container, count) {
     container.innerHTML = ''; 
     const fragment = document.createDocumentFragment();
@@ -68,7 +65,7 @@ function renderSkeletonLoaders(container, count) {
     container.appendChild(fragment);
 }
 
-// --- NEW: LAZY LOADING WITH INTERSECTION OBSERVER ---
+// --- LAZY LOADING WITH INTERSECTION OBSERVER ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -105,6 +102,13 @@ function renderProducts(productsToDisplay) {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
 
+        // --- ADDED: Check for verified status ---
+        const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
+        const verifiedTextHTML = isVerified 
+            ? `<p class="verified-text">✓ Verified Seller</p>` 
+            : '';
+        // --- END OF ADDITION ---
+
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
@@ -113,6 +117,7 @@ function renderProducts(productsToDisplay) {
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+            ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
@@ -125,9 +130,9 @@ function renderProducts(productsToDisplay) {
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
-    
+
     renderSkeletonLoaders(productGrid, 12);
-    
+
     updatePaginationUI();
     updateListingsTitle();
 
@@ -136,7 +141,7 @@ async function fetchAndRenderProducts() {
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
-        
+
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
 
@@ -148,16 +153,13 @@ async function fetchAndRenderProducts() {
         console.error("Error fetching from Algolia:", error);
         productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again later.</p>`;
     } finally {
-    state.isFetching = false;
-    updatePaginationUI();
-    // Only scroll if the user is on page 2 or higher (not the initial load).
-    if (state.currentPage > 0) {
-        window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+        state.isFetching = false;
+        updatePaginationUI();
+        if (state.currentPage > 0) {
+            window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
+        }
     }
 }
-
-    }
-
 
 // --- UI UPDATE FUNCTIONS ---
 function updatePaginationUI() {
@@ -188,12 +190,12 @@ function updateListingsTitle() {
 function handleSearch() {
     const term = searchInput.value.trim();
     if (state.searchTerm === term) return;
-    
+
     state.searchTerm = term;
     state.currentPage = 0;
     state.filters.type = '';
     state.filters.category = '';
-    
+
     fetchAndRenderProducts();
 }
 
@@ -206,7 +208,7 @@ function handleFilterLinkClick(event) {
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
-    
+
     state.filters.type = type;
     state.filters.category = category;
     state.currentPage = 0;
@@ -229,7 +231,7 @@ function initializeStateFromURL() {
 // --- FETCH DEALS ---
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
-    
+
     renderSkeletonLoaders(dealsGrid, 5);
     dealsSection.style.display = 'block';
 
@@ -255,6 +257,11 @@ async function fetchDeals() {
             const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
             const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
 
+            const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
+            const verifiedTextHTML = isVerified 
+                ? `<p class="verified-text">✓ Verified Seller</p>` 
+                : '';
+
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
@@ -263,6 +270,7 @@ async function fetchDeals() {
                  <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
                 <h3>${product.name}</h3>
                 <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+                ${verifiedTextHTML}
               </div>
             `;
             fragment.appendChild(productLink);
@@ -310,9 +318,18 @@ async function fetchTestimonials() {
 
 // --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Service Redirect Logic
+    const serviceParams = new URLSearchParams(window.location.search);
+    if (serviceParams.get('type') === 'service') {
+        const banner = document.getElementById('service-redirect-banner');
+        const closeBtn = document.getElementById('close-service-banner');
+        if (banner) banner.style.display = 'block';
+        if (closeBtn) closeBtn.addEventListener('click', () => banner.style.display = 'none' );
+    }
+
     fetchDeals();
     fetchTestimonials();
-    
+
     initializeStateFromURL();
     fetchAndRenderProducts();
 
