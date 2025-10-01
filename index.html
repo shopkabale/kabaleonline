@@ -467,17 +467,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Target the Services link in mobile nav
-  const serviceLink = document.querySelector('a.nav-link[href="/?type=service"]');
+  // Select all links pointing to /?type=service
+  const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
   const modal = document.getElementById('service-notice');
   const continueBtn = document.getElementById('continue-btn');
 
-  if(serviceLink) {
-    serviceLink.addEventListener('click', function(e) {
-      e.preventDefault(); // Prevent default navigation
+  serviceLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault(); // Stop default navigation
       modal.style.display = 'flex'; // Show modal
     });
-  }
+  });
 
   continueBtn.addEventListener('click', function() {
     window.location.href = 'https://gigs.kabaleonline.com';
