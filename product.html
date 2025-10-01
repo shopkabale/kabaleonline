@@ -87,6 +87,42 @@
         .wishlist-btn.active { background-color: #fbeaf1; color: #d91b60; border-color: #d91b60; }
         .badge-icon.verified { color: var(--primary-color); font-weight: bold; }
         
+/* Add this to your <style> block in product.html */
+
+.seller-info-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.seller-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.seller-name-badges strong {
+    font-size: 1.1em;
+}
+
+/* Redesigned Verified Badge */
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #e7f3ff; /* Light blue background */
+    color: #0056b3; /* Darker blue text */
+    font-size: 0.85em;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 20px;
+    border: 1px solid #b3d7ff; /* Light blue border */
+    margin-top: 5px;
+}
+.verified-badge i {
+    color: #007bff; /* Primary blue for the icon */
+}
+
         /* Q&A Section Styles */
         .qa-section { background-color: white; padding: 20px; border-radius: 8px; margin-top: 30px; box-shadow: var(--shadow); }
         .qa-form { margin-top: 20px; }
