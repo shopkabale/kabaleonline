@@ -192,6 +192,52 @@
             </div>
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
+<!-- Modal notification for Services link -->
+<div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+  background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
+  <div style="background:#fff; padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
+    box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif; animation:fadeIn 0.3s ease-out;">
+    <h3 style="margin-bottom:15px; color:#333;">Notice</h3>
+    <p style="margin-bottom:20px; color:#555;">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
+    <button id="continue-btn" style="padding:10px 20px; background:#007bff; border:none; border-radius:8px; 
+      color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;">Continue</button>
+  </div>
+</div>
+
+<style>
+@keyframes fadeIn {
+  from { opacity:0; transform: scale(0.8); }
+  to { opacity:1; transform: scale(1); }
+}
+#continue-btn:hover {
+  background:#0056b3;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Target the Services link in mobile nav
+  const serviceLink = document.querySelector('a.nav-link[href="/?type=service"]');
+  const modal = document.getElementById('service-notice');
+  const continueBtn = document.getElementById('continue-btn');
+
+  if(serviceLink) {
+    serviceLink.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent default navigation
+      modal.style.display = 'flex'; // Show modal
+    });
+  }
+
+  continueBtn.addEventListener('click', function() {
+    window.location.href = 'https://gigs.kabaleonline.com';
+  });
+
+  // Optional: click outside modal content to close
+  modal.addEventListener('click', function(e) {
+    if(e.target === modal) modal.style.display = 'none';
+  });
+});
+</script>
     </footer>
 
     <script type="module" src="ui.js"></script>
