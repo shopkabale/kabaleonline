@@ -67,10 +67,13 @@ signupForm.addEventListener('submit', async (e) => {
         
         // Create the new user's document
         await setDoc(doc(db, "users", user.uid), {
-            name, email,
+            name,
+            email,
             whatsapp: normalizeWhatsAppNumber(whatsapp),
-            location, institution,
-            role: 'seller', isVerified: false,
+            location,
+            institution,
+            role: 'seller',
+            isVerified: false,
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
             referrerId: referrerId,
@@ -84,7 +87,7 @@ signupForm.addEventListener('submit', async (e) => {
                 referrerEmail: referrerEmail,
                 referredUserId: user.uid,
                 referredUserName: name,
-                status: "pending", // Status is pending until validated
+                status: "pending",
                 createdAt: serverTimestamp()
             });
         }
