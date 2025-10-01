@@ -8,32 +8,63 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary-color: #007bff; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: #f4f7f6; color: #34495e; line-height: 1.6; padding-top: 70px; }
+        :root { --primary-color: #007bff; --text-dark: #34495e; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: #f4f7f6; color: var(--text-dark); line-height: 1.6; padding-top: 70px; }
         .sticky-header, .header-top-bar, .hamburger-menu, .site-title, .header-icons, .mobile-nav, .mobile-nav-overlay { /* Your standard header styles */ }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
         .page-welcome h1 { font-size: 1.8em; }
         .admin-section { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 30px; }
         .admin-section h2 { margin-top: 0; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: left; word-break: break-word; }
         th { background-color: #34495e; color: #fff; }
         .user-list { list-style-type: none; padding: 0; }
         .user-list-item { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
         .action-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
         .action-btn.green { background-color: #28a745; color: white; }
+        .action-btn.red { background-color: #dc3545; color: white; }
         .status-pending { color: #f39c12; font-weight: bold; }
         .status-paid { color: #2ecc71; font-weight: bold; }
-        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-        .product-card { /* Your product card styles */ }
+        
+        /* --- UPDATED RESPONSIVE PRODUCT GRID STYLE --- */
+        .product-grid {
+            display: grid;
+            gap: 20px;
+            /* Creates 2-3 columns on small screens, and up to 5-6 on large screens automatically */
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+
+        .product-card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; text-align: center; display: flex; flex-direction: column; }
+        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
+        .product-card h3 { font-size: 0.9em; margin: 10px; flex-grow: 1; }
+        .product-card .price { font-weight: bold; color: #007bff; margin: 0 10px 10px; }
+        .seller-controls button { width: calc(100% - 20px); margin: 5px 10px; padding: 8px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; border-radius: 5px; font-size: 0.8em; }
+        .seller-controls .deal-btn.on-deal { background-color: #28a745; color: white; border-color: #28a745; }
+        .admin-delete { background-color: #fbecec; color: #dc3545; border-color: #f5c6cb; }
     </style>
 </head>
 <body>
-    <header class="sticky-header"></header>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav"></nav>
+            <div class="header-icons">
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <a href="/upload/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/dashboard/" class="nav-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <a href="/admin/" class="nav-link"><i class="fa-solid fa-user-shield"></i> Admin Panel</a>
+        </nav>
+        <div class="mobile-nav-overlay"></div>
+    </header>
 
     <div class="container">
         <div id="access-denied" style="display: none;">
-            <div class="page-welcome"><h1>Access Denied</h1><p>You do not have permission. <a href="/">Go Home</a></p></div>
+            <div class="page-welcome"><h1>Access Denied</h1><p>You do not have permission to view this page. <a href="/">Go Home</a></p></div>
         </div>
 
         <div id="admin-content" style="display: none;">
@@ -44,21 +75,27 @@
                 <h3>Pending Requests</h3>
                 <table id="pending-requests-table">
                     <thead><tr><th>User Name</th><th>Email</th><th>Amount (UGX)</th><th>Date</th><th>Actions</th></tr></thead>
-                    <tbody><p>Loading...</p></tbody>
+                    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
                 </table>
                 <h3 style="margin-top: 30px;">Completed Requests</h3>
                 <table id="completed-requests-table">
                     <thead><tr><th>User Name</th><th>Email</th><th>Amount (UGX)</th><th>Date</th><th>Status</th></tr></thead>
-                    <tbody><p>Loading...</p></tbody>
+                    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
                 </table>
             </div>
+
             <div class="admin-section"><h2>User Management</h2><ul id="user-list" class="user-list"><p>Loading users...</p></ul></div>
             <div class="admin-section"><h2>Testimonial Management</h2><h3>Pending</h3><ul id="pending-testimonials-list" class="user-list"><p>Loading...</p></ul><h3>Approved</h3><ul id="approved-testimonials-list" class="user-list"><p>Loading...</p></ul></div>
             <div class="admin-section"><h2>All Products</h2><div id="all-products-list" class="product-grid"><p>Loading products...</p></div></div>
         </div>
     </div>
 
-    <footer></footer>
+    <footer>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Kabale Online Admin</h3>
+            <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
     
     <script type="module" src="../js/auth.js"></script>
     <script type="module" src="admin.js"></script>
