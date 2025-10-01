@@ -3,7 +3,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 
 // --- PAGE PROTECTION ---
 // This automatically manages access to your dashboard pages.
-// in /js/shared.js
 const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/'];
 const publicOnlyPages = ['/login/', '/signup/'];
 
@@ -26,6 +25,12 @@ onAuthStateChanged(auth, (user) => {
 
 // --- SHARED UTILITY FUNCTIONS ---
 
+/**
+ * Displays a message in a specified element (like an error or success box).
+ * @param {HTMLElement} element The HTML element to show the message in.
+ * @param {string} message The message content. Supports emojis.
+ * @param {boolean} [isError=true] Toggles between error and success styling.
+ */
 export function showMessage(element, message, isError = true) {
     if (!element) return;
     element.innerHTML = message;
@@ -34,6 +39,12 @@ export function showMessage(element, message, isError = true) {
     setTimeout(() => { element.style.display = 'none'; }, 5000);
 }
 
+/**
+ * Toggles the loading state of a button, showing a spinner.
+ * @param {HTMLButtonElement} button The button to toggle.
+ * @param {boolean} isLoading True to show the loader, false to return to normal.
+ * @param {string} originalText The button's original text to restore.
+ */
 export function toggleLoading(button, isLoading, originalText) {
     if (!button) return;
     if (isLoading) {
@@ -47,6 +58,11 @@ export function toggleLoading(button, isLoading, originalText) {
     }
 }
 
+/**
+ * Normalizes a Ugandan WhatsApp number to the required 256xxxxxxxxx format.
+ * @param {string} phone The phone number string from an input.
+ * @returns {string} The correctly formatted phone number.
+ */
 export function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
@@ -55,6 +71,12 @@ export function normalizeWhatsAppNumber(phone) {
     return cleaned;
 }
 
+/**
+ * Creates an optimized and transformed Cloudinary URL for images.
+ * @param {string} url The original Cloudinary image URL.
+ * @param {'thumbnail'|'full'} type The desired size ('thumbnail' or 'full').
+ * @returns {string} The new, transformed image URL.
+ */
 export function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
@@ -102,21 +124,20 @@ function showPwaInstallPrompt() {
 }
 
 // Function to show the timed login prompt banner
-function showLoginPrompt() {
-  if (!auth.currentUser) {
+function showLoginPrompt(user) {
+  // This function now reliably checks if the user is logged out
+  if (!user) {
     const loginPromptBanner = document.getElementById('login-prompt-banner');
     if (loginPromptBanner) {
-        // --- THIS IS THE UPDATED LOGIC FOR THE ANIMATION ---
         loginPromptBanner.style.display = 'flex';
         setTimeout(() => {
             loginPromptBanner.classList.add('visible');
-        }, 10); // Tiny delay to trigger the CSS transition
+        }, 10);
         
         const closePromptBtn = document.getElementById('close-prompt-btn');
         if (closePromptBtn) {
             closePromptBtn.addEventListener('click', () => {
                 loginPromptBanner.classList.remove('visible');
-                // Hide the element completely after the transition (400ms)
                 setTimeout(() => {
                     loginPromptBanner.style.display = 'none';
                 }, 400); 
@@ -126,11 +147,16 @@ function showLoginPrompt() {
   }
 }
 
-// Set timers to run after the page has fully loaded
-window.addEventListener('load', () => {
-    // Show login prompt after 10 seconds
-    setTimeout(showLoginPrompt, 10000);
-    
-    // Show PWA install prompt after 20 seconds
-    setTimeout(showPwaInstallPrompt, 20000);
+// Set timers after the page structure is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // This is the most reliable way to get the auth state on page load.
+    // We wait for Firebase to confirm the user's status before starting the timers.
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+        // Now that we know the user's status for sure, we can set the timers.
+        setTimeout(() => showLoginPrompt(user), 10000); // Pass the user object
+        setTimeout(showPwaInstallPrompt, 20000);
+
+        // Unsubscribe after the first check so this doesn't run again on login/logout
+        unsubscribe(); 
+    });
 });
