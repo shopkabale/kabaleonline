@@ -11,7 +11,6 @@ const userList = document.getElementById('user-list');
 const allProductsList = document.getElementById('all-products-list');
 const pendingTestimonialsList = document.getElementById('pending-testimonials-list');
 const approvedTestimonialsList = document.getElementById('approved-testimonials-list');
-// NEW Payout Elements
 const pendingTableBody = document.querySelector('#pending-requests-table tbody');
 const completedTableBody = document.querySelector('#completed-requests-table tbody');
 
@@ -59,14 +58,14 @@ function setupGlobalEventListeners() {
         if (action === 'mark-paid') handleMarkAsPaid(btn);
         if (action === 'toggle-deal') handleToggleDeal(btn);
         if (action === 'delete-product') handleDeleteProduct(btn);
-        if (action === 'toggle-verify') handleToggleVerify(btn); // Renamed for clarity
+        if (action === 'toggle-verify') handleToggleVerify(btn);
         if (action === 'approve-testimonial') handleApproveTestimonial(btn);
         if (action === 'delete-testimonial') handleDeleteTestimonial(btn);
     });
 }
 
 // ===========================
-// NEW: Payout Requests Logic
+// Payout Requests Logic
 // ===========================
 async function fetchPayoutRequests() {
     pendingTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
@@ -112,7 +111,7 @@ async function fetchPayoutRequests() {
 
     } catch (e) {
         console.error("Error fetching payout requests:", e);
-        pendingTableBody.innerHTML = '<tr><td colspan="5">Error loading requests.</td></tr>';
+        pendingTableBody.innerHTML = '<tr><td colspan="5">Error loading requests. Check console.</td></tr>';
     }
 }
 
@@ -134,9 +133,8 @@ async function handleMarkAsPaid(button) {
 }
 
 // ===========================
-// YOUR ORIGINAL FUNCTIONS (Complete)
+// User Management Logic
 // ===========================
-
 async function fetchAllUsers() {
     userList.innerHTML = '<p>Loading users...</p>';
     try {
@@ -165,43 +163,63 @@ async function fetchAllUsers() {
         });
     } catch (e) {
         console.error("Error fetching users:", e);
-        userList.innerHTML = '<li>Could not load users.</li>';
+        userList.innerHTML = '<li>Could not load users. Check console for errors.</li>';
     }
 }
 
+async function handleToggleVerify(button) {
+    const userId = button.dataset.uid;
+    const currentStatus = button.dataset.status === 'true';
+    const newStatus = !currentStatus;
+
+    if (!confirm(`Are you sure you want to ${newStatus ? 'verify' : 'un-verify'} this user?`)) return;
+    
+    button.disabled = true;
+    button.textContent = 'Updating...';
+
+    try {
+        await updateDoc(doc(db, 'users', userId), { isVerified: newStatus });
+        await fetchAllUsers(); // Refresh the user list to show the change
+    } catch(e) {
+        console.error("Error toggling user verification:", e);
+        alert("Failed to update user verification status.");
+        button.disabled = false;
+        button.textContent = currentStatus ? 'Un-verify' : 'Verify';
+    }
+}
+
+// ===========================
+// Product Management Logic
+// ===========================
 async function fetchAllProducts() {
     allProductsList.innerHTML = '<p>Loading products...</p>';
     try {
         const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
-
         allProductsList.innerHTML = '';
         snapshot.forEach(docSnap => {
             const product = docSnap.data();
             const id = docSnap.id;
             const isDeal = product.isDeal || false;
             const verifiedBadge = product.sellerIsVerified ? '✔️' : '';
-
             const card = document.createElement('div');
             card.className = 'product-card';
             card.innerHTML = `
-                <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" alt="${product.name}">
+                <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" 
+                     alt="${product.name}" 
+                     loading="lazy" 
+                     width="200" 
+                     height="200">
                 <h3>${product.name}</h3>
                 <p class="price">UGX ${product.price?.toLocaleString() || 'N/A'}</p>
                 <p style="font-size:0.8em;color:grey;word-break:break-all;">
                     By: ${product.sellerName || 'N/A'} ${verifiedBadge}
                 </p>
                 <div class="seller-controls">
-                    <button class="deal-btn ${isDeal ? 'on-deal' : ''}" 
-                            data-action="toggle-deal" 
-                            data-id="${id}" 
-                            data-status="${isDeal}">
+                    <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${id}" data-status="${isDeal}">
                         ${isDeal ? 'Remove Deal' : 'Make Deal'}
                     </button>
-                    <button class="admin-delete" 
-                            data-action="delete-product" 
-                            data-id="${id}" 
-                            data-name="${product.name}">
+                    <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name}">
                         Delete
                     </button>
                 </div>
@@ -218,10 +236,8 @@ async function handleToggleDeal(button) {
     const productId = button.dataset.id;
     const currentStatus = button.dataset.status === 'true';
     const newStatus = !currentStatus;
-
     button.disabled = true;
     button.textContent = 'Updating...';
-
     try {
         await updateDoc(doc(db, 'products', productId), { isDeal: newStatus });
         button.dataset.status = newStatus;
@@ -229,8 +245,7 @@ async function handleToggleDeal(button) {
         button.classList.toggle('on-deal', newStatus);
     } catch (e) {
         console.error("Error updating deal:", e);
-        alert("Error updating deal status. Check console for details.");
-        button.textContent = currentStatus ? 'Remove Deal' : 'Make Deal';
+        alert("Error updating deal status.");
     } finally {
         button.disabled = false;
     }
@@ -239,16 +254,18 @@ async function handleToggleDeal(button) {
 async function handleDeleteProduct(button) {
     const id = button.dataset.id;
     if (!confirm(`Delete product "${button.dataset.name}"?`)) return;
-
     try {
         await deleteDoc(doc(db, 'products', id));
-        fetchAllProducts(); // Refresh the list
+        fetchAllProducts();
     } catch (e) {
         console.error("Error deleting product:", e);
         alert("Could not delete product.");
     }
 }
 
+// ===========================
+// Testimonial Management Logic
+// ===========================
 async function fetchTestimonialsForAdmin() {
     pendingTestimonialsList.innerHTML = '<p>Loading...</p>';
     approvedTestimonialsList.innerHTML = '<p>Loading...</p>';
@@ -281,6 +298,8 @@ async function fetchTestimonialsForAdmin() {
         approvedTestimonialsList.innerHTML = approved || '<li>No approved testimonials</li>';
     } catch (e) {
         console.error("Error fetching testimonials:", e);
+        pendingTestimonialsList.innerHTML = '<li>Error loading testimonials.</li>';
+        approvedTestimonialsList.innerHTML = '<li>Error loading testimonials.</li>';
     }
 }
 
@@ -290,7 +309,7 @@ async function handleApproveTestimonial(button) {
     button.textContent = 'Approving...';
     try {
         await updateDoc(doc(db, 'testimonials', testimonialId), { status: 'approved', order: Date.now() });
-        fetchTestimonialsForAdmin(); // Refresh
+        fetchTestimonialsForAdmin();
     } catch (e) {
         console.error("Error approving testimonial:", e);
         alert("Could not approve testimonial.");
@@ -306,30 +325,9 @@ async function handleDeleteTestimonial(button) {
     button.textContent = 'Deleting...';
     try {
         await deleteDoc(doc(db, 'testimonials', testimonialId));
-        fetchTestimonialsForAdmin(); // Refresh
+        fetchTestimonialsForAdmin();
     } catch (e) {
         console.error("Error deleting testimonial:", e);
         alert("Could not delete testimonial.");
-    }
-}
-
-async function handleToggleVerify(button) {
-    const userId = button.dataset.uid;
-    const currentStatus = button.dataset.status === 'true';
-    const newStatus = !currentStatus;
-
-    if (!confirm(`Are you sure you want to ${newStatus ? 'verify' : 'un-verify'} this user?`)) return;
-    
-    button.disabled = true;
-    button.textContent = 'Updating...';
-
-    try {
-        await updateDoc(doc(db, 'users', userId), { isVerified: newStatus });
-        await fetchAllUsers(); // Refresh the user list to show the change
-    } catch(e) {
-        console.error("Error toggling user verification:", e);
-        alert("Failed to update user verification status.");
-        button.disabled = false;
-        button.textContent = currentStatus ? 'Un-verify' : 'Verify';
     }
 }
