@@ -3,7 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 
 // --- PAGE PROTECTION ---
 // This automatically manages access to your dashboard pages.
-const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/'];
+const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/'];
 const publicOnlyPages = ['/login/', '/signup/'];
 
 onAuthStateChanged(auth, (user) => {
