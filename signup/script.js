@@ -1,24 +1,9 @@
 import { auth, db } from '/js/auth.js';
-import { 
-    createUserWithEmailAndPassword, 
-    sendEmailVerification, 
-    signOut 
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { 
-    doc, 
-    setDoc, 
-    query, 
-    collection, 
-    where, 
-    getDocs, 
-    updateDoc, 
-    increment, 
-    serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
-// Note: Page protection/redirection for already-logged-in users is handled in shared.js
-
+// --- DOM ELEMENTS ---
 const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
 const authSuccessElement = document.getElementById('auth-success');
@@ -28,7 +13,14 @@ const authContainer = document.getElementById('auth-container');
 const resendVerificationBtn = document.getElementById('resend-verification-btn');
 const verificationLogoutBtn = document.getElementById('verification-logout-btn');
 
-// Check for referral code in URL on page load and populate the input field
+// Redirect if already logged in
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        window.location.href = '/dashboard/';
+    }
+});
+
+// Check for referral code in URL on page load
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');
@@ -40,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Main signup form submission logic
 signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('signup-name').value;
@@ -63,43 +54,49 @@ signupForm.addEventListener('submit', async (e) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         let referrerId = null;
+        let referrerEmail = null;
 
-        // If a referral code was used, find the referrer and update their count
         if (referralCode) {
             const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
             const querySnapshot = await getDocs(q);
             if (!querySnapshot.empty) {
                 referrerId = querySnapshot.docs[0].id;
-                const referrerRef = doc(db, 'users', referrerId);
-                await updateDoc(referrerRef, { referralCount: increment(1) });
-            } else {
-                 console.warn("Referral code was provided but not found:", referralCode);
+                referrerEmail = querySnapshot.docs[0].data().email;
             }
         }
         
-        // Create the new user's document in Firestore
+        // Create the new user's document
         await setDoc(doc(db, "users", user.uid), {
-            name: name,
-            email: email,
+            name, email,
             whatsapp: normalizeWhatsAppNumber(whatsapp),
-            location: location,
-            institution: institution,
-            role: 'seller',
-            isVerified: false,
+            location, institution,
+            role: 'seller', isVerified: false,
             createdAt: serverTimestamp(),
-            referralCount: 0,
-            referrerId: referrerId,
             referralCode: user.uid.substring(0, 6).toUpperCase(),
+            referrerId: referrerId,
             badges: []
         });
 
-        // Send the verification email
+        // --- NEW LOGIC: Create the private referral record ---
+        if (referrerId) {
+            await addDoc(collection(db, "referrals"), {
+                referrerId: referrerId,
+                referrerEmail: referrerEmail,
+                referredUserId: user.uid,
+                referredUserName: name,
+                status: "pending", // Status is pending until validated
+                createdAt: serverTimestamp()
+            });
+        }
+        // --- END OF NEW LOGIC ---
+
         await sendEmailVerification(user);
 
-        // Hide the signup form and show the verification prompt
         authContainer.style.display = 'none';
         emailVerificationPrompt.style.display = 'block';
         emailVerificationPrompt.querySelector('.user-email').textContent = user.email;
+        showMessage(authSuccessElement, "Success! Please check your email to verify your account.", false); 
+        signupForm.reset();
 
     } catch (error) {
         let msg = 'An error occurred. Please try again.';
@@ -110,6 +107,7 @@ signupForm.addEventListener('submit', async (e) => {
             msg = 'Password must be at least 6 characters long.';
         }
         showMessage(signupErrorElement, msg);
+        console.error("Signup Error:", error);
     } finally {
         toggleLoading(signupButton, false, 'Create Account');
         signupPatienceMessage.style.display = 'none';
