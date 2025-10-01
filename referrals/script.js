@@ -1,5 +1,5 @@
 import { auth, db } from '../js/auth.js';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, increment, arrayUnion, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, increment, serverTimestamp, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading } from '../js/shared.js';
 
 // --- DOM ELEMENTS ---
@@ -21,7 +21,7 @@ let referralsChart = null;
 // --- CONFIGURATION ---
 const UGX_PER_REFERRAL = 250;
 const MINIMUM_PAYOUT_UGX = 5000;
-
+const VALIDATION_PERIOD_HOURS = 24;
 let currentUser = null;
 
 auth.onAuthStateChanged(async (user) => {
@@ -34,63 +34,47 @@ auth.onAuthStateChanged(async (user) => {
 async function syncAndLoadReferralData(user) {
     const userDocRef = doc(db, 'users', user.uid);
     try {
-        // First, get the referrer's current data to see who has already been credited
-        const userDocBeforeSync = await getDoc(userDocRef);
-        const creditedReferrals = userDocBeforeSync.data()?.creditedReferrals || [];
-
-        // Find all users referred by the current user
-        const q = query(collection(db, 'users'), where('referrerId', '==', user.uid));
+        // NEW QUERY: Read from the simple 'referrals' collection. This fixes the error.
+        const q = query(collection(db, 'referrals'), where('referrerId', '==', user.uid), orderBy('createdAt', 'desc'));
         const referralsSnapshot = await getDocs(q);
-        
-        let newBalanceToAdd = 0;
-        let newCreditedReferrals = [];
 
-        for (const referredUserDoc of referralsSnapshot.docs) {
-            const referredUserId = referredUserDoc.id;
-            
-            // Check if this referral has already been credited
-            if (!creditedReferrals.includes(referredUserId)) {
-                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserId));
+        for (const referralDoc of referralsSnapshot.docs) {
+            const referralData = referralDoc.data();
+            if (referralData.status === 'pending') {
+                const referredUserId = referralData.referredUserId;
+                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserId), orderBy('createdAt', 'asc'));
                 const productsSnapshot = await getDocs(productsQuery);
-                
-                // Check if any of the referred user's products have an image
-                let isNowValid = productsSnapshot.docs.some(doc => doc.data().imageUrls?.length > 0);
 
-                if (isNowValid) {
-                    newBalanceToAdd += UGX_PER_REFERRAL;
-                    newCreditedReferrals.push(referredUserId);
+                for (const productDoc of productsSnapshot.docs) {
+                    const productData = productDoc.data();
+                    if (productData.imageUrls?.length > 0 && productData.createdAt) {
+                        const productAgeHours = (new Date() - productData.createdAt.toDate()) / (1000 * 60 * 60);
+                        if (productAgeHours >= VALIDATION_PERIOD_HOURS) {
+                            // This referral is now valid! Award the credit.
+                            await updateDoc(userDocRef, { referralBalanceUGX: increment(UGX_PER_REFERRAL) });
+                            await updateDoc(doc(db, 'referrals', referralDoc.id), { status: 'credited' });
+                            break; // Stop checking products for this user
+                        }
+                    }
                 }
             }
         }
-
-        // If we found new valid referrals, update the referrer's balance and credited list
-        if (newBalanceToAdd > 0) {
-            await updateDoc(userDocRef, {
-                referralBalanceUGX: increment(newBalanceToAdd),
-                creditedReferrals: arrayUnion(...newCreditedReferrals) // Securely add new IDs to our own list
-            });
-        }
-
-        // Now, load the final, updated data for display
-        const userDocAfterSync = await getDoc(userDocRef);
-        if (!userDocAfterSync.exists()) throw new Error("Current user not found.");
         
-        const userData = userDocAfterSync.data();
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) throw new Error("Current user not found.");
+        
+        const userData = userDoc.data();
         const currentBalance = userData.referralBalanceUGX || 0;
-        const finalCreditedList = userData.creditedReferrals || [];
 
-        // Populate the UI
         referralLinkInput.value = `${window.location.origin}/signup/?ref=${userData.referralCode}`;
         referralBalanceEl.textContent = `${currentBalance.toLocaleString()} UGX`;
-        
         const progressPercentage = Math.min((currentBalance / MINIMUM_PAYOUT_UGX) * 100, 100);
         payoutProgressBar.style.width = `${progressPercentage}%`;
         payoutProgressText.textContent = `${currentBalance.toLocaleString()} / ${MINIMUM_PAYOUT_UGX.toLocaleString()} UGX to request a payout`;
-        
         payoutButton.disabled = currentBalance < MINIMUM_PAYOUT_UGX;
 
-        const allReferrals = referralsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderReferralList(allReferrals, finalCreditedList);
+        const allReferrals = referralsSnapshot.docs.map(doc => doc.data());
+        renderReferralList(allReferrals);
         createReferralsChart(allReferrals);
 
     } catch (error) {
@@ -102,7 +86,7 @@ async function syncAndLoadReferralData(user) {
     }
 }
 
-function renderReferralList(allReferrals, creditedList) {
+function renderReferralList(allReferrals) {
     referralListContainer.innerHTML = '';
     referralCountEl.textContent = allReferrals.length;
     if (allReferrals.length === 0) {
@@ -111,18 +95,15 @@ function renderReferralList(allReferrals, creditedList) {
     }
     noReferralsMessage.style.display = 'none';
     allReferrals.forEach(referral => {
-        const isCredited = creditedList.includes(referral.id);
-        const status = isCredited ? 'Credited' : 'Pending';
         const joinDate = referral.createdAt?.toDate()?.toLocaleDateString() || 'N/A';
         const referralItem = document.createElement('div');
         referralItem.className = 'referral-item';
         referralItem.innerHTML = `
-            <img src="${referral.profilePhotoUrl || 'https://placehold.co/50x50/e0e0e0/777?text=U'}" alt="${referral.name}">
             <div class="referral-details">
-                <h3>${referral.name || 'New User'}</h3>
+                <h3>${referral.referredUserName || 'New User'}</h3>
                 <p>Joined on: ${joinDate}</p>
             </div>
-            <span class="referral-status ${status.toLowerCase()}">${status}</span>
+            <span class="referral-status ${referral.status.toLowerCase()}">${referral.status}</span>
         `;
         referralListContainer.appendChild(referralItem);
     });
