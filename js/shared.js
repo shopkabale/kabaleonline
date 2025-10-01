@@ -1,8 +1,8 @@
-import { auth } from './auth.js';
+import { auth, db } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- PAGE PROTECTION ---
-// This automatically manages access to your dashboard pages.
 const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/'];
 const publicOnlyPages = ['/login/', '/signup/'];
 
@@ -10,27 +10,36 @@ onAuthStateChanged(auth, (user) => {
     const currentPage = window.location.pathname;
 
     if (user) {
-        // If a logged-in user tries to visit login/signup, send them to their dashboard.
         if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/dashboard/');
         }
+        checkForAdminTasks(user);
     } else {
-        // If a logged-out user tries to visit a protected page, send them to the login page.
         if (protectedPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/login/');
         }
     }
 });
 
+// --- "SMART NOTIFICATION" FUNCTION FOR ADMIN ---
+async function checkForAdminTasks(user) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+            // Check for pending referral approvals
+            const refQuery = query(collection(db, "referralValidationRequests"), where("status", "==", "pending"), limit(1));
+            const refSnapshot = await getDocs(refQuery);
+            if (!refSnapshot.empty) {
+                const banner = document.getElementById('admin-notification-banner');
+                if (banner) banner.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error("Error checking for admin tasks:", error);
+    }
+}
 
 // --- SHARED UTILITY FUNCTIONS ---
-
-/**
- * Displays a message in a specified element (like an error or success box).
- * @param {HTMLElement} element The HTML element to show the message in.
- * @param {string} message The message content. Supports emojis.
- * @param {boolean} [isError=true] Toggles between error and success styling.
- */
 export function showMessage(element, message, isError = true) {
     if (!element) return;
     element.innerHTML = message;
@@ -39,12 +48,6 @@ export function showMessage(element, message, isError = true) {
     setTimeout(() => { element.style.display = 'none'; }, 5000);
 }
 
-/**
- * Toggles the loading state of a button, showing a spinner.
- * @param {HTMLButtonElement} button The button to toggle.
- * @param {boolean} isLoading True to show the loader, false to return to normal.
- * @param {string} originalText The button's original text to restore.
- */
 export function toggleLoading(button, isLoading, originalText) {
     if (!button) return;
     if (isLoading) {
@@ -58,11 +61,6 @@ export function toggleLoading(button, isLoading, originalText) {
     }
 }
 
-/**
- * Normalizes a Ugandan WhatsApp number to the required 256xxxxxxxxx format.
- * @param {string} phone The phone number string from an input.
- * @returns {string} The correctly formatted phone number.
- */
 export function normalizeWhatsAppNumber(phone) {
     let cleaned = ('' + phone).replace(/\D/g, '');
     if (cleaned.startsWith('0')) return '256' + cleaned.substring(1);
@@ -71,12 +69,6 @@ export function normalizeWhatsAppNumber(phone) {
     return cleaned;
 }
 
-/**
- * Creates an optimized and transformed Cloudinary URL for images.
- * @param {string} url The original Cloudinary image URL.
- * @param {'thumbnail'|'full'} type The desired size ('thumbnail' or 'full').
- * @returns {string} The new, transformed image URL.
- */
 export function getCloudinaryTransformedUrl(url, type) {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
@@ -93,22 +85,17 @@ export function getCloudinaryTransformedUrl(url, type) {
     return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
 
-
 // --- PWA & LOGIN PROMPT LOGIC ---
-
 let deferredInstallPrompt;
 
-// Listen for the browser's native install prompt event
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
 });
 
-// Function to show the custom PWA install button
 function showPwaInstallPrompt() {
   const isInstallable = !!deferredInstallPrompt;
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
-
   if (isInstallable && !isInstalled) {
     const installButton = document.getElementById('install-button');
     if (installButton) {
@@ -123,10 +110,8 @@ function showPwaInstallPrompt() {
   }
 }
 
-// Function to show the timed login prompt banner
-function showLoginPrompt(user) {
-  // This function now reliably checks if the user is logged out
-  if (!user) {
+function showLoginPrompt() {
+  if (!auth.currentUser) {
     const loginPromptBanner = document.getElementById('login-prompt-banner');
     if (loginPromptBanner) {
         loginPromptBanner.style.display = 'flex';
@@ -147,16 +132,8 @@ function showLoginPrompt(user) {
   }
 }
 
-// Set timers after the page structure is ready
-document.addEventListener('DOMContentLoaded', () => {
-    // This is the most reliable way to get the auth state on page load.
-    // We wait for Firebase to confirm the user's status before starting the timers.
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        // Now that we know the user's status for sure, we can set the timers.
-        setTimeout(() => showLoginPrompt(user), 10000); // Pass the user object
-        setTimeout(showPwaInstallPrompt, 20000);
-
-        // Unsubscribe after the first check so this doesn't run again on login/logout
-        unsubscribe(); 
-    });
+// Set timers after the page has fully loaded
+window.addEventListener('load', () => {
+    setTimeout(showLoginPrompt, 10000);
+    setTimeout(showPwaInstallPrompt, 20000);
 });
