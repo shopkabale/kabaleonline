@@ -1,10 +1,8 @@
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, runTransaction, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// ===========================
-// DOM Elements
-// ===========================
+// --- DOM ELEMENTS ---
 const adminContent = document.getElementById('admin-content');
 const accessDenied = document.getElementById('access-denied');
 const userList = document.getElementById('user-list');
@@ -13,10 +11,9 @@ const pendingTestimonialsList = document.getElementById('pending-testimonials-li
 const approvedTestimonialsList = document.getElementById('approved-testimonials-list');
 const pendingTableBody = document.querySelector('#pending-requests-table tbody');
 const completedTableBody = document.querySelector('#completed-requests-table tbody');
+const pendingReferralsTableBody = document.querySelector('#pending-referrals-table tbody');
 
-// ===========================
-// Auth Check
-// ===========================
+// --- AUTH CHECK ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -37,12 +34,11 @@ function showAccessDenied() {
     accessDenied.style.display = 'block';
 }
 
-// ===========================
-// Init Panel & Event Listeners
-// ===========================
+// --- INIT PANEL & EVENT LISTENERS ---
 function initializeAdminPanel() {
     setupGlobalEventListeners();
     fetchPayoutRequests();
+    fetchPendingReferrals();
     fetchAllUsers();
     fetchAllProducts();
     fetchTestimonialsForAdmin();
@@ -52,10 +48,10 @@ function setupGlobalEventListeners() {
     adminContent.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
         if (!btn || !btn.dataset.action) return;
-
         const action = btn.dataset.action;
 
         if (action === 'mark-paid') handleMarkAsPaid(btn);
+        if (action === 'approve-referral') handleApproveReferral(btn);
         if (action === 'toggle-deal') handleToggleDeal(btn);
         if (action === 'delete-product') handleDeleteProduct(btn);
         if (action === 'toggle-verify') handleToggleVerify(btn);
@@ -64,17 +60,13 @@ function setupGlobalEventListeners() {
     });
 }
 
-// ===========================
-// Payout Requests Logic
-// ===========================
+// --- PAYOUT REQUESTS LOGIC ---
 async function fetchPayoutRequests() {
     pendingTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
     completedTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-    
     try {
         const q = query(collection(db, "payoutRequests"), orderBy("requestedAt", "desc"));
         const querySnapshot = await getDocs(q);
-
         let pendingHTML = '';
         let completedHTML = '';
 
@@ -105,13 +97,11 @@ async function fetchPayoutRequests() {
                 completedHTML += rowHTML;
             }
         });
-        
         pendingTableBody.innerHTML = pendingHTML || '<tr><td colspan="5">No pending requests found.</td></tr>';
         completedTableBody.innerHTML = completedHTML || '<tr><td colspan="5">No completed requests found.</td></tr>';
-
     } catch (e) {
         console.error("Error fetching payout requests:", e);
-        pendingTableBody.innerHTML = '<tr><td colspan="5">Error loading requests. Check console.</td></tr>';
+        pendingTableBody.innerHTML = '<tr><td colspan="5">Error loading requests.</td></tr>';
     }
 }
 
@@ -123,7 +113,7 @@ async function handleMarkAsPaid(button) {
     button.textContent = 'Updating...';
     try {
         await updateDoc(doc(db, 'payoutRequests', requestId), { status: 'paid' });
-        await fetchPayoutRequests(); // Refresh the lists
+        await fetchPayoutRequests();
     } catch (e) {
         console.error("Error marking as paid:", e);
         alert("Could not update the request.");
@@ -132,9 +122,60 @@ async function handleMarkAsPaid(button) {
     }
 }
 
-// ===========================
-// User Management Logic
-// ===========================
+// --- REFERRAL APPROVAL LOGIC ---
+async function fetchPendingReferrals() {
+    if (!pendingReferralsTableBody) return;
+    pendingReferralsTableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+    try {
+        const q = query(collection(db, "referralValidationRequests"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            pendingReferralsTableBody.innerHTML = '<tr><td colspan="4">No pending referrals to approve.</td></tr>';
+            return;
+        }
+        let html = '';
+        snapshot.forEach(doc => {
+            const request = doc.data();
+            html += `
+                <tr>
+                    <td>${request.referrerEmail}</td>
+                    <td>${request.referredUserName}</td>
+                    <td>${request.createdAt.toDate().toLocaleDateString()}</td>
+                    <td><button class="action-btn green" data-action="approve-referral" data-id="${doc.id}" data-referrer-id="${request.referrerId}">Approve</button></td>
+                </tr>
+            `;
+        });
+        pendingReferralsTableBody.innerHTML = html;
+    } catch (e) {
+        console.error("Error fetching pending referrals:", e);
+        pendingReferralsTableBody.innerHTML = '<tr><td colspan="4">Error loading referrals. Check console.</td></tr>';
+    }
+}
+
+async function handleApproveReferral(button) {
+    const { id, referrerId } = button.dataset;
+    if (!id || !referrerId || !confirm("Approve this referral for 250 UGX?")) return;
+
+    button.disabled = true;
+    button.textContent = 'Approving...';
+    try {
+        const requestRef = doc(db, "referralValidationRequests", id);
+        const referrerRef = doc(db, "users", referrerId);
+        await runTransaction(db, async (transaction) => {
+            transaction.update(requestRef, { status: "approved", approvedAt: serverTimestamp() });
+            transaction.update(referrerRef, { referralBalanceUGX: increment(250) });
+        });
+        await fetchPendingReferrals();
+    } catch (e) {
+        console.error("Error approving referral:", e);
+        alert("Could not approve referral.");
+        button.disabled = false;
+        button.textContent = 'Approve';
+    }
+}
+
+
+// --- USER MANAGEMENT LOGIC ---
 async function fetchAllUsers() {
     userList.innerHTML = '<p>Loading users...</p>';
     try {
@@ -143,8 +184,7 @@ async function fetchAllUsers() {
         userList.innerHTML = '';
         snapshot.forEach(docSnap => {
             const userData = docSnap.data();
-            if (userData.role === 'admin') return; // skip admins
-
+            if (userData.role === 'admin') return;
             const isVerified = userData.isVerified || false;
             const li = document.createElement('li');
             li.className = 'user-list-item';
@@ -152,10 +192,7 @@ async function fetchAllUsers() {
                 <span class="user-info">${userData.email} 
                     ${isVerified ? '<span class="verified-badge">✔️ Verified</span>' : ''}
                 </span>
-                <button class="action-btn ${isVerified ? 'red' : 'green'}" 
-                        data-action="toggle-verify" 
-                        data-uid="${docSnap.id}" 
-                        data-status="${isVerified}">
+                <button class="action-btn ${isVerified ? 'red' : 'green'}" data-action="toggle-verify" data-uid="${docSnap.id}" data-status="${isVerified}">
                     ${isVerified ? 'Un-verify' : 'Verify'}
                 </button>
             `;
@@ -171,15 +208,12 @@ async function handleToggleVerify(button) {
     const userId = button.dataset.uid;
     const currentStatus = button.dataset.status === 'true';
     const newStatus = !currentStatus;
-
     if (!confirm(`Are you sure you want to ${newStatus ? 'verify' : 'un-verify'} this user?`)) return;
-    
     button.disabled = true;
     button.textContent = 'Updating...';
-
     try {
         await updateDoc(doc(db, 'users', userId), { isVerified: newStatus });
-        await fetchAllUsers(); // Refresh the user list to show the change
+        await fetchAllUsers();
     } catch(e) {
         console.error("Error toggling user verification:", e);
         alert("Failed to update user verification status.");
@@ -188,9 +222,7 @@ async function handleToggleVerify(button) {
     }
 }
 
-// ===========================
-// Product Management Logic
-// ===========================
+// --- PRODUCT MANAGEMENT LOGIC ---
 async function fetchAllProducts() {
     allProductsList.innerHTML = '<p>Loading products...</p>';
     try {
@@ -205,23 +237,15 @@ async function fetchAllProducts() {
             const card = document.createElement('div');
             card.className = 'product-card';
             card.innerHTML = `
-                <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" 
-                     alt="${product.name}" 
-                     loading="lazy" 
-                     width="200" 
-                     height="200">
+                <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" alt="${product.name}" loading="lazy" width="200" height="200">
                 <h3>${product.name}</h3>
                 <p class="price">UGX ${product.price?.toLocaleString() || 'N/A'}</p>
-                <p style="font-size:0.8em;color:grey;word-break:break-all;">
-                    By: ${product.sellerName || 'N/A'} ${verifiedBadge}
-                </p>
+                <p style="font-size:0.8em;color:grey;word-break:break-all;">By: ${product.sellerName || 'N/A'} ${verifiedBadge}</p>
                 <div class="seller-controls">
                     <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${id}" data-status="${isDeal}">
                         ${isDeal ? 'Remove Deal' : 'Make Deal'}
                     </button>
-                    <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name}">
-                        Delete
-                    </button>
+                    <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name}">Delete</button>
                 </div>
             `;
             allProductsList.appendChild(card);
@@ -263,9 +287,7 @@ async function handleDeleteProduct(button) {
     }
 }
 
-// ===========================
-// Testimonial Management Logic
-// ===========================
+// --- TESTIMONIAL MANAGEMENT LOGIC ---
 async function fetchTestimonialsForAdmin() {
     pendingTestimonialsList.innerHTML = '<p>Loading...</p>';
     approvedTestimonialsList.innerHTML = '<p>Loading...</p>';
@@ -279,12 +301,9 @@ async function fetchTestimonialsForAdmin() {
             const id = docSnap.id;
             const itemHTML = `
                 <li class="user-list-item">
-                    <div><p><strong>"${t.quote}"</strong></p>
-                    <p>- ${t.authorName}</p></div>
+                    <div><p><strong>"${t.quote}"</strong></p><p>- ${t.authorName}</p></div>
                     <div class="testimonial-controls">
-                        ${t.status === 'pending' ? 
-                            `<button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>` : ''
-                        }
+                        ${t.status === 'pending' ? `<button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>` : ''}
                         <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
                     </div>
                 </li>`;
@@ -298,8 +317,6 @@ async function fetchTestimonialsForAdmin() {
         approvedTestimonialsList.innerHTML = approved || '<li>No approved testimonials</li>';
     } catch (e) {
         console.error("Error fetching testimonials:", e);
-        pendingTestimonialsList.innerHTML = '<li>Error loading testimonials.</li>';
-        approvedTestimonialsList.innerHTML = '<li>Error loading testimonials.</li>';
     }
 }
 
@@ -313,8 +330,6 @@ async function handleApproveTestimonial(button) {
     } catch (e) {
         console.error("Error approving testimonial:", e);
         alert("Could not approve testimonial.");
-        button.disabled = false;
-        button.textContent = 'Approve';
     }
 }
 
