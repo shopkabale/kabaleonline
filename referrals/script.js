@@ -40,6 +40,7 @@ onAuthStateChanged(auth, async (user) => {
 
             // ✅ Step 3: Display referred users in list
             referralListEl.innerHTML = "";
+            const referralDates = []; // for chart
             if (referralsSnapshot.empty) {
                 referralListEl.innerHTML = "<li>No referrals yet.</li>";
             } else {
@@ -48,12 +49,59 @@ onAuthStateChanged(auth, async (user) => {
                     const li = document.createElement("li");
                     li.textContent = data.name || data.email || docSnap.id;
                     referralListEl.appendChild(li);
+
+                    // Collect createdAt date for chart
+                    if (data.createdAt) {
+                        const date = new Date(data.createdAt.seconds * 1000);
+                        referralDates.push(date.toLocaleDateString());
+                    }
                 });
             }
 
             // Step 4: Update stored referralCount if needed
             if (userData.referralCount !== actualReferralCount) {
                 await updateDoc(userDocRef, { referralCount: actualReferralCount });
+            }
+
+            // --- Step 5: Render Chart ---
+            if(referralDates.length > 0) {
+                const referralCounts = {};
+                referralDates.forEach(date => {
+                    referralCounts[date] = (referralCounts[date] || 0) + 1;
+                });
+                const labels = Object.keys(referralCounts).sort((a,b) => new Date(a) - new Date(b));
+                const counts = labels.map(date => referralCounts[date]);
+
+                // Check if chart canvas exists
+                const chartCanvas = document.getElementById('referralChart');
+                if(chartCanvas) {
+                    const ctx = chartCanvas.getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Referrals',
+                                data: counts,
+                                fill: false,
+                                borderColor: '#28a745',
+                                tension: 0.3,
+                                pointBackgroundColor: '#28a745'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                x: { title: { display: true, text: 'Date' } },
+                                y: { title: { display: true, text: 'Number of Referrals' }, beginAtZero: true, precision:0 }
+                            }
+                        }
+                    });
+                }
             }
 
         } catch (error) {
