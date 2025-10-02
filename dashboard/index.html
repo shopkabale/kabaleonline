@@ -40,15 +40,15 @@
         .card-products .icon { color: #00bcd4; }
         .card-referrals .icon { color: #4caf50; }
         .card-profile .icon { color: #ff9800; }
-        
+
         .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 40px; }
         .quick-link-card { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px 10px; text-align: center; text-decoration: none; color: var(--text-dark); transition: background-color 0.2s, border-color 0.2s; }
         .quick-link-card:hover { background-color: #e9ecef; border-color: #ced4da; }
         .quick-link-card i { font-size: 1.5em; display: block; margin-bottom: 8px; color: var(--primary-color); }
         .quick-link-card span { font-size: 0.8em; font-weight: 500; }
-        
+
         .dashboard-logout { display: block; width: 150px; margin: 40px auto 0; }
-        
+
         .network-promo { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 25px; text-align: center; }
         .network-promo h2 { font-size: 1.5em; color: var(--text-dark); margin-top: 0; margin-bottom: 10px; }
         .network-promo .sso-message { background-color: #e9f5ff; color: #31708f; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; }
@@ -71,26 +71,26 @@
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
         }
-/* Style for the admin notification banner */
-.admin-notification {
-    display: none; /* Hidden by default */
-    background-color: #fff3cd;
-    color: #664d03;
-    border: 1px solid #ffeeba;
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-.admin-notification p {
-    margin: 0;
-    font-weight: 500;
-}
-.admin-notification a {
-    font-weight: bold;
-    color: #0056b3;
-    text-decoration: underline;
-}
+        /* Style for the admin notification banner */
+        .admin-notification {
+            display: none; /* Hidden by default */
+            background-color: #fff3cd;
+            color: #664d03;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .admin-notification p {
+            margin: 0;
+            font-weight: 500;
+        }
+        .admin-notification a {
+            font-weight: bold;
+            color: #0056b3;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -122,8 +122,13 @@
         <div id="dashboard-loader">
             <div class="loader-pulse"></div>
         </div>
-        
-       
+
+        <div id="dashboard-content" style="display: none;">
+            
+            <div id="admin-notification-banner" class="admin-notification">
+                <p><i class="fa-solid fa-bell"></i> You have pending referral requests. <a href="/referadmin/">Go to Referral Panel</a></p>
+            </div>
+
             <div class="dashboard-header">
                 <img id="user-profile-photo" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Seller Profile Photo">
                 <h1 id="user-display-name">Loading...</h1>
@@ -133,18 +138,15 @@
                 <a href="/upload/" class="dashboard-card card-upload"><div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div><h3>Upload Item</h3></a>
                 <a href="/products/" class="dashboard-card card-products"><div class="icon"><i class="fa-solid fa-box-archive"></i></div><h3>Your Products</h3></a>
                 <a href="/referrals/" class="dashboard-card card-referrals"><div class="icon"><i class="fa-solid fa-share-nodes"></i></div><h3>Referrals</h3></a>
-                <a href="/myprofile/" class="dashboard-card card-profile"><div class="icon"><i class="fa-solid fa-user-gear"></i></div><h3>Your Profile</h3></a>
+                <a href="/profile/" class="dashboard-card card-profile"><div class="icon"><i class="fa-solid fa-user-gear"></i></div><h3>Your Profile</h3></a>
             </div>
-
             <hr>
             <h2 style="text-align:center; margin-top:40px; color:var(--text-dark);">Quick Links</h2>
             <div class="quick-links-grid">
                 <a href="/rentals/" class="quick-link-card"><i class="fa-solid fa-building"></i><span>Rentals</span></a>
                 <a href="/events/" class="quick-link-card"><i class="fa-solid fa-calendar-star"></i><span>Events</span></a>
                 <a href="/calendar/" class="quick-link-card"><i class="fa-solid fa-calendar-days"></i><span>Calendar</span></a>
-<a href="/qna/" class="quick-link-card">
-    <i class="fa-solid fa-comments"></i><span>Q&A</span>
-</a>
+                <a href="/qna/" class="quick-link-card"><i class="fa-solid fa-comments"></i><span>Q&A</span></a>
                 <a href="https://gigs.kabaleonline.com" class="quick-link-card"><i class="fa-solid fa-briefcase"></i><span>Services</span></a>
                 <a href="/lost-and-found/" class="quick-link-card"><i class="fa-solid fa-magnifying-glass"></i><span>Lost & Found</span></a>
                 <a href="/requests/" class="quick-link-card"><i class="fa-solid fa-clipboard-list"></i><span>Requests</span></a>
@@ -153,16 +155,14 @@
                 <a href="/settings/" class="quick-link-card"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
             </div>
             <hr style="margin-bottom: 40px;">
-            
             <div class="network-promo">
                 <h2>Explore the Kabale Online Network</h2>
                 <div class="sso-message"><i class="fa-solid fa-key"></i> Your account works on all our sites!</div>
-                <p>Have a hostel or room for rent? <a href="/rentals/">List it on our Rentals page</a> to reach thousands of students and residents.</p>
+                <p>Have a hostel or room for rent? <a href="/rentals/">List it on our Rentals page</a>.</p>
             </div>
-
             <button id="logout-btn" class="auth-button dashboard-logout">Logout</button>
         </div>
-    </div>
+        </div>
 
     <footer>
         <div class="kabale-contact-info-section">
@@ -178,51 +178,8 @@
             </div>
         </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-<!-- Modal notification for Services link -->  <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;   
-  background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">  
-  <div style="background:#fff; padding:30px 40px; border-radius:12px; text-align:center; max-width:400px;   
-    box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif; animation:fadeIn 0.3s ease-out;">  
-    <h3 style="margin-bottom:15px; color:#333;">Notice</h3>  
-    <p style="margin-bottom:20px; color:#555;">  
-      You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.  
-    </p>  
-    <button id="continue-btn" style="padding:10px 20px; background:#007bff; border:none; border-radius:8px;   
-      color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;">Continue</button>  
-  </div>  
-</div>  <style>  
-@keyframes fadeIn {  
-  from { opacity:0; transform: scale(0.8); }  
-  to { opacity:1; transform: scale(1); }  
-}  
-#continue-btn:hover {  
-  background:#0056b3;  
-}  
-</style>  <script>  
-document.addEventListener('DOMContentLoaded', function() {  
-  // Target all service links (both ?type=service and direct gigs link)  
-  const serviceLinks = document.querySelectorAll('a[href="/?type=service"], a[href="https://gigs.kabaleonline.com"]');  
-  const modal = document.getElementById('service-notice');  
-  const continueBtn = document.getElementById('continue-btn');  
-  
-  serviceLinks.forEach(link => {  
-    link.addEventListener('click', function(e) {  
-      e.preventDefault(); // Stop default navigation  
-      modal.style.display = 'flex'; // Show modal  
-    });  
-  });  
-  
-  continueBtn.addEventListener('click', function() {  
-    window.location.href = 'https://gigs.kabaleonline.com';  
-  });  
-  
-  // Optional: click outside modal to close  
-  modal.addEventListener('click', function(e) {  
-    if(e.target === modal) modal.style.display = 'none';  
-  });  
-});  
-</script>
     </footer>
-
+    
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="script.js"></script>
     <script type="module" src="../js/ui.js"></script>
