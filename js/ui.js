@@ -15,6 +15,15 @@ export function toggleLoading(button, isLoading, originalText) {
   }
 }
 
+// --- UTILITY FUNCTION FOR MESSAGES ---
+export function showMessage(element, message, isError = true) {
+  if (!element) return;
+  element.innerHTML = message;
+  element.className = isError ? 'error-message' : 'success-message';
+  element.style.display = 'block';
+  setTimeout(() => { element.style.display = 'none'; }, 5000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- ELEMENT SELECTORS ---
   const hamburger = document.querySelector('.hamburger-menu');
@@ -113,25 +122,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- UNIVERSAL BUTTON LOADING HANDLER ---
-  // Automatically adds a loader to buttons with data-loading, .auth-button, or .cta-button
   document.addEventListener('click', async function(e) {
     const btn = e.target.closest('button[data-loading], button.auth-button, button.cta-button');
     if (!btn) return;
-    if (btn.classList.contains('loading')) return; // Ignore already loading buttons
+    if (btn.classList.contains('loading')) return; // ignore already loading buttons
 
     if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerHTML;
     toggleLoading(btn, true, btn.dataset.originalText);
 
-    // Safety fallback: remove loader after 10s in case async code fails
+    // Safety fallback: remove loader after 10s
     const timeoutId = setTimeout(() => toggleLoading(btn, false, btn.dataset.originalText), 10000);
 
-    // If button is inside a form, wait for form submit handlers
+    // If button is inside a form, let the form submit handler handle hiding
     const form = btn.closest('form');
     if (form) {
       form.dispatchEvent(new Event('submit', { cancelable: true }));
-      // Form handler should call toggleLoading(btn, false) after async completes
     } else {
-      // Non-form buttons: remove loader automatically after 1s
+      // For normal buttons, hide loader after 1s
       setTimeout(() => toggleLoading(btn, false, btn.dataset.originalText), 1000);
     }
   });
