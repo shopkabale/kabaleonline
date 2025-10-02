@@ -43,7 +43,7 @@ signupForm.addEventListener('submit', async (e) => {
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
     const signupButton = signupForm.querySelector('button[type="submit"]');
 
-    if (!name || !location || !whatsapp) {
+    if (!name || !email || !password || !location || !whatsapp) {
         return showMessage(signupErrorElement, "Please fill out all required fields.");
     }
 
@@ -65,7 +65,7 @@ signupForm.addEventListener('submit', async (e) => {
             }
         }
         
-        // Create the new user's document
+        // Create the new user's document in the 'users' collection
         await setDoc(doc(db, "users", user.uid), {
             name,
             email,
@@ -77,36 +77,40 @@ signupForm.addEventListener('submit', async (e) => {
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
             referrerId: referrerId,
-            badges: []
+            badges: [],
+            referralBalanceUGX: 0 // Initialize balance
         });
 
-        // --- NEW LOGIC: Create the private referral record ---
+        // Create a validation request for the admin if there was a referrer
         if (referrerId) {
-            await addDoc(collection(db, "referrals"), {
-                referrerId: referrerId,
-                referrerEmail: referrerEmail,
-                referredUserId: user.uid,
-                referredUserName: name,
-                status: "pending",
-                createdAt: serverTimestamp()
-            });
+            const productsQuery = query(collection(db, 'products'), where('sellerId', '==', user.uid));
+            const productsSnapshot = await getDocs(productsQuery);
+            // Check if the new user already has a valid product (unlikely, but good practice)
+            const isAlreadyValid = productsSnapshot.docs.some(doc => doc.data().imageUrls?.length > 0);
+
+            if (isAlreadyValid) {
+                 await addDoc(collection(db, "referralValidationRequests"), {
+                    referrerId: referrerId,
+                    referrerEmail: referrerEmail,
+                    referredUserId: user.uid,
+                    referredUserName: name,
+                    status: "pending",
+                    createdAt: serverTimestamp()
+                });
+            }
         }
-        // --- END OF NEW LOGIC ---
 
         await sendEmailVerification(user);
 
         authContainer.style.display = 'none';
         emailVerificationPrompt.style.display = 'block';
         emailVerificationPrompt.querySelector('.user-email').textContent = user.email;
-        showMessage(authSuccessElement, "Success! Please check your email to verify your account.", false); 
-        signupForm.reset();
 
     } catch (error) {
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             msg = 'This email is already registered. Please <a href="/login/">log in</a>.';
-        }
-        if (error.code === 'auth/weak-password') {
+        } else if (error.code === 'auth/weak-password') {
             msg = 'Password must be at least 6 characters long.';
         }
         showMessage(signupErrorElement, msg);
