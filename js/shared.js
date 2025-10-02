@@ -1,23 +1,55 @@
-import { auth } from './auth.js';
+import { auth, db } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- PAGE PROTECTION ---
 const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/', '/referadmin/'];
-const publicOnlyPages = ['/login/', '/signup/'];
+// IMPORTANT: '/signup/' is removed from this list to fix the registration flow.
+const publicOnlyPages = ['/login/']; 
 
 onAuthStateChanged(auth, (user) => {
     const currentPage = window.location.pathname;
+
+    // --- THIS IS THE FIX ---
+    // The signup page handles its own logic and is no longer part of the automatic redirect.
+    if (currentPage.startsWith('/signup/')) {
+        return; 
+    }
+    // --- END OF FIX ---
 
     if (user) {
         if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/dashboard/');
         }
+        checkForAdminTasks(user);
     } else {
         if (protectedPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/login/');
         }
     }
 });
+
+// --- "SMART NOTIFICATION" FUNCTION FOR ADMIN ---
+async function checkForAdminTasks(user) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+            
+            // Check for pending referral approvals from the correct collection
+            const q = query(collection(db, "referralValidationRequests"), where("status", "==", "pending"), limit(1));
+            const snapshot = await getDocs(q);
+
+            if (!snapshot.empty) {
+                const banner = document.getElementById('admin-notification-banner');
+                if (banner) {
+                    banner.style.display = 'block';
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error checking for admin tasks:", error);
+    }
+}
 
 
 // --- SHARED UTILITY FUNCTIONS ---
@@ -68,17 +100,15 @@ export function getCloudinaryTransformedUrl(url, type) {
 }
 
 
-// --- PWA, LOGIN & SERVICE PROMPT LOGIC ---
+// --- PWA & LOGIN PROMPT LOGIC ---
 
 let deferredInstallPrompt;
 
-// Listen for the browser's native install prompt event
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
 });
 
-// Function to show the custom PWA install button
 function showPwaInstallPrompt() {
   const isInstallable = !!deferredInstallPrompt;
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
@@ -97,7 +127,6 @@ function showPwaInstallPrompt() {
   }
 }
 
-// Function to show the timed login prompt banner
 function showLoginPrompt(user) {
   if (!user) {
     const loginPromptBanner = document.getElementById('login-prompt-banner');
@@ -120,49 +149,14 @@ function showLoginPrompt(user) {
   }
 }
 
-// Function to handle the redirect for "Services" links
-function handleServiceRedirect() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('type') === 'service') {
-        const modal = document.getElementById('service-notice');
-        const continueBtn = document.getElementById('continue-btn');
-
-        if (modal && continueBtn) {
-            modal.style.display = 'flex';
-            continueBtn.addEventListener('click', () => {
-                window.location.href = 'https://gigs.kabaleonline.com';
-            });
-            modal.addEventListener('click', (e) => {
-                if(e.target === modal) modal.style.display = 'none';
-            });
-        }
-    }
-
-    // This handles the links in your navigation that go to /?type=service
-    const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
-    serviceLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const modal = document.getElementById('service-notice');
-            if (modal) modal.style.display = 'flex';
-        });
-    });
-}
-
-
-// --- INITIALIZE ALL LOGIC ---
-// This runs once the basic page structure is ready.
+// Set timers after the page has fully loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Handle the service redirect immediately
-    handleServiceRedirect();
-
-    // Wait for Firebase to confirm the user's login status before starting timers
+    // This is the most reliable way to get the auth state on page load.
+    // We wait for Firebase to confirm the user's status before starting the timers.
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-        // Now that we know the user's status, we can set the timers.
         setTimeout(() => showLoginPrompt(user), 10000);
         setTimeout(showPwaInstallPrompt, 20000);
-
-        // Unsubscribe after the first check so this doesn't run again on every login/logout
+        // Unsubscribe after the first check so this doesn't run again on login/logout
         unsubscribe(); 
     });
 });
