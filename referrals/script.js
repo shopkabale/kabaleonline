@@ -9,13 +9,14 @@ const content = document.getElementById('referral-content');
 const userReferralLinkEl = document.getElementById('user-referral-link');
 const copyReferralLinkBtn = document.getElementById('copy-referral-link-btn');
 const userReferralCountEl = document.getElementById('user-referral-count');
+const referralListEl = document.getElementById('referral-list'); // ✅ new list element
 const messageEl = document.getElementById('global-message');
 
 // --- INITIALIZATION ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // Step 1: Get the current user's profile data to find their referral code
+            // Step 1: Get the current user's profile data
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
@@ -23,18 +24,32 @@ onAuthStateChanged(auth, async (user) => {
             }
             const userData = userDoc.data();
             const referralCode = userData.referralCode || 'N/A';
-            
+
             // Generate and display the full referral link
             userReferralLinkEl.value = `${window.location.origin}/signup/?ref=${referralCode}`;
 
-            // Step 2: Run the simple query to count referred users
+            // Step 2: Query referred users
             const referralsQuery = query(collection(db, 'users'), where('referrerId', '==', user.uid));
             const referralsSnapshot = await getDocs(referralsQuery);
             const actualReferralCount = referralsSnapshot.size;
-            
+
             userReferralCountEl.textContent = actualReferralCount;
 
-            // Step 3: Update the count in the user's profile if it's out of sync
+            // ✅ Step 3: Display referred users in list
+            referralListEl.innerHTML = "";
+            if (referralsSnapshot.empty) {
+                referralListEl.innerHTML = "<li>No referrals yet.</li>";
+            } else {
+                referralsSnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const li = document.createElement("li");
+
+                    li.textContent = data.name || data.email || docSnap.id;
+                    referralListEl.appendChild(li);
+                });
+            }
+
+            // Step 4: Update the count in the user's profile if out of sync
             if (userData.referralCount !== actualReferralCount) {
                 await updateDoc(userDocRef, { referralCount: actualReferralCount });
             }
@@ -52,12 +67,14 @@ onAuthStateChanged(auth, async (user) => {
 // --- EVENT LISTENERS ---
 copyReferralLinkBtn.addEventListener('click', () => {
     if (userReferralLinkEl.value === 'Loading your link...') return;
-    
+
     userReferralLinkEl.select();
     navigator.clipboard.writeText(userReferralLinkEl.value).then(() => {
         const originalText = copyReferralLinkBtn.innerHTML;
         copyReferralLinkBtn.innerHTML = 'Copied!';
-        setTimeout(() => { copyReferralLinkBtn.innerHTML = `<i class="fa-solid fa-copy"></i> Copy`; }, 2000);
+        setTimeout(() => { 
+            copyReferralLinkBtn.innerHTML = `<i class="fa-solid fa-copy"></i> Copy`; 
+        }, 2000);
     }).catch(err => {
         console.error('Failed to copy text: ', err);
         showMessage(messageEl, 'Could not copy code.', true);
