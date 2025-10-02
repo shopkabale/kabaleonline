@@ -1,15 +1,19 @@
 import { auth, db } from '../js/auth.js';
 import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showMessage, toggleLoading, normalizeWhatsAppNumber, getCloudinaryTransformedUrl } from '/js/shared.js';
+import { showMessage, toggleLoading, normalizeWhatsAppNumber, getCloudinaryTransformedUrl } from '../js/shared.js';
 
+// --- DOM ELEMENTS ---
 const productForm = document.getElementById('product-form');
 const productIdInput = document.getElementById('productId');
 const submitBtn = document.getElementById('submit-btn');
 const categorySelect = document.getElementById('product-category');
 const messageEl = document.getElementById('product-form-message');
 
+// --- DATA & STATE ---
 const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
 let editingProductId = null;
+
+// --- FUNCTIONS ---
 
 function updateCategoryOptions() {
     categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
@@ -65,15 +69,22 @@ async function populateFormForEdit(productId) {
     }
 }
 
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     updateCategoryOptions();
     const params = new URLSearchParams(window.location.search);
     editingProductId = params.get('editId');
     if (editingProductId) {
-        populateFormForEdit(editingProductId);
+        // Wait for auth to be ready before populating
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                populateFormForEdit(editingProductId);
+            }
+        });
     }
 });
 
+// --- FORM SUBMISSION LOGIC ---
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
