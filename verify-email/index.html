@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email | Kabale Online</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: #f4f7f6; }
+        .verification-card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; max-width: 450px; }
+        .verification-card h1 { margin-top: 0; color: #34495e; }
+        .verification-card p { color: #6c757d; line-height: 1.6; }
+        .user-email { font-weight: bold; color: #007bff; }
+        .cta-button { /* your button styles */ }
+        .auth-button { /* your button styles */ }
+        .loader { /* your loader styles */ }
+        .success-message, .error-message { /* your message styles */ }
+    </style>
+</head>
+<body>
+    <div class="verification-card">
+        <h1>Please Verify Your Email</h1>
+        <p>We've sent a verification link to <strong class="user-email">your email address</strong>.</p>
+        <p>Please check your inbox (and spam folder) and click the link to activate your account. This page will redirect automatically once you are verified.</p>
+        <p id="message-area" style="display: none;"></p>
+        <div style="margin-top: 30px;">
+            <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
+            <button id="verification-logout-btn" class="auth-button" style="background-color: #6c757d; margin-top: 10px;">Logout</button>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
