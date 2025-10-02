@@ -3,28 +3,39 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 import { doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- PAGE PROTECTION ---
-const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/', '/referadmin/'];
-// IMPORTANT: '/signup/' is intentionally excluded from this list to fix the registration flow.
-const publicOnlyPages = ['/login/']; 
+const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/', '/referadmin/', '/verify-email/'];
+const publicOnlyPages = ['/login/']; // signup/ is handled separately
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     const currentPage = window.location.pathname;
 
-    // This is the critical fix for the signup flow.
-    // It tells the script to ignore the signup page and let it handle its own logic.
-    if (currentPage.startsWith('/signup/')) {
-        return; 
-    }
-
     if (user) {
-        // If a logged-in user tries to visit the login page, send them to their dashboard.
-        if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
-            window.location.replace('/dashboard/');
+        await user.reload(); // Always get the latest user state from Firebase
+        const isVerified = user.emailVerified;
+
+        if (isVerified) {
+            // --- USER IS VERIFIED ---
+            // If they are on a page only for logged-out users, send them to the dashboard.
+            if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
+                window.location.replace('/dashboard/');
+            }
+            // Also redirect them away from the verification page if they are already verified.
+            if (currentPage.startsWith('/verify-email/')) {
+                window.location.replace('/dashboard/');
+            }
+            // As an admin, check for pending tasks on any page visit.
+            checkForAdminTasks(user);
+        } else {
+            // --- USER IS LOGGED IN, BUT NOT VERIFIED ---
+            // Allow them to be on the signup or verify-email pages, but nowhere else.
+            if (!currentPage.startsWith('/signup/') && !currentPage.startsWith('/verify-email/')) {
+                // If they are on any other page, force them to the verification page.
+                window.location.replace('/verify-email/');
+            }
         }
-        // As an admin, check for pending tasks on any page visit.
-        checkForAdminTasks(user);
     } else {
-        // If a logged-out user tries to visit a protected page, send them to the login page.
+        // --- USER IS NOT LOGGED IN ---
+        // If they try to visit a protected page, send them to the login page.
         if (protectedPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/login/');
         }
@@ -36,17 +47,11 @@ async function checkForAdminTasks(user) {
     try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists() && userDoc.data().role === 'admin') {
-            
-            // Check for pending referral approvals
             const q = query(collection(db, "referralValidationRequests"), where("status", "==", "pending"), limit(1));
             const snapshot = await getDocs(q);
-
-            // If there's at least one pending request, show the banner on the dashboard
             if (!snapshot.empty) {
                 const banner = document.getElementById('admin-notification-banner');
-                if (banner) {
-                    banner.style.display = 'block';
-                }
+                if (banner) banner.style.display = 'block';
             }
         }
     } catch (error) {
@@ -115,7 +120,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
 function showPwaInstallPrompt() {
   const isInstallable = !!deferredInstallPrompt;
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
-
   if (isInstallable && !isInstalled) {
     const installButton = document.getElementById('install-button');
     if (installButton) {
@@ -153,32 +157,26 @@ function showLoginPrompt(user) {
 }
 
 function handleServiceRedirect() {
-    // This logic handles a direct visit to /?type=service
     const params = new URLSearchParams(window.location.search);
     if (params.get('type') === 'service') {
         const modal = document.getElementById('service-notice');
         if (modal) modal.style.display = 'flex';
     }
-
-    // This logic handles clicks on any link with this href
     const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
     const modal = document.getElementById('service-notice');
     const continueBtn = document.getElementById('continue-btn');
-
-    if (modal) { // Check if modal exists before adding listeners
+    if (modal) {
         serviceLinks.forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 modal.style.display = 'flex';
             });
         });
-
         if (continueBtn) {
             continueBtn.addEventListener('click', function() {
                 window.location.href = 'https://gigs.kabaleonline.com';
             });
         }
-        
         modal.addEventListener('click', function(e) {
             if(e.target === modal) modal.style.display = 'none';
         });
@@ -189,14 +187,9 @@ function handleServiceRedirect() {
 // --- INITIALIZE ALL LOGIC ---
 document.addEventListener('DOMContentLoaded', () => {
     handleServiceRedirect();
-
-    // This is the most reliable way to get the auth state on page load.
-    // We wait for Firebase to confirm the user's status before starting the timers.
     const unsubscribe = onAuthStateChanged(auth, (user) => {
         setTimeout(() => showLoginPrompt(user), 10000);
         setTimeout(showPwaInstallPrompt, 20000);
-
-        // Unsubscribe after the first check so this doesn't run again on every login/logout
         unsubscribe(); 
     });
 });
