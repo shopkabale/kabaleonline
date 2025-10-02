@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --border-color: #e9ecef; }
-        body { padding-top: 70px; }
+        body { padding-top: 70px; font-family: Arial, sans-serif; margin:0; }
         .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 50px; }
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
@@ -54,7 +54,6 @@
         .admin-notification { display: none; background-color: #fff3cd; color: #664d03; border: 1px solid #ffeeba; border-radius: 8px; padding: 15px 20px; margin-bottom: 30px; text-align: center; font-weight: 500; }
         .admin-notification p { margin: 0; font-weight: 500; }
         .admin-notification a { font-weight: bold; color: #0056b3; text-decoration: underline; }
-        /* Fade-in animation */
         @keyframes fadeIn { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
     </style>
 </head>
@@ -83,6 +82,31 @@
         <div class="mobile-nav-overlay"></div>
     </header>
 
+    <!-- New User Modal Notification -->
+    <div id="new-user-notification" class="admin-notification">
+        <div style="
+            background-color: #fff;
+            padding: 30px 25px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            margin: 100px auto;
+            animation: fadeIn 0.4s ease-in-out;
+        ">
+            <p style="margin-bottom: 20px; font-weight: 500;">👋 Welcome! Please update your profile to personalize your dashboard.</p>
+            <button id="notification-ok-btn" style="
+                background-color: var(--primary-color);
+                color: #fff;
+                border: none;
+                padding: 10px 25px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+            ">Okay</button>
+        </div>
+    </div>
+
     <div class="container page-content">
         <div id="dashboard-loader">
             <div class="loader-pulse"></div>
@@ -93,50 +117,19 @@
                 <p><i class="fa-solid fa-bell"></i> You have pending referral requests. <a href="/referadmin/">Go to Referral Panel</a></p>
             </div>
 
-            <!-- New User Modal Notification -->
-<div id="new-user-notification" class="admin-notification" style="
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-">
-    <div style="
-        background-color: #fff;
-        padding: 30px 25px;
-        border-radius: 12px;
-        text-align: center;
-        max-width: 400px;
-        width: 90%;
-        animation: fadeIn 0.4s ease-in-out;
-    ">
-        <p style="margin-bottom: 20px; font-weight: 500;">👋 Welcome! Please update your profile to personalize your dashboard.</p>
-        <button id="notification-ok-btn" style="
-            background-color: var(--primary-color);
-            color: #fff;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        ">Okay</button>
-    </div>
-</div>
-
             <div class="dashboard-header">
                 <img id="user-profile-photo" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Seller Profile Photo">
                 <h1 id="user-display-name">Loading...</h1>
                 <p>Welcome to your seller dashboard!</p>
             </div>
+
             <div class="dashboard-grid">
                 <a href="/upload/" class="dashboard-card card-upload"><div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div><h3>Upload Item</h3></a>
                 <a href="/products/" class="dashboard-card card-products"><div class="icon"><i class="fa-solid fa-box-archive"></i></div><h3>Your Products</h3></a>
                 <a href="/referrals/" class="dashboard-card card-referrals"><div class="icon"><i class="fa-solid fa-share-nodes"></i></div><h3>Referrals</h3></a>
                 <a href="/myprofile/" class="dashboard-card card-profile"><div class="icon"><i class="fa-solid fa-user-gear"></i></div><h3>Your Profile</h3></a>
             </div>
+
             <hr>
             <h2 style="text-align:center; margin-top:40px; color:var(--text-dark);">Quick Links</h2>
             <div class="quick-links-grid">
@@ -151,6 +144,7 @@
                 <a href="/inbox/" class="quick-link-card"><i class="fa-solid fa-inbox"></i><span>Inbox</span></a>
                 <a href="/settings/" class="quick-link-card"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
             </div>
+
             <hr style="margin-bottom: 40px;">
             <div class="network-promo">
                 <h2>Explore the Kabale Online Network</h2>
