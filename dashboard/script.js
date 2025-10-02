@@ -1,70 +1,84 @@
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENTS ---
 const userProfilePhoto = document.getElementById('user-profile-photo');
 const userDisplayName = document.getElementById('user-display-name');
 const logoutBtn = document.getElementById('logout-btn');
 const loader = document.getElementById('dashboard-loader');
-// Note: We don't need 'dashboard-content' as the elements are now always visible.
+// Note: We get 'content' inside the function as it might not exist in your new HTML
+// const content = document.getElementById('dashboard-content'); 
 
 /**
- * Fetches the user's profile data from Firestore and updates the UI.
+ * Fetches the user's profile data from Firestore, creating it if it's missing.
  * @param {object} user The authenticated user object from Firebase.
  */
 async function loadDashboardData(user) {
+    const content = document.querySelector('.page-content'); // More generic selector
     try {
-        // Fetch the user's data from the 'users' collection
         const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
+        let userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // Update the profile picture and display name
-            userProfilePhoto.src = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
-            userDisplayName.textContent = userData.name || 'Valued Seller';
-        } else {
-            // This handles the rare case where a user is authenticated but has no profile document
-            userDisplayName.textContent = 'Profile Not Found';
-            console.error("User is authenticated, but their Firestore document is missing.");
+        // --- THIS IS THE SELF-HEALING FIX ---
+        if (!userDoc.exists()) {
+            // The profile document is missing! Let's create a basic one.
+            console.warn("User document missing for a verified user. Creating a new one...");
+            const newUserProfile = {
+                email: user.email,
+                name: user.displayName || 'New User', // Get name from Google Auth if available
+                role: 'seller',
+                isVerified: false, // This is a flag for your own system, not Firebase Auth
+                createdAt: serverTimestamp(),
+                referralCode: user.uid.substring(0, 6).toUpperCase(),
+                referralCount: 0,
+                referralBalanceUGX: 0,
+                badges: []
+            };
+            await setDoc(userDocRef, newUserProfile);
+            // Now, fetch the document again to get the fresh data
+            userDoc = await getDoc(userDocRef);
         }
+        // --- END OF FIX ---
+
+        const userData = userDoc.data();
+        userProfilePhoto.src = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
+        userDisplayName.textContent = userData.name || 'Valued Seller'; // Will now show 'New User' or their Google name
+
     } catch (error) {
         console.error("Error loading dashboard data:", error);
         userDisplayName.textContent = 'Error Loading Profile';
     } finally {
-        // This will always run, ensuring the loader is hidden.
         if (loader) loader.style.display = 'none';
+        // Make sure all dashboard content is visible
+        if (content) {
+            Array.from(content.children).forEach(child => {
+                if(child.id !== 'dashboard-loader') {
+                    child.style.display = 'block';
+                }
+            });
+        }
     }
 }
 
 // --- INITIALIZATION ---
-// This listener is the entry point for the page. It waits for Firebase to confirm the login status.
 onAuthStateChanged(auth, async (user) => {
     // The main page protection (redirects) is handled by shared.js.
-    // This script's only job is to load data if a user is present and verified.
     if (user) {
-        // We have a logged-in user, now check if their email is verified.
-        // We reload to get the freshest verification status from Firebase servers.
         await user.reload();
-        
         if (user.emailVerified) {
-            // User is logged in AND verified, so load the dashboard content.
             loadDashboardData(user);
         } else {
-            // This case should be handled by shared.js redirecting to /verify-email/
-            // As a fallback, we'll just hide the loader and the user will see "Loading..." in the name.
-            if(loader) loader.style.display = 'none';
+            if(loader) loader.innerHTML = '<p>Please verify your email to continue.</p>';
         }
     } else {
-        // This case is handled by shared.js, which redirects unauthenticated users to the /login/ page.
-        // The loader will just continue to spin until the redirect happens.
+        if(loader) loader.innerHTML = '<p>Redirecting to login...</p>';
     }
 });
 
 // --- EVENT LISTENERS ---
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        signOut(auth); // The page protection in shared.js will automatically handle the redirect to /login/
+        signOut(auth);
     });
 }
