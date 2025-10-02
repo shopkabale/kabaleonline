@@ -8,15 +8,16 @@ const loader = document.getElementById('referral-loader');
 const content = document.getElementById('referral-content');
 const userReferralLinkEl = document.getElementById('user-referral-link');
 const copyReferralLinkBtn = document.getElementById('copy-referral-link-btn');
-const userReferralCountEl = document.getElementById('user-referral-count');
-const referralListEl = document.getElementById('referral-list'); // ✅ new list element
+const referralListEl = document.getElementById('referral-list');
+const referralCountEl = document.getElementById('referral-count'); // small counter
+const userReferralCountEl = document.getElementById('user-referral-count'); // big stat counter
 const messageEl = document.getElementById('global-message');
 
 // --- INITIALIZATION ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // Step 1: Get the current user's profile data
+            // Step 1: Get current user's profile data
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
@@ -25,7 +26,7 @@ onAuthStateChanged(auth, async (user) => {
             const userData = userDoc.data();
             const referralCode = userData.referralCode || 'N/A';
 
-            // Generate and display the full referral link
+            // Generate and display referral link
             userReferralLinkEl.value = `${window.location.origin}/signup/?ref=${referralCode}`;
 
             // Step 2: Query referred users
@@ -33,6 +34,8 @@ onAuthStateChanged(auth, async (user) => {
             const referralsSnapshot = await getDocs(referralsQuery);
             const actualReferralCount = referralsSnapshot.size;
 
+            // ✅ Update both counters
+            referralCountEl.textContent = actualReferralCount;
             userReferralCountEl.textContent = actualReferralCount;
 
             // ✅ Step 3: Display referred users in list
@@ -43,13 +46,12 @@ onAuthStateChanged(auth, async (user) => {
                 referralsSnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const li = document.createElement("li");
-
                     li.textContent = data.name || data.email || docSnap.id;
                     referralListEl.appendChild(li);
                 });
             }
 
-            // Step 4: Update the count in the user's profile if out of sync
+            // Step 4: Update stored referralCount if needed
             if (userData.referralCount !== actualReferralCount) {
                 await updateDoc(userDocRef, { referralCount: actualReferralCount });
             }
