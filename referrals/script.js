@@ -29,8 +29,11 @@ onAuthStateChanged(auth, async (user) => {
             // Generate and display referral link
             userReferralLinkEl.value = `${window.location.origin}/signup/?ref=${referralCode}`;
 
-            // Step 2: Query referred users
-            const referralsQuery = query(collection(db, 'users'), where('referrerId', '==', user.uid));
+            // Step 2: Query referred users (all users with referrerId == current user)
+            const referralsQuery = query(
+                collection(db, 'users'),
+                where('referrerId', '==', user.uid)
+            );
             const referralsSnapshot = await getDocs(referralsQuery);
             const actualReferralCount = referralsSnapshot.size;
 
@@ -47,7 +50,7 @@ onAuthStateChanged(auth, async (user) => {
                 referralsSnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const li = document.createElement("li");
-                    li.textContent = data.name || data.email || docSnap.id;
+                    li.textContent = data.name || data.fullName || data.email || docSnap.id;
                     referralListEl.appendChild(li);
 
                     // Collect createdAt date for chart
