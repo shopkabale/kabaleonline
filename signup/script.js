@@ -1,21 +1,17 @@
 import { auth, db } from '/js/auth.js';
-import { createUserWithEmailAndPassword, sendEmailVerification, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, setDoc, query, collection, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
 // --- DOM ELEMENTS ---
 const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
-const authSuccessElement = document.getElementById('auth-success');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
-const emailVerificationPrompt = document.getElementById('email-verification-prompt');
-const authContainer = document.getElementById('auth-container');
-const resendVerificationBtn = document.getElementById('resend-verification-btn');
-const verificationLogoutBtn = document.getElementById('verification-logout-btn');
 
-// Redirect if already logged in (handled by shared.js, but this is a failsafe)
+// This is a failsafe. The main redirect logic is in shared.js.
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        // If a logged-in user somehow lands here, send them away.
         const currentPage = window.location.pathname;
         if (currentPage.startsWith('/signup/')) {
              window.location.replace('/dashboard/');
@@ -23,7 +19,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Check for referral code in URL on page load
+// Check for referral code in URL on page load and pre-fill the input
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');
@@ -55,19 +51,23 @@ signupForm.addEventListener('submit', async (e) => {
     signupPatienceMessage.style.display = 'block';
 
     try {
+        // Step 1: Create user in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         let referrerId = null;
+        let referrerEmail = null;
 
+        // Check if a valid referral code was used
         if (referralCode) {
             const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
             const querySnapshot = await getDocs(q);
             if (!querySnapshot.empty) {
                 referrerId = querySnapshot.docs[0].id;
+                referrerEmail = querySnapshot.docs[0].data().email;
             }
         }
         
-        // Create the new user's document in the 'users' collection
+        // Step 2: Create the new user's document in the 'users' collection
         await setDoc(doc(db, "users", user.uid), {
             name,
             email,
@@ -78,18 +78,29 @@ signupForm.addEventListener('submit', async (e) => {
             isVerified: false,
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
-            referrerId: referrerId, // This records who referred them
-            referralValidationRequested: false, // This flag ensures the approval request is only sent once
+            referrerId: referrerId,
+            referralValidationRequested: false, // For the Admin-Approval system
             badges: [],
             referralBalanceUGX: 0
         });
 
+        // Step 3: Create a validation request for the admin if there was a referrer
+        if (referrerId) {
+            await addDoc(collection(db, "referralValidationRequests"), {
+                referrerId: referrerId,
+                referrerEmail: referrerEmail,
+                referredUserId: user.uid,
+                referredUserName: name,
+                status: "pending",
+                createdAt: serverTimestamp()
+            });
+        }
+
+        // Step 4: Send the verification email
         await sendEmailVerification(user);
 
-        // Show the "Please verify your email" message
-        authContainer.style.display = 'none';
-        emailVerificationPrompt.style.display = 'block';
-        emailVerificationPrompt.querySelector('.user-email').textContent = user.email;
+        // Step 5: Redirect to the new verification page
+        window.location.href = '/verify-email/';
 
     } catch (error) {
         let msg = 'An error occurred. Please try again.';
@@ -104,25 +115,6 @@ signupForm.addEventListener('submit', async (e) => {
         toggleLoading(signupButton, false, 'Create Account');
         signupPatienceMessage.style.display = 'none';
     }
-});
-
-// Logic for the email verification prompt
-resendVerificationBtn.addEventListener('click', async () => {
-    if (!auth.currentUser) return;
-    toggleLoading(resendVerificationBtn, true, 'Sending...');
-    try {
-        await sendEmailVerification(auth.currentUser);
-        showMessage(authSuccessElement, "A new verification email has been sent.", false);
-    } catch (error) {
-        showMessage(authSuccessElement, "Failed to send email. Please try again soon.", true);
-    } finally {
-        toggleLoading(resendVerificationBtn, false, 'Resend Verification Email');
-    }
-});
-
-verificationLogoutBtn.addEventListener('click', () => {
-    signOut(auth);
-    window.location.href = '/login/';
 });
 
 // Password Toggle Visibility
