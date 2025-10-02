@@ -7,7 +7,7 @@ const userProfilePhoto = document.getElementById('user-profile-photo');
 const userDisplayName = document.getElementById('user-display-name');
 const logoutBtn = document.getElementById('logout-btn');
 const loader = document.getElementById('dashboard-loader');
-const content = document.getElementById('dashboard-content'); // This ID now exists in the HTML
+const content = document.getElementById('dashboard-content');
 
 /**
  * Fetches the user's profile data from Firestore, creating it if it's missing.
@@ -29,7 +29,6 @@ async function loadDashboardData(user) {
                 referralCode: user.uid.substring(0, 6).toUpperCase(),
                 referralCount: 0,
                 badges: []
-                // Add any other default fields your system requires
             };
             await setDoc(userDocRef, newUserProfile);
             userDoc = await getDoc(userDocRef); // Re-fetch the new document
@@ -43,7 +42,6 @@ async function loadDashboardData(user) {
         console.error("Error loading dashboard data:", error);
         userDisplayName.textContent = 'Error Loading Profile';
     } finally {
-        // --- THIS IS THE FIX ---
         // This simple logic will not break your layout.
         if (loader) loader.style.display = 'none';
         if (content) content.style.display = 'block';
