@@ -1,5 +1,5 @@
 import { auth, db } from '/js/auth.js';
-import { collection, query, where, getDocs, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs, orderBy, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, getCloudinaryTransformedUrl } from '/js/shared.js';
 
 const sellerProductsList = document.getElementById('seller-products-list');
@@ -47,37 +47,53 @@ sellerProductsList.addEventListener('click', async (e) => {
         window.location.href = `/upload/?editId=${productId}`;
     }
 
-    // --- UPDATED DELETE LOGIC ---
+    // --- DELETE LOGIC ---
     if (target.classList.contains('delete-btn')) {
         if (confirm('Are you sure you want to delete this product permanently? This cannot be undone.')) {
             try {
-                // Step 1: Delete from Firestore
-                await deleteDoc(doc(db, 'products', productId));
+                const productDocRef = doc(db, 'products', productId);
+                const productSnapshot = await getDoc(productDocRef);
+                const productData = productSnapshot.data();
 
-                // Step 2: Tell the search index to delete its copy
+                // 1️⃣ Delete Cloudinary images
+                if (productData.imageUrls?.length) {
+                    for (const imageUrl of productData.imageUrls) {
+                        // Extract Cloudinary public_id (works even with folders)
+                        const urlParts = imageUrl.split('/');
+                        const lastParts = urlParts.slice(urlParts.indexOf('upload') + 1); // after /upload/
+                        const publicIdWithExtension = lastParts.join('/'); // e.g., folder/image123.jpg
+                        const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, ""); // remove extension
+
+                        await fetch('/.netlify/functions/deleteCloudinaryImage', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ public_id: publicId })
+                        });
+                    }
+                }
+
+                // 2️⃣ Delete from Firestore
+                await deleteDoc(productDocRef);
+
+                // 3️⃣ Delete from Algolia
                 await fetch('/.netlify/functions/syncToAlgolia', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json', // This header is important
-                    },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        objectID: productId
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', objectID: productId })
                 });
 
-                // Step 3: Update the UI
-                showMessage(dashboardMessage, 'Product deleted successfully from all systems.', false);
-                fetchSellerProducts(auth.currentUser.uid);
+                // 4️⃣ Remove from UI instantly
+                target.closest('.product-card').remove();
+                showMessage(dashboardMessage, 'Product and images deleted successfully.', false);
 
             } catch (error) {
-                console.error("Error during product deletion:", error);
+                console.error("Deletion error:", error);
                 showMessage(dashboardMessage, 'Failed to delete product. Please try again.');
             }
         }
     }
-    // --- END OF UPDATED LOGIC ---
 
+    // --- TOGGLE SOLD STATUS ---
     if (target.classList.contains('toggle-sold-btn')) {
         const currentStatus = target.dataset.sold === 'true';
         const newStatus = !currentStatus;
