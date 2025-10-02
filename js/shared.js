@@ -2,47 +2,52 @@ import { auth, db } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// --- PAGE PROTECTION ---
-const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/', '/referadmin/', '/verify-email/'];
-const publicOnlyPages = ['/login/']; // signup/ is handled separately
+// --- THE "GATEKEEPER" ---
+// This is a special promise that other scripts can wait for.
+// It will only resolve when Firebase confirms a user is logged in AND their email is verified.
+export const onVerifiedUser = new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            await user.reload();
+            if (user.emailVerified) {
+                unsubscribe(); // Stop listening once we have a verified user
+                resolve(user); // Send the "green light" with the user's info
+            }
+        }
+    });
+});
 
+
+// --- PAGE PROTECTION ---
+// This main listener handles all site-wide redirects.
 onAuthStateChanged(auth, async (user) => {
+    const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/', '/referadmin/', '/verify-email/'];
+    const publicOnlyPages = ['/login/'];
     const currentPage = window.location.pathname;
 
     if (user) {
-        await user.reload(); // Always get the latest user state from Firebase
-        const isVerified = user.emailVerified;
-
-        if (isVerified) {
-            // --- USER IS VERIFIED ---
-            // If they are on a page only for logged-out users, send them to the dashboard.
-            if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
+        await user.reload();
+        if (user.emailVerified) {
+            // If a verified user is on the login or verify page, send them to the dashboard.
+            if (publicOnlyPages.some(page => currentPage.startsWith(page)) || currentPage.startsWith('/verify-email/')) {
                 window.location.replace('/dashboard/');
             }
-            // Also redirect them away from the verification page if they are already verified.
-            if (currentPage.startsWith('/verify-email/')) {
-                window.location.replace('/dashboard/');
-            }
-            // As an admin, check for pending tasks on any page visit.
             checkForAdminTasks(user);
         } else {
-            // --- USER IS LOGGED IN, BUT NOT VERIFIED ---
-            // Allow them to be on the signup or verify-email pages, but nowhere else.
+            // If a user is logged in but NOT verified, force them to the verification page.
             if (!currentPage.startsWith('/signup/') && !currentPage.startsWith('/verify-email/')) {
-                // If they are on any other page, force them to the verification page.
                 window.location.replace('/verify-email/');
             }
         }
     } else {
-        // --- USER IS NOT LOGGED IN ---
-        // If they try to visit a protected page, send them to the login page.
+        // If user is not logged in, block access to protected pages.
         if (protectedPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/login/');
         }
     }
 });
 
-// --- "SMART NOTIFICATION" FUNCTION FOR ADMIN ---
+
 async function checkForAdminTasks(user) {
     try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -187,6 +192,8 @@ function handleServiceRedirect() {
 // --- INITIALIZE ALL LOGIC ---
 document.addEventListener('DOMContentLoaded', () => {
     handleServiceRedirect();
+    
+    // This is a special, one-time check for the timed prompts
     const unsubscribe = onAuthStateChanged(auth, (user) => {
         setTimeout(() => showLoginPrompt(user), 10000);
         setTimeout(showPwaInstallPrompt, 20000);
