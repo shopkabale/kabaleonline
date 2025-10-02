@@ -1,6 +1,20 @@
 // Import only the specific functions needed from your central auth.js file
 import { onAuthStateChanged, auth } from './auth.js';
 
+// --- UNIVERSAL BUTTON LOADING FUNCTION ---
+export function toggleLoading(button, isLoading, originalText) {
+  if (!button) return;
+  if (isLoading) {
+    button.disabled = true;
+    button.classList.add('loading');
+    button.innerHTML = `<span class="loader"></span> ${originalText}`;
+  } else {
+    button.disabled = false;
+    button.classList.remove('loading');
+    button.innerHTML = originalText;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- ELEMENT SELECTORS ---
   const hamburger = document.querySelector('.hamburger-menu');
@@ -34,38 +48,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- LOGIN PROMPT LOGIC ---
   function hideLoginPrompt() {
-    if (loginPrompt) {
-      loginPrompt.style.display = "none";
-    }
-    // Set a timestamp to prevent the prompt from showing again for a while
+    if (loginPrompt) loginPrompt.style.display = "none";
     localStorage.setItem("loginDismissedAt", Date.now());
   }
-
   loginCancelBtn?.addEventListener('click', hideLoginPrompt);
 
-  // This listener reliably checks the user's login state on every page load
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // If the user is logged in, always hide the "please log in" prompt.
-      if (loginPrompt) {
-        loginPrompt.style.display = "none";
-      }
+      if (loginPrompt) loginPrompt.style.display = "none";
     } else {
-      // If the user is logged out, check if they dismissed the prompt recently.
       const dismissedAt = localStorage.getItem('loginDismissedAt');
       const oneMonthInMs = 30 * 24 * 60 * 60 * 1000;
+      if (dismissedAt && (Date.now() - dismissedAt < oneMonthInMs)) return;
 
-      if (dismissedAt && (Date.now() - dismissedAt < oneMonthInMs)) {
-        console.log("Login prompt suppressed due to recent dismissal.");
-        return; // Exit and don't show the prompt.
-      }
-
-      // If they haven't dismissed it, show it after a 10-second delay.
       setTimeout(() => {
-        // Final check to ensure the user didn't log in during the 10-second wait.
-        if (!auth.currentUser && loginPrompt) {
-          loginPrompt.style.display = "flex";
-        }
+        if (!auth.currentUser && loginPrompt) loginPrompt.style.display = "flex";
       }, 10000);
     }
   });
@@ -79,28 +76,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function showInstallPromptIfNeeded() {
-    if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) {
-      return;
-    }
+    if (!deferredPrompt || window.matchMedia('(display-mode: standalone)').matches) return;
     const lastDismissed = localStorage.getItem('installPromptDismissedAt');
     const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
-    if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) {
-      return;
-    }
-    if (installAppPrompt) {
-      installAppPrompt.style.display = "flex";
-    }
+    if (lastDismissed && (Date.now() - lastDismissed < oneWeekInMs)) return;
+    if (installAppPrompt) installAppPrompt.style.display = "flex";
   }
 
   function hideInstallPrompt() {
-    if (installAppPrompt) {
-      installAppPrompt.style.display = "none";
-    }
+    if (installAppPrompt) installAppPrompt.style.display = "none";
     localStorage.setItem('installPromptDismissedAt', Date.now());
   }
 
   installAppCancel?.addEventListener('click', hideInstallPrompt);
-
   installAppBtn?.addEventListener('click', async () => {
     if (deferredPrompt) {
       hideInstallPrompt();
@@ -116,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- NOTIFICATIONS & SERVICE WORKER LOGIC ---
-  // (Your existing code for this section is fine and can remain here)
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js")
@@ -124,4 +111,28 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(err => console.log("Service Worker registration failed:", err));
     });
   }
+
+  // --- UNIVERSAL BUTTON LOADING HANDLER ---
+  // Automatically adds a loader to buttons with data-loading, .auth-button, or .cta-button
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-loading], button.auth-button, button.cta-button');
+    if (!btn) return;
+    if (btn.classList.contains('loading')) return; // Ignore already loading buttons
+
+    if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerHTML;
+    toggleLoading(btn, true, btn.dataset.originalText);
+
+    // Safety fallback: remove loader after 10s in case async code fails
+    const timeoutId = setTimeout(() => toggleLoading(btn, false, btn.dataset.originalText), 10000);
+
+    // If button is inside a form, wait for form submit handlers
+    const form = btn.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      // Form handler should call toggleLoading(btn, false) after async completes
+    } else {
+      // Non-form buttons: remove loader automatically after 1s
+      setTimeout(() => toggleLoading(btn, false, btn.dataset.originalText), 1000);
+    }
+  });
 });
