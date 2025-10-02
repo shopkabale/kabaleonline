@@ -4,25 +4,27 @@ import { doc, getDoc, collection, query, where, getDocs, limit } from "https://w
 
 // --- PAGE PROTECTION ---
 const protectedPages = ['/dashboard/', '/upload/', '/products/', '/referrals/', '/profile/', '/settings/', '/admin/', '/calendar/', '/qna/', '/referadmin/'];
-// IMPORTANT: '/signup/' is removed from this list to fix the registration flow.
+// IMPORTANT: '/signup/' is intentionally excluded from this list to fix the registration flow.
 const publicOnlyPages = ['/login/']; 
 
 onAuthStateChanged(auth, (user) => {
     const currentPage = window.location.pathname;
 
-    // --- THIS IS THE FIX ---
-    // The signup page handles its own logic and is no longer part of the automatic redirect.
+    // This is the critical fix for the signup flow.
+    // It tells the script to ignore the signup page and let it handle its own logic.
     if (currentPage.startsWith('/signup/')) {
         return; 
     }
-    // --- END OF FIX ---
 
     if (user) {
+        // If a logged-in user tries to visit the login page, send them to their dashboard.
         if (publicOnlyPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/dashboard/');
         }
+        // As an admin, check for pending tasks on any page visit.
         checkForAdminTasks(user);
     } else {
+        // If a logged-out user tries to visit a protected page, send them to the login page.
         if (protectedPages.some(page => currentPage.startsWith(page))) {
             window.location.replace('/login/');
         }
@@ -35,10 +37,11 @@ async function checkForAdminTasks(user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists() && userDoc.data().role === 'admin') {
             
-            // Check for pending referral approvals from the correct collection
+            // Check for pending referral approvals
             const q = query(collection(db, "referralValidationRequests"), where("status", "==", "pending"), limit(1));
             const snapshot = await getDocs(q);
 
+            // If there's at least one pending request, show the banner on the dashboard
             if (!snapshot.empty) {
                 const banner = document.getElementById('admin-notification-banner');
                 if (banner) {
@@ -100,7 +103,7 @@ export function getCloudinaryTransformedUrl(url, type) {
 }
 
 
-// --- PWA & LOGIN PROMPT LOGIC ---
+// --- PWA, LOGIN & SERVICE PROMPT LOGIC ---
 
 let deferredInstallPrompt;
 
@@ -149,14 +152,51 @@ function showLoginPrompt(user) {
   }
 }
 
-// Set timers after the page has fully loaded
+function handleServiceRedirect() {
+    // This logic handles a direct visit to /?type=service
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('type') === 'service') {
+        const modal = document.getElementById('service-notice');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    // This logic handles clicks on any link with this href
+    const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
+    const modal = document.getElementById('service-notice');
+    const continueBtn = document.getElementById('continue-btn');
+
+    if (modal) { // Check if modal exists before adding listeners
+        serviceLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                modal.style.display = 'flex';
+            });
+        });
+
+        if (continueBtn) {
+            continueBtn.addEventListener('click', function() {
+                window.location.href = 'https://gigs.kabaleonline.com';
+            });
+        }
+        
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) modal.style.display = 'none';
+        });
+    }
+}
+
+
+// --- INITIALIZE ALL LOGIC ---
 document.addEventListener('DOMContentLoaded', () => {
+    handleServiceRedirect();
+
     // This is the most reliable way to get the auth state on page load.
     // We wait for Firebase to confirm the user's status before starting the timers.
     const unsubscribe = onAuthStateChanged(auth, (user) => {
         setTimeout(() => showLoginPrompt(user), 10000);
         setTimeout(showPwaInstallPrompt, 20000);
-        // Unsubscribe after the first check so this doesn't run again on login/logout
+
+        // Unsubscribe after the first check so this doesn't run again on every login/logout
         unsubscribe(); 
     });
 });
