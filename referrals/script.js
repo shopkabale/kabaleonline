@@ -13,7 +13,6 @@ const messageEl = document.getElementById('global-message');
 
 // --- INITIALIZATION ---
 onAuthStateChanged(auth, async (user) => {
-    // shared.js protects this page, so we know a user will be present.
     if (user) {
         try {
             // Step 1: Get the current user's profile data to find their referral code
@@ -24,7 +23,7 @@ onAuthStateChanged(auth, async (user) => {
             }
             const userData = userDoc.data();
             const referralCode = userData.referralCode || 'N/A';
-
+            
             // Generate and display the full referral link
             userReferralLinkEl.value = `${window.location.origin}/signup/?ref=${referralCode}`;
 
@@ -33,10 +32,9 @@ onAuthStateChanged(auth, async (user) => {
             const referralsSnapshot = await getDocs(referralsQuery);
             const actualReferralCount = referralsSnapshot.size;
             
-            // Display the count on the page
             userReferralCountEl.textContent = actualReferralCount;
 
-            // Step 3 (Optional but good practice): Update the count in the user's profile if it's out of sync
+            // Step 3: Update the count in the user's profile if it's out of sync
             if (userData.referralCount !== actualReferralCount) {
                 await updateDoc(userDocRef, { referralCount: actualReferralCount });
             }
@@ -45,7 +43,6 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Error loading referral data:", error);
             showMessage(messageEl, 'Failed to load referral data. Please check the console for errors.', true);
         } finally {
-            // This always runs, ensuring the page never gets stuck on loading
             loader.style.display = 'none';
             content.style.display = 'block';
         }
@@ -53,17 +50,16 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // --- EVENT LISTENERS ---
-// Handle clicking the button to copy the referral link
 copyReferralLinkBtn.addEventListener('click', () => {
     if (userReferralLinkEl.value === 'Loading your link...') return;
     
-    userReferralLinkEl.select(); // Select the text in the input field
+    userReferralLinkEl.select();
     navigator.clipboard.writeText(userReferralLinkEl.value).then(() => {
         const originalText = copyReferralLinkBtn.innerHTML;
         copyReferralLinkBtn.innerHTML = 'Copied!';
         setTimeout(() => { copyReferralLinkBtn.innerHTML = `<i class="fa-solid fa-copy"></i> Copy`; }, 2000);
     }).catch(err => {
         console.error('Failed to copy text: ', err);
-        showMessage(messageEl, 'Could not copy link.', true);
+        showMessage(messageEl, 'Could not copy code.', true);
     });
 });
