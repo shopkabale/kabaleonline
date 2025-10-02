@@ -1,6 +1,7 @@
+// script.js
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // DOM elements
 const newUserNotification = document.getElementById('new-user-notification');
@@ -11,52 +12,61 @@ const userProfilePhoto = document.getElementById('user-profile-photo');
 const userDisplayName = document.getElementById('user-display-name');
 const logoutBtn = document.getElementById('logout-btn');
 
+let userDocRef = null;
+
+// Monitor auth state
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        await loadDashboardData(user);
+        userDocRef = doc(db, 'users', user.uid);
+        await initializeDashboard(user);
     } else {
         window.location.href = "/login/";
     }
 });
 
-// Load user dashboard data
-async function loadDashboardData(user) {
+// Initialize dashboard
+async function initializeDashboard(user) {
     try {
-        const userDocRef = doc(db, 'users', user.uid);
+        // Check if user document exists
         let userDoc = await getDoc(userDocRef);
         let isNewUser = false;
 
-        // Create a new user document if it doesn't exist
         if (!userDoc.exists()) {
+            // Create new user document
             const newUserProfile = {
                 email: user.email,
-                name: 'New User',
+                fullName: 'New User',
                 role: 'seller',
                 createdAt: serverTimestamp(),
                 referralCode: user.uid.substring(0, 6).toUpperCase(),
                 referralCount: 0,
                 badges: [],
-                hasSeenWelcomeModal: false
+                hasSeenWelcomeModal: false,
+                photoURL: null
             };
             await setDoc(userDocRef, newUserProfile);
-            userDoc = await getDoc(userDocRef);
             isNewUser = true;
         } else {
             const userDataCheck = userDoc.data();
-            if (!userDataCheck.name || userDataCheck.name === 'New User') {
+            if (!userDataCheck.fullName || userDataCheck.fullName === 'New User') {
                 isNewUser = true;
             }
         }
 
-        const userData = userDoc.data();
-        userProfilePhoto.src = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
-        userDisplayName.textContent = userData.name || 'Valued Seller';
+        // Listen to changes in user document in real-time
+        onSnapshot(userDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                userProfilePhoto.src = data.photoURL || 'https://placehold.co/100x100/e0e0e0/777?text=U';
+                userDisplayName.textContent = data.fullName || 'Valued Seller';
 
-        // Show welcome modal if new user AND hasn't seen it yet
-        if (isNewUser && !userData.hasSeenWelcomeModal) {
-            newUserNotification.style.display = 'flex';
-            content.style.pointerEvents = 'none'; // prevent clicks on dashboard while modal is open
-        }
+                // Show welcome modal if needed
+                if (isNewUser && !data.hasSeenWelcomeModal) {
+                    newUserNotification.style.display = 'flex';
+                    content.style.pointerEvents = 'none';
+                }
+            }
+        });
 
         // Hide loader and show dashboard content
         loader.style.display = 'none';
@@ -74,7 +84,7 @@ async function loadDashboardData(user) {
         });
 
     } catch (error) {
-        console.error("Error loading dashboard data:", error);
+        console.error("Error initializing dashboard:", error);
         loader.innerHTML = "<p style='text-align:center;color:red;'>Failed to load dashboard. Please refresh.</p>";
     }
 }
