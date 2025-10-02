@@ -1,33 +1,42 @@
 import { auth, db } from '../js/auth.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// DOM elements
+const newUserNotification = document.getElementById('new-user-notification');
+const notificationOkBtn = document.getElementById('notification-ok-btn');
+const content = document.getElementById('dashboard-content');
+const loader = document.getElementById('dashboard-loader');
 const userProfilePhoto = document.getElementById('user-profile-photo');
 const userDisplayName = document.getElementById('user-display-name');
 const logoutBtn = document.getElementById('logout-btn');
-const loader = document.getElementById('dashboard-loader');
-const content = document.getElementById('dashboard-content');
 
-const newUserNotification = document.getElementById('new-user-notification');
-const notificationOkBtn = document.getElementById('notification-ok-btn');
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        await loadDashboardData(user);
+    } else {
+        window.location.href = "/login/";
+    }
+});
 
+// Load user dashboard data
 async function loadDashboardData(user) {
     try {
         const userDocRef = doc(db, 'users', user.uid);
         let userDoc = await getDoc(userDocRef);
-
         let isNewUser = false;
 
+        // Create a new user document if it doesn't exist
         if (!userDoc.exists()) {
-            console.warn("User document missing. Creating a new one...");
             const newUserProfile = {
                 email: user.email,
-                name: user.displayName || 'New User',
+                name: 'New User',
                 role: 'seller',
                 createdAt: serverTimestamp(),
                 referralCode: user.uid.substring(0, 6).toUpperCase(),
                 referralCount: 0,
-                badges: []
+                badges: [],
+                hasSeenWelcomeModal: false
             };
             await setDoc(userDocRef, newUserProfile);
             userDoc = await getDoc(userDocRef);
@@ -43,44 +52,36 @@ async function loadDashboardData(user) {
         userProfilePhoto.src = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
         userDisplayName.textContent = userData.name || 'Valued Seller';
 
-        // Show modal notification if new user or default name
-        if (isNewUser && newUserNotification) {
+        // Show welcome modal if new user AND hasn't seen it yet
+        if (isNewUser && !userData.hasSeenWelcomeModal) {
             newUserNotification.style.display = 'flex';
-            if (content) content.style.pointerEvents = 'none';
-            if (loader) loader.style.pointerEvents = 'none';
+            content.style.pointerEvents = 'none'; // prevent clicks on dashboard while modal is open
         }
+
+        // Hide loader and show dashboard content
+        loader.style.display = 'none';
+        content.style.display = 'block';
+
+        // Handle Okay button click
+        notificationOkBtn.addEventListener('click', async () => {
+            newUserNotification.style.display = 'none';
+            content.style.pointerEvents = 'auto';
+            try {
+                await updateDoc(userDocRef, { hasSeenWelcomeModal: true });
+            } catch (err) {
+                console.error("Failed to update modal status:", err);
+            }
+        });
 
     } catch (error) {
         console.error("Error loading dashboard data:", error);
-        userDisplayName.textContent = 'Error Loading Profile';
-    } finally {
-        if (loader) loader.style.display = 'none';
-        if (content) content.style.display = 'block';
+        loader.innerHTML = "<p style='text-align:center;color:red;'>Failed to load dashboard. Please refresh.</p>";
     }
 }
 
-// Close modal and re-enable dashboard
-if (notificationOkBtn) {
-    notificationOkBtn.addEventListener('click', () => {
-        if (newUserNotification) newUserNotification.style.display = 'none';
-        if (content) content.style.pointerEvents = 'auto';
-        if (loader) loader.style.pointerEvents = 'auto';
-    });
-}
-
-// Monitor auth state
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        await user.reload();
-        if (user.emailVerified) {
-            loadDashboardData(user);
-        }
-    }
-});
-
-// Logout
+// Handle logout
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        signOut(auth);
+        auth.signOut();
     });
 }
