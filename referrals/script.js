@@ -15,146 +15,88 @@ const referralListContainer = document.getElementById('referral-list-container')
 const noReferralsMessage = document.getElementById('no-referrals-message');
 const referralLinkInput = document.getElementById('referral-link-input');
 const copyReferralLinkBtn = document.getElementById('copy-referral-link-btn');
-const chartCanvas = document.getElementById('referralsChart');
-let referralsChart = null;
 
 // --- CONFIGURATION ---
-const UGX_PER_REFERRAL = 250;
 const MINIMUM_PAYOUT_UGX = 5000;
-const VALIDATION_PERIOD_HOURS = 24;
 let currentUser = null;
 
+// --- AUTHENTICATION & DATA LOADING ---
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
-        await syncAndLoadReferralData(user);
+        await loadAndDisplayReferralData(user);
     }
 });
 
-async function syncAndLoadReferralData(user) {
+async function loadAndDisplayReferralData(user) {
     const userDocRef = doc(db, 'users', user.uid);
     try {
-        // NEW QUERY: Read from the simple 'referrals' collection. This fixes the error.
-        const q = query(collection(db, 'referrals'), where('referrerId', '==', user.uid), orderBy('createdAt', 'desc'));
-        const referralsSnapshot = await getDocs(q);
-
-        for (const referralDoc of referralsSnapshot.docs) {
-            const referralData = referralDoc.data();
-            if (referralData.status === 'pending') {
-                const referredUserId = referralData.referredUserId;
-                const productsQuery = query(collection(db, 'products'), where('sellerId', '==', referredUserId), orderBy('createdAt', 'asc'));
-                const productsSnapshot = await getDocs(productsQuery);
-
-                for (const productDoc of productsSnapshot.docs) {
-                    const productData = productDoc.data();
-                    if (productData.imageUrls?.length > 0 && productData.createdAt) {
-                        const productAgeHours = (new Date() - productData.createdAt.toDate()) / (1000 * 60 * 60);
-                        if (productAgeHours >= VALIDATION_PERIOD_HOURS) {
-                            // This referral is now valid! Award the credit.
-                            await updateDoc(userDocRef, { referralBalanceUGX: increment(UGX_PER_REFERRAL) });
-                            await updateDoc(doc(db, 'referrals', referralDoc.id), { status: 'credited' });
-                            break; // Stop checking products for this user
-                        }
-                    }
-                }
-            }
-        }
-        
+        // Step 1: Get the user's current approved balance and referral code
         const userDoc = await getDoc(userDocRef);
         if (!userDoc.exists()) throw new Error("Current user not found.");
         
         const userData = userDoc.data();
         const currentBalance = userData.referralBalanceUGX || 0;
 
+        // Populate the main UI elements
         referralLinkInput.value = `${window.location.origin}/signup/?ref=${userData.referralCode}`;
         referralBalanceEl.textContent = `${currentBalance.toLocaleString()} UGX`;
+        
         const progressPercentage = Math.min((currentBalance / MINIMUM_PAYOUT_UGX) * 100, 100);
         payoutProgressBar.style.width = `${progressPercentage}%`;
         payoutProgressText.textContent = `${currentBalance.toLocaleString()} / ${MINIMUM_PAYOUT_UGX.toLocaleString()} UGX to request a payout`;
+        
         payoutButton.disabled = currentBalance < MINIMUM_PAYOUT_UGX;
 
-        const allReferrals = referralsSnapshot.docs.map(doc => doc.data());
-        renderReferralList(allReferrals);
-        createReferralsChart(allReferrals);
+        // Step 2: Fetch the list of all referral requests to show their status
+        const q = query(collection(db, 'referralValidationRequests'), where('referrerId', '==', user.uid), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+
+        renderReferralList(snapshot.docs);
 
     } catch (error) {
         console.error("Error loading referral data:", error);
-        showMessage(messageEl, 'Failed to load referral data. Please check the console for errors.', true);
+        showMessage(messageEl, 'Failed to load your referral data.', true);
     } finally {
         loader.style.display = 'none';
         content.style.display = 'block';
     }
 }
 
-function renderReferralList(allReferrals) {
+function renderReferralList(referralDocs) {
     referralListContainer.innerHTML = '';
-    referralCountEl.textContent = allReferrals.length;
-    if (allReferrals.length === 0) {
+    referralCountEl.textContent = referralDocs.length;
+    if (referralDocs.length === 0) {
         noReferralsMessage.style.display = 'block';
         return;
     }
     noReferralsMessage.style.display = 'none';
-    allReferrals.forEach(referral => {
-        const joinDate = referral.createdAt?.toDate()?.toLocaleDateString() || 'N/A';
-        const referralItem = document.createElement('div');
-        referralItem.className = 'referral-item';
-        referralItem.innerHTML = `
-            <div class="referral-details">
-                <h3>${referral.referredUserName || 'New User'}</h3>
-                <p>Joined on: ${joinDate}</p>
+    
+    let html = '';
+    referralDocs.forEach(doc => {
+        const referral = doc.data();
+        const joinDate = referral.createdAt.toDate().toLocaleDateString();
+        const statusClass = referral.status.toLowerCase(); // 'pending' or 'approved'
+        html += `
+            <div class="referral-item">
+                <div class="referral-details">
+                    <h3>${referral.referredUserName || 'New User'}</h3>
+                    <p>Joined on: ${joinDate}</p>
+                </div>
+                <span class="referral-status ${statusClass}">${referral.status}</span>
             </div>
-            <span class="referral-status ${referral.status.toLowerCase()}">${referral.status}</span>
         `;
-        referralListContainer.appendChild(referralItem);
     });
+    referralListContainer.innerHTML = html;
 }
 
-function createReferralsChart(allReferrals) {
-    const monthlyData = {};
-    allReferrals.forEach(ref => {
-        if (ref.createdAt && ref.createdAt.toDate) {
-            const date = ref.createdAt.toDate();
-            const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-            monthlyData[monthYear] = (monthlyData[monthYear] || 0) + 1;
-        }
-    });
 
-    const sortedLabels = Object.keys(monthlyData).sort((a, b) => new Date(a) - new Date(b));
-    const chartData = sortedLabels.map(label => monthlyData[label]);
-
-    if (referralsChart) {
-        referralsChart.destroy();
-    }
-    referralsChart = new Chart(chartCanvas, {
-        type: 'line',
-        data: {
-            labels: sortedLabels,
-            datasets: [{
-                label: 'New Referrals',
-                data: chartData,
-                borderColor: 'rgba(233, 30, 99, 1)',
-                backgroundColor: 'rgba(233, 30, 99, 0.2)',
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: 'rgba(233, 30, 99, 1)',
-                pointBorderColor: '#fff',
-                pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(233, 30, 99, 1)'
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
-    });
-}
-
+// --- BUTTON LISTENERS ---
 copyReferralLinkBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(referralLinkInput.value).then(() => {
-        const originalText = copyReferralLinkBtn.innerHTML;
-        copyReferralLinkBtn.innerHTML = 'Copied!';
-        setTimeout(() => { copyReferralLinkBtn.innerHTML = originalText; }, 2000);
+        const originalText = copyReferralLinkBtn.textContent;
+        copyReferralLinkBtn.textContent = 'Copied!';
+        setTimeout(() => { copyReferralLinkBtn.textContent = 'Copy'; }, 2000);
     });
 });
 
@@ -172,6 +114,7 @@ payoutButton.addEventListener('click', async () => {
             throw new Error("Your balance is below the minimum payout amount.");
         }
         
+        // Create a payout request for the admin
         await addDoc(collection(db, "payoutRequests"), {
             userId: currentUser.uid,
             userName: userDoc.data().name,
@@ -182,10 +125,11 @@ payoutButton.addEventListener('click', async () => {
             requestedAt: serverTimestamp()
         });
 
+        // Reset the user's balance to 0
         await updateDoc(userDocRef, { referralBalanceUGX: 0 });
 
-        showMessage(messageEl, `Payout request for ${currentBalance.toLocaleString()} UGX submitted! We will contact you shortly.`, false);
-        await syncAndLoadReferralData(currentUser);
+        showMessage(messageEl, `Payout request for ${currentBalance.toLocaleString()} UGX submitted!`, false);
+        await loadAndDisplayReferralData(currentUser); // Reload data to show zero balance
 
     } catch (error) {
         console.error("Payout request failed:", error);
