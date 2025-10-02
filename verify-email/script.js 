@@ -1,0 +1,62 @@
+import { auth } from '../js/auth.js';
+import { onAuthStateChanged, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+const userEmailEl = document.querySelector('.user-email');
+const resendBtn = document.getElementById('resend-verification-btn');
+const logoutBtn = document.getElementById('verification-logout-btn');
+const messageArea = document.getElementById('message-area');
+
+let verificationCheckInterval = null;
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // If user is already verified, send them to the dashboard
+        if (user.emailVerified) {
+            window.location.replace('/dashboard/');
+            return;
+        }
+
+        // Display the user's email
+        userEmailEl.textContent = user.email;
+
+        // Start checking for verification every 3 seconds
+        verificationCheckInterval = setInterval(async () => {
+            await user.reload();
+            if (user.emailVerified) {
+                clearInterval(verificationCheckInterval);
+                window.location.replace('/dashboard/');
+            }
+        }, 3000);
+
+    } else {
+        // If no user is logged in, they can't be here. Send them to login.
+        window.location.replace('/login/');
+    }
+});
+
+resendBtn.addEventListener('click', async () => {
+    if (!auth.currentUser) return;
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sending...';
+    try {
+        await sendEmailVerification(auth.currentUser);
+        messageArea.textContent = 'A new verification email has been sent.';
+        messageArea.className = 'success-message';
+        messageArea.style.display = 'block';
+    } catch (error) {
+        messageArea.textContent = 'Failed to send email. Please try again soon.';
+        messageArea.className = 'error-message';
+        messageArea.style.display = 'block';
+    } finally {
+        setTimeout(() => {
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend Verification Email';
+            messageArea.style.display = 'none';
+        }, 5000);
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    if (verificationCheckInterval) clearInterval(verificationCheckInterval);
+    signOut(auth);
+});
