@@ -93,20 +93,38 @@
                 <p><i class="fa-solid fa-bell"></i> You have pending referral requests. <a href="/referadmin/">Go to Referral Panel</a></p>
             </div>
 
-            <!-- New User Notification -->
-            <div id="new-user-notification" class="admin-notification">
-                <p>👋 Welcome! Please update your profile to personalize your dashboard.</p>
-                <button id="notification-ok-btn" style="
-                    margin-top: 10px;
-                    background-color: var(--primary-color);
-                    color: #fff;
-                    border: none;
-                    padding: 8px 20px;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-weight: bold;
-                ">Okay</button>
-            </div>
+            <!-- New User Modal Notification -->
+<div id="new-user-notification" class="admin-notification" style="
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+">
+    <div style="
+        background-color: #fff;
+        padding: 30px 25px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        animation: fadeIn 0.4s ease-in-out;
+    ">
+        <p style="margin-bottom: 20px; font-weight: 500;">👋 Welcome! Please update your profile to personalize your dashboard.</p>
+        <button id="notification-ok-btn" style="
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        ">Okay</button>
+    </div>
+</div>
 
             <div class="dashboard-header">
                 <img id="user-profile-photo" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Seller Profile Photo">
