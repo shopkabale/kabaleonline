@@ -7,6 +7,7 @@
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --border-color: #e9ecef; }
     body { padding-top: 70px; background-color: #f4f7f6; }
@@ -44,6 +45,27 @@
     .kabale-footer-link { margin: 0 10px; text-decoration: none; color: var(--text-dark); }
     .kabale-footer-link:hover { text-decoration: underline; }
     .copyright { font-size: 0.9em; color: #6c757d; margin-top: 10px; }
+#referral-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+}
+
+#referral-list li {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+#referral-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
   </style>
 </head>
 <body>
@@ -90,6 +112,11 @@
           <ul id="referral-list"></ul>
         </div>
       </div>
+<div class="info-card">
+    <h2>Referral Growth</h2>
+    <canvas id="referralChart" height="200"></canvas>
+</div>
+
       <div class="info-card">
         <div class="stat-item">
           <div id="user-referral-count" class="count">0</div>
