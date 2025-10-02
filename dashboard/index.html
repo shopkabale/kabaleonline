@@ -51,9 +51,11 @@
         .network-promo a:hover { text-decoration: underline; }
         .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--primary-color); border-radius: 50%; box-shadow: 0 0 0 0 rgba(0, 123, 255, 1); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
-        .admin-notification { display: none; background-color: #fff3cd; color: #664d03; border: 1px solid #ffeeba; border-radius: 8px; padding: 15px 20px; margin-bottom: 30px; text-align: center; }
+        .admin-notification { display: none; background-color: #fff3cd; color: #664d03; border: 1px solid #ffeeba; border-radius: 8px; padding: 15px 20px; margin-bottom: 30px; text-align: center; font-weight: 500; }
         .admin-notification p { margin: 0; font-weight: 500; }
         .admin-notification a { font-weight: bold; color: #0056b3; text-decoration: underline; }
+        /* Fade-in animation */
+        @keyframes fadeIn { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
     </style>
 </head>
 <body>
@@ -90,6 +92,22 @@
             <div id="admin-notification-banner" class="admin-notification">
                 <p><i class="fa-solid fa-bell"></i> You have pending referral requests. <a href="/referadmin/">Go to Referral Panel</a></p>
             </div>
+
+            <!-- New User Notification -->
+            <div id="new-user-notification" class="admin-notification">
+                <p>👋 Welcome! Please update your profile to personalize your dashboard.</p>
+                <button id="notification-ok-btn" style="
+                    margin-top: 10px;
+                    background-color: var(--primary-color);
+                    color: #fff;
+                    border: none;
+                    padding: 8px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">Okay</button>
+            </div>
+
             <div class="dashboard-header">
                 <img id="user-profile-photo" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Seller Profile Photo">
                 <h1 id="user-display-name">Loading...</h1>
@@ -140,7 +158,7 @@
         </div>
         <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </footer>
-    
+
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="script.js"></script>
     <script type="module" src="../js/ui.js"></script>
