@@ -31,12 +31,16 @@
         /* --- PAGE-SPECIFIC STYLES --- */
         .info-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 25px; margin-bottom: 30px; }
         .info-card h2 { margin-top: 0; }
-        .referral-code { background-color: #e9f5ff; border: 2px dashed #007bff; padding: 15px; font-weight: bold; font-size: 1.5em; text-align: center; margin: 20px 0; cursor: pointer; color: #0056b3; }
         .stat-item { text-align: center; }
         .stat-item .count { font-size: 3em; font-weight: bold; color: #28a745; }
         .stat-item .label { font-size: 1.1em; color: #6c757d; }
         .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--primary-color); border-radius: 50%; box-shadow: 0 0 0 0 rgba(0, 123, 255, 1); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
+
+        .referral-link-container { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+        #user-referral-link { flex-grow: 1; padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; font-size: 0.9em; background-color: #f8f9fa; color: #34495e; }
+        #copy-referral-link-btn { background-color: var(--primary-color); color: white; border: none; border-radius: 8px; padding: 10px 15px; cursor: pointer; font-weight: bold; transition: background-color 0.2s ease; }
+        #copy-referral-link-btn:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
@@ -74,8 +78,11 @@
             <p id="global-message" style="display: none;"></p>
             <div class="info-card">
                 <h2>Grow the Community!</h2>
-                <p>Share your code with friends. You are our best marketer, and this is our way of saying thank you for being a part of our story!</p>
-                <div id="user-referral-code" class="referral-code" title="Click to copy">Loading...</div>
+                <p>Share your personal referral link with friends. You are our best marketer, and this is our way of saying thank you for being a part of our story!</p>
+                <div class="referral-link-container">
+                    <input type="text" id="user-referral-link" readonly value="Loading your link...">
+                    <button id="copy-referral-link-btn"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
             </div>
             <div class="info-card">
                 <div class="stat-item">
