@@ -1,6 +1,6 @@
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, runTransaction, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, runTransaction, increment, getCountFromServer, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENTS ---
 const adminContent = document.getElementById('admin-content');
@@ -12,6 +12,8 @@ const approvedTestimonialsList = document.getElementById('approved-testimonials-
 const pendingTableBody = document.querySelector('#pending-requests-table tbody');
 const completedTableBody = document.querySelector('#completed-requests-table tbody');
 const pendingReferralsTableBody = document.querySelector('#pending-referrals-table tbody');
+// New Hero Slider Element
+const currentHeroSlidesList = document.getElementById('current-hero-slides-list');
 
 // --- AUTH CHECK ---
 onAuthStateChanged(auth, async (user) => {
@@ -39,6 +41,7 @@ function initializeAdminPanel() {
     setupGlobalEventListeners();
     fetchPayoutRequests();
     fetchPendingReferrals();
+    fetchCurrentHeroSlides(); // Added Hero Slides
     fetchAllUsers();
     fetchAllProducts();
     fetchTestimonialsForAdmin();
@@ -50,6 +53,7 @@ function setupGlobalEventListeners() {
         if (!btn || !btn.dataset.action) return;
         const action = btn.dataset.action;
 
+        // Merged event delegations
         if (action === 'mark-paid') handleMarkAsPaid(btn);
         if (action === 'approve-referral') handleApproveReferral(btn);
         if (action === 'toggle-deal') handleToggleDeal(btn);
@@ -57,11 +61,14 @@ function setupGlobalEventListeners() {
         if (action === 'toggle-verify') handleToggleVerify(btn);
         if (action === 'approve-testimonial') handleApproveTestimonial(btn);
         if (action === 'delete-testimonial') handleDeleteTestimonial(btn);
+        if (action === 'add-to-hero') handleAddToHero(btn); // Added Hero action
+        if (action === 'remove-from-hero') handleRemoveFromHero(btn); // Added Hero action
     });
 }
 
 // --- PAYOUT REQUESTS LOGIC ---
 async function fetchPayoutRequests() {
+    if (!pendingTableBody || !completedTableBody) return;
     pendingTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
     completedTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
     try {
@@ -174,6 +181,81 @@ async function handleApproveReferral(button) {
     }
 }
 
+// --- HERO SLIDE MANAGEMENT LOGIC ---
+async function fetchCurrentHeroSlides() {
+    if (!currentHeroSlidesList) return;
+    currentHeroSlidesList.innerHTML = '<p>Loading...</p>';
+    try {
+        const q = query(collection(db, 'headerSlides'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            currentHeroSlidesList.innerHTML = '<p>No items in hero slider. Click "Add to Hero" on a product below.</p>';
+            return;
+        }
+        currentHeroSlidesList.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const slide = docSnap.data();
+            const item = document.createElement('div');
+            item.className = 'hero-slide-item';
+            item.innerHTML = `
+                <img src="${slide.imageUrl}" alt="Slide thumbnail">
+                <div class="info">
+                    <p><strong>${slide.description}</strong></p>
+                </div>
+                <button class="action-btn red" data-action="remove-from-hero" data-id="${docSnap.id}">Remove</button>
+            `;
+            currentHeroSlidesList.appendChild(item);
+        });
+    } catch (e) {
+        console.error("Error fetching current hero slides:", e);
+        currentHeroSlidesList.innerHTML = '<p>Error loading slides.</p>';
+    }
+}
+
+async function handleAddToHero(button) {
+    const { id, name, imageUrl } = button.dataset;
+    button.disabled = true;
+    button.textContent = 'Adding...';
+    try {
+        const slidesCollection = collection(db, 'headerSlides');
+        const countSnapshot = await getCountFromServer(slidesCollection);
+        if (countSnapshot.data().count >= 6) {
+            alert('Hero slider is full (6 items max). Please remove an item before adding another.');
+            return;
+        }
+        await addDoc(slidesCollection, {
+            productId: id,
+            description: name,
+            imageUrl: imageUrl,
+            createdAt: serverTimestamp()
+        });
+        alert(`"${name}" has been added to the hero slider.`);
+        await fetchCurrentHeroSlides();
+    } catch (e) {
+        console.error("Error adding to hero:", e);
+        alert('Failed to add item to hero slider.');
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Add to Hero';
+    }
+}
+
+async function handleRemoveFromHero(button) {
+    const slideId = button.dataset.id;
+    if (!confirm('Are you sure you want to remove this item from the hero slider?')) {
+        return;
+    }
+    button.disabled = true;
+    button.textContent = 'Removing...';
+    try {
+        await deleteDoc(doc(db, 'headerSlides', slideId));
+        await fetchCurrentHeroSlides();
+    } catch (e) {
+        console.error("Error removing from hero:", e);
+        alert('Could not remove item.');
+    }
+}
+
 
 // --- USER MANAGEMENT LOGIC ---
 async function fetchAllUsers() {
@@ -244,6 +326,13 @@ async function fetchAllProducts() {
                 <div class="seller-controls">
                     <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${id}" data-status="${isDeal}">
                         ${isDeal ? 'Remove Deal' : 'Make Deal'}
+                    </button>
+                    <button class="action-btn blue" 
+                            data-action="add-to-hero" 
+                            data-id="${id}" 
+                            data-name="${product.name.replace(/"/g, '&quot;')}" 
+                            data-image-url="${product.imageUrls?.[0] || ''}">
+                        Add to Hero
                     </button>
                     <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name}">Delete</button>
                 </div>
@@ -345,4 +434,4 @@ async function handleDeleteTestimonial(button) {
         console.error("Error deleting testimonial:", e);
         alert("Could not delete testimonial.");
     }
-}
+} 
