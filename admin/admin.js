@@ -1,6 +1,6 @@
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, runTransaction, increment, getCountFromServer, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENTS ---
 const adminContent = document.getElementById('admin-content');
@@ -9,11 +9,6 @@ const userList = document.getElementById('user-list');
 const allProductsList = document.getElementById('all-products-list');
 const pendingTestimonialsList = document.getElementById('pending-testimonials-list');
 const approvedTestimonialsList = document.getElementById('approved-testimonials-list');
-const pendingTableBody = document.querySelector('#pending-requests-table tbody');
-const completedTableBody = document.querySelector('#completed-requests-table tbody');
-const pendingReferralsTableBody = document.querySelector('#pending-referrals-table tbody');
-// New Hero Slider Element
-const currentHeroSlidesList = document.getElementById('current-hero-slides-list');
 
 // --- AUTH CHECK ---
 onAuthStateChanged(auth, async (user) => {
@@ -39,9 +34,6 @@ function showAccessDenied() {
 // --- INIT PANEL & EVENT LISTENERS ---
 function initializeAdminPanel() {
     setupGlobalEventListeners();
-    fetchPayoutRequests();
-    fetchPendingReferrals();
-    fetchCurrentHeroSlides(); // Added Hero Slides
     fetchAllUsers();
     fetchAllProducts();
     fetchTestimonialsForAdmin();
@@ -53,209 +45,60 @@ function setupGlobalEventListeners() {
         if (!btn || !btn.dataset.action) return;
         const action = btn.dataset.action;
 
-        // Merged event delegations
-        if (action === 'mark-paid') handleMarkAsPaid(btn);
-        if (action === 'approve-referral') handleApproveReferral(btn);
         if (action === 'toggle-deal') handleToggleDeal(btn);
         if (action === 'delete-product') handleDeleteProduct(btn);
         if (action === 'toggle-verify') handleToggleVerify(btn);
         if (action === 'approve-testimonial') handleApproveTestimonial(btn);
         if (action === 'delete-testimonial') handleDeleteTestimonial(btn);
-        if (action === 'add-to-hero') handleAddToHero(btn); // Added Hero action
-        if (action === 'remove-from-hero') handleRemoveFromHero(btn); // Added Hero action
+        if (action === 'toggle-hero') handleToggleHero(btn); // New toggle action
     });
 }
 
-// --- PAYOUT REQUESTS LOGIC ---
-async function fetchPayoutRequests() {
-    if (!pendingTableBody || !completedTableBody) return;
-    pendingTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-    completedTableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-    try {
-        const q = query(collection(db, "payoutRequests"), orderBy("requestedAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        let pendingHTML = '';
-        let completedHTML = '';
-
-        if (querySnapshot.empty) {
-            pendingTableBody.innerHTML = '<tr><td colspan="5">No pending requests found.</td></tr>';
-            completedTableBody.innerHTML = '<tr><td colspan="5">No completed requests found.</td></tr>';
-            return;
-        }
-
-        querySnapshot.forEach(docSnap => {
-            const request = docSnap.data();
-            const requestDate = request.requestedAt ? request.requestedAt.toDate().toLocaleString() : 'N/A';
-            const rowHTML = `
-                <tr>
-                    <td>${request.userName || 'N/A'}</td>
-                    <td>${request.userEmail || 'N/A'}</td>
-                    <td>${request.amount.toLocaleString()}</td>
-                    <td>${requestDate}</td>
-                    ${request.status === 'pending' 
-                        ? `<td><button class="action-btn green" data-action="mark-paid" data-id="${docSnap.id}">Mark as Paid</button></td>` 
-                        : `<td class="status-paid">Paid</td>`
-                    }
-                </tr>
-            `;
-            if (request.status === 'pending') {
-                pendingHTML += rowHTML;
-            } else {
-                completedHTML += rowHTML;
-            }
-        });
-        pendingTableBody.innerHTML = pendingHTML || '<tr><td colspan="5">No pending requests found.</td></tr>';
-        completedTableBody.innerHTML = completedHTML || '<tr><td colspan="5">No completed requests found.</td></tr>';
-    } catch (e) {
-        console.error("Error fetching payout requests:", e);
-        pendingTableBody.innerHTML = '<tr><td colspan="5">Error loading requests.</td></tr>';
-    }
-}
-
-async function handleMarkAsPaid(button) {
-    const requestId = button.dataset.id;
-    if (!requestId || !confirm("Are you sure you want to mark this request as paid?")) return;
+// --- NEW HERO TOGGLE LOGIC ---
+async function handleToggleHero(button) {
+    const productId = button.dataset.id;
+    const currentStatus = button.dataset.isHero === 'true';
+    const newStatus = !currentStatus;
 
     button.disabled = true;
     button.textContent = 'Updating...';
-    try {
-        await updateDoc(doc(db, 'payoutRequests', requestId), { status: 'paid' });
-        await fetchPayoutRequests();
-    } catch (e) {
-        console.error("Error marking as paid:", e);
-        alert("Could not update the request.");
-        button.disabled = false;
-        button.textContent = 'Mark as Paid';
-    }
-}
 
-// --- REFERRAL APPROVAL LOGIC ---
-async function fetchPendingReferrals() {
-    if (!pendingReferralsTableBody) return;
-    pendingReferralsTableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
     try {
-        const q = query(collection(db, "referralValidationRequests"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            pendingReferralsTableBody.innerHTML = '<tr><td colspan="4">No pending referrals to approve.</td></tr>';
-            return;
+        // If we are ADDING a hero, check if the limit is reached
+        if (newStatus === true) {
+            const productsRef = collection(db, 'products');
+            const q = query(productsRef, where('isHero', '==', true));
+            const countSnapshot = await getCountFromServer(q);
+            if (countSnapshot.data().count >= 6) {
+                alert('Hero slider is full (6 items max). Please remove another item before adding this one.');
+                fetchAllProducts(); // Refresh to fix button state
+                return;
+            }
         }
-        let html = '';
-        snapshot.forEach(doc => {
-            const request = doc.data();
-            html += `
-                <tr>
-                    <td>${request.referrerEmail}</td>
-                    <td>${request.referredUserName}</td>
-                    <td>${request.createdAt.toDate().toLocaleDateString()}</td>
-                    <td><button class="action-btn green" data-action="approve-referral" data-id="${doc.id}" data-referrer-id="${request.referrerId}">Approve</button></td>
-                </tr>
-            `;
-        });
-        pendingReferralsTableBody.innerHTML = html;
-    } catch (e) {
-        console.error("Error fetching pending referrals:", e);
-        pendingReferralsTableBody.innerHTML = '<tr><td colspan="4">Error loading referrals. Check console.</td></tr>';
-    }
-}
 
-async function handleApproveReferral(button) {
-    const { id, referrerId } = button.dataset;
-    if (!id || !referrerId || !confirm("Approve this referral for 250 UGX?")) return;
-
-    button.disabled = true;
-    button.textContent = 'Approving...';
-    try {
-        const requestRef = doc(db, "referralValidationRequests", id);
-        const referrerRef = doc(db, "users", referrerId);
-        await runTransaction(db, async (transaction) => {
-            transaction.update(requestRef, { status: "approved", approvedAt: serverTimestamp() });
-            transaction.update(referrerRef, { referralBalanceUGX: increment(250) });
-        });
-        await fetchPendingReferrals();
-    } catch (e) {
-        console.error("Error approving referral:", e);
-        alert("Could not approve referral.");
-        button.disabled = false;
-        button.textContent = 'Approve';
-    }
-}
-
-// --- HERO SLIDE MANAGEMENT LOGIC ---
-async function fetchCurrentHeroSlides() {
-    if (!currentHeroSlidesList) return;
-    currentHeroSlidesList.innerHTML = '<p>Loading...</p>';
-    try {
-        const q = query(collection(db, 'headerSlides'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            currentHeroSlidesList.innerHTML = '<p>No items in hero slider. Click "Add to Hero" on a product below.</p>';
-            return;
+        const productRef = doc(db, 'products', productId);
+        if (newStatus === true) {
+            // Add to hero and set the timestamp
+            await updateDoc(productRef, {
+                isHero: true,
+                heroTimestamp: serverTimestamp()
+            });
+        } else {
+            // Remove from hero
+            await updateDoc(productRef, {
+                isHero: false
+            });
         }
-        currentHeroSlidesList.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            const slide = docSnap.data();
-            const item = document.createElement('div');
-            item.className = 'hero-slide-item';
-            item.innerHTML = `
-                <img src="${slide.imageUrl}" alt="Slide thumbnail">
-                <div class="info">
-                    <p><strong>${slide.description}</strong></p>
-                </div>
-                <button class="action-btn red" data-action="remove-from-hero" data-id="${docSnap.id}">Remove</button>
-            `;
-            currentHeroSlidesList.appendChild(item);
-        });
+
+        // Refresh the entire product list to reflect the change
+        await fetchAllProducts();
+
     } catch (e) {
-        console.error("Error fetching current hero slides:", e);
-        currentHeroSlidesList.innerHTML = '<p>Error loading slides.</p>';
+        console.error("Error toggling hero status:", e);
+        alert("Could not update hero status.");
+        await fetchAllProducts(); // Refresh to fix button state
     }
 }
-
-async function handleAddToHero(button) {
-    const { id, name, imageUrl } = button.dataset;
-    button.disabled = true;
-    button.textContent = 'Adding...';
-    try {
-        const slidesCollection = collection(db, 'headerSlides');
-        const countSnapshot = await getCountFromServer(slidesCollection);
-        if (countSnapshot.data().count >= 6) {
-            alert('Hero slider is full (6 items max). Please remove an item before adding another.');
-            return;
-        }
-        await addDoc(slidesCollection, {
-            productId: id,
-            description: name,
-            imageUrl: imageUrl,
-            createdAt: serverTimestamp()
-        });
-        alert(`"${name}" has been added to the hero slider.`);
-        await fetchCurrentHeroSlides();
-    } catch (e) {
-        console.error("Error adding to hero:", e);
-        alert('Failed to add item to hero slider.');
-    } finally {
-        button.disabled = false;
-        button.textContent = 'Add to Hero';
-    }
-}
-
-async function handleRemoveFromHero(button) {
-    const slideId = button.dataset.id;
-    if (!confirm('Are you sure you want to remove this item from the hero slider?')) {
-        return;
-    }
-    button.disabled = true;
-    button.textContent = 'Removing...';
-    try {
-        await deleteDoc(doc(db, 'headerSlides', slideId));
-        await fetchCurrentHeroSlides();
-    } catch (e) {
-        console.error("Error removing from hero:", e);
-        alert('Could not remove item.');
-    }
-}
-
 
 // --- USER MANAGEMENT LOGIC ---
 async function fetchAllUsers() {
@@ -304,7 +147,7 @@ async function handleToggleVerify(button) {
     }
 }
 
-// --- PRODUCT MANAGEMENT LOGIC ---
+// --- PRODUCT MANAGEMENT LOGIC (MODIFIED) ---
 async function fetchAllProducts() {
     allProductsList.innerHTML = '<p>Loading products...</p>';
     try {
@@ -315,7 +158,9 @@ async function fetchAllProducts() {
             const product = docSnap.data();
             const id = docSnap.id;
             const isDeal = product.isDeal || false;
+            const isHero = product.isHero || false; // Check hero status
             const verifiedBadge = product.sellerIsVerified ? '✔️' : '';
+
             const card = document.createElement('div');
             card.className = 'product-card';
             card.innerHTML = `
@@ -327,14 +172,15 @@ async function fetchAllProducts() {
                     <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${id}" data-status="${isDeal}">
                         ${isDeal ? 'Remove Deal' : 'Make Deal'}
                     </button>
-                    <button class="action-btn blue" 
-                            data-action="add-to-hero" 
+                    
+                    <button class="action-btn ${isHero ? 'red' : 'blue'}" 
+                            data-action="toggle-hero" 
                             data-id="${id}" 
-                            data-name="${product.name.replace(/"/g, '&quot;')}" 
-                            data-image-url="${product.imageUrls?.[0] || ''}">
-                        Add to Hero
+                            data-is-hero="${isHero}">
+                        ${isHero ? 'Remove from Hero' : 'Add to Hero'}
                     </button>
-                    <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name}">Delete</button>
+
+                    <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name.replace(/"/g, '&quot;')}">Delete</button>
                 </div>
             `;
             allProductsList.appendChild(card);
@@ -369,7 +215,7 @@ async function handleDeleteProduct(button) {
     if (!confirm(`Delete product "${button.dataset.name}"?`)) return;
     try {
         await deleteDoc(doc(db, 'products', id));
-        fetchAllProducts();
+        fetchAllProducts(); // Refresh list after deleting
     } catch (e) {
         console.error("Error deleting product:", e);
         alert("Could not delete product.");
@@ -434,4 +280,4 @@ async function handleDeleteTestimonial(button) {
         console.error("Error deleting testimonial:", e);
         alert("Could not delete testimonial.");
     }
-} 
+}
