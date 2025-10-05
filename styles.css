@@ -837,3 +837,22 @@ footer h2 { color: var(--text-light); margin-bottom: 1.5rem; }
     font-weight: bold;
     line-height: 1;
 }
+/* --- STYLES FOR SERVER-RENDERED PRODUCT PAGE --- */
+
+.product-detail-content .product-images {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adds space between images if there are multiple */
+  margin-bottom: 20px;
+}
+
+.product-detail-content .product-images img {
+  width: 100%; /* Makes the image responsive */
+  height: auto; /* Maintains aspect ratio */
+  max-width: 500px; /* Prevents image from being too large on desktop */
+  border-radius: 8px; /* Optional: adds rounded corners */
+  border: 1px solid #eee; /* Optional: adds a light border */
+  object-fit: cover;
+  margin: 0 auto; /* Centers the image */
+  display: block;
+}
