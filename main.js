@@ -59,7 +59,7 @@ let headerSlides = [];
 let currentSlideIndex = 0;
 let slideInterval;
 
-// --- DYNAMIC HEADER FUNCTIONS (NEW CARD STYLE) ---
+// --- DYNAMIC HEADER FUNCTIONS ---
 
 /**
  * Renders the fetched slides into the header as product cards.
@@ -80,12 +80,12 @@ function renderHeaderSlides() {
         const thumbnailUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'placeholder');
 
-        // This HTML is now structured like your product cards
+        // UPDATED HTML STRUCTURE: h3 is now before img
         slideDiv.innerHTML = `
             <a href="/product.html?id=${slide.productId}" class="product-card-link">
               <div class="product-card">
-                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${slide.description}" class="lazy">
                 <h3>${slide.description}</h3>
+                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${slide.description}" class="lazy">
                 <p class="price">UGX ${slide.price ? slide.price.toLocaleString() : "N/A"}</p>
               </div>
             </a>
@@ -152,7 +152,7 @@ async function fetchHeaderSlides() {
                     productId: doc.id,
                     description: productData.name, 
                     imageUrl: productData.imageUrls?.[0],
-                    price: productData.price // Fetch the price
+                    price: productData.price
                 };
             })
             .filter(slide => slide.imageUrl); 
