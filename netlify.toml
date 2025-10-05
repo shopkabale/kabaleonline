@@ -1,10 +1,14 @@
-# netlify.toml (Simplified Version)
-
 [build]
   functions = "netlify/functions/"
   publish = "."
 
-# This rule makes sure all paths work correctly on a single domain
+# This rule MUST come first. It directs product URLs to our server function.
+[[redirects]]
+  from = "/product/*"
+  to = "/.netlify/functions/product-page"
+  status = 200
+
+# This is your old rule. It now acts as a fallback for any other URL.
 [[redirects]]
   from = "/*"
   to = "/index.html"
