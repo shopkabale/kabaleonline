@@ -305,123 +305,95 @@
     color: #28a745; /* A pleasant green color */
     margin: -10px 15px 15px; /* Adjusts spacing below the price */
 }
-/* --- DYNAMIC HEADER STYLES --- */
+/* --- CORRECTED HERO SLIDER STYLES --- */
 #dynamic-header {
-    width: 100%;
-    overflow: hidden;
     position: relative;
-    margin-bottom: 30px;
-    background-color: var(--color-white); /* Ensures a clean background */
+    width: 100%;
+    overflow: hidden; /* This hides the other slides */
+    margin-bottom: 25px;
+    background-color: #f4f7f6; /* A light background color */
 }
 
-.header-slides-wrapper {
-    display: flex;
+#header-slides-container {
+    display: flex; /* THIS IS THE KEY FIX: Lays out slides horizontally */
     transition: transform 0.5s ease-in-out;
 }
 
 .header-slide {
-    flex: 0 0 100%; /* Each slide takes full width */
+    flex: 0 0 100%; /* Each slide takes the full width of the container */
+    box-sizing: border-box;
+    padding: 20px 15px;
     display: flex;
-    flex-direction: column; /* Stack name above image */
     justify-content: center;
     align-items: center;
-    padding: 10px 5px; /* Adjust padding for mobile */
-    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.header-slide .product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+    max-width: 320px; /* Max width for the card inside the slide */
 }
 
 .header-slide .product-card {
-    max-width: 90%; /* Limit card width on mobile */
-    width: 100%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08); /* Lighter shadow for mobile */
-    border-radius: 8px; /* Slightly rounded corners */
-    overflow: hidden; /* Ensures content stays within bounds */
-    display: flex; /* Flexbox for internal card layout */
-    flex-direction: column; /* Stack name, image, price */
-}
-
-.header-slide .product-card h3 {
-    order: -1; /* Place heading before image */
-    font-size: 1.1em; /* Adjust font size for mobile */
-    padding: 10px;
-    margin-bottom: 5px; /* Space between name and image */
+    background: #ffffff;
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
     text-align: center;
-    color: var(--color-primary-dark);
+}
+    
+.header-slide .product-card h3 {
+    font-size: 1.1em;
+    padding: 12px 10px;
+    margin: 0;
 }
 
 .header-slide .product-card img {
     width: 100%;
-    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
     display: block;
-    object-fit: contain; /* Ensures image is fully visible */
-    border-bottom: 1px solid var(--color-light-grey); /* Separator */
-    background-color: var(--color-white); /* Background for images */
 }
 
 .header-slide .product-card .price {
-    font-size: 1em; /* Adjust font size */
+    font-size: 1.2em;
     font-weight: bold;
-    color: var(--color-accent);
-    padding: 10px;
-    text-align: center;
-    margin-top: 5px; /* Space between image and price */
+    color: var(--primary-color);
+    padding: 12px 10px;
+    margin: 0;
 }
 
-.header-nav {
+.header-nav-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 10px; /* Padding for arrows */
-}
-
-.header-nav button {
-    background-color: rgba(0, 0, 0, 0.5);
-    color: var(--color-white);
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
     border: none;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    font-size: 1.2em;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5em;
+    cursor: pointer;
+    z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
-    z-index: 10;
-    transition: background-color 0.3s ease;
 }
 
-.header-nav button:hover {
-    background-color: rgba(0, 0, 0, 0.7);
+.header-nav-arrow.prev {
+    left: 10px;
 }
 
-/* --- DESKTOP ADJUSTMENTS (min-width: 768px) --- */
+.header-nav-arrow.next {
+    right: 10px;
+}
+
 @media (min-width: 768px) {
-    #dynamic-header {
-        max-height: 500px; /* Max height for desktop hero */
-        margin-bottom: 50px;
-    }
-    .header-slide {
-        padding: 20px;
-    }
-    .header-slide .product-card {
-        max-width: 350px; /* Slightly larger on desktop */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-    .header-slide .product-card h3 {
-        font-size: 1.3em;
-        padding: 15px;
-    }
-    .header-slide .product-card .price {
-        font-size: 1.1em;
-        padding: 15px;
-    }
-    .header-nav button {
-        width: 45px;
-        height: 45px;
-        font-size: 1.5em;
-        padding: 0 15px;
+    .header-slide .product-card-link {
+        max-width: 350px; /* Slightly larger card on desktop */
     }
 }
 
