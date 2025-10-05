@@ -39,7 +39,7 @@ const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
 
-// ======== NEW DYNAMIC HEADER DOM REFERENCES ========
+// --- DYNAMIC HEADER DOM REFERENCES ---
 const dynamicHeader = document.getElementById('dynamic-header');
 const headerSlidesContainer = document.getElementById('header-slides-container');
 const headerPrevBtn = document.getElementById('header-prev-btn');
@@ -54,12 +54,12 @@ const state = {
     filters: { type: '', category: '' }
 };
 
-// ======== NEW HEADER SLIDER STATE ========
+// --- HEADER SLIDER STATE ---
 let headerSlides = [];
 let currentSlideIndex = 0;
 let slideInterval;
 
-// ======== NEW DYNAMIC HEADER FUNCTIONS ========
+// --- DYNAMIC HEADER FUNCTIONS (IMPROVED VERSION) ---
 
 /**
  * Renders the fetched slides into the header.
@@ -70,13 +70,12 @@ function renderHeaderSlides() {
         return;
     }
 
-    headerSlidesContainer.innerHTML = ''; // Clear existing slides
+    headerSlidesContainer.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
     headerSlides.forEach(slide => {
         const slideDiv = document.createElement('div');
         slideDiv.className = 'header-slide';
-        // Use Cloudinary for optimized, full-width images
         const imageUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'full');
         const placeholderUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'placeholder');
 
@@ -90,8 +89,8 @@ function renderHeaderSlides() {
     });
 
     headerSlidesContainer.appendChild(fragment);
-    observeLazyImages(); // Make sure new images are observed for lazy loading
-    showSlide(0); // Show the first slide initially
+    observeLazyImages();
+    showSlide(0);
     startSlideShow();
 }
 
@@ -107,51 +106,57 @@ function showSlide(index) {
 }
 
 function nextSlide() {
-    // Ensure headerSlides has items before calculating the new index
     if (headerSlides.length === 0) return;
     const newIndex = (currentSlideIndex + 1) % headerSlides.length;
     showSlide(newIndex);
 }
 
 function prevSlide() {
-    // Ensure headerSlides has items before calculating the new index
     if (headerSlides.length === 0) return;
     const newIndex = (currentSlideIndex - 1 + headerSlides.length) % headerSlides.length;
     showSlide(newIndex);
 }
 
-/**
- * Starts the automatic slide transition.
- */
 function startSlideShow() {
-    stopSlideShow(); // Ensure no multiple intervals are running
-    slideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+    stopSlideShow();
+    slideInterval = setInterval(nextSlide, 5000);
 }
 
-/**
- * Stops the automatic slide transition.
- */
 function stopSlideShow() {
     clearInterval(slideInterval);
 }
 
 /**
- * Fetches slides from the 'headerSlides' collection in Firestore.
+ * Fetches products marked as 'hero' items from Firestore.
  */
 async function fetchHeaderSlides() {
     if (!dynamicHeader) return;
     try {
         const slidesQuery = query(
-            collection(db, 'headerSlides'),
-            orderBy('createdAt', 'desc'), // Order by creation time to show newest first
+            collection(db, 'products'),
+            where('isHero', '==', true),
+            orderBy('heroTimestamp', 'desc'),
             limit(6)
         );
         const snapshot = await getDocs(slidesQuery);
-        if (snapshot.empty) {
+
+        headerSlides = snapshot.docs
+            .map(doc => {
+                const productData = doc.data();
+                return { 
+                    id: doc.id, 
+                    productId: doc.id,
+                    description: productData.name, 
+                    imageUrl: productData.imageUrls?.[0] 
+                };
+            })
+            .filter(slide => slide.imageUrl); 
+
+        if (headerSlides.length === 0) {
             dynamicHeader.style.display = 'none';
             return;
         }
-        headerSlides = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
         renderHeaderSlides();
     } catch (error) {
         console.error("Error fetching header slides:", error);
@@ -437,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Fetch all dynamic content
-    fetchHeaderSlides(); // Fetches hero slider content
+    fetchHeaderSlides();
     fetchDeals();
     fetchTestimonials();
 
@@ -470,16 +475,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ======== NEW DYNAMIC HEADER EVENT LISTENERS ========
+    // --- DYNAMIC HEADER EVENT LISTENERS ---
     if (headerNextBtn && headerPrevBtn) {
         headerNextBtn.addEventListener('click', () => {
             nextSlide();
-            startSlideShow(); // Restart interval on manual navigation
+            startSlideShow();
         });
 
         headerPrevBtn.addEventListener('click', () => {
             prevSlide();
-            startSlideShow(); // Restart interval on manual navigation
+            startSlideShow();
         });
     }
 });
