@@ -41,6 +41,47 @@
         .seller-controls button { width: calc(100% - 20px); margin: 5px 10px; padding: 8px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; border-radius: 5px; font-size: 0.8em; }
         .seller-controls .deal-btn.on-deal { background-color: #28a745; color: white; border-color: #28a745; }
         .admin-delete { background-color: #fbecec; color: #dc3545; border-color: #f5c6cb; }
+/* --- Style for the new 'Add to Hero' button on product cards --- */
+.action-btn.blue {
+    background-color: #007bff;
+    color: white;
+}
+.seller-controls .action-btn.blue {
+    width: calc(100% - 20px);
+    margin: 5px 10px;
+    padding: 8px;
+    border: 1px solid #007bff;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.8em;
+}
+
+/* --- Styles for the 'Current Hero Slides' list --- */
+.hero-slide-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.hero-slide-item:last-child {
+    border-bottom: none;
+}
+.hero-slide-item img {
+    width: 120px;
+    height: 67px; /* 16:9 aspect ratio */
+    object-fit: cover;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+}
+.hero-slide-item .info {
+    flex-grow: 1;
+}
+.hero-slide-item .info p {
+    margin: 0;
+    font-weight: bold;
+}
+
     </style>
 </head>
 <body>
@@ -71,6 +112,11 @@
             <div class="page-welcome"><h1>Super Admin Panel</h1><p>Moderate all site content here.</p></div>
 
 
+<div class="admin-section">
+    <h2>Current Hero Slides (Max 6)</h2>
+    <div id="current-hero-slides-list">
+        </div>
+</div>
 
 
             
