@@ -10,7 +10,7 @@ function getCloudinaryTransformedUrl(url, type) {
     }
     const transformations = {
         thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
-        full: 'c_limit,w_800,h_800,f_auto,q_auto',
+        full: 'c_limit,w_1200,h_675,f_auto,q_auto', // Optimized for 16:9 hero slider
         placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -39,6 +39,12 @@ const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
 
+// ======== NEW DYNAMIC HEADER DOM REFERENCES ========
+const dynamicHeader = document.getElementById('dynamic-header');
+const headerSlidesContainer = document.getElementById('header-slides-container');
+const headerPrevBtn = document.getElementById('header-prev-btn');
+const headerNextBtn = document.getElementById('header-next-btn');
+
 // --- APPLICATION STATE ---
 const state = {
     currentPage: 0,
@@ -48,9 +54,114 @@ const state = {
     filters: { type: '', category: '' }
 };
 
+// ======== NEW HEADER SLIDER STATE ========
+let headerSlides = [];
+let currentSlideIndex = 0;
+let slideInterval;
+
+// ======== NEW DYNAMIC HEADER FUNCTIONS ========
+
+/**
+ * Renders the fetched slides into the header.
+ */
+function renderHeaderSlides() {
+    if (!headerSlidesContainer || headerSlides.length === 0) {
+        if (dynamicHeader) dynamicHeader.style.display = 'none';
+        return;
+    }
+
+    headerSlidesContainer.innerHTML = ''; // Clear existing slides
+    const fragment = document.createDocumentFragment();
+
+    headerSlides.forEach(slide => {
+        const slideDiv = document.createElement('div');
+        slideDiv.className = 'header-slide';
+        // Use Cloudinary for optimized, full-width images
+        const imageUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'full');
+        const placeholderUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'placeholder');
+
+        slideDiv.innerHTML = `
+            <a href="/product.html?id=${slide.productId}" style="display:block;width:100%;height:100%;">
+                <img src="${placeholderUrl}" data-src="${imageUrl}" alt="${slide.description}" class="lazy">
+                <div class="description">${slide.description}</div>
+            </a>
+        `;
+        fragment.appendChild(slideDiv);
+    });
+
+    headerSlidesContainer.appendChild(fragment);
+    observeLazyImages(); // Make sure new images are observed for lazy loading
+    showSlide(0); // Show the first slide initially
+    startSlideShow();
+}
+
+/**
+ * Displays a specific slide by its index.
+ * @param {number} index The index of the slide to show.
+ */
+function showSlide(index) {
+    if (!headerSlidesContainer) return;
+    const offset = -index * 100;
+    headerSlidesContainer.style.transform = `translateX(${offset}%)`;
+    currentSlideIndex = index;
+}
+
+function nextSlide() {
+    // Ensure headerSlides has items before calculating the new index
+    if (headerSlides.length === 0) return;
+    const newIndex = (currentSlideIndex + 1) % headerSlides.length;
+    showSlide(newIndex);
+}
+
+function prevSlide() {
+    // Ensure headerSlides has items before calculating the new index
+    if (headerSlides.length === 0) return;
+    const newIndex = (currentSlideIndex - 1 + headerSlides.length) % headerSlides.length;
+    showSlide(newIndex);
+}
+
+/**
+ * Starts the automatic slide transition.
+ */
+function startSlideShow() {
+    stopSlideShow(); // Ensure no multiple intervals are running
+    slideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+}
+
+/**
+ * Stops the automatic slide transition.
+ */
+function stopSlideShow() {
+    clearInterval(slideInterval);
+}
+
+/**
+ * Fetches slides from the 'headerSlides' collection in Firestore.
+ */
+async function fetchHeaderSlides() {
+    if (!dynamicHeader) return;
+    try {
+        const slidesQuery = query(
+            collection(db, 'headerSlides'),
+            orderBy('createdAt', 'desc'), // Order by creation time to show newest first
+            limit(6)
+        );
+        const snapshot = await getDocs(slidesQuery);
+        if (snapshot.empty) {
+            dynamicHeader.style.display = 'none';
+            return;
+        }
+        headerSlides = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderHeaderSlides();
+    } catch (error) {
+        console.error("Error fetching header slides:", error);
+        dynamicHeader.style.display = 'none';
+    }
+}
+
 // --- SKELETON LOADER RENDERER ---
 function renderSkeletonLoaders(container, count) {
-    container.innerHTML = ''; 
+    container.innerHTML = '';
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
         const skeletonCard = document.createElement('div');
@@ -70,15 +181,15 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             const img = entry.target;
-            img.src = img.dataset.src; 
+            img.src = img.dataset.src;
             img.onload = () => {
-                img.classList.add('loaded'); 
+                img.classList.add('loaded');
             };
-            img.onerror = () => { 
-                 img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error';
-                 img.classList.add('loaded');
+            img.onerror = () => {
+                img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error';
+                img.classList.add('loaded');
             };
-            observer.unobserve(img); 
+            observer.unobserve(img);
         }
     });
 }, { rootMargin: "0px 0px 200px 0px" });
@@ -92,7 +203,7 @@ function observeLazyImages() {
 
 // --- RENDER FUNCTION ---
 function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = ""; 
+    productGrid.innerHTML = "";
     if (productsToDisplay.length === 0) {
         productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
@@ -102,12 +213,10 @@ function renderProducts(productsToDisplay) {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
 
-        // --- ADDED: Check for verified status ---
         const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
-        const verifiedTextHTML = isVerified 
-            ? `<p class="verified-text">✓ Verified Seller</p>` 
-            : '';
-        // --- END OF ADDITION ---
+        const verifiedTextHTML = isVerified ?
+            `<p class="verified-text">✓ Verified Seller</p>` :
+            '';
 
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
@@ -123,7 +232,7 @@ function renderProducts(productsToDisplay) {
         fragment.appendChild(productLink);
     });
     productGrid.appendChild(fragment);
-    observeLazyImages(); 
+    observeLazyImages();
 }
 
 // --- FETCH FROM ALGOLIA ---
@@ -258,9 +367,9 @@ async function fetchDeals() {
             const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
 
             const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
-            const verifiedTextHTML = isVerified 
-                ? `<p class="verified-text">✓ Verified Seller</p>` 
-                : '';
+            const verifiedTextHTML = isVerified ?
+                `<p class="verified-text">✓ Verified Seller</p>` :
+                '';
 
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
@@ -276,7 +385,7 @@ async function fetchDeals() {
             fragment.appendChild(productLink);
         });
         dealsGrid.appendChild(fragment);
-        observeLazyImages(); 
+        observeLazyImages();
 
     } catch (error) {
         console.error("Error fetching deals:", error);
@@ -290,9 +399,9 @@ async function fetchTestimonials() {
     if (!testimonialGrid) return;
     try {
         const testimonialsQuery = query(
-            collection(db, 'testimonials'), 
+            collection(db, 'testimonials'),
             where('status', '==', 'approved'),
-            orderBy('order', 'asc'), 
+            orderBy('order', 'asc'),
             limit(2)
         );
         const querySnapshot = await getDocs(testimonialsQuery);
@@ -324,9 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const banner = document.getElementById('service-redirect-banner');
         const closeBtn = document.getElementById('close-service-banner');
         if (banner) banner.style.display = 'block';
-        if (closeBtn) closeBtn.addEventListener('click', () => banner.style.display = 'none' );
+        if (closeBtn) closeBtn.addEventListener('click', () => banner.style.display = 'none');
     }
-
+    
+    // Fetch all dynamic content
+    fetchHeaderSlides(); // Fetches hero slider content
     fetchDeals();
     fetchTestimonials();
 
@@ -358,4 +469,17 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchAndRenderProducts();
         }
     });
+
+    // ======== NEW DYNAMIC HEADER EVENT LISTENERS ========
+    if (headerNextBtn && headerPrevBtn) {
+        headerNextBtn.addEventListener('click', () => {
+            nextSlide();
+            startSlideShow(); // Restart interval on manual navigation
+        });
+
+        headerPrevBtn.addEventListener('click', () => {
+            prevSlide();
+            startSlideShow(); // Restart interval on manual navigation
+        });
+    }
 });
