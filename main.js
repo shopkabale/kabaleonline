@@ -10,7 +10,7 @@ function getCloudinaryTransformedUrl(url, type) {
     }
     const transformations = {
         thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
-        full: 'c_limit,w_1200,h_675,f_auto,q_auto', // Optimized for 16:9 hero slider
+        full: 'c_limit,w_1200,h_675,f_auto,q_auto',
         placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -59,10 +59,10 @@ let headerSlides = [];
 let currentSlideIndex = 0;
 let slideInterval;
 
-// --- DYNAMIC HEADER FUNCTIONS (IMPROVED VERSION) ---
+// --- DYNAMIC HEADER FUNCTIONS (NEW CARD STYLE) ---
 
 /**
- * Renders the fetched slides into the header.
+ * Renders the fetched slides into the header as product cards.
  */
 function renderHeaderSlides() {
     if (!headerSlidesContainer || headerSlides.length === 0) {
@@ -76,13 +76,18 @@ function renderHeaderSlides() {
     headerSlides.forEach(slide => {
         const slideDiv = document.createElement('div');
         slideDiv.className = 'header-slide';
-        const imageUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'full');
+
+        const thumbnailUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'placeholder');
 
+        // This HTML is now structured like your product cards
         slideDiv.innerHTML = `
-            <a href="/product.html?id=${slide.productId}" style="display:block;width:100%;height:100%;">
-                <img src="${placeholderUrl}" data-src="${imageUrl}" alt="${slide.description}" class="lazy">
-                <div class="description">${slide.description}</div>
+            <a href="/product.html?id=${slide.productId}" class="product-card-link">
+              <div class="product-card">
+                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${slide.description}" class="lazy">
+                <h3>${slide.description}</h3>
+                <p class="price">UGX ${slide.price ? slide.price.toLocaleString() : "N/A"}</p>
+              </div>
             </a>
         `;
         fragment.appendChild(slideDiv);
@@ -96,7 +101,6 @@ function renderHeaderSlides() {
 
 /**
  * Displays a specific slide by its index.
- * @param {number} index The index of the slide to show.
  */
 function showSlide(index) {
     if (!headerSlidesContainer) return;
@@ -147,7 +151,8 @@ async function fetchHeaderSlides() {
                     id: doc.id, 
                     productId: doc.id,
                     description: productData.name, 
-                    imageUrl: productData.imageUrls?.[0] 
+                    imageUrl: productData.imageUrls?.[0],
+                    price: productData.price // Fetch the price
                 };
             })
             .filter(slide => slide.imageUrl); 
