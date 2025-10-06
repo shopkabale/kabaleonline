@@ -398,6 +398,34 @@
     }
 }
 
+/* --- ADD THIS TO YOUR <style> TAG --- */
+
+.product-card .wishlist-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-dark);
+    transition: transform 0.2s ease, color 0.2s ease;
+    backdrop-filter: blur(2px);
+}
+
+.product-card .wishlist-btn:hover {
+    transform: scale(1.1);
+}
+
+.product-card .wishlist-btn.active {
+    color: #e74c3c; /* A nice red color for active state */
+}
 
     </style>
 </head>
