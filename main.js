@@ -39,12 +39,17 @@ const paginationContainer = document.getElementById("pagination-container");
 const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
-
-// --- DYNAMIC HEADER DOM REFERENCES ---
 const dynamicHeader = document.getElementById('dynamic-header');
 const headerSlidesContainer = document.getElementById('header-slides-container');
 const headerPrevBtn = document.getElementById('header-prev-btn');
 const headerNextBtn = document.getElementById('header-next-btn');
+
+// --- MODAL DOM REFERENCES (NEW) ---
+const modal = document.getElementById('custom-modal');
+const modalIcon = document.getElementById('modal-icon');
+const modalTitle = document.getElementById('modal-title');
+const modalMessage = document.getElementById('modal-message');
+const modalButtons = document.getElementById('modal-buttons');
 
 // --- APPLICATION STATE ---
 const state = {
@@ -62,7 +67,35 @@ let headerSlides = [];
 let currentSlideIndex = 0;
 let slideInterval;
 
-// --- DYNAMIC HEADER FUNCTIONS ---
+
+// --- MODAL FUNCTIONS (ALL NEW) ---
+function showModal({ icon, title, message, theme = 'info', buttons }) {
+    if (!modal) return;
+    modal.className = `modal-overlay modal-theme-${theme}`; // Reset and set theme
+    modalIcon.innerHTML = icon;
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalButtons.innerHTML = ''; // Clear old buttons
+
+    buttons.forEach(btnInfo => {
+        const button = document.createElement('button');
+        button.textContent = btnInfo.text;
+        button.className = `modal-btn modal-btn-${btnInfo.class}`;
+        button.addEventListener('click', btnInfo.onClick);
+        modalButtons.appendChild(button);
+    });
+    
+    modal.classList.add('show');
+}
+
+function hideModal() {
+    if (!modal) return;
+    modal.classList.remove('show');
+}
+// --- END MODAL FUNCTIONS ---
+
+
+// --- DYNAMIC HEADER FUNCTIONS (No changes) ---
 function renderHeaderSlides() {
     if (!headerSlidesContainer || headerSlides.length === 0) {
         if (dynamicHeader) dynamicHeader.style.display = 'none';
@@ -91,52 +124,23 @@ function renderHeaderSlides() {
     showSlide(0);
     startSlideShow();
 }
-function showSlide(index) {
-    if (!headerSlidesContainer) return;
-    const offset = -index * 100;
-    headerSlidesContainer.style.transform = `translateX(${offset}%)`;
-    currentSlideIndex = index;
-}
-function nextSlide() {
-    if (headerSlides.length === 0) return;
-    const newIndex = (currentSlideIndex + 1) % headerSlides.length;
-    showSlide(newIndex);
-}
-function prevSlide() {
-    if (headerSlides.length === 0) return;
-    const newIndex = (currentSlideIndex - 1 + headerSlides.length) % headerSlides.length;
-    showSlide(newIndex);
-}
-function startSlideShow() {
-    stopSlideShow();
-    slideInterval = setInterval(nextSlide, 5000);
-}
-function stopSlideShow() {
-    clearInterval(slideInterval);
-}
+function showSlide(index) { if (!headerSlidesContainer) return; const offset = -index * 100; headerSlidesContainer.style.transform = `translateX(${offset}%)`; currentSlideIndex = index; }
+function nextSlide() { if (headerSlides.length === 0) return; const newIndex = (currentSlideIndex + 1) % headerSlides.length; showSlide(newIndex); }
+function prevSlide() { if (headerSlides.length === 0) return; const newIndex = (currentSlideIndex - 1 + headerSlides.length) % headerSlides.length; showSlide(newIndex); }
+function startSlideShow() { stopSlideShow(); slideInterval = setInterval(nextSlide, 5000); }
+function stopSlideShow() { clearInterval(slideInterval); }
 async function fetchHeaderSlides() {
     if (!dynamicHeader) return;
     try {
-        const slidesQuery = query(
-            collection(db, 'products'),
-            where('isHero', '==', true),
-            orderBy('heroTimestamp', 'desc'),
-            limit(6)
-        );
+        const slidesQuery = query(collection(db, 'products'), where('isHero', '==', true), orderBy('heroTimestamp', 'desc'), limit(6));
         const snapshot = await getDocs(slidesQuery);
         headerSlides = snapshot.docs.map(doc => ({ id: doc.id, productId: doc.id, description: doc.data().name, imageUrl: doc.data().imageUrls?.[0], price: doc.data().price })).filter(slide => slide.imageUrl); 
-        if (headerSlides.length === 0) {
-            dynamicHeader.style.display = 'none';
-            return;
-        }
+        if (headerSlides.length === 0) { dynamicHeader.style.display = 'none'; return; }
         renderHeaderSlides();
-    } catch (error) {
-        console.error("Error fetching header slides:", error);
-        dynamicHeader.style.display = 'none';
-    }
+    } catch (error) { console.error("Error fetching header slides:", error); dynamicHeader.style.display = 'none'; }
 }
 
-// --- SKELETON LOADER RENDERER ---
+// --- SKELETON & LAZY LOAD FUNCTIONS (No changes) ---
 function renderSkeletonLoaders(container, count) {
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
@@ -148,8 +152,6 @@ function renderSkeletonLoaders(container, count) {
     }
     container.appendChild(fragment);
 }
-
-// --- LAZY LOADING WITH INTERSECTION OBSERVER ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -161,12 +163,9 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
         }
     });
 }, { rootMargin: "0px 0px 200px 0px" });
-function observeLazyImages() {
-    const imagesToLoad = document.querySelectorAll('img.lazy');
-    imagesToLoad.forEach(img => { lazyImageObserver.observe(img); });
-}
+function observeLazyImages() { const imagesToLoad = document.querySelectorAll('img.lazy'); imagesToLoad.forEach(img => { lazyImageObserver.observe(img); }); }
 
-// --- RENDER FUNCTION ---
+// --- RENDER PRODUCTS (No changes) ---
 function renderProducts(productsToDisplay) {
     productGrid.innerHTML = "";
     if (productsToDisplay.length === 0) {
@@ -179,15 +178,12 @@ function renderProducts(productsToDisplay) {
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
         const verifiedTextHTML = isVerified ? `<p class="verified-text">✓ Verified Seller</p>` : '';
-        
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
-
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
-        
         productLink.innerHTML = `
           <div class="product-card">
             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
@@ -206,7 +202,7 @@ function renderProducts(productsToDisplay) {
     initializeWishlistButtons();
 }
 
-// --- FETCH FROM ALGOLIA ---
+// --- DATA FETCHING & UI (No changes) ---
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
@@ -229,13 +225,9 @@ async function fetchAndRenderProducts() {
     } finally {
         state.isFetching = false;
         updatePaginationUI();
-        if (state.currentPage > 0) {
-            window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' });
-        }
+        if (state.currentPage > 0) { window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' }); }
     }
 }
-
-// --- UI UPDATE FUNCTIONS ---
 function updatePaginationUI() {
     if (state.totalPages > 1) {
         paginationContainer.style.display = 'flex';
@@ -248,39 +240,45 @@ function updatePaginationUI() {
 }
 function updateListingsTitle() {
     let title = "All Listings";
-    if (state.filters.category) {
-        title = state.filters.category;
-    } else if (state.filters.type) {
-        title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`;
-    }
-    if (state.searchTerm) {
-        title = `Results for "${state.searchTerm}"`;
-    }
+    if (state.filters.category) { title = state.filters.category; }
+    else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
+    if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
     listingsTitle.textContent = title;
 }
 
-// --- WISHLIST FUNCTIONS ---
+// --- WISHLIST FUNCTIONS (MODIFIED) ---
 async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
 
+    // Check for login and show modal if not logged in
     if (!state.currentUser) {
-        window.location.href = '/login/';
+        showModal({
+            icon: '🔒',
+            title: 'Login Required',
+            message: 'You need an account to save items to your wishlist. It\'s free!',
+            theme: 'info',
+            buttons: [
+                { text: 'Cancel', class: 'secondary', onClick: hideModal },
+                { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } }
+            ]
+        });
         return;
     }
 
     const button = event.currentTarget;
     const productId = button.dataset.productId;
     const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
-
     button.disabled = true;
     
     try {
         if (state.wishlist.has(productId)) {
+            // Item is in wishlist, so remove it
             await deleteDoc(wishlistRef);
             state.wishlist.delete(productId);
             updateWishlistButtonUI(button, false);
         } else {
+            // Item is not in wishlist, so add it
             await setDoc(wishlistRef, {
                 name: button.dataset.productName,
                 price: parseFloat(button.dataset.productPrice) || 0,
@@ -289,6 +287,15 @@ async function handleWishlistClick(event) {
             });
             state.wishlist.add(productId);
             updateWishlistButtonUI(button, true);
+
+            // Show success modal
+            showModal({
+                icon: '❤️',
+                title: 'Added!',
+                message: 'This item has been successfully added to your wishlist.',
+                theme: 'success',
+                buttons: [ { text: 'Great!', class: 'primary', onClick: hideModal } ]
+            });
         }
     } catch (error) {
         console.error("Error updating wishlist:", error);
@@ -334,14 +341,11 @@ async function fetchUserWishlist() {
     }
 }
 
-// --- EVENT HANDLERS ---
+// --- EVENT HANDLERS & INITIALIZATION (No changes past this point) ---
 function handleSearch() {
     const term = searchInput.value.trim();
     if (state.searchTerm === term) return;
-    state.searchTerm = term;
-    state.currentPage = 0;
-    state.filters.type = '';
-    state.filters.category = '';
+    state.searchTerm = term; state.currentPage = 0; state.filters.type = ''; state.filters.category = '';
     fetchAndRenderProducts();
 }
 function handleFilterLinkClick(event) {
@@ -351,10 +355,7 @@ function handleFilterLinkClick(event) {
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
-    state.filters.type = type;
-    state.filters.category = category;
-    state.currentPage = 0;
-    state.searchTerm = '';
+    state.filters.type = type; state.filters.category = category; state.currentPage = 0; state.searchTerm = '';
     searchInput.value = '';
     fetchAndRenderProducts();
     document.querySelector('.mobile-nav')?.classList.remove('active');
@@ -367,7 +368,6 @@ function initializeStateFromURL() {
     state.searchTerm = params.get('q') || '';
 }
 
-// --- FETCH DEALS ---
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     renderSkeletonLoaders(dealsGrid, 5);
@@ -375,10 +375,7 @@ async function fetchDeals() {
     try {
         const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
-        if (snapshot.empty) {
-            dealsSection.style.display = 'none';
-            return;
-        }
+        if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         dealsGrid.innerHTML = "";
         const fragment = document.createDocumentFragment();
         snapshot.docs.forEach(doc => {
@@ -387,15 +384,12 @@ async function fetchDeals() {
             const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
             const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
             const verifiedTextHTML = isVerified ? `<p class="verified-text">✓ Verified Seller</p>` : '';
-            
             const isInWishlist = state.wishlist.has(product.id);
             const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
             const wishlistClass = isInWishlist ? 'active' : '';
-
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
-            
             productLink.innerHTML = `
               <div class="product-card">
                  <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
@@ -418,17 +412,13 @@ async function fetchDeals() {
     }
 }
 
-// --- FETCH TESTIMONIALS ---
 async function fetchTestimonials() {
     const testimonialGrid = document.getElementById('testimonial-grid');
     if (!testimonialGrid) return;
     try {
         const testimonialsQuery = query(collection(db, 'testimonials'), where('status', '==', 'approved'), orderBy('order', 'asc'), limit(2));
         const querySnapshot = await getDocs(testimonialsQuery);
-        if (querySnapshot.empty) {
-            testimonialGrid.closest('.testimonial-section').style.display = 'none';
-            return;
-        }
+        if (querySnapshot.empty) { testimonialGrid.closest('.testimonial-section').style.display = 'none'; return; }
         testimonialGrid.innerHTML = '';
         querySnapshot.forEach(doc => {
             const testimonial = doc.data();
@@ -442,10 +432,8 @@ async function fetchTestimonials() {
     }
 }
 
-// --- INITIALIZE PAGE (CORRECTED) ---
 document.addEventListener('DOMContentLoaded', () => {
     
-    // This function fetches and renders all the main page content.
     function loadPageContent() {
         fetchHeaderSlides();
         fetchDeals();
@@ -454,43 +442,37 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchAndRenderProducts();
     }
 
-    // This listener checks the user's login status.
-    // It will fetch the user's wishlist and then load all products,
-    // ensuring the heart icons are correct on the first load.
     onAuthStateChanged(auth, async (user) => {
-        state.currentUser = user;   // Set the current user (or null if not logged in)
-        await fetchUserWishlist();  // Wait for their wishlist to be fetched
-        loadPageContent();          // Now, load all the page content
+        state.currentUser = user;
+        await fetchUserWishlist();
+        loadPageContent();
     }, (error) => {
-        // **THIS IS THE CRITICAL FIX:** If Firebase auth has an error,
-        // we log it and load the products anyway.
         console.error("Firebase auth state error:", error);
         state.currentUser = null;
         state.wishlist.clear();
-        loadPageContent(); // Load products even if auth fails
+        loadPageContent();
     });
 
-    // --- EVENT LISTENERS ---
+    // Close modal when clicking outside the content
+    if (modal) {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                hideModal();
+            }
+        });
+    }
+
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSearch();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
     });
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
     prevPageBtn.addEventListener('click', () => {
-        if (state.currentPage > 0) {
-            state.currentPage--;
-            fetchAndRenderProducts();
-        }
+        if (state.currentPage > 0) { state.currentPage--; fetchAndRenderProducts(); }
     });
     nextPageBtn.addEventListener('click', () => {
-        if (state.currentPage < state.totalPages - 1) {
-            state.currentPage++;
-            fetchAndRenderProducts();
-        }
+        if (state.currentPage < state.totalPages - 1) { state.currentPage++; fetchAndRenderProducts(); }
     });
     if (headerNextBtn && headerPrevBtn) {
         headerNextBtn.addEventListener('click', () => { nextSlide(); startSlideShow(); });
