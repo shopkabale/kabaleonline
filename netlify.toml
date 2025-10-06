@@ -1,10 +1,14 @@
-# netlify.toml (Simplified Version)
+# netlify.toml (Corrected and Complete Version)
 
 [build]
   functions = "netlify/functions/"
   publish = "."
 
-# This rule makes sure all paths work correctly on a single domain
+# This new section fixes the function size error
+[functions]
+  node_bundler = "esbuild"
+
+# This rule makes sure all paths work correctly
 [[redirects]]
   from = "/*"
   to = "/index.html"
