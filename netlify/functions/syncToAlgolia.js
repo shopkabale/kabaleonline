@@ -2,7 +2,7 @@ const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const algoliasearch = require("algoliasearch");
 
-// Corrected: Decode the entire service account from the single environment variable
+// Decode the entire service account from the single environment variable
 const serviceAccountString = Buffer.from(process.env.FIREBASE_ADMIN_SDK, 'base64').toString('utf8');
 const serviceAccount = JSON.parse(serviceAccountString);
 
@@ -17,8 +17,8 @@ const algoliaClient = algoliasearch(
     process.env.ALGOLIA_APP_ID, 
     process.env.ALGOLIA_ADMIN_API_KEY
 );
-const productsIndex = algoliaClient.initIndex('products');
-const eventsIndex = algoliaClient.initIndex('events'); 
+const productsIndex = algoliasearch.initIndex('products');
+const eventsIndex = algoliasearch.initIndex('events'); 
 
 exports.handler = async (event) => {
     try {
