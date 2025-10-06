@@ -2,27 +2,30 @@ const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const algoliasearch = require("algoliasearch");
 
-// Decode the entire service account from the single environment variable
-const serviceAccountString = Buffer.from(process.env.FIREBASE_ADMIN_SDK, 'base64').toString('utf8');
-const serviceAccount = JSON.parse(serviceAccountString);
+// Your Firebase Admin SDK configuration
+const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+};
 
-// Initialize Firebase App
 if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
-const db = getFirestore();
 
-// Initialize Algolia Client
+const db = getFirestore();
 const algoliaClient = algoliasearch(
     process.env.ALGOLIA_APP_ID, 
     process.env.ALGOLIA_ADMIN_API_KEY
 );
-const productsIndex = algoliasearch.initIndex('products');
-const eventsIndex = algoliasearch.initIndex('events'); 
+
+const productsIndex = algoliaClient.initIndex('products');
+const eventsIndex = algoliaClient.initIndex('events'); 
 
 exports.handler = async (event) => {
     try {
-        // ---- HANDLE SPECIFIC ACTIONS LIKE DELETE ----
+        // ---- NEW: HANDLE SPECIFIC ACTIONS LIKE DELETE ----
+        // Check if the request is a POST request with a body
         if (event.httpMethod === 'POST' && event.body) {
             const body = JSON.parse(event.body);
 
@@ -36,7 +39,7 @@ exports.handler = async (event) => {
             }
         }
         
-        // ---- IF NOT A SPECIFIC ACTION, RUN THE FULL SYNC ----
+        // ---- IF NOT A SPECIFIC ACTION, RUN THE FULL SYNC (YOUR EXISTING CODE) ----
         
         // Sync Products
         const productsSnapshot = await db.collection('products').get();
