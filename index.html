@@ -520,6 +520,40 @@
   font-size: 0.9em;
 }
 
+/* Add this to your index.html <style> block */
+
+.product-card.is-sold {
+  position: relative; /* Needed for the overlay */
+}
+
+.product-card-sold-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(44, 62, 80, 0.7); /* Dark, semi-transparent overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2; /* Sits on top of the image but below the wishlist button */
+  pointer-events: none; /* Allows clicks to go through to the link */
+}
+
+.product-card-sold-overlay span {
+  color: white;
+  font-size: 1.8em;
+  font-weight: bold;
+  border: 3px solid white;
+  padding: 5px 15px;
+  border-radius: 5px;
+  transform: rotate(-15deg);
+}
+
+.product-card.is-sold img {
+  filter: grayscale(90%); /* Makes the background image gray */
+}
+
     </style>
 </head>
 <body>
