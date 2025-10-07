@@ -5,16 +5,24 @@ const ordersContainer = document.getElementById('orders-container');
 
 onAuthStateChanged(auth, user => {
     if (user) {
-        fetchOrders();
+        fetchOrders(user);
     } else {
         // Not logged in, redirect to login page
         window.location.href = '/login/';
     }
 });
 
-async function fetchOrders() {
+async function fetchOrders(user) {
     try {
-        const response = await fetch('/.netlify/functions/get-seller-orders');
+        // NEW: Get the user's authentication token
+        const token = await user.getIdToken();
+
+        // MODIFIED: Send the request with the token in the headers
+        const response = await fetch('/.netlify/functions/get-seller-orders', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Error fetching orders: ${response.statusText}`);
@@ -60,7 +68,7 @@ function renderOrders(orders) {
         
         let itemsList = '<ul>';
         order.items.forEach(item => {
-            itemsList += `<li>${item.quantity}x ${item.productName}</li>`;
+            itemsList += `<li>${item.quantity || 1}x ${item.productName}</li>`;
         });
         itemsList += '</ul>';
 
