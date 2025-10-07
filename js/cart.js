@@ -1,6 +1,6 @@
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, getDocs, doc, deleteDoc, updateDoc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, doc, deleteDoc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const cartContainer = document.getElementById('cart-container');
 
@@ -12,7 +12,7 @@ onAuthStateChanged(auth, user => {
             <div class="placeholder-message">
                 <h3>Please Log In</h3>
                 <p>You need to be logged in to view your cart.</p>
-                <a href="/login/">Go to Login</a>
+                <a href="/login/">Go to Login Page</a>
             </div>`;
     }
 });
@@ -33,6 +33,7 @@ async function loadCart(userId) {
         }
 
         const itemsBySeller = {};
+        // Group items by seller ID
         snapshot.forEach(doc => {
             const item = { id: doc.id, ...doc.data() };
             if (!itemsBySeller[item.sellerId]) {
@@ -41,11 +42,11 @@ async function loadCart(userId) {
             itemsBySeller[item.sellerId].items.push(item);
         });
 
-        // Fetch seller names
+        // Fetch seller names asynchronously
         for (const sellerId in itemsBySeller) {
             const userDoc = await getDoc(doc(db, 'users', sellerId));
             if (userDoc.exists()) {
-                itemsBySeller[sellerId].sellerName = userDoc.data().fullName || 'Unnamed Seller';
+                itemsBySeller[sellerId].sellerName = userDoc.data().fullName || 'Anonymus Seller';
             }
         }
         
@@ -75,12 +76,9 @@ function renderCart(itemsBySeller) {
                         <h3>${item.productName}</h3>
                         <p class="cart-item-price">UGX ${item.price.toLocaleString()}</p>
                     </div>
-                    <div class="cart-item-actions">
-                        <input type="number" class="quantity-input" value="${item.quantity}" min="1" data-item-id="${item.id}" disabled>
-                        <button class="remove-btn" data-item-id="${item.id}" title="Remove item">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
+                    <button class="remove-btn" data-item-id="${item.id}" title="Remove item">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             `;
             totalPrice += item.price * item.quantity;
@@ -101,17 +99,24 @@ function renderCart(itemsBySeller) {
 }
 
 
-// Event Delegation for removing items
+// Event Delegation for removing items from the cart
 cartContainer.addEventListener('click', async (event) => {
     const removeButton = event.target.closest('.remove-btn');
     if (removeButton) {
         const itemId = removeButton.dataset.itemId;
         const userId = auth.currentUser.uid;
         
-        if (confirm('Are you sure you want to remove this item from your cart?')) {
-            const itemRef = doc(db, 'users', userId, 'cart', itemId);
-            await deleteDoc(itemRef);
-            loadCart(userId); // Reload the cart to show changes
+        if (confirm('Are you sure you want to remove this item?')) {
+            removeButton.disabled = true;
+            try {
+                const itemRef = doc(db, 'users', userId, 'cart', itemId);
+                await deleteDoc(itemRef);
+                loadCart(userId); // Reload the cart to show changes
+            } catch (error) {
+                console.error("Error removing item:", error);
+                alert("Could not remove item. Please try again.");
+                removeButton.disabled = false;
+            }
         }
     }
 });
