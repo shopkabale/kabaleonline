@@ -194,8 +194,21 @@
         <form id="product-form">
             <input type="hidden" id="productId">
             <div class="form-group"><label for="product-name">Item Name</label><input type="text" id="product-name" required></div>
-            <div class="form-group"><label for="product-price">Price (UGX)</label><input type="number" id="product-price" required></div>
-            <div class="form-group"><label for="product-category">Category</label><select id="product-category" required></select></div>
+
+            <div class="form-group">
+    <label for="product-price">Price (UGX)</label>
+    <input type="number" id="product-price" required>
+</div>
+
+<div class="form-group">
+    <label for="product-quantity">Quantity Available</label>
+    <input type="number" id="product-quantity" value="1" min="1" required>
+</div>
+
+<div class="form-group">
+    <label for="product-category">Category</label>
+    <select id="product-category" required></select>
+</div>
             <div class="form-group"><label for="product-description">Description</label><textarea id="product-description" required rows="5"></textarea></div>
             <div class="form-group"><label for="product-story">Your Story (Optional)</label><textarea id="product-story" rows="3"></textarea></div>
             <div class="form-group"><label for="whatsapp-number">WhatsApp Number</label><input type="tel" id="whatsapp-number" required></div>
