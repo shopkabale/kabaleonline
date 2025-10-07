@@ -1,5 +1,5 @@
 const { initializeApp, cert } = require("firebase-admin/app");
-const { getAuth } = require("firebase-admin/auth"); // This line was missing
+const { getAuth } = require("firebase-admin/auth");
 const { getFirestore } = require("firebase-admin/firestore");
 
 // Your Firebase Admin SDK configuration
@@ -13,10 +13,9 @@ if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
 const db = getFirestore();
-const authAdmin = getAuth(); // This line was missing
+const authAdmin = getAuth();
 
 exports.handler = async (event, context) => {
-    // Verify the user is authenticated
     const token = event.headers.authorization?.split('Bearer ')[1];
     if (!token) {
         return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
@@ -34,30 +33,34 @@ exports.handler = async (event, context) => {
 
         const orderRef = db.collection('orders').doc(orderId);
         
-        // Run as a transaction to ensure data integrity
+        // This transaction now correctly performs all reads before any writes.
         await db.runTransaction(async (transaction) => {
+            // --- READ PHASE ---
             const orderDoc = await transaction.get(orderRef);
             if (!orderDoc.exists) {
                 throw new Error("Order not found.");
             }
 
             const orderData = orderDoc.data();
-            // Security check: ensure the person updating the order is the actual seller
+            // Security check
             if (orderData.sellerId !== sellerId) {
                 throw new Error("You are not authorized to update this order.");
             }
-
-            // Update the order status
+            
+            // --- WRITE PHASE ---
+            // 1. Update the order status
             transaction.update(orderRef, { status: newStatus });
             
-            // If the new status is 'Delivered', decrease the product quantity
+            // 2. If status is 'Delivered', update product quantities
             if (newStatus === 'Delivered' && orderData.status !== 'Delivered') {
                 for (const item of orderData.items) {
                     const productRef = db.collection('products').doc(item.id);
-                    const productDoc = await transaction.get(productRef);
+                    // You must read the product *inside* the transaction before updating it.
+                    const productDoc = await transaction.get(productRef); 
                     if (productDoc.exists) {
                         const currentQuantity = productDoc.data().quantity || 0;
                         const newQuantity = Math.max(0, currentQuantity - (item.quantity || 1));
+                        // This write happens after the read, which is valid.
                         transaction.update(productRef, { quantity: newQuantity });
                     }
                 }
