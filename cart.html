@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart | Kabale Online</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff; --text-dark: #34495e; --text-light: #7f8c8d;
+            --card-bg: #ffffff; --bg-light: #f8f9fa; --danger-color: #dc3545;
+            --border-radius: 8px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; background-color: var(--bg-light); color: var(--text-dark);
+            padding-top: 65px;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1200px; margin: 0 auto; padding: 8px 15px; height: 65px;
+        }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.8em; font-weight: bold; }
+        .site-title span { color: var(--primary-color); }
+        .page-header { border-bottom: 1px solid #e0e0e0; margin-bottom: 30px; padding-bottom: 15px; }
+        .page-header h1 { font-size: 2em; margin: 0; display: flex; align-items: center; gap: 12px; }
+        .page-header i { color: var(--primary-color); }
+
+        #cart-container { background-color: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); }
+        .seller-group { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .seller-group:last-child { border-bottom: none; margin-bottom: 0; }
+        .seller-header { font-weight: bold; padding: 15px; background-color: #f8f9fa; border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
+        .cart-item { display: flex; align-items: center; gap: 15px; padding: 15px; }
+        .cart-item-image { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; }
+        .cart-item-details { flex-grow: 1; }
+        .cart-item-details h3 { margin: 0 0 5px; font-size: 1em; }
+        .cart-item-price { font-weight: bold; color: var(--primary-color); }
+        .cart-item-actions { display: flex; align-items: center; gap: 10px; }
+        .quantity-input { width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
+        .remove-btn { background: none; border: none; font-size: 1.2em; color: var(--danger-color); cursor: pointer; }
+
+        .cart-summary { padding: 20px; text-align: right; background-color: #f8f9fa; border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); margin-top: -1px; }
+        .total-price { font-size: 1.5em; font-weight: bold; margin: 0 0 15px; }
+        .checkout-btn {
+            background-color: #28a745; color: white; padding: 12px 30px; border: none;
+            border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer;
+            text-decoration: none;
+        }
+        .checkout-btn:disabled { background-color: #6c757d; }
+
+        .placeholder-message { text-align: center; padding: 40px; }
+        .placeholder-message a { color: var(--primary-color); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-cart-shopping"></i> My Cart</h1>
+        </div>
+
+        <div id="cart-container">
+            <div class="placeholder-message">
+                <p>Loading your cart...</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="js/cart.js"></script>
+    <script type="module" src="js/firebase.js"></script>
+</body>
+</html>
