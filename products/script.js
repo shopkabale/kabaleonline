@@ -1,6 +1,6 @@
-import { auth, db } from '../js/auth.js'; // Corrected Path
+import { auth, db } from '../firebase.js'; // Corrected Path
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showMessage, getCloudinaryTransformedUrl } from '../js/shared.js'; // Corrected Path
+import { showMessage, getCloudinaryTransformedUrl } from '../shared.js'; // Corrected Path
 
 const sellerProductsList = document.getElementById('seller-products-list');
 const dashboardMessage = document.getElementById('dashboard-message');
