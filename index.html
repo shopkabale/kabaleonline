@@ -101,7 +101,6 @@
         #search-input:focus, #search-input-mobile:focus { outline: none; border-color: var(--primary-color); }
         #search-btn, #search-btn-mobile { padding: 9px 18px; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; cursor: pointer; border-radius: 0 20px 20px 0; }
         .page-container { padding-top: 115px; padding-bottom: 20px; }
-        
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
         .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
@@ -113,8 +112,6 @@
         .mobile-nav a:hover { background-color: #f8f9fa; }
         .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
         .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
-        
-        /* All other existing CSS styles remain unchanged... */
         .hero-section { background: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 30px 15px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: var(--shadow); }
         .hero-section h1 { font-size: 1.8em; margin: 0 0 8px; }
         .section-title { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
@@ -136,92 +133,33 @@
         .product-card-sold-overlay span { color: var(--danger-color); font-size: 1.8em; font-weight: bold; border: 3px solid var(--danger-color); padding: 5px 15px; border-radius: 5px; transform: rotate(-15deg); background-color: rgba(255, 255, 255, 0.9); }
         .product-card.is-sold img { filter: grayscale(90%); }
         .category-count { font-weight: normal; color: var(--text-light); font-size: 0.9em; }
-
-        /* All other styles */
-        .pagination { display: none; justify-content: center; align-items: center; margin-top: 30px; gap: 12px; }
-        .pagination button { background-color: var(--primary-color); color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.9em; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.2s ease; }
         .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-dark); transition: transform 0.2s ease, color 0.2s ease; backdrop-filter: blur(2px); }
         .product-card .wishlist-btn:hover { transform: scale(1.1); }
         .product-card .wishlist-btn.active { color: #e74c3c; }
 
         /* --- RESPONSIVE HEADER STYLES --- */
-        /* By default, hide the desktop nav and the search bar inside the top bar */
         .desktop-nav, .header-top-bar .search-container {
             display: none;
         }
-        
-        .desktop-nav .nav-link {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 500;
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: background-color 0.2s ease;
-        }
-        .desktop-nav .nav-link:hover {
-            background-color: #f1f1f1;
-        }
-
-        .header-icons .cart-link {
-            position: relative;
-            display: flex;
-        }
-        .cart-badge {
-            position: absolute;
-            top: -5px;
-            right: -10px;
-            background-color: var(--danger-color, #dc3545);
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: none; /* Hidden by default, shown by JS */
-            justify-content: center;
-            align-items: center;
-            border: 2px solid white;
-        }
+        .desktop-nav .nav-link { text-decoration: none; color: var(--text-dark); font-weight: 500; padding: 8px 12px; border-radius: 6px; transition: background-color 0.2s ease; }
+        .desktop-nav .nav-link:hover { background-color: #f1f1f1; }
+        .header-icons .cart-link { position: relative; display: flex; }
+        .cart-badge { position: absolute; top: -5px; right: -10px; background-color: var(--danger-color, #dc3545); color: white; font-size: 10px; font-weight: bold; border-radius: 50%; width: 18px; height: 18px; display: none; justify-content: center; align-items: center; border: 2px solid white; }
         .cart-badge.visible { display: flex; }
         .cart-badge.is-zero { background-color: var(--text-light, #7f8c8d); }
 
-        /* Media Query for Desktop Screens */
         @media (min-width: 992px) {
-            .hamburger-menu {
-                display: none;
-            }
-            .desktop-nav, .header-top-bar .search-container {
-                display: flex; /* Show the desktop nav and search bar */
-            }
-            .desktop-nav {
-                align-items: center;
-                gap: 10px;
-                margin-left: 25px;
-            }
-            .header-top-bar .search-container {
-                flex-grow: 1;
-                margin: 0 25px;
-                max-width: 500px;
-            }
-            .header-content-wrapper {
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-            .header-top-bar {
-                height: 65px;
-            }
-            /* Hide the mobile search bar on desktop */
-            .header-search-bar {
-                display: none;
-            }
-            .header-spacer {
-                display: none;
-            }
-            .page-container {
-                padding-top: 85px;
-            }
+            .hamburger-menu { display: none; }
+            .desktop-nav, .header-top-bar .search-container { display: flex; }
+            .desktop-nav { align-items: center; gap: 10px; margin-left: 25px; }
+            .header-top-bar .search-container { flex-grow: 1; margin: 0 25px; max-width: 500px; }
+            .header-content-wrapper { max-width: 1200px; margin: 0 auto; }
+            .header-top-bar { height: 65px; padding: 0 15px; }
+            .header-search-bar { display: none; }
+            .header-spacer { display: none; }
+            .page-container { padding-top: 85px; }
         }
-
+        
         @media (min-width: 768px) {
             .product-grid { grid-template-columns: repeat(3, 1fr); }
             .category-grid { grid-template-columns: repeat(6, 1fr); }
@@ -297,12 +235,130 @@
     </nav>
     <div class="mobile-nav-overlay"></div>
 
-
     <div class="container page-container">
+        <section id="dynamic-header" class="dynamic-header">
+            <div id="header-slides-container" class="header-slides-container"></div>
+            <button id="header-prev-btn" class="header-nav-arrow prev" aria-label="Previous slide">&lt;</button>
+            <button id="header-next-btn" class="header-nav-arrow next" aria-label="Next slide">&gt;</button>
+        </section>
+
+        <section class="category-section">
+            <h2 class="section-title">Browse by Category</h2>
+            <div class="category-grid">
+                <a href="/?category=Electronics" class="category-item"><i class="fa-solid fa-mobile-screen-button"></i><span>Electronics</span></a>
+                <a href="/?category=Clothing+%26+Apparel" class="category-item"><i class="fa-solid fa-shirt"></i><span>Clothing</span></a>
+                <a href="/?category=Home+%26+Furniture" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
+                <a href="/rentals/" class="category-item"><i class="fa-solid fa-house"></i><span>Rentals</span></a>
+                <a href="/?type=service" class="category-item"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
+                <a href="/?category=Other" class="category-item"><i class="fa-solid fa-shapes"></i><span>Other</span></a>
+            </div>
+        </section>
+
+        <section class="deals-section" id="deals-section" style="display: none;">
+            <h2 class="section-title">Today's Top Deals</h2>
+            <div class="deals-carousel-wrapper">
+                <div id="deals-grid" class="deals-grid"></div>
+            </div>
+        </section>
+
+        <main>
+            <h2 id="listings-title" class="section-title">Recent Items</h2>
+            <div id="product-grid" class="product-grid"></div>
+            <div id="pagination-container" class="pagination">
+                <button id="prev-page-btn" disabled>&laquo; Previous</button>
+                <span id="page-indicator">Page 1 of 1</span>
+                <button id="next-page-btn" disabled>Next &raquo;</button>
+            </div>
+        </main>
+
+        <section class="how-it-works-section" style="margin-top: 40px;">
+            <h2 class="section-title" style="text-align: center;">How It Works</h2>
+             <div class="how-it-works-container" style="display: flex; flex-direction: column; gap: 25px; text-align: center;">
+                <div class="step-item"><i class="fa-solid fa-camera"></i><h3>1. Post Your Ad</h3><p>List your item or service for free in under a minute.</p></div>
+                <div class="step-item"><i class="fa-brands fa-whatsapp"></i><h3>2. Connect Safely</h3><p>Chat directly with local buyers and sellers on WhatsApp.</p></div>
+                <div class="step-item"><i class="fa-solid fa-handshake"></i><h3>3. Meet & Sell</h3><p>Meet in a public place in Kabale to finalize your deal.</p></div>
+            </div>
+        </section>
+
+        <section class="testimonial-section" style="margin-top: 40px;">
+            <h2 class="section-title">Community Voices</h2>
+            <div id="testimonial-grid" class="testimonial-grid"></div>
+        </section>
+
+        <div class="cta-wrapper">
+            <h2>What would you like to do?</h2>
+            <div class="cta-container" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="cta-item"><a href="/sell/" class="cta-button"><i class="fa-solid fa-plus-circle"></i>Post an Ad</a></div>
+                <div class="cta-item"><a href="/requests/view.html" class="cta-button"><i class="fa-solid fa-clipboard-list"></i>Request an Item</a></div>
+                <div class="cta-item"><a href="/submit-story.html" class="cta-button"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
+                <div class="cta-item"><a href="/submit-testimonial.html" class="cta-button"><i class="fa-solid fa-comments"></i>Share Feedback</a></div>
+                <div class="cta-item"><a href="/lost-and-found/" class="cta-button"><i class="fa-solid fa-magnifying-glass"></i>Report Lost & Found</a></div>
+                <div class="cta-item"><a href="/rentals/" class="cta-button"><i class="fa-solid fa-house"></i>List a Rental</a></div>
+            </div>
         </div>
+    </div>
+    
+    <div id="login-prompt-banner" class="prompt-banner" style="display: none;">
+      <p><strong>Want to save items or sell your own?</strong> <a href="/login/">Log in</a> or <a href="/signup/">Sign Up</a>!</p>
+      <button id="close-prompt-btn">&times;</button>
+    </div>
+    
+    <button id="install-button" class="cta-button" style="display: none; max-width: 250px; margin: 20px auto; justify-content: center;">
+        <i class="fa-solid fa-download"></i> Install Kabale Online App
+    </button>
     
     <footer>
-        </footer>
+        <div class="container">
+            <div class="footer-logo" style="font-size: 1.8em; font-weight: bold; margin-bottom: 10px;">Kabale <span>Online</span></div>
+            <p class="footer-tagline" style="margin-bottom: 20px;">Your Community Marketplace</p>
+            <div class="footer-socials" style="margin-bottom: 25px;">
+                 <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright" style="font-size: 0.8em; color: var(--text-light);">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+        
+        <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
+          <div style="background:#fff; padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif; animation:fadeIn 0.3s ease-out;">
+            <h3 style="margin-bottom:15px; color:#333;">Notice</h3>
+            <p style="margin-bottom:20px; color:#555;">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
+            <button id="continue-btn" style="padding:10px 20px; background:#007bff; border:none; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;">Continue</button>
+          </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
+          const modal = document.getElementById('service-notice');
+          const continueBtn = document.getElementById('continue-btn');
+          serviceLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+              e.preventDefault();
+              modal.style.display = 'flex';
+            });
+          });
+          continueBtn.addEventListener('click', function() { window.location.href = 'https://gigs.kabaleonline.com'; });
+          modal.addEventListener('click', function(e) { if(e.target === modal) modal.style.display = 'none'; });
+        });
+        </script>
+        
+        <div id="custom-modal" class="modal-overlay">
+          <div class="modal-content">
+            <div id="modal-icon" class="modal-icon"></div>
+            <h3 id="modal-title"></h3>
+            <p id="modal-message"></p>
+            <div id="modal-buttons" class="modal-buttons"></div>
+          </div>
+        </div>
+
+    </footer>
 
     <script type="module" src="ui.js"></script>
     <script type="module" src="main.js"></script>
