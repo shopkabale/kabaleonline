@@ -41,10 +41,8 @@
         .cart-item-details { flex-grow: 1; }
         .cart-item-details h3 { margin: 0 0 5px; font-size: 1em; }
         .cart-item-price { font-weight: bold; color: var(--primary-color); }
-        .cart-item-actions { display: flex; align-items: center; gap: 10px; }
-        .quantity-input { width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
         .remove-btn { background: none; border: none; font-size: 1.2em; color: var(--danger-color); cursor: pointer; }
-
+        
         .cart-summary { padding: 20px; text-align: right; background-color: #f8f9fa; border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); margin-top: -1px; }
         .total-price { font-size: 1.5em; font-weight: bold; margin: 0 0 15px; }
         .checkout-btn {
@@ -55,14 +53,15 @@
         .checkout-btn:disabled { background-color: #6c757d; }
 
         .placeholder-message { text-align: center; padding: 40px; }
-        .placeholder-message a { color: var(--primary-color); font-weight: bold; }
+        .placeholder-message a { color: var(--primary-color); font-weight: bold; text-decoration: none; }
     </style>
 </head>
 <body>
     <header class="sticky-header">
         <div class="header-top-bar">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            </div>
+            <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+        </div>
     </header>
 
     <main class="container">
