@@ -1,5 +1,5 @@
 const { initializeApp, cert } = require("firebase-admin/app");
-const { getAuth } = require("firebase-admin/auth");
+const { getAuth } = require("firebase-admin/auth"); // This line was missing
 const { getFirestore } = require("firebase-admin/firestore");
 
 // Your Firebase Admin SDK configuration
@@ -13,7 +13,7 @@ if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
 const db = getFirestore();
-const authAdmin = getAuth();
+const authAdmin = getAuth(); // This line was missing
 
 exports.handler = async (event, context) => {
     // Verify the user is authenticated
@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
     try {
         const decodedToken = await authAdmin.verifyIdToken(token);
         const sellerId = decodedToken.uid;
-
+        
         const { orderId, newStatus } = JSON.parse(event.body);
 
         if (!orderId || !newStatus) {
@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
         }
 
         const orderRef = db.collection('orders').doc(orderId);
-
+        
         // Run as a transaction to ensure data integrity
         await db.runTransaction(async (transaction) => {
             const orderDoc = await transaction.get(orderRef);
@@ -49,7 +49,7 @@ exports.handler = async (event, context) => {
 
             // Update the order status
             transaction.update(orderRef, { status: newStatus });
-
+            
             // If the new status is 'Delivered', decrease the product quantity
             if (newStatus === 'Delivered' && orderData.status !== 'Delivered') {
                 for (const item of orderData.items) {
@@ -57,7 +57,7 @@ exports.handler = async (event, context) => {
                     const productDoc = await transaction.get(productRef);
                     if (productDoc.exists) {
                         const currentQuantity = productDoc.data().quantity || 0;
-                        const newQuantity = Math.max(0, currentQuantity - item.quantity);
+                        const newQuantity = Math.max(0, currentQuantity - (item.quantity || 1));
                         transaction.update(productRef, { quantity: newQuantity });
                     }
                 }
