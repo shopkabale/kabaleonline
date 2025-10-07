@@ -44,7 +44,7 @@ const headerSlidesContainer = document.getElementById('header-slides-container')
 const headerPrevBtn = document.getElementById('header-prev-btn');
 const headerNextBtn = document.getElementById('header-next-btn');
 
-// --- MODAL DOM REFERENCES (NEW) ---
+// --- MODAL DOM REFERENCES ---
 const modal = document.getElementById('custom-modal');
 const modalIcon = document.getElementById('modal-icon');
 const modalTitle = document.getElementById('modal-title');
@@ -68,7 +68,7 @@ let currentSlideIndex = 0;
 let slideInterval;
 
 
-// --- MODAL FUNCTIONS (ALL NEW) ---
+// --- MODAL FUNCTIONS ---
 function showModal({ icon, title, message, theme = 'info', buttons }) {
     if (!modal) return;
     modal.className = `modal-overlay modal-theme-${theme}`; // Reset and set theme
@@ -92,10 +92,8 @@ function hideModal() {
     if (!modal) return;
     modal.classList.remove('show');
 }
-// --- END MODAL FUNCTIONS ---
 
-
-// --- DYNAMIC HEADER FUNCTIONS (No changes) ---
+// --- DYNAMIC CONTENT FUNCTIONS ---
 function renderHeaderSlides() {
     if (!headerSlidesContainer || headerSlides.length === 0) {
         if (dynamicHeader) dynamicHeader.style.display = 'none';
@@ -140,7 +138,6 @@ async function fetchHeaderSlides() {
     } catch (error) { console.error("Error fetching header slides:", error); dynamicHeader.style.display = 'none'; }
 }
 
-// --- SKELETON & LAZY LOAD FUNCTIONS (No changes) ---
 function renderSkeletonLoaders(container, count) {
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
@@ -165,7 +162,6 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
 }, { rootMargin: "0px 0px 200px 0px" });
 function observeLazyImages() { const imagesToLoad = document.querySelectorAll('img.lazy'); imagesToLoad.forEach(img => { lazyImageObserver.observe(img); }); }
 
-// --- RENDER PRODUCTS (No changes) ---
 function renderProducts(productsToDisplay) {
     productGrid.innerHTML = "";
     if (productsToDisplay.length === 0) {
@@ -202,7 +198,6 @@ function renderProducts(productsToDisplay) {
     initializeWishlistButtons();
 }
 
-// --- DATA FETCHING & UI (No changes) ---
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
@@ -246,12 +241,11 @@ function updateListingsTitle() {
     listingsTitle.textContent = title;
 }
 
-// --- WISHLIST FUNCTIONS (MODIFIED) ---
+// --- WISHLIST FUNCTIONS ---
 async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
 
-    // Check for login and show modal if not logged in
     if (!state.currentUser) {
         showModal({
             icon: '🔒',
@@ -273,12 +267,10 @@ async function handleWishlistClick(event) {
     
     try {
         if (state.wishlist.has(productId)) {
-            // Item is in wishlist, so remove it
             await deleteDoc(wishlistRef);
             state.wishlist.delete(productId);
             updateWishlistButtonUI(button, false);
         } else {
-            // Item is not in wishlist, so add it
             await setDoc(wishlistRef, {
                 name: button.dataset.productName,
                 price: parseFloat(button.dataset.productPrice) || 0,
@@ -288,7 +280,6 @@ async function handleWishlistClick(event) {
             state.wishlist.add(productId);
             updateWishlistButtonUI(button, true);
 
-            // Show success modal
             showModal({
                 icon: '❤️',
                 title: 'Added!',
@@ -341,7 +332,7 @@ async function fetchUserWishlist() {
     }
 }
 
-// --- EVENT HANDLERS & INITIALIZATION (No changes past this point) ---
+// --- EVENT HANDLERS & INITIALIZATION ---
 function handleSearch() {
     const term = searchInput.value.trim();
     if (state.searchTerm === term) return;
@@ -432,12 +423,44 @@ async function fetchTestimonials() {
     }
 }
 
+/**
+ * Fetches category counts from our Netlify function and updates the UI.
+ */
+async function fetchAndDisplayCategoryCounts() {
+    try {
+        const response = await fetch('/.netlify/functions/count-categories');
+        if (!response.ok) return; // Fail silently if the function errors
+        
+        const counts = await response.json();
+        
+        // Map the category names from the function to the specific links in your HTML
+        const categoryMapping = {
+            'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
+            'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
+            'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
+            'Other': document.querySelector('a[href="/?category=Other"] span')
+        };
+        
+        for (const category in counts) {
+            if (counts[category] > 0 && categoryMapping[category]) {
+                const span = categoryMapping[category];
+                // Append the count in a small, styled span
+                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching category counts:', error);
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     
     function loadPageContent() {
         fetchHeaderSlides();
         fetchDeals();
         fetchTestimonials();
+        fetchAndDisplayCategoryCounts(); // Call the function to get counts
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
@@ -453,7 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPageContent();
     });
 
-    // Close modal when clicking outside the content
     if (modal) {
         modal.addEventListener('click', (event) => {
             if (event.target === modal) {
