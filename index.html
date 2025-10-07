@@ -556,37 +556,7 @@
 .product-card.is-sold img {
   filter: grayscale(90%); /* Makes the background image gray */
 }
-/* Add this CSS for the cart badge */
-.header-icons .cart-link {
-    position: relative;
-    display: flex;
-}
 
-.cart-badge {
-    position: absolute;
-    top: -5px;
-    right: -10px;
-    background-color: var(--danger-color, #dc3545);
-    color: white;
-    font-size: 10px;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid white;
-    display: none; /* Hidden by default */
-}
-
-.cart-badge.visible {
-    display: flex;
-}
-
-.cart-badge.is-zero {
-    background-color: var(--text-light, #7f8c8d); /* Gray color for zero */
-}
     </style>
 </head>
 <body>
@@ -597,10 +567,8 @@
                 <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
                 <a href="/" class="site-title">Kabale <span>Online</span></a>
                 <div class="header-spacer"></div>
-                <a href="/cart.html" aria-label="Your Cart" class="cart-link">
-    <i class="fa-solid fa-cart-shopping"></i>
-    <span class="cart-badge">0</span>
-</a>
+                <div class="header-icons">
+    <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
 
     <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell">
         <i class="fa-regular fa-bell"></i>
@@ -626,10 +594,6 @@
             <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
 <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
-<a href="/cart.html" class="nav-link cart-link">
-    <i class="fa-solid fa-cart-shopping"></i> My Cart
-    <span class="cart-badge" style="position: static; margin-left: auto;">0</span>
-</a>
             <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
             <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
             <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
