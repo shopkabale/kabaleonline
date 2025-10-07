@@ -9,6 +9,7 @@ const qaFormContainer = document.getElementById('qa-form-container');
 let currentUser = null;
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
+let productData = null; // Store product data globally in this module
 
 if (!productId) {
     productDetailContent.innerHTML = '<h1>Product Not Found</h1><p>The product ID is missing from the URL.</p>';
@@ -29,7 +30,7 @@ async function loadProductAndSeller() {
             return;
         }
 
-        const productData = productSnap.data();
+        productData = productSnap.data(); // Save product data
         const sellerRef = doc(db, 'users', productData.sellerId);
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
@@ -49,6 +50,17 @@ function renderProductDetails(product, seller) {
     productElement.className = 'product-detail-container';
     const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hello, I'm interested in your listing for '${product.name}' on Kabale Online.`;
 
+    // NEW: Logic for stock status
+    let stockStatusHTML = '';
+    const quantity = product.quantity;
+    if (quantity > 5) {
+        stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+    } else if (quantity > 0 && quantity <= 5) {
+        stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left in stock - order soon!</p>`;
+    } else {
+        stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
+    }
+
     productElement.innerHTML = `
         <div class="product-images">
             ${(product.imageUrls || []).map(url => `<img src="${url}" alt="${product.name}">`).join('')}
@@ -59,6 +71,7 @@ function renderProductDetails(product, seller) {
                 <button id="share-btn" title="Share"><i class="fa-solid fa-share-alt"></i></button>
             </div>
             <h2 id="product-price">UGX ${product.price.toLocaleString()}</h2>
+            ${stockStatusHTML}
             <p id="product-description">${product.description}</p>
             <div class="seller-card">
                 <h4>About the Seller</h4>
@@ -72,6 +85,9 @@ function renderProductDetails(product, seller) {
                     </div>
                 </div>
                 <div class="contact-buttons">
+                    <button id="add-to-cart-btn" class="cta-button primary-action-btn">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
                     <button id="wishlist-btn" class="cta-button wishlist-btn" style="display: none;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
                     <a href="/chat.html?recipientId=${product.sellerId}" id="contact-seller-btn" class="cta-button message-btn"><i class="fa-solid fa-comment-dots"></i> Message Seller</a>
                     <a href="${whatsappLink}" target="_blank" class="cta-button whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>
@@ -82,13 +98,12 @@ function renderProductDetails(product, seller) {
 
     productDetailContent.appendChild(productElement);
 
-    // --- SETUP BUTTONS ---
+    // --- SETUP ALL BUTTONS ---
     setupShareButton(product);
-    
+    setupAddToCartButton(product); // NEW
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
     }
-    
     if (currentUser && currentUser.uid === product.sellerId) {
         const contactBtn = productElement.querySelector('#contact-seller-btn');
         contactBtn.style.pointerEvents = 'none';
@@ -97,27 +112,72 @@ function renderProductDetails(product, seller) {
     }
 }
 
+// NEW: Function to handle "Add to Cart" logic
+function setupAddToCartButton(product) {
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    if (!addToCartBtn) return;
+
+    // Handle out of stock case
+    if (!product.quantity || product.quantity <= 0) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.innerHTML = '<i class="fa-solid fa-times-circle"></i> Out of Stock';
+        return;
+    }
+    
+    // Handle self-purchase case
+    if (currentUser && currentUser.uid === product.sellerId) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'This is your item';
+        return;
+    }
+
+    addToCartBtn.addEventListener('click', async () => {
+        if (!currentUser) {
+            alert("Please log in to add items to your cart.");
+            window.location.href = `/login/?redirect=/product.html?id=${productId}`;
+            return;
+        }
+
+        addToCartBtn.disabled = true;
+        addToCartBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+
+        try {
+            const cartRef = doc(db, 'users', currentUser.uid, 'cart', productId);
+            
+            const cartItem = {
+                productName: product.name,
+                price: product.price,
+                imageUrl: product.imageUrls ? product.imageUrls[0] : '',
+                quantity: 1, // Default quantity to 1
+                sellerId: product.sellerId, // CRUCIAL for multi-seller orders
+                addedAt: serverTimestamp()
+            };
+
+            await setDoc(cartRef, cartItem);
+            
+            addToCartBtn.innerHTML = '<i class="fa-solid fa-check"></i> Added to Cart!';
+
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            addToCartBtn.innerHTML = 'Error! Try Again';
+            setTimeout(() => {
+                addToCartBtn.disabled = false;
+                addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+            }, 2000);
+        }
+    });
+}
+
+// --- (The rest of your functions: setupShareButton, setupWishlistButton, loadQandA, submitQuestion remain the same) ---
 function setupShareButton(product) {
     const shareBtn = document.getElementById('share-btn');
     if (!shareBtn) return;
-    
     shareBtn.addEventListener('click', async () => {
-        const shareData = {
-            title: product.name,
-            text: `Check out this listing on Kabale Online: ${product.name}`,
-            url: window.location.href
-        };
+        const shareData = { title: product.name, text: `Check out this listing on Kabale Online: ${product.name}`, url: window.location.href };
         try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
-                // Fallback for desktop browsers
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard!');
-            }
-        } catch (err) {
-            console.error("Share failed:", err);
-        }
+            if (navigator.share) { await navigator.share(shareData); } 
+            else { await navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!'); }
+        } catch (err) { console.error("Share failed:", err); }
     });
 }
 
@@ -125,11 +185,9 @@ async function setupWishlistButton(product) {
     const wishlistBtn = document.getElementById('wishlist-btn');
     if (!wishlistBtn) return;
     wishlistBtn.style.display = 'flex';
-    
     const wishlistRef = doc(db, 'users', currentUser.uid, 'wishlist', productId);
     const wishlistSnap = await getDoc(wishlistRef);
     let isInWishlist = wishlistSnap.exists();
-    
     function updateButtonState() {
         if (isInWishlist) {
             wishlistBtn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
@@ -139,21 +197,11 @@ async function setupWishlistButton(product) {
             wishlistBtn.classList.remove('active');
         }
     }
-    
     updateButtonState();
-
     wishlistBtn.addEventListener('click', async () => {
         wishlistBtn.disabled = true;
-        if (isInWishlist) {
-            await deleteDoc(wishlistRef);
-        } else {
-            await setDoc(wishlistRef, {
-                name: product.name,
-                price: product.price,
-                imageUrl: product.imageUrls ? product.imageUrls[0] : '',
-                addedAt: serverTimestamp()
-            });
-        }
+        if (isInWishlist) { await deleteDoc(wishlistRef); } 
+        else { await setDoc(wishlistRef, { name: product.name, price: product.price, imageUrl: product.imageUrls ? product.imageUrls[0] : '', addedAt: serverTimestamp() }); }
         isInWishlist = !isInWishlist;
         updateButtonState();
         wishlistBtn.disabled = false;
@@ -166,28 +214,16 @@ function loadQandA(sellerId) {
     try {
         onSnapshot(q, (snapshot) => {
             qaList.innerHTML = '';
-            if (snapshot.empty) {
-                qaList.innerHTML = '<p>No questions have been asked yet.</p>';
-            } else {
-                snapshot.forEach(docSnap => {
-                    const qa = docSnap.data();
-                    const div = document.createElement('div');
-                    div.className = 'question-item';
-                    div.innerHTML = `<p><strong>Q: ${qa.question}</strong></p>${qa.answer ? `<div class="answer-item"><p><strong>A:</strong> ${qa.answer}</p></div>` : ''}`;
-                    qaList.appendChild(div);
-                });
-            }
+            if (snapshot.empty) { qaList.innerHTML = '<p>No questions have been asked yet.</p>'; } 
+            else { snapshot.forEach(docSnap => { const qa = docSnap.data(); const div = document.createElement('div'); div.className = 'question-item'; div.innerHTML = `<p><strong>Q: ${qa.question}</strong></p>${qa.answer ? `<div class="answer-item"><p><strong>A:</strong> ${qa.answer}</p></div>` : ''}`; qaList.appendChild(div); }); }
         });
         if (currentUser) {
             qaFormContainer.innerHTML = `<h4>Ask a Question</h4><form id="qa-form" class="qa-form"><textarea id="question-input" placeholder="Type your question here..." required></textarea><button type="submit" class="cta-button message-btn" style="margin-top: 10px;">Submit Question</button><p id="qa-form-message"></p></form>`;
             document.getElementById('qa-form').addEventListener('submit', (e) => submitQuestion(e, sellerId));
         } else {
-            qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/sell/" style="font-weight: bold;">login or register</a> to ask a question.</p>`;
+            qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/login/" style="font-weight: bold;">login or register</a> to ask a question.</p>`;
         }
-    } catch (error) {
-        console.error("Error loading Q&A:", error);
-        qaList.innerHTML = '<p style="color: red;">Could not load questions.</p>';
-    }
+    } catch (error) { console.error("Error loading Q&A:", error); qaList.innerHTML = '<p style="color: red;">Could not load questions.</p>'; }
 }
 
 async function submitQuestion(e, sellerId) {
@@ -198,13 +234,7 @@ async function submitQuestion(e, sellerId) {
     const questionText = questionInput.value.trim();
     if (!questionText) return;
     try {
-        await addDoc(collection(db, 'products', productId, 'qanda'), {
-            question: questionText,
-            answer: null,
-            askerId: currentUser.uid,
-            sellerId: sellerId,
-            timestamp: serverTimestamp()
-        });
+        await addDoc(collection(db, 'products', productId, 'qanda'), { question: questionText, answer: null, askerId: currentUser.uid, sellerId: sellerId, timestamp: serverTimestamp() });
         questionInput.value = '';
         messageEl.textContent = 'Your question has been submitted!';
         messageEl.style.color = 'green';
