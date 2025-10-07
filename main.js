@@ -25,6 +25,7 @@ function getCloudinaryTransformedUrl(url, type) {
 import { db, auth } from "./firebase.js";
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Import onSnapshot
 
 // --- DOM ELEMENT REFERENCES ---
 const productGrid = document.getElementById("product-grid");
@@ -178,10 +179,18 @@ function renderProducts(productsToDisplay) {
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
 
-        // Check if the product is sold and prepare the overlay
         const isSold = product.isSold;
         const soldClass = isSold ? 'is-sold' : '';
         const soldOverlayHTML = isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+
+        // NEW: Logic for stock status
+        let stockStatusHTML = '';
+        const quantity = product.quantity;
+        if (quantity > 5) {
+            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+        } else if (quantity > 0 && quantity <= 5) {
+            stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left!</p>`;
+        }
 
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
@@ -195,6 +204,7 @@ function renderProducts(productsToDisplay) {
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
+            ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
             ${verifiedTextHTML}
           </div>
@@ -253,56 +263,30 @@ function updateListingsTitle() {
 async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
-
     if (!state.currentUser) {
         showModal({
-            icon: '🔒',
-            title: 'Login Required',
-            message: 'You need an account to save items to your wishlist. It\'s free!',
-            theme: 'info',
-            buttons: [
-                { text: 'Cancel', class: 'secondary', onClick: hideModal },
-                { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } }
-            ]
+            icon: '🔒', title: 'Login Required', message: 'You need an account to save items. It\'s free!',
+            buttons: [ { text: 'Cancel', class: 'secondary', onClick: hideModal }, { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } } ]
         });
         return;
     }
-
     const button = event.currentTarget;
     const productId = button.dataset.productId;
     const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
     button.disabled = true;
-    
     try {
         if (state.wishlist.has(productId)) {
             await deleteDoc(wishlistRef);
             state.wishlist.delete(productId);
             updateWishlistButtonUI(button, false);
         } else {
-            await setDoc(wishlistRef, {
-                name: button.dataset.productName,
-                price: parseFloat(button.dataset.productPrice) || 0,
-                imageUrl: button.dataset.productImage || '',
-                addedAt: serverTimestamp()
-            });
+            await setDoc(wishlistRef, { name: button.dataset.productName, price: parseFloat(button.dataset.productPrice) || 0, imageUrl: button.dataset.productImage || '', addedAt: serverTimestamp() });
             state.wishlist.add(productId);
             updateWishlistButtonUI(button, true);
-
-            showModal({
-                icon: '❤️',
-                title: 'Added!',
-                message: 'This item has been successfully added to your wishlist.',
-                theme: 'success',
-                buttons: [ { text: 'Great!', class: 'primary', onClick: hideModal } ]
-            });
+            showModal({ icon: '❤️', title: 'Added!', message: 'Item added to your wishlist.', theme: 'success', buttons: [ { text: 'Great!', class: 'primary', onClick: hideModal } ] });
         }
-    } catch (error) {
-        console.error("Error updating wishlist:", error);
-    } finally {
-        button.disabled = false;
-    }
+    } catch (error) { console.error("Error updating wishlist:", error); } finally { button.disabled = false; }
 }
-
 function updateWishlistButtonUI(button, isInWishlist) {
     const icon = button.querySelector('i');
     if (isInWishlist) {
@@ -315,7 +299,6 @@ function updateWishlistButtonUI(button, isInWishlist) {
         icon.classList.add('fa-regular');
     }
 }
-
 function initializeWishlistButtons() {
     const wishlistButtons = document.querySelectorAll('.wishlist-btn');
     wishlistButtons.forEach(button => {
@@ -323,21 +306,14 @@ function initializeWishlistButtons() {
         button.addEventListener('click', handleWishlistClick);
     });
 }
-
 async function fetchUserWishlist() {
-    if (!state.currentUser) {
-        state.wishlist.clear();
-        return;
-    }
+    if (!state.currentUser) { state.wishlist.clear(); return; }
     try {
         const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
         const wishlistSnapshot = await getDocs(wishlistCol);
         const wishlistIds = wishlistSnapshot.docs.map(doc => doc.id);
         state.wishlist = new Set(wishlistIds);
-    } catch (error) {
-        console.error("Could not fetch user wishlist:", error);
-        state.wishlist.clear();
-    }
+    } catch (error) { console.error("Could not fetch user wishlist:", error); state.wishlist.clear(); }
 }
 
 // --- EVENT HANDLERS & INITIALIZATION ---
@@ -368,11 +344,13 @@ function initializeStateFromURL() {
 }
 
 async function fetchDeals() {
+    const dealsGrid = document.getElementById("deals-grid");
+    const dealsSection = document.getElementById("deals-section");
     if (!dealsGrid || !dealsSection) return;
     renderSkeletonLoaders(dealsGrid, 5);
     dealsSection.style.display = 'block';
     try {
-        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), orderBy('createdAt', 'desc'), limit(8));
+        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
         if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         dealsGrid.innerHTML = "";
@@ -386,15 +364,22 @@ async function fetchDeals() {
             const isInWishlist = state.wishlist.has(product.id);
             const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
             const wishlistClass = isInWishlist ? 'active' : '';
-
             const isSold = product.isSold;
             const soldClass = isSold ? 'is-sold' : '';
             const soldOverlayHTML = isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
 
+            // NEW: Logic for stock status
+            let stockStatusHTML = '';
+            const quantity = product.quantity;
+            if (quantity > 5) {
+                stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+            } else if (quantity > 0 && quantity <= 5) {
+                stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left!</p>`;
+            }
+
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
-            
             productLink.innerHTML = `
               <div class="product-card ${soldClass}">
                  ${soldOverlayHTML}
@@ -403,6 +388,7 @@ async function fetchDeals() {
                 </button>
                 <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
                 <h3>${product.name}</h3>
+                ${stockStatusHTML}
                 <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
                 ${verifiedTextHTML}
               </div>
@@ -412,10 +398,7 @@ async function fetchDeals() {
         dealsGrid.appendChild(fragment);
         observeLazyImages();
         initializeWishlistButtons();
-    } catch (error) {
-        console.error("Error fetching deals:", error);
-        dealsSection.style.display = 'none';
-    }
+    } catch (error) { console.error("Error fetching deals:", error); dealsSection.style.display = 'none'; }
 }
 
 async function fetchTestimonials() {
@@ -433,22 +416,14 @@ async function fetchTestimonials() {
             card.innerHTML = `<p class="testimonial-text">"${testimonial.quote}"</p><p class="testimonial-author">&ndash; ${testimonial.authorName} <span>${testimonial.authorDetail || ''}</span></p>`;
             testimonialGrid.appendChild(card);
         });
-    } catch (error) {
-        console.error("Error fetching testimonials:", error);
-    }
+    } catch (error) { console.error("Error fetching testimonials:", error); }
 }
 
-/**
- * Fetches category counts from our Netlify function and updates the UI.
- */
 async function fetchAndDisplayCategoryCounts() {
     try {
         const response = await fetch('/.netlify/functions/count-categories');
-        if (!response.ok) return; // Fail silently if the function errors
-        
+        if (!response.ok) return;
         const counts = await response.json();
-        
-        // Map all categories, including Rentals and Services
         const categoryMapping = {
             'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
             'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
@@ -457,64 +432,62 @@ async function fetchAndDisplayCategoryCounts() {
             'Rentals': document.querySelector('a[href="/rentals/"] span'),
             'Services': document.querySelector('a[href="/?type=service"] span')
         };
-        
         for (const category in counts) {
-            if (counts[category] > 0 && categoryMapping[category]) {
-                const span = categoryMapping[category];
-                // Check if a count is already there to prevent duplicates on hot-reload
-                if (!span.querySelector('.category-count')) {
-                    span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
-                }
+            const span = categoryMapping[category];
+            if (counts[category] > 0 && span && !span.querySelector('.category-count')) {
+                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
             }
         }
-    } catch (error) {
-        console.error('Error fetching category counts:', error);
-    }
+    } catch (error) { console.error('Error fetching category counts:', error); }
 }
 
+function listenForCartUpdates(userId) {
+    const cartBadges = document.querySelectorAll('.cart-badge');
+    if (!userId) {
+        cartBadges.forEach(badge => badge.classList.remove('visible'));
+        return;
+    }
+    const cartRef = collection(db, 'users', userId, 'cart');
+    onSnapshot(cartRef, (snapshot) => {
+        const count = snapshot.size;
+        cartBadges.forEach(badge => {
+            badge.textContent = count;
+            badge.classList.toggle('visible', true);
+            badge.classList.toggle('is-zero', count === 0);
+        });
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    
     function loadPageContent() {
         fetchHeaderSlides();
         fetchDeals();
         fetchTestimonials();
-        fetchAndDisplayCategoryCounts(); // Call the function to get counts
+        fetchAndDisplayCategoryCounts();
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
-
     onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
         await fetchUserWishlist();
+        listenForCartUpdates(user ? user.uid : null);
         loadPageContent();
     }, (error) => {
         console.error("Firebase auth state error:", error);
         state.currentUser = null;
         state.wishlist.clear();
+        listenForCartUpdates(null);
         loadPageContent();
     });
-
     if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                hideModal();
-            }
-        });
+        modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
-
     searchBtn.addEventListener('click', handleSearch);
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
-    });
+    searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
-    prevPageBtn.addEventListener('click', () => {
-        if (state.currentPage > 0) { state.currentPage--; fetchAndRenderProducts(); }
-    });
-    nextPageBtn.addEventListener('click', () => {
-        if (state.currentPage < state.totalPages - 1) { state.currentPage++; fetchAndRenderProducts(); }
-    });
+    prevPageBtn.addEventListener('click', () => { if (state.currentPage > 0) { state.currentPage--; fetchAndRenderProducts(); } });
+    nextPageBtn.addEventListener('click', () => { if (state.currentPage < state.totalPages - 1) { state.currentPage++; fetchAndRenderProducts(); } });
     if (headerNextBtn && headerPrevBtn) {
         headerNextBtn.addEventListener('click', () => { nextSlide(); startSlideShow(); });
         headerPrevBtn.addEventListener('click', () => { prevSlide(); startSlideShow(); });
