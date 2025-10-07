@@ -9,7 +9,43 @@ const qaFormContainer = document.getElementById('qa-form-container');
 let currentUser = null;
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
-let productData = null; // Store product data globally in this module
+
+// A function to show a pop-up modal (assuming it exists in a shared script or on the page)
+function showModal({ icon, title, message, theme = 'info', buttons }) {
+    // This function requires the modal HTML and CSS to be on your product-details.html page.
+    const modal = document.getElementById('custom-modal'); // You'll need to add this modal HTML to your page
+    if (!modal) {
+        alert(message); // Fallback to a simple alert if modal doesn't exist
+        buttons.find(b => b.class === 'primary')?.onClick(); // Simulate primary button click for redirection
+        return;
+    }
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalButtons = document.getElementById('modal-buttons');
+    
+    modal.className = `modal-overlay modal-theme-${theme}`;
+    modalIcon.innerHTML = icon;
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalButtons.innerHTML = '';
+
+    buttons.forEach(btnInfo => {
+        const button = document.createElement('button');
+        button.textContent = btnInfo.text;
+        button.className = `modal-btn modal-btn-${btnInfo.class}`;
+        button.addEventListener('click', btnInfo.onClick);
+        modalButtons.appendChild(button);
+    });
+    
+    modal.classList.add('show');
+}
+
+function hideModal() {
+    const modal = document.getElementById('custom-modal');
+    if (modal) modal.classList.remove('show');
+}
+
 
 if (!productId) {
     productDetailContent.innerHTML = '<h1>Product Not Found</h1><p>The product ID is missing from the URL.</p>';
@@ -30,7 +66,7 @@ async function loadProductAndSeller() {
             return;
         }
 
-        productData = productSnap.data(); // Save product data
+        const productData = productSnap.data();
         const sellerRef = doc(db, 'users', productData.sellerId);
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
@@ -50,7 +86,7 @@ function renderProductDetails(product, seller) {
     productElement.className = 'product-detail-container';
     const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hello, I'm interested in your listing for '${product.name}' on Kabale Online.`;
 
-    // NEW: Logic for stock status
+    // Logic for stock status
     let stockStatusHTML = '';
     const quantity = product.quantity;
     if (quantity > 5) {
@@ -100,7 +136,7 @@ function renderProductDetails(product, seller) {
 
     // --- SETUP ALL BUTTONS ---
     setupShareButton(product);
-    setupAddToCartButton(product); // NEW
+    setupAddToCartButton(product);
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
     }
@@ -112,7 +148,6 @@ function renderProductDetails(product, seller) {
     }
 }
 
-// NEW: Function to handle "Add to Cart" logic
 function setupAddToCartButton(product) {
     const addToCartBtn = document.getElementById('add-to-cart-btn');
     if (!addToCartBtn) return;
@@ -148,14 +183,28 @@ function setupAddToCartButton(product) {
                 productName: product.name,
                 price: product.price,
                 imageUrl: product.imageUrls ? product.imageUrls[0] : '',
-                quantity: 1, // Default quantity to 1
-                sellerId: product.sellerId, // CRUCIAL for multi-seller orders
+                quantity: 1,
+                sellerId: product.sellerId,
                 addedAt: serverTimestamp()
             };
 
             await setDoc(cartRef, cartItem);
             
-            addToCartBtn.innerHTML = '<i class="fa-solid fa-check"></i> Added to Cart!';
+            // Show a success pop-up
+            showModal({
+                icon: '✅',
+                title: 'Added to Cart!',
+                message: `${product.name} has been successfully added to your cart.`,
+                theme: 'success',
+                buttons: [
+                    { text: 'Continue Shopping', class: 'secondary', onClick: hideModal },
+                    { text: 'View Cart', class: 'primary', onClick: () => { window.location.href = '/cart.html'; } }
+                ]
+            });
+            
+            // Reset the button
+            addToCartBtn.disabled = false;
+            addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
 
         } catch (error) {
             console.error("Error adding to cart:", error);
@@ -168,7 +217,6 @@ function setupAddToCartButton(product) {
     });
 }
 
-// --- (The rest of your functions: setupShareButton, setupWishlistButton, loadQandA, submitQuestion remain the same) ---
 function setupShareButton(product) {
     const shareBtn = document.getElementById('share-btn');
     if (!shareBtn) return;
