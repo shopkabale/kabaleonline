@@ -1,114 +1,171 @@
-import { auth, db } from '/js/auth.js';
-import { collection, query, where, getDocs, orderBy, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showMessage, getCloudinaryTransformedUrl } from '/js/shared.js';
+import { auth, db } from '../js/auth.js';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { showMessage, toggleLoading, normalizeWhatsAppNumber, getCloudinaryTransformedUrl } from '../js/shared.js';
 
-const sellerProductsList = document.getElementById('seller-products-list');
-const dashboardMessage = document.getElementById('dashboard-message');
+// --- DOM ELEMENTS ---
+const productForm = document.getElementById('product-form');
+const productIdInput = document.getElementById('productId');
+const submitBtn = document.getElementById('submit-btn');
+const categorySelect = document.getElementById('product-category');
+const messageEl = document.getElementById('product-form-message');
 
-async function fetchSellerProducts(uid) {
-    if (!uid) return;
-    const q = query(collection(db, 'products'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    sellerProductsList.innerHTML = '';
+// --- DATA & STATE ---
+const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
+let editingProductId = null;
 
-    if (querySnapshot.empty) {
-        sellerProductsList.innerHTML = "<p>You haven't added any products yet. <a href='/upload/'>Click here to get started!</a></p>";
-        return;
+// --- FUNCTIONS ---
+
+function updateCategoryOptions() {
+    categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
+    for (const key in itemCategories) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = itemCategories[key];
+        categorySelect.appendChild(option);
     }
-
-    querySnapshot.forEach((doc) => {
-        const product = doc.data();
-        const productId = doc.id;
-        const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
-        const isSold = product.isSold || false;
-
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <img src="${thumbnailUrl}" alt="${product.name}" class="${isSold ? 'sold-item' : ''}" loading="lazy">
-            <h3>${product.name} ${isSold ? '<span class="sold-tag-dashboard">(Sold)</span>' : ''}</h3>
-            <p class="price">UGX ${product.price.toLocaleString()}</p>
-            <div class="seller-controls">
-                <button class="edit-btn" data-id="${productId}">Edit</button>
-                <button class="delete-btn" data-id="${productId}">Delete</button>
-                <button class="toggle-sold-btn" data-id="${productId}" data-sold="${isSold}">${isSold ? 'Mark as Available' : 'Mark as Sold'}</button>
-            </div>
-        `;
-        sellerProductsList.appendChild(productCard);
-    });
 }
 
-sellerProductsList.addEventListener('click', async (e) => {
-    const target = e.target;
-    const productId = target.dataset.id;
-    if (!productId) return;
-
-    if (target.classList.contains('edit-btn')) {
-        window.location.href = `/upload/?editId=${productId}`;
+async function uploadImageToCloudinary(file) {
+    try {
+        const response = await fetch('/.netlify/functions/generate-signature');
+        if (!response.ok) throw new Error('Failed to get signature.');
+        const { signature, timestamp, cloudname, apikey } = await response.json();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', apikey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+        const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+        if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
+        const uploadData = await uploadResponse.json();
+        return uploadData.secure_url;
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        throw error;
     }
+}
 
-    // --- DELETE LOGIC ---
-    if (target.classList.contains('delete-btn')) {
-        if (confirm('Are you sure you want to delete this product permanently? This cannot be undone.')) {
-            try {
-                const productDocRef = doc(db, 'products', productId);
-                const productSnapshot = await getDoc(productDocRef);
-                const productData = productSnapshot.data();
+async function populateFormForEdit(productId) {
+    try {
+        const productRef = doc(db, 'products', productId);
+        const docSnap = await getDoc(productRef);
+        if (docSnap.exists() && docSnap.data().sellerId === auth.currentUser.uid) {
+            const product = docSnap.data();
+            productIdInput.value = productId;
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-category').value = product.category || '';
+            document.getElementById('product-description').value = product.description;
+            document.getElementById('product-story').value = product.story || '';
+            // CORRECTED: Also populate the quantity field for editing
+            document.getElementById('product-quantity').value = product.quantity || 1;
+            const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
+            document.getElementById('whatsapp-number').value = localNumber;
+            submitBtn.textContent = 'Update Item';
+        } else {
+            showMessage(messageEl, 'Product not found or you do not have permission to edit it.', true);
+        }
+    } catch (error) {
+        showMessage(messageEl, 'Failed to load product data for editing.', true);
+    }
+}
 
-                // 1️⃣ Delete Cloudinary images
-                if (productData.imageUrls?.length) {
-                    for (const imageUrl of productData.imageUrls) {
-                        // Extract Cloudinary public_id (works even with folders)
-                        const urlParts = imageUrl.split('/');
-                        const lastParts = urlParts.slice(urlParts.indexOf('upload') + 1); // after /upload/
-                        const publicIdWithExtension = lastParts.join('/'); // e.g., folder/image123.jpg
-                        const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, ""); // remove extension
-
-                        await fetch('/.netlify/functions/deleteCloudinaryImage', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ public_id: publicId })
-                        });
-                    }
-                }
-
-                // 2️⃣ Delete from Firestore
-                await deleteDoc(productDocRef);
-
-                // 3️⃣ Delete from Algolia
-                await fetch('/.netlify/functions/syncToAlgolia', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'delete', objectID: productId })
-                });
-
-                // 4️⃣ Remove from UI instantly
-                target.closest('.product-card').remove();
-                showMessage(dashboardMessage, 'Product and images deleted successfully.', false);
-
-            } catch (error) {
-                console.error("Deletion error:", error);
-                showMessage(dashboardMessage, 'Failed to delete product. Please try again.');
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    updateCategoryOptions();
+    const params = new URLSearchParams(window.location.search);
+    editingProductId = params.get('editId');
+    if (editingProductId) {
+        // Wait for auth to be ready before populating
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                populateFormForEdit(editingProductId);
             }
-        }
-    }
-
-    // --- TOGGLE SOLD STATUS ---
-    if (target.classList.contains('toggle-sold-btn')) {
-        const currentStatus = target.dataset.sold === 'true';
-        const newStatus = !currentStatus;
-        try {
-            await updateDoc(doc(db, 'products', productId), { isSold: newStatus });
-            showMessage(dashboardMessage, `Listing marked as ${newStatus ? 'Sold' : 'Available'}.`, false);
-            fetchSellerProducts(auth.currentUser.uid);
-        } catch (error) {
-            showMessage(dashboardMessage, 'Failed to update status.');
-        }
+        });
     }
 });
 
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        fetchSellerProducts(user.uid);
+// --- FORM SUBMISSION LOGIC ---
+productForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    toggleLoading(submitBtn, true, editingProductId ? 'Updating...' : 'Submitting...');
+
+    try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const userData = userDoc.exists() ? userDoc.data() : {};
+
+        const productName = document.getElementById('product-name').value;
+        const imageFile1 = document.getElementById('product-image-1').files[0];
+        const imageFile2 = document.getElementById('product-image-2').files[0];
+
+        let finalImageUrls = [];
+        if (editingProductId) {
+            const docSnap = await getDoc(doc(db, 'products', editingProductId));
+            if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
+        }
+
+        const filesToUpload = [imageFile1, imageFile2].filter(f => f);
+        if (filesToUpload.length > 0) {
+            finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f)));
+        }
+
+        if (finalImageUrls.length === 0 && !editingProductId) {
+            throw new Error('At least one image is required for a new listing.');
+        }
+
+        const productData = {
+            listing_type: 'item',
+            name: productName,
+            name_lowercase: productName.toLowerCase(),
+            price: Number(document.getElementById('product-price').value),
+            quantity: Number(document.getElementById('product-quantity').value) || 1,
+            category: document.getElementById('product-category').value,
+            description: document.getElementById('product-description').value,
+            story: document.getElementById('product-story').value,
+            whatsapp: normalizeWhatsAppNumber(document.getElementById('whatsapp-number').value),
+            sellerId: user.uid,
+            sellerEmail: user.email,
+            sellerName: userData.name || user.email,
+            sellerIsVerified: userData.isVerified || false,
+            sellerBadges: userData.badges || []
+        };
+        if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
+
+        if (editingProductId) {
+            await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
+        } else {
+            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false });
+
+            // Referral logic remains the same
+            if (userData.referrerId && !userData.referralValidationRequested) {
+                const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
+                await addDoc(collection(db, "referralValidationRequests"), {
+                    referrerId: userData.referrerId,
+                    referrerEmail: referrerDoc.exists() ? referrerDoc.data().email : 'N/A',
+                    referredUserId: user.uid,
+                    referredUserName: userData.name,
+                    status: "pending",
+                    createdAt: serverTimestamp()
+                });
+                await updateDoc(userDocRef, { referralValidationRequested: true });
+            }
+        }
+
+        fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
+
+        showMessage(messageEl, 'Success! Your listing is live!', false);
+        productForm.reset();
+        setTimeout(() => { window.location.href = '/products/'; }, 2000);
+
+    } catch (error) {
+        console.error("Error submitting product:", error);
+        showMessage(messageEl, `Oops! Failed to submit: ${error.message} ❌`, true);
+    } finally {
+        toggleLoading(submitBtn, false, editingProductId ? 'Update Item' : 'Add Product');
     }
 });
