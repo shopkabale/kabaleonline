@@ -1,15 +1,16 @@
-# netlify.toml (Corrected and Complete Version)
+# netlify.toml (Corrected and Final Version)
 
 [build]
   functions = "netlify/functions/"
   publish = "."
 
-# This new section fixes the function size error
+# This section fixes the function size error
 [functions]
   node_bundler = "esbuild"
 
-# This rule makes sure all paths work correctly
+# CORRECTED: This rule now correctly handles routing
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "index.html" # Can be relative since it's in the publish dir
   status = 200
+  force = false # This is the crucial fix
