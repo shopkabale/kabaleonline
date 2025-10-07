@@ -177,11 +177,19 @@ function renderProducts(productsToDisplay) {
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
+
+        // Check if the product is sold and prepare the overlay
+        const isSold = product.isSold;
+        const soldClass = isSold ? 'is-sold' : '';
+        const soldOverlayHTML = isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
+
         productLink.innerHTML = `
-          <div class="product-card">
+          <div class="product-card ${soldClass}">
+            ${soldOverlayHTML}
             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
@@ -364,7 +372,7 @@ async function fetchDeals() {
     renderSkeletonLoaders(dealsGrid, 5);
     dealsSection.style.display = 'block';
     try {
-        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
         if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         dealsGrid.innerHTML = "";
@@ -378,11 +386,18 @@ async function fetchDeals() {
             const isInWishlist = state.wishlist.has(product.id);
             const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
             const wishlistClass = isInWishlist ? 'active' : '';
+
+            const isSold = product.isSold;
+            const soldClass = isSold ? 'is-sold' : '';
+            const soldOverlayHTML = isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
+            
             productLink.innerHTML = `
-              <div class="product-card">
+              <div class="product-card ${soldClass}">
+                 ${soldOverlayHTML}
                  <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                     <i class="${wishlistIcon} fa-heart"></i>
                 </button>
