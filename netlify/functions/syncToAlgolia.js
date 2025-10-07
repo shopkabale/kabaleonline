@@ -24,12 +24,8 @@ const eventsIndex = algoliaClient.initIndex('events');
 
 exports.handler = async (event) => {
     try {
-        // ---- NEW: HANDLE SPECIFIC ACTIONS LIKE DELETE ----
-        // Check if the request is a POST request with a body
         if (event.httpMethod === 'POST' && event.body) {
             const body = JSON.parse(event.body);
-
-            // If the action is 'delete', remove the object from the products index
             if (body.action === 'delete' && body.objectID) {
                 await productsIndex.deleteObject(body.objectID);
                 return {
@@ -38,8 +34,6 @@ exports.handler = async (event) => {
                 };
             }
         }
-        
-        // ---- IF NOT A SPECIFIC ACTION, RUN THE FULL SYNC (YOUR EXISTING CODE) ----
         
         // Sync Products
         const productsSnapshot = await db.collection('products').get();
@@ -52,6 +46,7 @@ exports.handler = async (event) => {
                 description: data.description,
                 category: data.category,
                 price: data.price,
+                quantity: data.quantity, // THIS LINE WAS ADDED
                 listing_type: data.listing_type,
                 sellerId: data.sellerId,
                 sellerName: data.sellerName,
