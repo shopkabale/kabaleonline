@@ -1,6 +1,6 @@
-import { auth, db } from '../firebase.js'; // Corrected Path
+import { auth, db } from '/js/auth.js';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showMessage, getCloudinaryTransformedUrl } from '../shared.js'; // Corrected Path
+import { showMessage, getCloudinaryTransformedUrl } from '/js/shared.js';
 
 const sellerProductsList = document.getElementById('seller-products-list');
 const dashboardMessage = document.getElementById('dashboard-message');
@@ -21,10 +21,12 @@ async function fetchSellerProducts(uid) {
         const productId = doc.id;
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const isSold = product.isSold || false;
-        const quantity = product.quantity || 1;
+        const quantity = product.quantity || 1; // ADDED: Get quantity, default to 1
 
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
+        
+        // MODIFIED: Added the quantity display paragraph
         productCard.innerHTML = `
             <img src="${thumbnailUrl}" alt="${product.name}" class="${isSold ? 'sold-item' : ''}" loading="lazy">
             <h3>${product.name} ${isSold ? '<span class="sold-tag-dashboard">(Sold)</span>' : ''}</h3>
@@ -49,6 +51,7 @@ sellerProductsList.addEventListener('click', async (e) => {
         window.location.href = `/upload/?editId=${productId}`;
     }
 
+    // --- DELETE LOGIC ---
     if (target.classList.contains('delete-btn')) {
         if (confirm('Are you sure you want to delete this product permanently? This cannot be undone.')) {
             try {
@@ -89,6 +92,7 @@ sellerProductsList.addEventListener('click', async (e) => {
         }
     }
 
+    // --- TOGGLE SOLD STATUS ---
     if (target.classList.contains('toggle-sold-btn')) {
         const currentStatus = target.dataset.sold === 'true';
         const newStatus = !currentStatus;
@@ -105,7 +109,5 @@ sellerProductsList.addEventListener('click', async (e) => {
 auth.onAuthStateChanged((user) => {
     if (user) {
         fetchSellerProducts(user.uid);
-    } else {
-        window.location.href = '/login/';
     }
 });
