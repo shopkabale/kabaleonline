@@ -1,7 +1,7 @@
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-// Your Firebase Admin SDK configuration (matches your syncToAlgolia.js)
+// Your Firebase Admin SDK configuration
 const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -16,9 +16,9 @@ const db = getFirestore();
 
 exports.handler = async () => {
     try {
-        // Fetch all products that are not marked as sold
+        // MODIFIED: Fetch all products, including sold ones
         const productsRef = db.collection('products');
-        const snapshot = await productsRef.where('isSold', '==', false).get();
+        const snapshot = await productsRef.get(); // ".where()" clause removed
 
         const counts = {
             'Electronics': 0,
