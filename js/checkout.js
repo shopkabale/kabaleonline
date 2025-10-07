@@ -90,23 +90,32 @@ async function handlePlaceOrder(event) {
             name: document.getElementById('fullName').value,
             phone: document.getElementById('phone').value,
             location: document.getElementById('location').value,
-            buyerId: auth.currentUser.uid
         },
         items: cartItems,
         totalPrice: totalPrice
     };
 
     try {
+        // Get the user's authentication token
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error("User not logged in.");
+        }
+        const token = await user.getIdToken();
+
+        // Send the request with the token in the headers
         const response = await fetch('/.netlify/functions/submit-order', {
             method: 'POST',
             body: JSON.stringify(orderDetails),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // This securely identifies the user
             }
         });
 
         if (!response.ok) {
-            throw new Error('Failed to place order.');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to place order.');
         }
 
         // Redirect to a success page
@@ -114,7 +123,7 @@ async function handlePlaceOrder(event) {
 
     } catch (error) {
         console.error("Checkout error:", error);
-        alert("There was a problem placing your order. Please try again.");
+        alert(`There was a problem placing your order: ${error.message}`);
         placeOrderBtn.disabled = false;
         placeOrderBtn.querySelector('span').textContent = 'Confirm Order';
         placeOrderBtn.querySelector('.fa-spin').style.display = 'none';
