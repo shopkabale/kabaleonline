@@ -8,7 +8,6 @@ const serviceAccount = {
     privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
 };
 
-// Initialize Firebase App
 if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
@@ -29,7 +28,7 @@ exports.handler = async (event, context) => {
         const orderDetails = JSON.parse(event.body);
         const { buyerInfo, items } = orderDetails;
 
-        // Corrected: Add the secure buyerId to the buyerInfo object
+        // Add the secure buyerId to the buyerInfo object
         buyerInfo.buyerId = buyerId;
 
         const ordersBySeller = {};
@@ -58,7 +57,6 @@ exports.handler = async (event, context) => {
             });
         }
         
-        // Use the secure buyerId to find and delete cart items
         const cartItemsRefs = items.map(item => db.collection('users').doc(buyerId).collection('cart').doc(item.id));
         cartItemsRefs.forEach(ref => batch.delete(ref));
         
