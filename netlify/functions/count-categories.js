@@ -16,9 +16,9 @@ const db = getFirestore();
 
 exports.handler = async () => {
     try {
-        // --- Count Products ---
+        // --- Count Products (including sold ones) ---
         const productsRef = db.collection('products');
-        const productsSnapshot = await productsRef.where('isSold', '==', false).get();
+        const productsSnapshot = await productsRef.get(); // Corrected: Fetches ALL products
         const productCounts = {
             'Electronics': 0,
             'Clothing & Apparel': 0,
@@ -32,7 +32,7 @@ exports.handler = async () => {
             }
         });
 
-        // --- Count Rentals (Hostels are considered rentals) ---
+        // --- Count Rentals ---
         const rentalsRef = db.collection('rentals');
         const rentalsSnapshot = await rentalsRef.count().get();
         const rentalsCount = rentalsSnapshot.data().count;
