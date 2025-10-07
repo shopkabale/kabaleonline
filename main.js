@@ -448,19 +448,23 @@ async function fetchAndDisplayCategoryCounts() {
         
         const counts = await response.json();
         
-        // Map the category names from the function to the specific links in your HTML
+        // Map all categories, including Rentals and Services
         const categoryMapping = {
             'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
             'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
             'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
-            'Other': document.querySelector('a[href="/?category=Other"] span')
+            'Other': document.querySelector('a[href="/?category=Other"] span'),
+            'Rentals': document.querySelector('a[href="/rentals/"] span'),
+            'Services': document.querySelector('a[href="/?type=service"] span')
         };
         
         for (const category in counts) {
             if (counts[category] > 0 && categoryMapping[category]) {
                 const span = categoryMapping[category];
-                // Append the count in a small, styled span
-                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
+                // Check if a count is already there to prevent duplicates on hot-reload
+                if (!span.querySelector('.category-count')) {
+                    span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
+                }
             }
         }
     } catch (error) {
