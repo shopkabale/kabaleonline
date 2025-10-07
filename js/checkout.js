@@ -67,7 +67,7 @@ async function loadCartAndRenderForm(userId, userData) {
                 </div>
             </form>
         `;
-        
+
         // Add event listener to the newly created form
         const checkoutForm = document.getElementById('checkout-form');
         checkoutForm.addEventListener('submit', handlePlaceOrder);
@@ -96,17 +96,27 @@ async function handlePlaceOrder(event) {
         totalPrice: totalPrice
     };
 
-    // In the next step, we will send this data to a Netlify Function.
-    // For now, we'll just log it to the console.
-    console.log("Order Details to be sent:", orderDetails);
-    
-    // TEMPORARY: Simulate success and show an alert.
-    setTimeout(() => {
-        alert("This is a test. In the next step, this will create a real order!");
+    try {
+        const response = await fetch('/.netlify/functions/submit-order', {
+            method: 'POST',
+            body: JSON.stringify(orderDetails),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to place order.');
+        }
+
+        // Redirect to a success page
+        window.location.href = '/order-success.html';
+
+    } catch (error) {
+        console.error("Checkout error:", error);
+        alert("There was a problem placing your order. Please try again.");
         placeOrderBtn.disabled = false;
         placeOrderBtn.querySelector('span').textContent = 'Confirm Order';
         placeOrderBtn.querySelector('.fa-spin').style.display = 'none';
-        // In the final version, we will redirect to an order success page.
-        // window.location.href = '/order-success.html';
-    }, 2000);
+    }
 }
