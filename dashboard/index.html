@@ -55,6 +55,9 @@
         .admin-notification a { font-weight: bold; color: #0056b3; text-decoration: underline; }
         @keyframes fadeIn { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
 .card-orders .icon { color: #6f42c1; } /* A nice purple color */
+.card-purchases .icon { 
+  color: #28a745; /* A nice green color */
+}
     </style>
 </head>
 <body>
@@ -128,8 +131,13 @@
         <div class="icon"><i class="fa-solid fa-receipt"></i></div>
         <h3>My Orders</h3>
     </a>
+<a href="/my-orders.html" class="dashboard-card card-purchases">
+        <div class="icon"><i class="fa-solid fa-shopping-bag"></i></div>
+        <h3>My Purchases</h3>
+    </a>
 
     <a href="/upload/" class="dashboard-card card-upload"><div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div><h3>Upload Item</h3></a>
+
     <a href="/products/" class="dashboard-card card-products"><div class="icon"><i class="fa-solid fa-box-archive"></i></div><h3>Your Products</h3></a>
     <a href="/referrals/" class="dashboard-card card-referrals"><div class="icon"><i class="fa-solid fa-share-nodes"></i></div><h3>Referrals</h3></a>
     <a href="/myprofile/" class="dashboard-card card-profile"><div class="icon"><i class="fa-solid fa-user-gear"></i></div><h3>Your Profile</h3></a>
