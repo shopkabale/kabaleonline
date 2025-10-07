@@ -540,14 +540,17 @@
   pointer-events: none; /* Allows clicks to go through to the link */
 }
 
+/* Find and replace this rule in your index.html <style> block */
+
 .product-card-sold-overlay span {
-  color: white;
+  color: var(--danger-color); /* Changed to red */
   font-size: 1.8em;
   font-weight: bold;
-  border: 3px solid white;
+  border: 3px solid var(--danger-color); /* Changed to red */
   padding: 5px 15px;
   border-radius: 5px;
   transform: rotate(-15deg);
+  background-color: rgba(255, 255, 255, 0.9); /* Added a white background for visibility */
 }
 
 .product-card.is-sold img {
