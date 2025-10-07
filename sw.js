@@ -1,7 +1,5 @@
-// sw.js (Corrected Version)
-
-const CACHE_NAME = 'kabaleonline-cache-v18'; // Version bumped to trigger update
-const IMAGE_CACHE = 'kabaleonline-images-v1'; // This remains the same
+const CACHE_NAME = 'kabaleonline-cache-v19'; // Version bumped to trigger update
+const IMAGE_CACHE = 'kabaleonline-images-v1';
 
 const APP_SHELL_FILES = [
   // Core App Shell
@@ -21,7 +19,22 @@ const APP_SHELL_FILES = [
   '/ui.js',
 
   // Dashboard Pages & Scripts
-  '/dashboard/', '/profile/', '/referrals/', '/products/', '/upload/', '/settings/', '/login/', '/signup/', '/admin/'
+  '/dashboard/', 
+  '/profile/', 
+  '/referrals/', 
+  '/products/', 
+  '/upload/', 
+  '/settings/', 
+  '/login/', 
+  '/signup/', 
+  '/admin/',
+
+  // NEW E-COMMERCE & ORDER PAGES
+  '/cart.html',
+  '/checkout.html',
+  '/order-success.html',
+  '/my-orders.html',
+  '/dashboard/orders/'
 ];
 
 self.addEventListener('install', event => {
@@ -90,14 +103,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // --- THIS IS THE FIX ---
   // Strategy 3: Network First for dynamic data (API/Firestore calls).
-  // This ensures your product data is always fresh.
   if (url.href.includes('firestore.googleapis.com') || url.href.includes('/.netlify/functions/')) {
     event.respondWith(
       fetch(request)
         .then(networkResponse => {
-          // If we get a good response, update the cache for offline use
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(request, responseClone);
@@ -105,7 +115,6 @@ self.addEventListener('fetch', event => {
           return networkResponse;
         })
         .catch(() => {
-          // If the network fails (user is offline), serve the last saved version from the cache
           return caches.match(request);
         })
     );
@@ -117,7 +126,7 @@ self.addEventListener('fetch', event => {
     caches.match(request).then(cacheRes => {
       return cacheRes || fetch(request).then(networkRes => {
         const cacheClone = networkRes.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, cacheClone));
+        caches.open(CACHE_NAME).then(cache => cache.put(request, cacheClone));
         return networkRes;
       });
     })
