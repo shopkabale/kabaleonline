@@ -1,74 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Successful | Kabale Online</title>
-    <meta name="robots" content="noindex">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #007bff; --text-dark: #34495e; --card-bg: #ffffff;
-            --success-color: #28a745; --bg-light: #f8f9fa;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0; background-color: var(--bg-light); color: var(--text-dark);
-            padding-top: 65px;
-        }
-        .container { max-width: 600px; margin: 40px auto; padding: 20px 15px; text-align: center; }
-        .sticky-header {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .header-top-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            max-width: 1200px; margin: 0 auto; padding: 8px 15px; height: 65px;
-        }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.8em; font-weight: bold; }
-        .site-title span { color: var(--primary-color); }
-        
-        .success-icon {
-            font-size: 5em;
-            color: var(--success-color);
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 2.2em;
-            margin: 0 0 15px;
-        }
-        p {
-            font-size: 1.1em;
-            color: #6c757d;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        .home-btn {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1.1em;
-            font-weight: bold;
-            text-decoration: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Successful | Kabale Online</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --text-dark: #34495e;
+      --text-light: #7f8c8d;
+      --card-bg: #ffffff;
+      --bg-light: #f8f9fa;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --border-radius: 8px;
+      --shadow: 0 4px 15px rgba(0,0,0,0.07);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      padding-top: 65px;
+    }
+
+    /* Header + Nav */
+    .sticky-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background-color: var(--card-bg);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .header-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 8px 15px;
+      height: 65px;
+    }
+
+    .hamburger-menu {
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dark);
+    }
+
+    .site-title {
+      text-decoration: none;
+      color: var(--text-dark);
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+
+    .site-title span {
+      color: var(--primary-color);
+    }
+
+    .mobile-nav-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1090;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0s 0.3s;
+    }
+
+    .mobile-nav-overlay.active {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.3s ease;
+    }
+
+    .mobile-nav {
+      position: fixed;
+      top: 0; left: -280px;
+      width: 280px; height: 100%;
+      background-color: #fff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      z-index: 1100;
+      transition: left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-nav.active {
+      left: 0;
+    }
+
+    .mobile-nav-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    .mobile-nav-links {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .mobile-nav a {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      color: var(--text-dark);
+      text-decoration: none;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 1em;
+    }
+
+    .mobile-nav a i {
+      margin-right: 15px;
+      font-size: 18px;
+      color: var(--primary-color);
+      width: 20px;
+      text-align: center;
+    }
+
+    .mobile-nav-footer {
+      padding: 15px;
+      background-color: #f4f7f6;
+    }
+
+    .mobile-nav .post-button {
+      background-color: #ffc107;
+      color: var(--text-dark);
+      font-weight: bold;
+      border-radius: 25px;
+      text-align: center;
+      display: block;
+      padding: 12px;
+      margin: 10px;
+    }
+
+    /* Main */
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px 15px;
+      text-align: center;
+    }
+
+    .success-icon {
+      font-size: 5em;
+      color: var(--success-color);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      margin: 0 0 15px;
+    }
+
+    p {
+      font-size: 1.1em;
+      color: #6c757d;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .home-btn {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 1.1em;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--text-dark);
+      color: white;
+      padding: 40px 15px 20px;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .footer-logo {
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .footer-logo span {
+      color: #ffc107;
+    }
+
+    .footer-links {
+      margin-bottom: 25px;
+    }
+
+    .footer-links a {
+      color: #bdc3c7;
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 0.9em;
+    }
+
+    .footer-copyright {
+      font-size: 0.8em;
+      color: var(--text-light);
+    }
+  </style>
 </head>
+
 <body>
-    <header class="sticky-header">
-        <div class="header-top-bar">
-            <a href="/" class="site-title">Kabale <span>Online</span></a>
-        </div>
-    </header>
+  <div class="mobile-nav-overlay"></div>
 
-    <main class="container">
-        <div class="success-icon">
-            <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <h1>Thank You!</h1>
-        <p>Your order has been placed successfully. The seller(s) will call you shortly on the phone number you provided to arrange for payment and delivery.</p>
-        <a href="/" class="home-btn">Back to Homepage</a>
-    </main>
+  <header class="sticky-header">
+    <div class="header-top-bar">
+      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+      <a href="/" class="site-title">Kabale <span>Online</span></a>
+    </div>
+  </header>
 
+  <nav class="mobile-nav">
+    <div class="mobile-nav-header">Kabale Online</div>
+    <div class="mobile-nav-links">
+      <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+      <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+      <a href="/dashboard/" class="nav-link"><i class="fa-regular fa-user"></i> My Dashboard</a>
+      <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+      <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+      <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+      <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+      <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+      <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+    </div>
+    <div class="mobile-nav-footer">
+      <a href="/dashboard/" class="post-button">Post Something Free</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="success-icon">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <h1>Thank You!</h1>
+    <p>Your order has been placed successfully. The seller(s) will call you shortly on the phone number you provided to arrange for payment and delivery.</p>
+    <a href="/" class="home-btn">Back to Homepage</a>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-logo">Kabale <span>Online</span></div>
+      <div class="footer-links">
+        <a href="/about.html">About</a>
+        <a href="/blog/">Blog</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/contact.html">Contact</a>
+      </div>
+      <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.querySelector(".hamburger-menu");
+    const nav = document.querySelector(".mobile-nav");
+    const overlay = document.querySelector(".mobile-nav-overlay");
+
+    hamburger.addEventListener("click", () => {
+      nav.classList.add("active");
+      overlay.classList.add("active");
+    });
+
+    overlay.addEventListener("click", () => {
+      nav.classList.remove("active");
+      overlay.classList.remove("active");
+    });
+  </script>
 </body>
 </html>
