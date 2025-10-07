@@ -1,4 +1,5 @@
 const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth"); // NEW: Import getAuth
 const { getFirestore } = require("firebase-admin/firestore");
 
 // Your Firebase Admin SDK configuration
@@ -12,29 +13,42 @@ if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
 const db = getFirestore();
+const authAdmin = getAuth(); // NEW: Initialize Admin Auth
 
 exports.handler = async (event, context) => {
-    // Securely get the seller's ID from the authenticated user token provided by Netlify
-    const sellerId = context.clientContext.user?.uid;
+    // NEW: Manually verify the Firebase token from the request header
+    const token = event.headers.authorization?.split('Bearer ')[1];
 
-    // If no user is logged in, deny access
-    if (!sellerId) {
-        return {
-            statusCode: 401,
-            body: JSON.stringify({ error: "You must be logged in to view orders." }),
+    if (!token) {
+        return { 
+            statusCode: 401, 
+            body: JSON.stringify({ error: "No authentication token provided." }) 
         };
     }
+
+    let decodedToken;
+    try {
+        decodedToken = await authAdmin.verifyIdToken(token);
+    } catch (error) {
+        console.error("Error verifying token:", error);
+        return { 
+            statusCode: 401, 
+            body: JSON.stringify({ error: "Invalid or expired token." }) 
+        };
+    }
+
+    // This is the secure, verified user ID
+    const sellerId = decodedToken.uid;
 
     try {
         const ordersRef = db.collection('orders');
         
-        // This is the key: A query that only finds orders matching the logged-in seller's ID
         const snapshot = await ordersRef.where('sellerId', '==', sellerId).orderBy('createdAt', 'desc').get();
 
         if (snapshot.empty) {
             return {
                 statusCode: 200,
-                body: JSON.stringify([]), // Return an empty array if no orders are found
+                body: JSON.stringify([]),
             };
         }
 
