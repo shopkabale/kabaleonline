@@ -33,37 +33,47 @@ exports.handler = async (event, context) => {
 
         const orderRef = db.collection('orders').doc(orderId);
         
-        // This transaction now correctly performs all reads before any writes.
+        // This transaction is now correctly structured
         await db.runTransaction(async (transaction) => {
-            // --- READ PHASE ---
+            // --- ALL READS HAPPEN FIRST ---
             const orderDoc = await transaction.get(orderRef);
             if (!orderDoc.exists) {
                 throw new Error("Order not found.");
             }
 
             const orderData = orderDoc.data();
-            // Security check
             if (orderData.sellerId !== sellerId) {
                 throw new Error("You are not authorized to update this order.");
             }
             
-            // --- WRITE PHASE ---
-            // 1. Update the order status
-            transaction.update(orderRef, { status: newStatus });
-            
-            // 2. If status is 'Delivered', update product quantities
+            // If the status is changing to 'Delivered', read all necessary product docs first
+            const productRefs = [];
+            const productDocs = [];
             if (newStatus === 'Delivered' && orderData.status !== 'Delivered') {
                 for (const item of orderData.items) {
                     const productRef = db.collection('products').doc(item.id);
-                    // You must read the product *inside* the transaction before updating it.
-                    const productDoc = await transaction.get(productRef); 
+                    productRefs.push(productRef);
+                    // Read each product doc and store the promise
+                    productDocs.push(transaction.get(productRef));
+                }
+            }
+
+            // Await all product reads
+            const resolvedProductDocs = await Promise.all(productDocs);
+
+            // --- ALL WRITES HAPPEN AFTER ---
+            transaction.update(orderRef, { status: newStatus });
+            
+            // Now, perform the updates using the data we already read
+            if (newStatus === 'Delivered' && orderData.status !== 'Delivered') {
+                resolvedProductDocs.forEach((productDoc, index) => {
                     if (productDoc.exists) {
                         const currentQuantity = productDoc.data().quantity || 0;
-                        const newQuantity = Math.max(0, currentQuantity - (item.quantity || 1));
-                        // This write happens after the read, which is valid.
-                        transaction.update(productRef, { quantity: newQuantity });
+                        const itemQuantity = orderData.items[index].quantity || 1;
+                        const newQuantity = Math.max(0, currentQuantity - itemQuantity);
+                        transaction.update(productRefs[index], { quantity: newQuantity });
                     }
-                }
+                });
             }
         });
 
