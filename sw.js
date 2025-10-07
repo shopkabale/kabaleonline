@@ -1,6 +1,6 @@
 // sw.js (Corrected Version)
 
-const CACHE_NAME = 'kabaleonline-cache-v17'; // Version bumped to trigger update
+const CACHE_NAME = 'kabaleonline-cache-v18'; // Version bumped to trigger update
 const IMAGE_CACHE = 'kabaleonline-images-v1'; // This remains the same
 
 const APP_SHELL_FILES = [
