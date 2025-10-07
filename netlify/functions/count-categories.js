@@ -16,23 +16,38 @@ const db = getFirestore();
 
 exports.handler = async () => {
     try {
-        // MODIFIED: Fetch all products, including sold ones
+        // --- Count Products ---
         const productsRef = db.collection('products');
-        const snapshot = await productsRef.get(); // ".where()" clause removed
-
-        const counts = {
+        const productsSnapshot = await productsRef.where('isSold', '==', false).get();
+        const productCounts = {
             'Electronics': 0,
             'Clothing & Apparel': 0,
             'Home & Furniture': 0,
             'Other': 0
         };
-
-        snapshot.forEach(doc => {
+        productsSnapshot.forEach(doc => {
             const category = doc.data().category;
-            if (category in counts) {
-                counts[category]++;
+            if (category in productCounts) {
+                productCounts[category]++;
             }
         });
+
+        // --- Count Rentals (Hostels are considered rentals) ---
+        const rentalsRef = db.collection('rentals');
+        const rentalsSnapshot = await rentalsRef.count().get();
+        const rentalsCount = rentalsSnapshot.data().count;
+
+        // --- Count Services ---
+        const servicesRef = db.collection('services');
+        const servicesSnapshot = await servicesRef.count().get();
+        const servicesCount = servicesSnapshot.data().count;
+
+        // --- Combine all counts into a single object ---
+        const allCounts = {
+            ...productCounts,
+            'Rentals': rentalsCount,
+            'Services': servicesCount
+        };
 
         return {
             statusCode: 200,
@@ -40,7 +55,7 @@ exports.handler = async () => {
                 'Content-Type': 'application/json',
                 'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
             },
-            body: JSON.stringify(counts),
+            body: JSON.stringify(allCounts),
         };
     } catch (error) {
         console.error("Error counting categories:", error);
