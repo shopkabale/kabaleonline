@@ -58,6 +58,8 @@ async function populateFormForEdit(productId) {
             document.getElementById('product-category').value = product.category || '';
             document.getElementById('product-description').value = product.description;
             document.getElementById('product-story').value = product.story || '';
+            // MODIFIED: Also populate the quantity field for editing
+            document.getElementById('product-quantity').value = product.quantity || 1;
             const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
             document.getElementById('whatsapp-number').value = localNumber;
             submitBtn.textContent = 'Update Item';
@@ -75,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     editingProductId = params.get('editId');
     if (editingProductId) {
-        // Wait for auth to be ready before populating
         auth.onAuthStateChanged((user) => {
             if (user) {
                 populateFormForEdit(editingProductId);
@@ -96,7 +97,7 @@ productForm.addEventListener('submit', async (e) => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         const userData = userDoc.exists() ? userDoc.data() : {};
-        
+
         const productName = document.getElementById('product-name').value;
         const imageFile1 = document.getElementById('product-image-1').files[0];
         const imageFile2 = document.getElementById('product-image-2').files[0];
@@ -106,7 +107,7 @@ productForm.addEventListener('submit', async (e) => {
             const docSnap = await getDoc(doc(db, 'products', editingProductId));
             if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
         }
-        
+
         const filesToUpload = [imageFile1, imageFile2].filter(f => f);
         if (filesToUpload.length > 0) {
             finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f)));
@@ -116,11 +117,13 @@ productForm.addEventListener('submit', async (e) => {
             throw new Error('At least one image is required for a new listing.');
         }
 
+        // MODIFIED: Read the quantity from the new form field
         const productData = {
             listing_type: 'item',
             name: productName,
             name_lowercase: productName.toLowerCase(),
             price: Number(document.getElementById('product-price').value),
+            quantity: Number(document.getElementById('product-quantity').value) || 1, // Add this line
             category: document.getElementById('product-category').value,
             description: document.getElementById('product-description').value,
             story: document.getElementById('product-story').value,
@@ -136,17 +139,11 @@ productForm.addEventListener('submit', async (e) => {
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
         } else {
-            // This is a NEW product being created
             await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false });
 
-            // --- SECURE REFERRAL VALIDATION LOGIC ---
-            // After a new product is successfully created, check if a referral request needs to be made.
+            // Referral logic remains the same
             if (userData.referrerId && !userData.referralValidationRequested) {
-                // This user was referred and has not had a request created for them yet.
-                
                 const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
-                
-                // Now that they've uploaded a product with an image, create the request for the admin.
                 await addDoc(collection(db, "referralValidationRequests"), {
                     referrerId: userData.referrerId,
                     referrerEmail: referrerDoc.exists() ? referrerDoc.data().email : 'N/A',
@@ -155,15 +152,12 @@ productForm.addEventListener('submit', async (e) => {
                     status: "pending",
                     createdAt: serverTimestamp()
                 });
-
-                // Mark the user so they only trigger this referral request once.
                 await updateDoc(userDocRef, { referralValidationRequested: true });
             }
-            // --- END OF REFERRAL LOGIC ---
         }
 
         fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
-        
+
         showMessage(messageEl, 'Success! Your listing is live!', false);
         productForm.reset();
         setTimeout(() => { window.location.href = '/products/'; }, 2000);
