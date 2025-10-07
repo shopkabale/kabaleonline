@@ -1,4 +1,4 @@
-# netlify.toml (Corrected and Final Version)
+# netlify.toml (Final Corrected Version)
 
 [build]
   functions = "netlify/functions/"
@@ -8,9 +8,4 @@
 [functions]
   node_bundler = "esbuild"
 
-# CORRECTED: This rule now correctly handles routing
-[[redirects]]
-  from = "/*"
-  to = "index.html" # Can be relative since it's in the publish dir
-  status = 200
-  force = false # This is the crucial fix
+# The [[redirects]] block has been completely removed.
