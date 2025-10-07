@@ -7,6 +7,7 @@ onAuthStateChanged(auth, user => {
     if (user) {
         fetchOrders(user);
     } else {
+        // Not logged in, redirect to login page
         window.location.href = '/login/';
     }
 });
@@ -94,12 +95,17 @@ function renderOrders(orders) {
     ordersContainer.innerHTML = tableHTML;
 }
 
-// NEW: Event listener to handle status changes
+// MODIFIED: Event listener to handle status changes and update UI instantly
 ordersContainer.addEventListener('change', async (event) => {
     if (event.target.classList.contains('action-select')) {
         const selectElement = event.target;
         const orderId = selectElement.dataset.orderId;
         const newStatus = selectElement.value;
+        
+        // Find the original status from the badge in the same row
+        const row = selectElement.closest('tr');
+        const statusBadge = row.querySelector('.status-badge');
+        const originalStatus = statusBadge.textContent;
 
         selectElement.disabled = true;
 
@@ -122,18 +128,17 @@ ordersContainer.addEventListener('change', async (event) => {
                 throw new Error(err.error || "Failed to update status.");
             }
             
-            // Update the UI visually
-            const statusBadge = document.querySelector(`#order-row-${orderId} .status-badge`);
+            // On success, visually update the status badge on the page instantly.
             statusBadge.textContent = newStatus;
             statusBadge.className = `status-badge status-${newStatus.toLowerCase()}`;
-            alert("Order status updated successfully!");
-
+            
         } catch (error) {
             console.error("Error updating status:", error);
             alert(`Error: ${error.message}`);
-            // Revert dropdown on failure
-            fetchOrders(auth.currentUser); 
+            // On failure, revert ONLY the dropdown to its original state
+            selectElement.value = originalStatus;
         } finally {
+            // Re-enable the dropdown whether it succeeded or failed
             selectElement.disabled = false;
         }
     }
