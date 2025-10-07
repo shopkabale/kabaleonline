@@ -7,21 +7,15 @@ onAuthStateChanged(auth, user => {
     if (user) {
         fetchOrders(user);
     } else {
-        // Not logged in, redirect to login page
         window.location.href = '/login/';
     }
 });
 
 async function fetchOrders(user) {
     try {
-        // NEW: Get the user's authentication token
         const token = await user.getIdToken();
-
-        // MODIFIED: Send the request with the token in the headers
         const response = await fetch('/.netlify/functions/get-seller-orders', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (!response.ok) {
@@ -72,7 +66,6 @@ function renderOrders(orders) {
         });
         itemsList += '</ul>';
 
-        // Create the select dropdown for actions
         let actionSelect = `
             <select class="action-select" data-order-id="${order.id}">
                 <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
@@ -82,7 +75,7 @@ function renderOrders(orders) {
         `;
 
         tableHTML += `
-            <tr>
+            <tr id="order-row-${order.id}">
                 <td>${orderDate}</td>
                 <td>
                     <strong>${buyerInfo.name}</strong><br>
@@ -101,4 +94,47 @@ function renderOrders(orders) {
     ordersContainer.innerHTML = tableHTML;
 }
 
-// In the next step, we will add the logic to update the order status.
+// NEW: Event listener to handle status changes
+ordersContainer.addEventListener('change', async (event) => {
+    if (event.target.classList.contains('action-select')) {
+        const selectElement = event.target;
+        const orderId = selectElement.dataset.orderId;
+        const newStatus = selectElement.value;
+
+        selectElement.disabled = true;
+
+        try {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Not authenticated.");
+            
+            const token = await user.getIdToken();
+            const response = await fetch('/.netlify/functions/update-order-status', {
+                method: 'POST',
+                body: JSON.stringify({ orderId, newStatus }),
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Failed to update status.");
+            }
+            
+            // Update the UI visually
+            const statusBadge = document.querySelector(`#order-row-${orderId} .status-badge`);
+            statusBadge.textContent = newStatus;
+            statusBadge.className = `status-badge status-${newStatus.toLowerCase()}`;
+            alert("Order status updated successfully!");
+
+        } catch (error) {
+            console.error("Error updating status:", error);
+            alert(`Error: ${error.message}`);
+            // Revert dropdown on failure
+            fetchOrders(auth.currentUser); 
+        } finally {
+            selectElement.disabled = false;
+        }
+    }
+});
