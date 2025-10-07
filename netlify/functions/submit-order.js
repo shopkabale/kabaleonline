@@ -1,4 +1,5 @@
 const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth"); // NEW: Import getAuth
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 // Your Firebase Admin SDK configuration
@@ -12,17 +13,32 @@ if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
 const db = getFirestore();
+const authAdmin = getAuth(); // NEW: Initialize Admin Auth
 
 exports.handler = async (event, context) => {
-    // Securely get the buyer's ID from the authenticated user token
-    const buyerId = context.clientContext.user?.uid;
+    // NEW: Manually verify the Firebase token from the request header
+    const token = event.headers.authorization?.split('Bearer ')[1];
 
-    if (!buyerId) {
+    if (!token) {
         return { 
             statusCode: 401, 
-            body: JSON.stringify({ error: "You must be logged in to place an order." }) 
+            body: JSON.stringify({ error: "No authentication token provided." }) 
         };
     }
+
+    let decodedToken;
+    try {
+        decodedToken = await authAdmin.verifyIdToken(token);
+    } catch (error) {
+        console.error("Error verifying token:", error);
+        return { 
+            statusCode: 401, 
+            body: JSON.stringify({ error: "Invalid or expired token." }) 
+        };
+    }
+
+    // This is the secure, verified user ID
+    const buyerId = decodedToken.uid;
 
     try {
         const orderDetails = JSON.parse(event.body);
