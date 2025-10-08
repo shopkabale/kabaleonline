@@ -13,12 +13,17 @@ const approvedTestimonialsList = document.getElementById('approved-testimonials-
 // --- AUTH CHECK ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-            adminContent.style.display = 'block';
-            accessDenied.style.display = 'none';
-            initializeAdminPanel();
-        } else {
+        try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists() && userDoc.data().role === 'admin') {
+                adminContent.style.display = 'block';
+                accessDenied.style.display = 'none';
+                initializeAdminPanel();
+            } else {
+                showAccessDenied();
+            }
+        } catch (error) {
+            console.error("Auth check failed:", error);
             showAccessDenied();
         }
     } else {
@@ -43,18 +48,65 @@ function setupGlobalEventListeners() {
     adminContent.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
         if (!btn || !btn.dataset.action) return;
+        
         const action = btn.dataset.action;
+        const handlers = {
+            'toggle-deal': handleToggleDeal,
+            'delete-product': handleDeleteProduct,
+            'toggle-verify': handleToggleVerify,
+            'approve-testimonial': handleApproveTestimonial,
+            'delete-testimonial': handleDeleteTestimonial,
+            'toggle-hero': handleToggleHero,
+            'toggle-save': handleToggleSaveOnMore, // NEW
+            'toggle-sponsor': handleToggleSponsor    // NEW
+        };
 
-        if (action === 'toggle-deal') handleToggleDeal(btn);
-        if (action === 'delete-product') handleDeleteProduct(btn);
-        if (action === 'toggle-verify') handleToggleVerify(btn);
-        if (action === 'approve-testimonial') handleApproveTestimonial(btn);
-        if (action === 'delete-testimonial') handleDeleteTestimonial(btn);
-        if (action === 'toggle-hero') handleToggleHero(btn); // New toggle action
+        if (handlers[action]) {
+            handlers[action](btn);
+        }
     });
 }
 
-// --- NEW HERO TOGGLE LOGIC ---
+// --- HELPER FUNCTION FOR TOGGLES ---
+async function handleGenericToggle(button, fieldName, friendlyName) {
+    const productId = button.dataset.id;
+    const currentStatus = button.dataset.status === 'true';
+    const newStatus = !currentStatus;
+    
+    button.disabled = true;
+    button.textContent = 'Updating...';
+    try {
+        await updateDoc(doc(db, 'products', productId), { [fieldName]: newStatus });
+        button.dataset.status = newStatus;
+        button.textContent = newStatus ? `Remove ${friendlyName}` : `Make ${friendlyName}`;
+        button.classList.toggle(`on-${fieldName.toLowerCase().replace('is','')}`, newStatus);
+    } catch (e) {
+        console.error(`Error updating ${friendlyName}:`, e);
+        alert(`Error updating ${friendlyName} status.`);
+        button.dataset.status = currentStatus;
+        button.textContent = currentStatus ? `Remove ${friendlyName}` : `Make ${friendlyName}`;
+        button.classList.toggle(`on-${fieldName.toLowerCase().replace('is','')}`, currentStatus);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+// --- NEW TOGGLE HANDLERS ---
+function handleToggleSaveOnMore(button) {
+    handleGenericToggle(button, 'isSaveOnMore', 'Save');
+}
+
+function handleToggleSponsor(button) {
+    handleGenericToggle(button, 'isSponsored', 'Sponsor');
+}
+
+function handleToggleDeal(button) {
+    handleGenericToggle(button, 'isDeal', 'Deal');
+}
+
+
+// --- EXISTING LOGIC (UNCHANGED) ---
+
 async function handleToggleHero(button) {
     const productId = button.dataset.id;
     const currentStatus = button.dataset.isHero === 'true';
@@ -64,90 +116,67 @@ async function handleToggleHero(button) {
     button.textContent = 'Updating...';
 
     try {
-        // If we are ADDING a hero, check if the limit is reached
         if (newStatus === true) {
             const productsRef = collection(db, 'products');
             const q = query(productsRef, where('isHero', '==', true));
             const countSnapshot = await getCountFromServer(q);
             if (countSnapshot.data().count >= 6) {
-                alert('Hero slider is full (6 items max). Please remove another item before adding this one.');
-                fetchAllProducts(); // Refresh to fix button state
+                alert('Hero slider is full (6 items max). Please remove another item first.');
+                fetchAllProducts(); 
                 return;
             }
         }
-
         const productRef = doc(db, 'products', productId);
-        if (newStatus === true) {
-            // Add to hero and set the timestamp
-            await updateDoc(productRef, {
-                isHero: true,
-                heroTimestamp: serverTimestamp()
-            });
-        } else {
-            // Remove from hero
-            await updateDoc(productRef, {
-                isHero: false
-            });
-        }
-
-        // Refresh the entire product list to reflect the change
+        await updateDoc(productRef, {
+            isHero: newStatus,
+            ...(newStatus && { heroTimestamp: serverTimestamp() })
+        });
         await fetchAllProducts();
-
     } catch (e) {
         console.error("Error toggling hero status:", e);
         alert("Could not update hero status.");
-        await fetchAllProducts(); // Refresh to fix button state
+        await fetchAllProducts();
     }
 }
 
-// --- USER MANAGEMENT LOGIC ---
-async function fetchAllUsers() {
-    userList.innerHTML = '<p>Loading users...</p>';
-    try {
-        const q = query(collection(db, 'users'), orderBy('email'));
-        const snapshot = await getDocs(q);
-        userList.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            const userData = docSnap.data();
-            if (userData.role === 'admin') return;
-            const isVerified = userData.isVerified || false;
-            const li = document.createElement('li');
-            li.className = 'user-list-item';
-            li.innerHTML = `
-                <span class="user-info">${userData.email} 
-                    ${isVerified ? '<span class="verified-badge">✔️ Verified</span>' : ''}
-                </span>
-                <button class="action-btn ${isVerified ? 'red' : 'green'}" data-action="toggle-verify" data-uid="${docSnap.id}" data-status="${isVerified}">
-                    ${isVerified ? 'Un-verify' : 'Verify'}
-                </button>
-            `;
-            userList.appendChild(li);
-        });
-    } catch (e) {
-        console.error("Error fetching users:", e);
-        userList.innerHTML = '<li>Could not load users. Check console for errors.</li>';
-    }
+async function fetchAllUsers() { 
+    userList.innerHTML = '<p>Loading users...</p>'; 
+    try { 
+        const q = query(collection(db, 'users'), orderBy('email')); 
+        const snapshot = await getDocs(q); 
+        userList.innerHTML = ''; 
+        snapshot.forEach(docSnap => { 
+            const userData = docSnap.data(); 
+            if (userData.role === 'admin') return; 
+            const isVerified = userData.isVerified || false; 
+            const li = document.createElement('li'); 
+            li.className = 'user-list-item'; 
+            li.innerHTML = `<span class="user-info">${userData.email} ${isVerified ? '<span class="verified-badge">✔️ Verified</span>' : ''}</span><button class="action-btn ${isVerified ? 'red' : 'green'}" data-action="toggle-verify" data-uid="${docSnap.id}" data-status="${isVerified}">${isVerified ? 'Un-verify' : 'Verify'}</button>`; 
+            userList.appendChild(li); 
+        }); 
+    } catch (e) { 
+        console.error("Error fetching users:", e); 
+        userList.innerHTML = '<li>Could not load users.</li>'; 
+    } 
 }
 
-async function handleToggleVerify(button) {
-    const userId = button.dataset.uid;
-    const currentStatus = button.dataset.status === 'true';
-    const newStatus = !currentStatus;
-    if (!confirm(`Are you sure you want to ${newStatus ? 'verify' : 'un-verify'} this user?`)) return;
-    button.disabled = true;
-    button.textContent = 'Updating...';
-    try {
-        await updateDoc(doc(db, 'users', userId), { isVerified: newStatus });
-        await fetchAllUsers();
-    } catch(e) {
-        console.error("Error toggling user verification:", e);
-        alert("Failed to update user verification status.");
-        button.disabled = false;
-        button.textContent = currentStatus ? 'Un-verify' : 'Verify';
-    }
+async function handleToggleVerify(button) { 
+    const userId = button.dataset.uid; 
+    const currentStatus = button.dataset.status === 'true'; 
+    const newStatus = !currentStatus; 
+    if (!confirm(`Are you sure you want to ${newStatus ? 'verify' : 'un-verify'} this user?`)) return; 
+    button.disabled = true; button.textContent = 'Updating...'; 
+    try { 
+        await updateDoc(doc(db, 'users', userId), { isVerified: newStatus }); 
+        await fetchAllUsers(); 
+    } catch(e) { 
+        console.error("Error toggling user verification:", e); 
+        alert("Failed to update status."); 
+        button.disabled = false; 
+        button.textContent = currentStatus ? 'Un-verify' : 'Verify'; 
+    } 
 }
 
-// --- PRODUCT MANAGEMENT LOGIC (MODIFIED) ---
 async function fetchAllProducts() {
     allProductsList.innerHTML = '<p>Loading products...</p>';
     try {
@@ -158,7 +187,9 @@ async function fetchAllProducts() {
             const product = docSnap.data();
             const id = docSnap.id;
             const isDeal = product.isDeal || false;
-            const isHero = product.isHero || false; // Check hero status
+            const isHero = product.isHero || false;
+            const isSaveOnMore = product.isSaveOnMore || false; 
+            const isSponsored = product.isSponsored || false; 
             const verifiedBadge = product.sellerIsVerified ? '✔️' : '';
 
             const card = document.createElement('div');
@@ -172,14 +203,15 @@ async function fetchAllProducts() {
                     <button class="deal-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${id}" data-status="${isDeal}">
                         ${isDeal ? 'Remove Deal' : 'Make Deal'}
                     </button>
-                    
-                    <button class="action-btn ${isHero ? 'red' : 'blue'}" 
-                            data-action="toggle-hero" 
-                            data-id="${id}" 
-                            data-is-hero="${isHero}">
-                        ${isHero ? 'Remove from Hero' : 'Add to Hero'}
+                    <button class="save-btn ${isSaveOnMore ? 'on-save' : ''}" data-action="toggle-save" data-id="${id}" data-status="${isSaveOnMore}">
+                        ${isSaveOnMore ? 'Remove Save' : 'Add to Save'}
                     </button>
-
+                    <button class="sponsor-btn ${isSponsored ? 'on-sponsor' : ''}" data-action="toggle-sponsor" data-id="${id}" data-status="${isSponsored}">
+                        ${isSponsored ? 'Remove Sponsor' : 'Sponsor Item'}
+                    </button>
+                    <button class="action-btn ${isHero ? 'red' : 'blue'}" data-action="toggle-hero" data-id="${id}" data-is-hero="${isHero}">
+                        ${isHero ? 'Remove Hero' : 'Add to Hero'}
+                    </button>
                     <button class="admin-delete" data-action="delete-product" data-id="${id}" data-name="${product.name.replace(/"/g, '&quot;')}">Delete</button>
                 </div>
             `;
@@ -191,93 +223,61 @@ async function fetchAllProducts() {
     }
 }
 
-async function handleToggleDeal(button) {
-    const productId = button.dataset.id;
-    const currentStatus = button.dataset.status === 'true';
-    const newStatus = !currentStatus;
-    button.disabled = true;
-    button.textContent = 'Updating...';
-    try {
-        await updateDoc(doc(db, 'products', productId), { isDeal: newStatus });
-        button.dataset.status = newStatus;
-        button.textContent = newStatus ? 'Remove Deal' : 'Make Deal';
-        button.classList.toggle('on-deal', newStatus);
-    } catch (e) {
-        console.error("Error updating deal:", e);
-        alert("Error updating deal status.");
-    } finally {
-        button.disabled = false;
-    }
+async function handleDeleteProduct(button) { 
+    const id = button.dataset.id; 
+    if (!confirm(`Delete product "${button.dataset.name}"?`)) return; 
+    try { 
+        await deleteDoc(doc(db, 'products', id)); 
+        fetchAllProducts(); 
+    } catch (e) { 
+        console.error("Error deleting product:", e); 
+        alert("Could not delete product."); 
+    } 
 }
 
-async function handleDeleteProduct(button) {
-    const id = button.dataset.id;
-    if (!confirm(`Delete product "${button.dataset.name}"?`)) return;
-    try {
-        await deleteDoc(doc(db, 'products', id));
-        fetchAllProducts(); // Refresh list after deleting
-    } catch (e) {
-        console.error("Error deleting product:", e);
-        alert("Could not delete product.");
-    }
+async function fetchTestimonialsForAdmin() { 
+    pendingTestimonialsList.innerHTML = '<p>Loading...</p>'; 
+    approvedTestimonialsList.innerHTML = '<p>Loading...</p>'; 
+    try { 
+        const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc')); 
+        const snapshot = await getDocs(q); 
+        let pending = ''; 
+        let approved = ''; 
+        snapshot.forEach(docSnap => { 
+            const t = docSnap.data(); 
+            const id = docSnap.id; 
+            const itemHTML = `<li class="user-list-item"><div><p><strong>"${t.quote}"</strong></p><p>- ${t.authorName}</p></div><div class="testimonial-controls">${t.status === 'pending' ? `<button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>` : ''}<button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button></div></li>`; 
+            if (t.status === 'pending') { pending += itemHTML; } else { approved += itemHTML; } 
+        }); 
+        pendingTestimonialsList.innerHTML = pending || '<li>No pending testimonials</li>'; 
+        approvedTestimonialsList.innerHTML = approved || '<li>No approved testimonials</li>'; 
+    } catch (e) { 
+        console.error("Error fetching testimonials:", e); 
+    } 
 }
 
-// --- TESTIMONIAL MANAGEMENT LOGIC ---
-async function fetchTestimonialsForAdmin() {
-    pendingTestimonialsList.innerHTML = '<p>Loading...</p>';
-    approvedTestimonialsList.innerHTML = '<p>Loading...</p>';
-    try {
-        const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        let pending = '';
-        let approved = '';
-        snapshot.forEach(docSnap => {
-            const t = docSnap.data();
-            const id = docSnap.id;
-            const itemHTML = `
-                <li class="user-list-item">
-                    <div><p><strong>"${t.quote}"</strong></p><p>- ${t.authorName}</p></div>
-                    <div class="testimonial-controls">
-                        ${t.status === 'pending' ? `<button class="action-btn green" data-action="approve-testimonial" data-id="${id}">Approve</button>` : ''}
-                        <button class="action-btn red" data-action="delete-testimonial" data-id="${id}">Delete</button>
-                    </div>
-                </li>`;
-            if (t.status === 'pending') {
-                pending += itemHTML;
-            } else {
-                approved += itemHTML;
-            }
-        });
-        pendingTestimonialsList.innerHTML = pending || '<li>No pending testimonials</li>';
-        approvedTestimonialsList.innerHTML = approved || '<li>No approved testimonials</li>';
-    } catch (e) {
-        console.error("Error fetching testimonials:", e);
-    }
+async function handleApproveTestimonial(button) { 
+    const testimonialId = button.dataset.id; 
+    button.disabled = true; button.textContent = 'Approving...'; 
+    try { 
+        await updateDoc(doc(db, 'testimonials', testimonialId), { status: 'approved', order: Date.now() }); 
+        fetchTestimonialsForAdmin(); 
+    } catch (e) { 
+        console.error("Error approving testimonial:", e); 
+        alert("Could not approve."); 
+    } 
 }
 
-async function handleApproveTestimonial(button) {
-    const testimonialId = button.dataset.id;
-    button.disabled = true;
-    button.textContent = 'Approving...';
-    try {
-        await updateDoc(doc(db, 'testimonials', testimonialId), { status: 'approved', order: Date.now() });
-        fetchTestimonialsForAdmin();
-    } catch (e) {
-        console.error("Error approving testimonial:", e);
-        alert("Could not approve testimonial.");
-    }
-}
-
-async function handleDeleteTestimonial(button) {
-    const testimonialId = button.dataset.id;
-    if (!confirm("Are you sure you want to delete this testimonial?")) return;
-    button.disabled = true;
-    button.textContent = 'Deleting...';
-    try {
-        await deleteDoc(doc(db, 'testimonials', testimonialId));
-        fetchTestimonialsForAdmin();
-    } catch (e) {
-        console.error("Error deleting testimonial:", e);
-        alert("Could not delete testimonial.");
-    }
+async function handleDeleteTestimonial(button) { 
+    const testimonialId = button.dataset.id; 
+    if (!confirm("Delete this testimonial?")) return; 
+    button.disabled = true; 
+    button.textContent = 'Deleting...'; 
+    try { 
+        await deleteDoc(doc(db, 'testimonials', testimonialId)); 
+        fetchTestimonialsForAdmin(); 
+    } catch (e) { 
+        console.error("Error deleting testimonial:", e); 
+        alert("Could not delete."); 
+    } 
 }
