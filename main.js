@@ -46,7 +46,6 @@ const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
 const modal = document.getElementById('custom-modal');
 
-
 // --- APPLICATION STATE ---
 const state = {
     currentPage: 0,
@@ -59,7 +58,6 @@ const state = {
 };
 
 // --- HELPER & RENDER FUNCTIONS ---
-
 function showModal({ icon, title, message, theme = 'info', buttons }) {
     if (!modal) return;
     const modalIcon = document.getElementById('modal-icon');
@@ -268,6 +266,7 @@ async function fetchAndDisplayCategoryCounts() {
         }
     } catch (error) { console.error('Error fetching category counts:', error); }
 }
+
 
 // --- UI & EVENT HANDLERS ---
 function updatePaginationUI() {
