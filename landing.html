@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* All of your existing and new CSS is here */
+        /* All of your CSS remains the same */
         :root {
             --primary-gradient: linear-gradient(90deg, #007bff, #0056b3);
             --accent-gradient: linear-gradient(90deg, #ffc107, #f7b733);
@@ -145,27 +145,9 @@
             .testimonial-grid { grid-template-columns: repeat(2, 1fr); }
             .cta-buttons { flex-direction: row; justify-content: center; }
         }
-/* Add this CSS to your <style> block */
-.intro-section {
-    padding: 50px 15px;
-    text-align: center;
-    background-color: var(--bg-card);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.intro-section h2 {
-    font-size: 1.8em;
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-.intro-section p {
-    font-size: 1.1em;
-    color: var(--text-secondary);
-    max-width: 700px;
-    margin: 0 auto;
-    line-height: 1.7;
-}
+        .intro-section { padding: 50px 15px; text-align: center; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); }
+        .intro-section h2 { font-size: 1.8em; margin-top: 0; margin-bottom: 15px; }
+        .intro-section p { font-size: 1.1em; color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.7; }
     </style>
 </head>
 <body class="light-mode">
@@ -182,8 +164,8 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <a href="/cart.html" class="modal-trigger" data-url="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
-                <a href="/dashboard/" class="modal-trigger" data-url="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
+                <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
+                <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
             </div>
         </div>
     </header>
@@ -191,20 +173,20 @@
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
-            <a href="/shop/" class="nav-link modal-trigger" data-url="/shop/"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="https://gigs.kabaleonline.com" class="nav-link modal-trigger" data-url="https://gigs.kabaleonline.com"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/events/" class="nav-link modal-trigger" data-url="/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="/stories.html" class="nav-link modal-trigger" data-url="/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-            <a href="/wishlist.html" class="nav-link modal-trigger" data-url="/wishlist.html"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-            <a href="/cart.html" class="nav-link modal-trigger" data-url="/cart.html"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
-            <a href="/my-orders.html" class="nav-link modal-trigger" data-url="/my-orders.html"><i class="fa-solid fa-box"></i> My Orders</a>
-            <a href="/inbox.html" class="nav-link modal-trigger" data-url="/inbox.html"><i class="fa-solid fa-inbox"></i> My Inbox</a>
-            <a href="/rentals/" class="nav-link modal-trigger" data-url="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-            <a href="/requests/view.html" class="nav-link modal-trigger" data-url="/requests/view.html"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-            <a href="/lost-and-found/" class="nav-link modal-trigger" data-url="/lost-and-found/"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+            <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/shop/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="/shop/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/shop/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
+            <a href="/shop/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+            <a href="/shop/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/shop/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/shop/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
         </div>
         <div class="mobile-nav-footer">
-            <a href="/dashboard/" class="post-button modal-trigger" data-url="/dashboard/">Post Something Free</a>
+            <a href="/dashboard/" class="post-button">Post Something Free</a>
         </div>
     </nav>
     <div class="mobile-nav-overlay"></div>
@@ -215,40 +197,38 @@
                 <div class="slide-content">
                     <h1>Buy & Sell Textbooks</h1>
                     <p>Find course materials from fellow students.</p>
-                    <a href="/shop/" class="cta-button modal-trigger" data-url="/shop/">Browse Items</a>
+                    <a href="/shop/" class="cta-button">Browse Items</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?q=80&w=1974&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Latest Gadgets</h1>
                     <p>Upgrade your tech for less.</p>
-                    <a href="/shop/?category=Electronics" class="cta-button modal-trigger" data-url="/shop/?category=Electronics">Shop Electronics</a>
+                    <a href="/shop/?category=Electronics" class="cta-button">Shop Electronics</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Offer Your Skills</h1>
                     <p>From tutoring to repairs, find help on campus.</p>
-                    <a href="https://gigs.kabaleonline.com" class="cta-button modal-trigger" data-url="https://gigs.kabaleonline.com">Browse Services</a>
+                    <a href="https://gigs.kabaleonline.com" class="cta-button service-link">Browse Services</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1974&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Find Your Next Hostel</h1>
                     <p>Browse student rentals and hostels in Kabale.</p>
-                    <a href="/shop/rentals/" class="cta-button modal-trigger" data-url="/shop/rentals/">View Rentals</a>
+                    <a href="/shop/rentals/" class="cta-button">View Rentals</a>
                 </div>
             </div>
         </section>
 
-<section class="intro-section">
-    <div class="container">
-        <h2>Your #1 Campus Marketplace</h2>
-        <p>
-            Welcome to Kabale Online, the one-stop platform for students in Kabale. Whether you're looking to buy a used textbook, sell a gadget, find a hostel, or discover local services, you'll find it all right here.
-        </p>
-    </div>
-</section>
+        <section class="intro-section">
+            <div class="container">
+                <h2>Your #1 Campus Marketplace</h2>
+                <p>Welcome to Kabale Online, the one-stop platform for students in Kabale. Whether you're looking to buy a used textbook, sell a gadget, find a hostel, or discover local services, you'll find it all right here.</p>
+            </div>
+        </section>
 
         <section class="stats-section">
             <div class="container">
@@ -286,27 +266,27 @@
             <div class="container">
                 <h2>What We Offer</h2>
                 <div class="sections-grid">
-                    <a href="/shop/" class="section-card modal-trigger" data-url="/shop/">
+                    <a href="/shop/" class="section-card">
                         <i class="fas fa-store"></i>
                         <h3>Buy Items</h3>
                         <p>Discover deals on textbooks, electronics, and more from students in Kabale.</p>
                     </a>
-                    <a href="/upload/" class="section-card modal-trigger" data-url="/upload/">
+                    <a href="/upload/" class="section-card">
                         <i class="fas fa-cash-register"></i>
                         <h3>Sell Your Stuff</h3>
                         <p>Turn your unused items into cash and connect with buyers in your campus community.</p>
                     </a>
-                    <a href="/rentals/" class="section-card modal-trigger" data-url="/rentals/">
+                    <a href="/rentals/" class="section-card">
                         <i class="fas fa-house-user"></i>
                         <h3>Find Hostels</h3>
                         <p>Browse listings for student hostels and rentals near campus, with details and contacts.</p>
                     </a>
-                    <a href="https://gigs.kabaleonline.com" class="section-card modal-trigger" data-url="https://gigs.kabaleonline.com">
+                    <a href="https://gigs.kabaleonline.com" class="section-card service-link">
                         <i class="fas fa-concierge-bell"></i>
                         <h3>Offer a Service</h3>
                         <p>Promote your skills, from tutoring to repairs, on our services hub.</p>
                     </a>
-                    <a href="/lost-and-found/" class="section-card modal-trigger" data-url="/lost-and-found/">
+                    <a href="/lost-and-found/" class="section-card">
                         <i class="fas fa-magnifying-glass-plus"></i>
                         <h3>Lost & Found</h3>
                         <p>Post a notice for a lost item or report something you've found to help our community.</p>
@@ -329,8 +309,8 @@
                 <h2>Ready to Start?</h2>
                 <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px;">Join our community today and discover a smarter way to buy and sell on campus.</p>
                 <div class="cta-buttons">
-                    <a href="/shop/" class="cta-btn cta-buy modal-trigger" data-url="/shop/">Start Buying</a>
-                    <a href="/upload/" class="cta-btn cta-sell modal-trigger" data-url="/upload/">Start Selling</a>
+                    <a href="/shop/" class="cta-btn cta-buy">Start Buying</a>
+                    <a href="/upload/" class="cta-btn cta-sell">Start Selling</a>
                 </div>
             </div>
         </section>
@@ -369,7 +349,6 @@
         import { db } from './firebase.js';
         import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // --- UTILITY FUNCTIONS ---
         function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
             if (!url || !url.includes('res.cloudinary.com')) {
                 return url || 'https://placehold.co/200x200/e0e0e0/777?text=No+Image';
@@ -380,11 +359,10 @@
             return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
         }
 
-        // --- DATA FETCHING FUNCTIONS ---
         async function fetchTrendingProducts() {
             const trendingGrid = document.getElementById('trending-products-grid');
             if (!trendingGrid) return;
-            
+
             try {
                 const trendingQuery = query(
                     collection(db, 'products'),
@@ -408,8 +386,7 @@
 
                     const productCard = document.createElement('a');
                     productCard.href = `/shop/product.html?id=${product.id}`;
-                    productCard.className = "product-card modal-trigger";
-                    productCard.dataset.url = `/shop/product.html?id=${product.id}`;
+                    productCard.className = "product-card";
                     
                     productCard.innerHTML = `
                         <img src="${thumbnailUrl}" alt="${product.name}">
@@ -454,25 +431,27 @@
             }
         }
 
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            // --- HAMBURGER MENU LOGIC ---
             const hamburger = document.querySelector('.hamburger-menu');
             const mobileNav = document.querySelector('.mobile-nav');
             const overlay = document.querySelector('.mobile-nav-overlay');
-            hamburger.addEventListener('click', () => {
-                mobileNav.classList.toggle('active');
-                overlay.classList.toggle('active');
-            });
-            overlay.addEventListener('click', () => {
-                mobileNav.classList.remove('active');
-                overlay.classList.remove('active');
-            });
+            if(hamburger) {
+                hamburger.addEventListener('click', () => {
+                    mobileNav.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+            }
+            if(overlay) {
+                overlay.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
 
-            // --- THEME TOGGLE LOGIC ---
             const themeToggle = document.getElementById('theme-toggle');
             function setTheme(theme) {
-                document.body.className = theme;
+                document.body.className = ''; // Clear classes
+                document.body.classList.add(theme);
                 localStorage.setItem('theme', theme);
                 themeToggle.checked = (theme === 'light-mode');
             }
@@ -480,7 +459,6 @@
             setTheme(currentTheme);
             themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'light-mode' : 'dark-mode'));
 
-            // --- HERO SLIDER LOGIC ---
             const slides = document.querySelectorAll('.hero-slider .slide');
             let currentSlide = 0;
             if (slides.length > 0) {
@@ -491,7 +469,6 @@
                 }, 5000);
             }
 
-            // --- ANIMATED STATS COUNTER ---
             const counters = document.querySelectorAll('.stat-number');
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
@@ -500,11 +477,11 @@
                         const animate = () => {
                             const target = +counter.getAttribute('data-target');
                             const count = +counter.innerText.replace(/,/g, '');
-                            const inc = target / 100; // Adjusted speed
+                            const inc = target / 100;
 
                             if (count < target) {
                                 counter.innerText = Math.ceil(count + inc);
-                                setTimeout(animate, 15); // Adjusted timing
+                                setTimeout(animate, 15);
                             } else {
                                 counter.innerText = target.toLocaleString();
                             }
@@ -516,23 +493,17 @@
             }, { threshold: 0.5 });
             counters.forEach(counter => { if (counter.getAttribute('data-target')) observer.observe(counter); });
 
-            // --- NAVIGATION MODAL LOGIC ---
             const navModal = document.getElementById('nav-modal');
             const navModalMessage = document.getElementById('nav-modal-message');
             const navConfirmBtn = document.getElementById('nav-confirm-btn');
             const navCancelBtn = document.getElementById('nav-cancel-btn');
 
             document.body.addEventListener('click', (e) => {
-                const trigger = e.target.closest('.modal-trigger');
+                const trigger = e.target.closest('.service-link');
                 if (trigger) {
                     e.preventDefault();
-                    const url = trigger.dataset.url;
-                    const isExternal = url.startsWith('http');
-                    
-                    navModalMessage.textContent = isExternal 
-                        ? "You are about to visit an external site for our services. Do you want to continue?"
-                        : "You are leaving the main page to go to our shop. Continue?";
-                    
+                    const url = trigger.href;
+                    navModalMessage.textContent = "You are being redirected to our dedicated services platform, Gigs Hub. Continue?";
                     navConfirmBtn.href = url;
                     navModal.style.display = 'flex';
                 }
@@ -545,10 +516,10 @@
                 if (e.target === navModal) navModal.style.display = 'none';
             });
 
-            // --- FETCH DYNAMIC CONTENT ---
             fetchTrendingProducts();
             fetchTestimonials();
         });
     </script>
-</body>
+    
+    </body>
 </html>
