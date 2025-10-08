@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
+        /* All of your existing and new CSS is here */
         :root {
             --primary-gradient: linear-gradient(90deg, #007bff, #0056b3);
             --accent-gradient: linear-gradient(90deg, #ffc107, #f7b733);
@@ -131,8 +132,6 @@
         .footer-links { margin: 25px 0; }
         .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
         .footer-copyright { font-size: 0.9em; color: #64748b; }
-
-        /* Modal for navigation */
         .nav-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
         .nav-modal-content { background-color: var(--bg-card); margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 400px; text-align: center; }
         .nav-modal-content h3 { margin-top: 0; }
@@ -140,7 +139,6 @@
         .nav-modal-btn { padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
         .btn-confirm { background-color: var(--ko-primary); color: white; }
         .btn-cancel { background-color: #6c757d; color: white; }
-
         @media (min-width: 768px) {
             .stats-grid { grid-template-columns: repeat(4, 1fr); }
             .sections-grid { grid-template-columns: repeat(3, 1fr); }
@@ -163,8 +161,8 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
-                <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
+                <a href="/cart.html" class="modal-trigger" data-url="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
+                <a href="/dashboard/" class="modal-trigger" data-url="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
             </div>
         </div>
     </header>
@@ -173,7 +171,7 @@
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link modal-trigger" data-url="/shop/"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="/shop/?type=service" class="nav-link modal-trigger" data-url="https://gigs.kabaleonline.com"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link modal-trigger" data-url="https://gigs.kabaleonline.com"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
             <a href="/shop/events/" class="nav-link modal-trigger" data-url="/shop/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
             <a href="/shop/stories.html" class="nav-link modal-trigger" data-url="/shop/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/shop/wishlist.html" class="nav-link modal-trigger" data-url="/shop/wishlist.html"><i class="fa-solid fa-heart"></i> My Wishlist</a>
@@ -228,13 +226,13 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-number" data-target="67">0</div>
+                        <div class="stat-number" data-target="64">0</div>
                         <div class="stat-label">Registered Students</div>
                         <div class="stat-sublabel">Last Month</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon"><i class="fas fa-box"></i></div>
-                        <div class="stat-number" data-target="114">0</div>
+                        <div class="stat-number" data-target="79">0</div>
                         <div class="stat-label">Items Listed</div>
                         <div class="stat-sublabel">Last Month</div>
                     </div>
@@ -337,8 +335,190 @@
         </div>
     </div>
     
-    <script type="module" src="js/landing-page.js"></script>
-    <script type="module" src="ui.js"></script>
-    <script type="module" src="firebase.js"></script>
+    <script type="module">
+        import { db } from './firebase.js';
+        import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // --- UTILITY FUNCTIONS ---
+        function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
+            if (!url || !url.includes('res.cloudinary.com')) {
+                return url || 'https://placehold.co/200x200/e0e0e0/777?text=No+Image';
+            }
+            const transformString = 'c_fill,g_auto,w_400,h_400,f_auto,q_auto';
+            const urlParts = url.split('/upload/');
+            if (urlParts.length !== 2) return url;
+            return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+        }
+
+        // --- DATA FETCHING FUNCTIONS ---
+        async function fetchTrendingProducts() {
+            const trendingGrid = document.getElementById('trending-products-grid');
+            if (!trendingGrid) return;
+            
+            try {
+                const trendingQuery = query(
+                    collection(db, 'products'),
+                    where('isHero', '==', true),
+                    where('isSold', '==', false),
+                    orderBy('heroTimestamp', 'desc'),
+                    limit(8)
+                );
+                const snapshot = await getDocs(trendingQuery);
+
+                if (snapshot.empty) {
+                    trendingGrid.innerHTML = '<p style="padding: 0 15px;">No trending products found.</p>';
+                    return;
+                }
+
+                trendingGrid.innerHTML = "";
+                const fragment = document.createDocumentFragment();
+                snapshot.forEach(doc => {
+                    const product = { id: doc.id, ...doc.data() };
+                    const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0]);
+
+                    const productCard = document.createElement('a');
+                    productCard.href = `/shop/product.html?id=${product.id}`;
+                    productCard.className = "product-card modal-trigger";
+                    productCard.dataset.url = `/shop/product.html?id=${product.id}`;
+                    
+                    productCard.innerHTML = `
+                        <img src="${thumbnailUrl}" alt="${product.name}">
+                        <div class="product-card-content">
+                            <h3>${product.name}</h3>
+                            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+                        </div>
+                    `;
+                    fragment.appendChild(productCard);
+                });
+                trendingGrid.appendChild(fragment);
+
+            } catch (error) {
+                console.error("Error fetching trending products:", error);
+                trendingGrid.innerHTML = '<p style="padding: 0 15px;">Could not load products.</p>';
+            }
+        }
+
+        async function fetchTestimonials() {
+            const testimonialGrid = document.getElementById('testimonial-grid');
+            if (!testimonialGrid) return;
+            try {
+                const testimonialsQuery = query(collection(db, 'testimonials'), where('status', '==', 'approved'), orderBy('order', 'asc'), limit(2));
+                const querySnapshot = await getDocs(testimonialsQuery);
+                if (querySnapshot.empty) {
+                    testimonialGrid.closest('.testimonial-section').style.display = 'none';
+                    return;
+                }
+                testimonialGrid.innerHTML = '';
+                querySnapshot.forEach(doc => {
+                    const testimonial = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'testimonial-card';
+                    card.innerHTML = `
+                        <p class="testimonial-text">"${testimonial.quote}"</p>
+                        <p class="testimonial-author">&ndash; ${testimonial.authorName}</p>
+                    `;
+                    testimonialGrid.appendChild(card);
+                });
+            } catch (error) {
+                console.error("Error fetching testimonials:", error);
+            }
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- HAMBURGER MENU LOGIC ---
+            const hamburger = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            hamburger.addEventListener('click', () => {
+                mobileNav.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            overlay.addEventListener('click', () => {
+                mobileNav.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+
+            // --- THEME TOGGLE LOGIC ---
+            const themeToggle = document.getElementById('theme-toggle');
+            function setTheme(theme) {
+                document.body.className = theme;
+                localStorage.setItem('theme', theme);
+                themeToggle.checked = (theme === 'light-mode');
+            }
+            const currentTheme = localStorage.getItem('theme') || 'light-mode';
+            setTheme(currentTheme);
+            themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'light-mode' : 'dark-mode'));
+
+            // --- HERO SLIDER LOGIC ---
+            const slides = document.querySelectorAll('.hero-slider .slide');
+            let currentSlide = 0;
+            if (slides.length > 0) {
+                setInterval(() => {
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    slides[currentSlide].classList.add('active');
+                }, 5000);
+            }
+
+            // --- ANIMATED STATS COUNTER ---
+            const counters = document.querySelectorAll('.stat-number');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const animate = () => {
+                            const target = +counter.getAttribute('data-target');
+                            const count = +counter.innerText.replace(/,/g, '');
+                            const inc = target / 100; // Adjusted speed
+
+                            if (count < target) {
+                                counter.innerText = Math.ceil(count + inc);
+                                setTimeout(animate, 15); // Adjusted timing
+                            } else {
+                                counter.innerText = target.toLocaleString();
+                            }
+                        };
+                        animate();
+                        observer.unobserve(counter);
+                    }
+                });
+            }, { threshold: 0.5 });
+            counters.forEach(counter => { if (counter.getAttribute('data-target')) observer.observe(counter); });
+
+            // --- NAVIGATION MODAL LOGIC ---
+            const navModal = document.getElementById('nav-modal');
+            const navModalMessage = document.getElementById('nav-modal-message');
+            const navConfirmBtn = document.getElementById('nav-confirm-btn');
+            const navCancelBtn = document.getElementById('nav-cancel-btn');
+
+            document.body.addEventListener('click', (e) => {
+                const trigger = e.target.closest('.modal-trigger');
+                if (trigger) {
+                    e.preventDefault();
+                    const url = trigger.dataset.url;
+                    const isExternal = url.startsWith('http');
+                    
+                    navModalMessage.textContent = isExternal 
+                        ? "You are about to visit an external site for our services. Do you want to continue?"
+                        : "You are leaving the main page to go to our shop. Continue?";
+                    
+                    navConfirmBtn.href = url;
+                    navModal.style.display = 'flex';
+                }
+            });
+
+            navCancelBtn.addEventListener('click', () => {
+                navModal.style.display = 'none';
+            });
+            navModal.addEventListener('click', (e) => {
+                if (e.target === navModal) navModal.style.display = 'none';
+            });
+
+            // --- FETCH DYNAMIC CONTENT ---
+            fetchTrendingProducts();
+            fetchTestimonials();
+        });
+    </script>
 </body>
 </html>
