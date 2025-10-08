@@ -32,6 +32,10 @@ const productGrid = document.getElementById("product-grid");
 const listingsTitle = document.getElementById("listings-title");
 const dealsSection = document.getElementById("deals-section");
 const dealsGrid = document.getElementById("deals-grid");
+const saveOnMoreSection = document.getElementById("save-on-more-section");
+const saveOnMoreGrid = document.getElementById("save-on-more-grid");
+const sponsoredSection = document.getElementById("sponsored-section");
+const sponsoredGrid = document.getElementById("sponsored-grid");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
@@ -41,10 +45,6 @@ const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
 const modal = document.getElementById('custom-modal');
-const saveOnMoreSection = document.getElementById("save-on-more-section");
-const saveOnMoreGrid = document.getElementById("save-on-more-grid");
-const sponsoredSection = document.getElementById("sponsored-section");
-const sponsoredGrid = document.getElementById("sponsored-grid");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -157,11 +157,10 @@ function renderProducts(productsToDisplay) {
         productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
     }
-    renderCarouselProducts(productGrid, productsToDisplay); // Re-use the same render logic
+    renderCarouselProducts(productGrid, productsToDisplay);
     observeLazyImages();
     initializeWishlistButtons();
 }
-
 
 // --- DATA FETCHING FUNCTIONS ---
 async function fetchAndRenderProducts() {
@@ -186,6 +185,20 @@ async function fetchAndRenderProducts() {
     } finally {
         state.isFetching = false;
         updatePaginationUI();
+        
+        // THIS BLOCK HANDLES SCROLLING ON SEARCH AND PAGINATION
+        if (state.currentPage > 0 || state.searchTerm) {
+            const targetElement = document.getElementById('listings-title');
+            if (targetElement) {
+                // A small timeout ensures the DOM is painted before we scroll
+                setTimeout(() => {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            }
+        }
     }
 }
 
@@ -196,10 +209,7 @@ async function fetchDeals() {
     try {
         const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
-        if (snapshot.empty) {
-            dealsSection.style.display = 'none';
-            return;
-        }
+        if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderCarouselProducts(dealsGrid, products);
         observeLazyImages();
@@ -214,10 +224,7 @@ async function fetchSaveOnMore() {
     try {
         const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            saveOnMoreSection.style.display = 'none';
-            return;
-        }
+        if (snapshot.empty) { saveOnMoreSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderCarouselProducts(saveOnMoreGrid, products);
         observeLazyImages();
@@ -232,10 +239,7 @@ async function fetchSponsoredItems() {
     try {
         const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            sponsoredSection.style.display = 'none';
-            return;
-        }
+        if (snapshot.empty) { sponsoredSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderCarouselProducts(sponsoredGrid, products);
         observeLazyImages();
@@ -264,7 +268,6 @@ async function fetchAndDisplayCategoryCounts() {
         }
     } catch (error) { console.error('Error fetching category counts:', error); }
 }
-
 
 // --- UI & EVENT HANDLERS ---
 function updatePaginationUI() {
@@ -316,13 +319,9 @@ async function handleWishlistClick(event) {
 function updateWishlistButtonUI(button, isInWishlist) {
     const icon = button.querySelector('i');
     if (isInWishlist) {
-        button.classList.add('active');
-        icon.classList.remove('fa-regular');
-        icon.classList.add('fa-solid');
+        button.classList.add('active'); icon.classList.remove('fa-regular'); icon.classList.add('fa-solid');
     } else {
-        button.classList.remove('active');
-        icon.classList.remove('fa-solid');
-        icon.classList.add('fa-regular');
+        button.classList.remove('active'); icon.classList.remove('fa-solid'); icon.classList.add('fa-regular');
     }
 }
 
@@ -338,10 +337,7 @@ function initializeWishlistButtons() {
 }
 
 async function fetchUserWishlist() {
-    if (!state.currentUser) {
-        state.wishlist.clear();
-        return;
-    }
+    if (!state.currentUser) { state.wishlist.clear(); return; }
     try {
         const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
         const wishlistSnapshot = await getDocs(wishlistCol);
@@ -352,10 +348,7 @@ async function fetchUserWishlist() {
 
 function listenForCartUpdates(userId) {
     const cartBadges = document.querySelectorAll('.cart-badge');
-    if (!userId) {
-        cartBadges.forEach(badge => badge.classList.remove('visible'));
-        return;
-    }
+    if (!userId) { cartBadges.forEach(badge => badge.classList.remove('visible')); return; }
     const cartRef = collection(db, 'users', userId, 'cart');
     onSnapshot(cartRef, (snapshot) => {
         const count = snapshot.size;
@@ -384,10 +377,7 @@ function handleFilterLinkClick(event) {
     state.filters.type = type; state.filters.category = category; state.currentPage = 0; state.searchTerm = '';
     searchInput.value = '';
     fetchAndRenderProducts();
-    if (mobileNav) {
-        mobileNav.classList.remove('active');
-        document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
-    }
+    if (mobileNav) { mobileNav.classList.remove('active'); document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); }
 }
 
 function initializeStateFromURL() {
@@ -397,7 +387,6 @@ function initializeStateFromURL() {
     state.searchTerm = params.get('q') || '';
     if (state.searchTerm) searchInput.value = state.searchTerm;
 }
-
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
