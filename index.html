@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -80,532 +79,165 @@
       ]
     }
     </script>
-
     <style>
+        /* All of your CSS remains the same */
         :root {
-            --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
-            --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
-            --border-color: #e9ecef; --border-radius: 12px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+            --primary-gradient: linear-gradient(90deg, #007bff, #0056b3);
+            --accent-gradient: linear-gradient(90deg, #ffc107, #f7b733);
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e293b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
+            --ko-primary: #007bff;
+            --ko-accent: #ffc107;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
+        body.light-mode {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
+        }
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
-        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; }
-        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
-        .site-title span { color: var(--accent-color); }
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 65px; max-width: 1200px; margin: 0 auto;}
+        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-main); padding-right: 15px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.4em; font-weight: bold; }
+        .site-title span { color: var(--ko-accent); }
         .header-spacer { flex-grow: 1; }
-        .header-icons { display: flex; align-items: center; gap: 18px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
-        .header-search-bar { padding: 8px 15px 10px; border-top: 1px solid var(--border-color); }
-        .search-container { display: flex; }
-        #search-input { width: 100%; padding: 9px 15px; font-size: 0.95em; border: 1px solid #ddd; border-right: none; border-radius: 20px 0 0 20px; box-sizing: border-box; -webkit-appearance: none; }
-        #search-input:focus { outline: none; border-color: var(--primary-color); }
-        #search-btn { padding: 9px 18px; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; cursor: pointer; border-radius: 0 20px 20px 0; }
-        .page-container { padding-top: 115px; padding-bottom: 20px; }
-        .desktop-nav { display: none !important; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-main); font-size: 22px; text-decoration: none; }
+        .theme-switch-wrapper { display: flex; align-items: center; cursor: pointer; }
+        .theme-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--ko-primary); }
+        input:checked + .slider:before { transform: translateX(18px); }
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .mobile-nav.active { left: 0; }
         .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
         .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
-        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
-        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--primary-color); width: 20px; text-align: center; }
-        .mobile-nav a:hover { background-color: #f8f9fa; }
-        .mobile-nav-footer { padding: 15px; background-color: #f4f7f6; }
-        .mobile-nav .post-button { background-color: var(--accent-color); color: var(--text-dark); font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
-        .hero-section { background: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 30px 15px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: var(--shadow); }
-        .hero-section h1 { font-size: 1.8em; margin: 0 0 8px; }
-        .hero-buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; }
-        .hero-btn { width: 90%; max-width: 280px; padding: 12px 20px; font-size: 1em; font-weight: bold; text-decoration: none; border-radius: 40px; }
-        .hero-browse { background-color: white; color: var(--primary-color); }
-        .hero-start-selling { background-color: var(--accent-color); color: var(--text-dark); }
-        .section-title { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
-        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
-        .product-card-link { text-decoration: none; color: inherit; }
-        .product-card { background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
-        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
-        .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--primary-color); }
-        .load-more-btn { background-color: var(--primary-color); color: white; padding: 12px 25px; border-radius: 20px; font-size: 1em; font-weight: bold; border: none; cursor: pointer; }
-        .cta-wrapper { background-color: var(--card-bg); border-radius: var(--border-radius); padding: 25px 15px; margin-top: 30px; box-shadow: var(--shadow); }
-        .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.5em; }
-        .cta-container { display: flex; flex-direction: column; gap: 15px; }
-        .cta-item { text-align: center; }
-        .cta-button { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background-color: var(--bg-color); border-radius: var(--border-radius); padding: 15px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 1em; transition: background-color 0.2s ease; }
-        .cta-button i { font-size: 20px; width: 25px; text-align: center; }
-        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
-        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-        .category-section, .how-it-works-section, .testimonial-section, .deals-section { margin-top: 40px; }
-        .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--card-bg); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-dark); box-shadow: var(--shadow); transition: transform 0.2s ease; text-align: center; }
-        .category-item:hover { transform: translateY(-5px); }
-        .category-item i { font-size: 24px; color: var(--primary-color); margin-bottom: 8px; }
-        .category-item span { font-size: 0.8em; font-weight: 600; }
-        .how-it-works-section { background-color: var(--card-bg); padding: 30px 15px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
-        .how-it-works-container { display: flex; flex-direction: column; gap: 25px; text-align: center; }
-        .step-item i { font-size: 30px; color: var(--accent-color); margin-bottom: 10px; }
-        .step-item h3 { margin: 0 0 5px; font-size: 1.1em; }
-        .step-item p { margin: 0; color: var(--text-light); }
-        .testimonial-grid { display: flex; flex-direction: column; gap: 20px; }
-        .testimonial-card { background-color: var(--card-bg); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border-left: 4px solid var(--primary-color); }
-        .testimonial-text { font-style: italic; color: var(--text-light); margin: 0 0 15px; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); width: 20px; text-align: center; }
+        .mobile-nav a:hover { background-color: rgba(0,0,0,0.05); }
+        .mobile-nav-footer { padding: 15px; background-color: var(--bg-main); }
+        .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
+        .hero-slider { position: relative; min-height: 400px; overflow: hidden; margin-top: 65px; display: flex; align-items: center; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; background-size: cover; background-position: center; }
+        .slide.active { opacity: 1; }
+        .slide-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: rgba(0,0,0,0.5); padding: 20px; }
+        .slide-content h1 { font-size: 2.5em; color: white; margin: 0; }
+        .slide-content p { color: #eee; font-size: 1.2em; margin: 10px 0 20px; }
+        .slide-content .cta-button { background: var(--primary-gradient); color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; }
+        .stats-section { padding: 60px 15px; text-align: center; }
+        .stats-section h2 { font-size: 2em; margin-bottom: 40px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .stat-card { background-color: var(--bg-card); padding: 25px; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .stat-card .icon { font-size: 2em; margin-bottom: 10px; color: var(--ko-primary); }
+        .stat-card .stat-number { font-size: 2.2em; font-weight: bold; }
+        .stat-card .stat-label { font-size: 0.9em; color: var(--text-secondary); }
+        .stat-card .stat-sublabel { font-size: 0.8em; color: var(--text-secondary); opacity: 0.8; margin-top: 4px; }
+        .top-sections { padding: 60px 15px; }
+        .top-sections h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
+        .sections-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .section-card { background: var(--bg-card); padding: 25px; border-radius: var(--border-radius); border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: block; transition: transform 0.2s; }
+        .section-card:hover { transform: translateY(-5px); }
+        .section-card i { font-size: 1.5em; color: var(--ko-primary); margin-bottom: 15px; }
+        .section-card h3 { margin: 0 0 10px; }
+        .section-card p { color: var(--text-secondary); margin: 0; }
+        .trending-section { padding: 60px 0; }
+        .trending-section h2 { text-align: center; font-size: 2em; margin-bottom: 40px; padding: 0 15px; }
+        .product-carousel-wrapper { overflow-x: auto; padding: 0 15px 20px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .product-carousel-wrapper::-webkit-scrollbar { display: none; }
+        .product-carousel { display: flex; gap: 15px; }
+        .product-card { flex: 0 0 200px; background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; text-decoration: none; color: var(--text-main); scroll-snap-align: start; border: 1px solid var(--border-color); }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; }
+        .product-card-content { padding: 15px; }
+        .product-card h3 { margin: 0 0 5px; font-size: 1em; }
+        .product-card .price { font-weight: bold; color: var(--ko-primary); }
+        .cta-section { padding: 60px 15px; background: var(--bg-card); text-align: center; margin: 40px 0; }
+        .cta-section h2 { font-size: 2em; margin-bottom: 20px; }
+        .cta-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .cta-btn { padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; min-width: 200px; }
+        .cta-buy { background: var(--primary-gradient); color: white; }
+        .cta-sell { background: var(--ko-accent); color: #212529; }
+        .testimonial-section { padding: 60px 15px; }
+        .testimonial-section .section-title { text-align: center; font-size: 2em; margin-bottom: 40px; border-bottom: none; }
+        .testimonial-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .testimonial-card { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--ko-primary); }
+        .testimonial-text { font-style: italic; color: var(--text-secondary); margin: 0 0 15px; }
         .testimonial-author { font-weight: bold; text-align: right; }
-        .testimonial-author span { font-weight: normal; color: var(--text-light); font-size: 0.9em; }
-        /* ADD THIS TO YOUR EXISTING <style> TAG */
-
-.pagination {
-    display: none; /* Hidden by default, JS will show it */
-    justify-content: center;
-    align-items: center;
-    margin-top: 30px;
-    gap: 12px;
-}
-
-.pagination button {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.pagination button:hover:not(:disabled) {
-    background-color: #0056b3; /* A darker shade of your primary color */
-}
-
-.pagination button:disabled {
-    cursor: not-allowed;
-    background-color: #a0a0a0;
-    opacity: 0.7;
-}
-
-.pagination span {
-    font-weight: 600;
-    color: var(--text-light);
-}
-
-.loading-indicator {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-light);
-}
-/* --- SKELETON LOADER & LAZY LOAD STYLES --- */
-.skeleton-card {
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-}
-
-.skeleton-image, .skeleton-text {
-    background-color: #e0e0e0;
-    background-image: linear-gradient(
-      90deg,
-      #e0e0e0 0px,
-      #f0f0f0 40px,
-      #e0e0e0 80px
-    );
-    background-size: 250px;
-    animation: skeleton-shimmer 1.5s infinite linear;
-}
-
-.skeleton-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-}
-
-.skeleton-text {
-    height: 1.2rem;
-    margin: 12px 15px 0;
-    border-radius: 4px;
-}
-
-.skeleton-text.w-75 { width: 75%; }
-.skeleton-text.w-50 { width: 50%; margin-top: 10px; margin-bottom: 15px; }
-
-@keyframes skeleton-shimmer {
-    0% { background-position: -150px; }
-    100% { background-position: 150px; }
-}
-
-/* Lazy Loading Image Transition */
-.product-card img.lazy {
-    opacity: 0;
-    transition: opacity 0.4s ease-in-out;
-}
-.product-card img.lazy.loaded {
-    opacity: 1;
-}
-
-        /* --- NEW DEALS CAROUSEL STYLES --- */
-        .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; /* Firefox */ }
-        .deals-carousel-wrapper::-webkit-scrollbar { display: none; /* Safari and Chrome */ }
-        .deals-grid { display: flex; gap: 15px; }
-        .deals-grid .product-card { flex: 0 0 160px; /* Ensures cards don't shrink */ width: 160px; }
-        .deals-grid .product-card h3 { font-size: 0.85rem; }
-        .deals-grid .product-card .price { font-size: 1rem; }
-
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 60px 15px 20px; text-align: center; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-links { margin: 25px 0; }
+        .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; }
+        .nav-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .nav-modal-content { background-color: var(--bg-card); margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 400px; text-align: center; }
+        .nav-modal-content h3 { margin-top: 0; }
+        .nav-modal-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .nav-modal-btn { padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .btn-confirm { background-color: var(--ko-primary); color: white; }
+        .btn-cancel { background-color: #6c757d; color: white; }
         @media (min-width: 768px) {
-            .product-grid { grid-template-columns: repeat(3, 1fr); }
-            .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .category-grid { grid-template-columns: repeat(6, 1fr); }
-            .how-it-works-container { flex-direction: row; justify-content: space-around; }
-            .testimonial-grid { flex-direction: row; }
-            .deals-grid .product-card { flex: 0 0 200px; width: 200px; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+            .sections-grid { grid-template-columns: repeat(3, 1fr); }
+            .testimonial-grid { grid-template-columns: repeat(2, 1fr); }
+            .cta-buttons { flex-direction: row; justify-content: center; }
         }
-/* Add this inside your <style> tag */
-
-.prompt-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: var(--text-dark);
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1001;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-  transform: translateY(100%);
-  transition: transform 0.4s ease-in-out;
-}
-
-.prompt-banner.visible {
-  transform: translateY(0);
-}
-
-.prompt-banner p {
-  margin: 0;
-}
-.prompt-banner a {
-  color: var(--accent-color);
-  font-weight: bold;
-  text-decoration: underline;
-}
-#close-prompt-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5em;
-  cursor: pointer;
-}
-/* Add this to your <style> block in index.html */
-
-.product-card .verified-text {
-    font-size: 0.85em;
-    font-weight: bold;
-    color: #28a745; /* A pleasant green color */
-    margin: -10px 15px 15px; /* Adjusts spacing below the price */
-}
-/* --- CORRECTED HERO SLIDER STYLES --- */
-#dynamic-header {
-    position: relative;
-    width: 100%;
-    overflow: hidden; /* This hides the other slides */
-    margin-bottom: 25px;
-    background-color: #f4f7f6; /* A light background color */
-}
-
-#header-slides-container {
-    display: flex; /* THIS IS THE KEY FIX: Lays out slides horizontally */
-    transition: transform 0.5s ease-in-out;
-}
-
-.header-slide {
-    flex: 0 0 100%; /* Each slide takes the full width of the container */
-    box-sizing: border-box;
-    padding: 20px 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.header-slide .product-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    width: 100%;
-    max-width: 320px; /* Max width for the card inside the slide */
-}
-
-.header-slide .product-card {
-    background: #ffffff;
-    box-shadow: var(--shadow);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    text-align: center;
-}
-
-.header-slide .product-card h3 {
-    font-size: 1.1em;
-    padding: 12px 10px;
-    margin: 0;
-}
-
-.header-slide .product-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    display: block;
-}
-
-.header-slide .product-card .price {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--primary-color);
-    padding: 12px 10px;
-    margin: 0;
-}
-
-.header-nav-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.4);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 1.5em;
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.header-nav-arrow.prev {
-    left: 10px;
-}
-
-.header-nav-arrow.next {
-    right: 10px;
-}
-
-@media (min-width: 768px) {
-    .header-slide .product-card-link {
-        max-width: 350px; /* Slightly larger card on desktop */
-    }
-}
-
-/* --- ADD THIS TO YOUR <style> TAG --- */
-
-.product-card .wishlist-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    font-size: 18px;
-    color: var(--text-dark);
-    transition: transform 0.2s ease, color 0.2s ease;
-    backdrop-filter: blur(2px);
-}
-
-.product-card .wishlist-btn:hover {
-    transform: scale(1.1);
-}
-
-.product-card .wishlist-btn.active {
-    color: #e74c3c; /* A nice red color for active state */
-}
-        /* --- ADD THIS TO YOUR <style> TAG FOR POP-UPS --- */
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 2000;
-    display: none; /* Hidden by default */
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
-    backdrop-filter: blur(3px);
-}
-
-.modal-overlay.show {
-    display: flex; /* Shown with JS */
-}
-
-.modal-content {
-    background-color: var(--card-bg);
-    padding: 25px 30px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
-    text-align: center;
-    max-width: 350px;
-    width: 100%;
-    animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.modal-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-}
-
-#modal-title {
-    margin: 0 0 10px;
-    font-size: 1.5em;
-    color: var(--text-dark);
-}
-
-#modal-message {
-    margin: 0 0 25px;
-    color: var(--text-light);
-    line-height: 1.5;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.modal-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    min-width: 100px;
-    transition: transform 0.2s ease;
-}
-.modal-btn:hover {
-    transform: translateY(-2px);
-}
-
-.modal-btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.modal-btn-secondary {
-    background-color: #e9ecef;
-    color: var(--text-dark);
-}
-
-/* Color Themes */
-.modal-theme-success #modal-title { color: #28a745; }
-.modal-theme-info #modal-title { color: #007bff; }
-/* Add this to style the category counts */
-.category-count {
-  font-weight: normal;
-  color: var(--text-light);
-  font-size: 0.9em;
-}
-
-/* Add this to your index.html <style> block */
-
-.product-card.is-sold {
-  position: relative; /* Needed for the overlay */
-}
-
-.product-card-sold-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(44, 62, 80, 0.7); /* Dark, semi-transparent overlay */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2; /* Sits on top of the image but below the wishlist button */
-  pointer-events: none; /* Allows clicks to go through to the link */
-}
-
-/* Find and replace this rule in your index.html <style> block */
-
-.product-card-sold-overlay span {
-  color: var(--danger-color); /* Changed to red */
-  font-size: 1.8em;
-  font-weight: bold;
-  border: 3px solid var(--danger-color); /* Changed to red */
-  padding: 5px 15px;
-  border-radius: 5px;
-  transform: rotate(-15deg);
-  background-color: rgba(255, 255, 255, 0.9); /* Added a white background for visibility */
-}
-
-.product-card.is-sold img {
-  filter: grayscale(90%); /* Makes the background image gray */
-}
-/* Add this CSS to your index.html <style> block */
-
-.stock-info {
-    font-size: 0.85em;
-    font-weight: bold;
-    margin: -10px 15px 10px; /* Position it between name and price */
-    padding: 3px 8px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.in-stock {
-    color: #155724;
-    background-color: #d4edda;
-}
-
-.low-stock {
-    color: #856404;
-    background-color: #fff3cd;
-}
-
-.out-of-stock {
-    color: #721c24;
-    background-color: #f8d7da;
-}
-
+        .intro-section { padding: 50px 15px; text-align: center; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); }
+        .intro-section h2 { font-size: 1.8em; margin-top: 0; margin-bottom: 15px; }
+        .intro-section p { font-size: 1.1em; color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.7; }
     </style>
 </head>
-<body>
-    <div class="mobile-nav-overlay"></div>
-    <header class="sticky-header">
-        <div class="header-content-wrapper">
-            <div class="header-top-bar">
-                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-                <a href="/" class="site-title">Kabale <span>Online</span></a>
-                <div class="header-spacer"></div>
-                <div class="header-icons">
-    <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+<body class="light-mode">
 
-    <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell">
-        <i class="fa-regular fa-bell"></i>
-    </a>
-    <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-</div>
-            </div>
-            <div class="header-search-bar">
-                <div class="search-container">
-                    <input type="text" id="search-input" placeholder="Search category , items or services...">
-                    <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-spacer"></div>
+            <div class="header-icons">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" checked />
+                        <span class="slider"></span>
+                    </label>
                 </div>
+                <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
+                <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
             </div>
         </div>
     </header>
@@ -613,12 +245,13 @@
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
-            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-                        <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
             <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-<a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
             <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
             <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
             <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
@@ -628,92 +261,141 @@
             <a href="/dashboard/" class="post-button">Post Something Free</a>
         </div>
     </nav>
+    <div class="mobile-nav-overlay"></div>
 
-    <div class="container page-container">
-        <section id="dynamic-header" class="dynamic-header">
-    <div id="header-slides-container" class="header-slides-container">
-        </div>
-    <button id="header-prev-btn" class="header-nav-arrow prev" aria-label="Previous slide">&lt;</button>
-    <button id="header-next-btn" class="header-nav-arrow next" aria-label="Next slide">&gt;</button>
-</section>
-
-
-        <section class="category-section">
-            <h2 class="section-title">Browse by Category</h2>
-            <div class="category-grid">
-                <a href="/?category=Electronics" class="category-item"><i class="fa-solid fa-mobile-screen-button"></i><span>Electronics</span></a>
-                <a href="/?category=Clothing+%26+Apparel" class="category-item"><i class="fa-solid fa-shirt"></i><span>Clothing</span></a>
-                <a href="/?category=Home+%26+Furniture" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
-                <a href="/rentals/" class="category-item"><i class="fa-solid fa-house"></i><span>Rentals</span></a>
-                            <a href="/?type=service" class="category-item"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
-                <a href="/?category=Other" class="category-item"><i class="fa-solid fa-shapes"></i><span>Other</span></a>
-            </div>
-        </section>
-
-        <section class="deals-section" id="deals-section" style="display: none;">
-            <h2 class="section-title">Today's Top Deals</h2>
-            <div class="deals-carousel-wrapper">
-                <div id="deals-grid" class="deals-grid">
-                    </div>
-            </div>
-        </section>
-
-        <main>
-            <h2 id="listings-title" class="section-title">Recent Items</h2>
-            <div id="product-grid" class="product-grid"></div>
-
-            <div id="pagination-container" class="pagination">
-    <button id="prev-page-btn" disabled>&laquo; Previous</button>
-    <span id="page-indicator">Page 1 of 1</span>
-    <button id="next-page-btn" disabled>Next &raquo;</button>
-</div>
-
-        </main>
-
-        <section class="how-it-works-section">
-            <h2 class="section-title" style="text-align: center;">How It Works</h2>
-            <div class="how-it-works-container">
-                <div class="step-item"><i class="fa-solid fa-camera"></i><h3>1. Post Your Ad</h3><p>List your item or service for free in under a minute.</p></div>
-                <div class="step-item"><i class="fa-brands fa-whatsapp"></i><h3>2. Connect Safely</h3><p>Chat directly with local buyers and sellers on WhatsApp.</p></div>
-                <div class="step-item"><i class="fa-solid fa-handshake"></i><h3>3. Meet & Sell</h3><p>Meet in a public place in Kabale to finalize your deal.</p></div>
-            </div>
-        </section>
-
-        <section class="testimonial-section">
-            <h2 class="section-title">Community Voices</h2>
-            <div id="testimonial-grid" class="testimonial-grid">
+    <main>
+        <section class="hero-slider" id="hero-slider">
+            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop');">
+                <div class="slide-content">
+                    <h1>Buy & Sell Textbooks</h1>
+                    <p>Find course materials from fellow students.</p>
+                    <a href="/shop/" class="cta-button">Browse Items</a>
                 </div>
+            </div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?q=80&w=1974&auto=format&fit=crop');">
+                <div class="slide-content">
+                    <h1>Latest Gadgets</h1>
+                    <p>Upgrade your tech for less.</p>
+                    <a href="/shop/?category=Electronics" class="cta-button">Shop Electronics</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop');">
+                <div class="slide-content">
+                    <h1>Offer Your Skills</h1>
+                    <p>From tutoring to repairs, find help on campus.</p>
+                    <a href="https://gigs.kabaleonline.com" class="cta-button service-link">Browse Services</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1974&auto=format&fit=crop');">
+                <div class="slide-content">
+                    <h1>Find Your Next Hostel</h1>
+                    <p>Browse student rentals and hostels in Kabale.</p>
+                    <a href="/shop/rentals/" class="cta-button">View Rentals</a>
+                </div>
+            </div>
         </section>
 
-        <div class="cta-wrapper">
-            <h2>What would you like to do?</h2>
-            <div class="cta-container">
-                <div class="cta-item"><a href="/sell/" class="cta-button"><i class="fa-solid fa-plus-circle"></i>Post an Ad</a></div>
-                <div class="cta-item"><a href="/requests/view.html" class="cta-button"><i class="fa-solid fa-clipboard-list"></i>Request an Item</a></div>
-                <div class="cta-item"><a href="/submit-story.html" class="cta-button"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
-                <div class="cta-item"><a href="/submit-testimonial.html" class="cta-button"><i class="fa-solid fa-comments"></i>Share Feedback</a></div>
-                <div class="cta-item"><a href="/lost-and-found/" class="cta-button"><i class="fa-solid fa-magnifying-glass"></i>Report Lost & Found</a></div>
-                <div class="cta-item"><a href="/rentals/" class="cta-button"><i class="fa-solid fa-house"></i>List a Rental</a></div>
+        <section class="intro-section">
+            <div class="container">
+                <h2>Your #1 Campus Marketplace</h2>
+                <p>Welcome to Kabale Online, the one-stop platform for students in Kabale. Whether you're looking to buy a used textbook, sell a gadget, find a hostel, or discover local services, you'll find it all right here.</p>
             </div>
-        </div>
-    </div>
-<div id="login-prompt-banner" class="prompt-banner" style="display: none;">
-  <p><strong>Want to save items or sell your own?</strong> <a href="/login/">Log in</a> or <a href="/signup/">Sign Up</a>!</p>
-  <button id="close-prompt-btn">&times;</button>
-</div>
-<button id="install-button" class="cta-button" style="display: none; max-width: 250px; margin: 20px auto; justify-content: center;">
-    <i class="fa-solid fa-download"></i> Install Kabale Online App
-</button>
-    <footer>
+        </section>
 
+        <section class="stats-section">
+            <div class="container">
+                <h2>Trusted by the <span style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Kabale</span> Community</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-number" data-target="64">0</div>
+                        <div class="stat-label">Registered Students</div>
+                        <div class="stat-sublabel">Last Month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-box"></i></div>
+                        <div class="stat-number" data-target="79">0</div>
+                        <div class="stat-label">Items Listed</div>
+                        <div class="stat-sublabel">Last Month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-star"></i></div>
+                        <div class="stat-number">4.8</div>
+                        <div class="stat-label">Average Rating</div>
+                        <div class="stat-sublabel">All Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-building-columns"></i></div>
+                        <div class="stat-number" data-target="4">0</div>
+                        <div class="stat-label">Rental Listings</div>
+                        <div class="stat-sublabel">Last Month</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="top-sections" id="top-sections">
+            <div class="container">
+                <h2>What We Offer</h2>
+                <div class="sections-grid">
+                    <a href="/shop/" class="section-card">
+                        <i class="fas fa-store"></i>
+                        <h3>Buy Items</h3>
+                        <p>Discover deals on textbooks, electronics, and more from students in Kabale.</p>
+                    </a>
+                    <a href="/upload/" class="section-card">
+                        <i class="fas fa-cash-register"></i>
+                        <h3>Sell Your Stuff</h3>
+                        <p>Turn your unused items into cash and connect with buyers in your campus community.</p>
+                    </a>
+                    <a href="/rentals/" class="section-card">
+                        <i class="fas fa-house-user"></i>
+                        <h3>Find Hostels</h3>
+                        <p>Browse listings for student hostels and rentals near campus, with details and contacts.</p>
+                    </a>
+                    <a href="https://gigs.kabaleonline.com" class="section-card service-link">
+                        <i class="fas fa-concierge-bell"></i>
+                        <h3>Offer a Service</h3>
+                        <p>Promote your skills, from tutoring to repairs, on our services hub.</p>
+                    </a>
+                    <a href="/lost-and-found/" class="section-card">
+                        <i class="fas fa-magnifying-glass-plus"></i>
+                        <h3>Lost & Found</h3>
+                        <p>Post a notice for a lost item or report something you've found to help our community.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="trending-section">
+            <h2>Trending Products</h2>
+            <div class="product-carousel-wrapper">
+                <div class="product-carousel" id="trending-products-grid">
+                    <p style="padding: 0 15px;">Loading trending products...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <h2>Ready to Start?</h2>
+                <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px;">Join our community today and discover a smarter way to buy and sell on campus.</p>
+                <div class="cta-buttons">
+                    <a href="/shop/" class="cta-btn cta-buy">Start Buying</a>
+                    <a href="/upload/" class="cta-btn cta-sell">Start Selling</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonial-section" id="testimonials">
+            <h2 class="section-title">Community Voices</h2>
+            <div id="testimonial-grid" class="testimonial-grid"></div>
+        </section>
+    </main>
+
+    <footer>
         <div class="container">
             <div class="footer-logo">Kabale <span>Online</span></div>
-            <p class="footer-tagline">Your Community Marketplace</p>
-            <div class="footer-socials">
-                 <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            </div>
             <div class="footer-links">
                 <a href="/about.html">About</a>
                 <a href="/blog/">Blog</a>
@@ -722,65 +404,194 @@
             </div>
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
-<!-- Modal notification for Services link -->
-<div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-  background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
-  <div style="background:#fff; padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
-    box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif; animation:fadeIn 0.3s ease-out;">
-    <h3 style="margin-bottom:15px; color:#333;">Notice</h3>
-    <p style="margin-bottom:20px; color:#555;">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-    <button id="continue-btn" style="padding:10px 20px; background:#007bff; border:none; border-radius:8px; 
-      color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;">Continue</button>
-  </div>
-</div>
-
-<style>
-@keyframes fadeIn {
-  from { opacity:0; transform: scale(0.8); }
-  to { opacity:1; transform: scale(1); }
-}
-#continue-btn:hover {
-  background:#0056b3;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Select all links pointing to /?type=service
-  const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
-  const modal = document.getElementById('service-notice');
-  const continueBtn = document.getElementById('continue-btn');
-
-  serviceLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault(); // Stop default navigation
-      modal.style.display = 'flex'; // Show modal
-    });
-  });
-
-  continueBtn.addEventListener('click', function() {
-    window.location.href = 'https://gigs.kabaleonline.com';
-  });
-
-  // Optional: click outside modal content to close
-  modal.addEventListener('click', function(e) {
-    if(e.target === modal) modal.style.display = 'none';
-  });
-});
-</script>
-        <div id="custom-modal" class="modal-overlay">
-  <div class="modal-content">
-    <div id="modal-icon" class="modal-icon"></div>
-    <h3 id="modal-title"></h3>
-    <p id="modal-message"></p>
-    <div id="modal-buttons" class="modal-buttons"></div>
-  </div>
-</div>
-
     </footer>
 
-    <script type="module" src="ui.js"></script>
-    <script type="module" src="main.js"></script>
-    <script type="module" src="shared.js"></script>
-</body>
+    <div id="nav-modal" class="nav-modal">
+        <div class="nav-modal-content">
+            <h3>Confirm Navigation</h3>
+            <p id="nav-modal-message"></p>
+            <div class="nav-modal-buttons">
+                <button id="nav-cancel-btn" class="nav-modal-btn btn-cancel">Stay Here</button>
+                <a id="nav-confirm-btn" class="nav-modal-btn btn-confirm">Proceed</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase.js';
+        import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
+            if (!url || !url.includes('res.cloudinary.com')) {
+                return url || 'https://placehold.co/200x200/e0e0e0/777?text=No+Image';
+            }
+            const transformString = 'c_fill,g_auto,w_400,h_400,f_auto,q_auto';
+            const urlParts = url.split('/upload/');
+            if (urlParts.length !== 2) return url;
+            return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
+        }
+
+        async function fetchTrendingProducts() {
+            const trendingGrid = document.getElementById('trending-products-grid');
+            if (!trendingGrid) return;
+
+            try {
+                const trendingQuery = query(
+                    collection(db, 'products'),
+                    where('isHero', '==', true),
+                    where('isSold', '==', false),
+                    orderBy('heroTimestamp', 'desc'),
+                    limit(8)
+                );
+                const snapshot = await getDocs(trendingQuery);
+
+                if (snapshot.empty) {
+                    trendingGrid.innerHTML = '<p style="padding: 0 15px;">No trending products found.</p>';
+                    return;
+                }
+
+                trendingGrid.innerHTML = "";
+                const fragment = document.createDocumentFragment();
+                snapshot.forEach(doc => {
+                    const product = { id: doc.id, ...doc.data() };
+                    const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0]);
+
+                    const productCard = document.createElement('a');
+                    productCard.href = `/shop/product.html?id=${product.id}`;
+                    productCard.className = "product-card";
+
+                    productCard.innerHTML = `
+                        <img src="${thumbnailUrl}" alt="${product.name}">
+                        <div class="product-card-content">
+                            <h3>${product.name}</h3>
+                            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+                        </div>
+                    `;
+                    fragment.appendChild(productCard);
+                });
+                trendingGrid.appendChild(fragment);
+
+            } catch (error) {
+                console.error("Error fetching trending products:", error);
+                trendingGrid.innerHTML = '<p style="padding: 0 15px;">Could not load products.</p>';
+            }
+        }
+
+        async function fetchTestimonials() {
+            const testimonialGrid = document.getElementById('testimonial-grid');
+            if (!testimonialGrid) return;
+            try {
+                const testimonialsQuery = query(collection(db, 'testimonials'), where('status', '==', 'approved'), orderBy('order', 'asc'), limit(2));
+                const querySnapshot = await getDocs(testimonialsQuery);
+                if (querySnapshot.empty) {
+                    testimonialGrid.closest('.testimonial-section').style.display = 'none';
+                    return;
+                }
+                testimonialGrid.innerHTML = '';
+                querySnapshot.forEach(doc => {
+                    const testimonial = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'testimonial-card';
+                    card.innerHTML = `
+                        <p class="testimonial-text">"${testimonial.quote}"</p>
+                        <p class="testimonial-author">&ndash; ${testimonial.authorName}</p>
+                    `;
+                    testimonialGrid.appendChild(card);
+                });
+            } catch (error) {
+                console.error("Error fetching testimonials:", error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            if(hamburger) {
+                hamburger.addEventListener('click', () => {
+                    mobileNav.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+            }
+            if(overlay) {
+                overlay.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            const themeToggle = document.getElementById('theme-toggle');
+            function setTheme(theme) {
+                document.body.className = ''; // Clear classes
+                document.body.classList.add(theme);
+                localStorage.setItem('theme', theme);
+                themeToggle.checked = (theme === 'light-mode');
+            }
+            const currentTheme = localStorage.getItem('theme') || 'light-mode';
+            setTheme(currentTheme);
+            themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'light-mode' : 'dark-mode'));
+
+            const slides = document.querySelectorAll('.hero-slider .slide');
+            let currentSlide = 0;
+            if (slides.length > 0) {
+                setInterval(() => {
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    slides[currentSlide].classList.add('active');
+                }, 5000);
+            }
+
+            const counters = document.querySelectorAll('.stat-number');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const animate = () => {
+                            const target = +counter.getAttribute('data-target');
+                            const count = +counter.innerText.replace(/,/g, '');
+                            const inc = target / 100;
+
+                            if (count < target) {
+                                counter.innerText = Math.ceil(count + inc);
+                                setTimeout(animate, 15);
+                            } else {
+                                counter.innerText = target.toLocaleString();
+                            }
+                        };
+                        animate();
+                        observer.unobserve(counter);
+                    }
+                });
+            }, { threshold: 0.5 });
+            counters.forEach(counter => { if (counter.getAttribute('data-target')) observer.observe(counter); });
+
+            const navModal = document.getElementById('nav-modal');
+            const navModalMessage = document.getElementById('nav-modal-message');
+            const navConfirmBtn = document.getElementById('nav-confirm-btn');
+            const navCancelBtn = document.getElementById('nav-cancel-btn');
+
+            document.body.addEventListener('click', (e) => {
+                const trigger = e.target.closest('.service-link');
+                if (trigger) {
+                    e.preventDefault();
+                    const url = trigger.href;
+                    navModalMessage.textContent = "You are being redirected to our dedicated services platform, Gigs Hub. Continue?";
+                    navConfirmBtn.href = url;
+                    navModal.style.display = 'flex';
+                }
+            });
+
+            navCancelBtn.addEventListener('click', () => {
+                navModal.style.display = 'none';
+            });
+            navModal.addEventListener('click', (e) => {
+                if (e.target === navModal) navModal.style.display = 'none';
+            });
+
+            fetchTrendingProducts();
+            fetchTestimonials();
+        });
+    </script>
+
+    </body>
 </html>
