@@ -691,11 +691,7 @@
             </div>
         </section>
 
-        <section class="testimonial-section">
-            <h2 class="section-title">Community Voices</h2>
-            <div id="testimonial-grid" class="testimonial-grid">
-                </div>
-        </section>
+        
 
         <div class="cta-wrapper">
             <h2>What would you like to do?</h2>
