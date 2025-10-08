@@ -1,5 +1,5 @@
-const CACHE_NAME = 'kabaleonline-cache-v19'; // Version bumped to trigger update
-const IMAGE_CACHE = 'kabaleonline-images-v1';
+const CACHE_NAME = 'kabaleonline-cache-v20.0'; // Version bumped to trigger update
+const IMAGE_CACHE = 'kabaleonline-images-v2.0';
 
 const APP_SHELL_FILES = [
   // Core App Shell
