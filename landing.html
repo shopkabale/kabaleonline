@@ -7,36 +7,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* --- NEW DARK THEME DESIGN --- */
+        /* --- NEW THEME DESIGN --- */
         :root {
-            --primary-gradient: linear-gradient(90deg, #4e54c8, #8f94fb);
+            --primary-gradient: linear-gradient(90deg, #007bff, #0056b3);
             --accent-gradient: linear-gradient(90deg, #ffc107, #f7b733);
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+
             --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
-            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --bg-card-dark: #1e293b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
             
-            /* Your original colors for reference */
             --ko-primary: #007bff;
             --ko-accent: #ffc107;
         }
 
-        /* --- LIGHT MODE THEME --- */
-        body.light-mode {
-            --bg-dark: #f1f5f9;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
+        /* --- LIGHT MODE (DEFAULT) --- */
+        body {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
+        }
+
+        /* --- DARK MODE THEME --- */
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-main);
             color: var(--text-main);
             line-height: 1.6;
             transition: background-color 0.3s, color 0.3s;
@@ -44,7 +59,7 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 
-        /* --- STICKY HEADER (ADAPTED) --- */
+        /* --- STICKY HEADER --- */
         .sticky-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background-color: var(--bg-card);
@@ -68,11 +83,24 @@
         input:checked + .slider { background-color: var(--ko-primary); }
         input:checked + .slider:before { transform: translateX(18px); }
 
+        /* --- MOBILE NAV (FROM YOUR ORIGINAL) --- */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); width: 20px; text-align: center; }
+        .mobile-nav a:hover { background-color: rgba(0,0,0,0.05); }
+        .mobile-nav-footer { padding: 15px; background-color: var(--bg-main); }
+        .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
+
         /* --- HERO SLIDER --- */
-        .hero-slider { position: relative; height: 50vh; max-height: 400px; overflow: hidden; margin-top: 65px; }
+        .hero-slider { position: relative; min-height: 400px; overflow: hidden; margin-top: 65px; display: flex; align-items: center; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; background-size: cover; background-position: center; }
         .slide.active { opacity: 1; }
-        .slide-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: rgba(0,0,0,0.5); }
+        .slide-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: rgba(0,0,0,0.5); padding: 20px; }
         .slide-content h1 { font-size: 2.5em; color: white; margin: 0; }
         .slide-content p { color: #eee; font-size: 1.2em; margin: 10px 0 20px; }
         .slide-content .cta-button { background: var(--primary-gradient); color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; }
@@ -84,23 +112,26 @@
         .stat-card { background-color: var(--bg-card); padding: 25px; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
         .stat-card .icon { font-size: 2em; margin-bottom: 10px; color: var(--ko-primary); }
         .stat-card .stat-number { font-size: 2.2em; font-weight: bold; }
-        .stat-card .stat-label { color: var(--text-secondary); }
+        .stat-card .stat-label { font-size: 0.9em; color: var(--text-secondary); }
+        .stat-card .stat-sublabel { font-size: 0.8em; color: var(--text-secondary); opacity: 0.8; margin-top: 4px; }
 
         /* --- TOP SECTIONS --- */
         .top-sections { padding: 60px 15px; }
         .top-sections h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
         .sections-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .section-card { background: var(--bg-card); padding: 25px; border-radius: var(--border-radius); border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: block; }
+        .section-card { background: var(--bg-card); padding: 25px; border-radius: var(--border-radius); border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: block; transition: transform 0.2s; }
+        .section-card:hover { transform: translateY(-5px); }
         .section-card i { font-size: 1.5em; color: var(--ko-primary); margin-bottom: 15px; }
         .section-card h3 { margin: 0 0 10px; }
         .section-card p { color: var(--text-secondary); margin: 0; }
 
-        /* --- TRENDING PRODUCTS CAROUSEL --- */
-        .trending-section { padding: 60px 0; }
-        .trending-section h2 { text-align: center; font-size: 2em; margin-bottom: 40px; padding: 0 15px; }
-        .product-carousel-wrapper { overflow-x: auto; padding: 0 15px 20px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        /* --- DEALS CAROUSEL --- */
+        .deals-section { padding: 60px 0; }
+        .deals-section h2 { text-align: center; font-size: 2em; margin-bottom: 40px; padding: 0 15px; }
+        .product-carousel-wrapper { overflow-x: auto; padding: 0 15px 20px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
-        .product-card { flex: 0 0 200px; background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; text-decoration: none; color: var(--text-main); scroll-snap-align: start; }
+        .product-card { flex: 0 0 200px; background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; text-decoration: none; color: var(--text-main); scroll-snap-align: start; border: 1px solid var(--border-color); }
         .product-card img { width: 100%; height: 200px; object-fit: cover; }
         .product-card-content { padding: 15px; }
         .product-card h3 { margin: 0 0 5px; font-size: 1em; }
@@ -112,7 +143,7 @@
         .cta-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; }
         .cta-btn { padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; min-width: 200px; }
         .cta-buy { background: var(--primary-gradient); color: white; }
-        .cta-sell { background: var(--accent-gradient); color: var(--bg-dark); }
+        .cta-sell { background: var(--ko-accent); color: #212529; }
 
         /* --- TESTIMONIAL SECTION (ADAPTED) --- */
         .testimonial-section { padding: 60px 15px; }
@@ -133,13 +164,13 @@
         /* --- RESPONSIVE ADJUSTMENTS --- */
         @media (min-width: 768px) {
             .stats-grid { grid-template-columns: repeat(4, 1fr); }
-            .sections-grid { grid-template-columns: repeat(2, 1fr); }
+            .sections-grid { grid-template-columns: repeat(3, 1fr); }
             .testimonial-grid { grid-template-columns: repeat(2, 1fr); }
             .cta-buttons { flex-direction: row; justify-content: center; }
         }
     </style>
 </head>
-<body>
+<body class="light-mode">
 
     <header class="sticky-header">
         <div class="header-top-bar">
@@ -149,7 +180,7 @@
             <div class="header-icons">
                 <div class="theme-switch-wrapper">
                     <label class="theme-switch" for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle" />
+                        <input type="checkbox" id="theme-toggle" checked />
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -160,23 +191,56 @@
     </header>
 
     <nav class="mobile-nav">
-        </nav>
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/cart.html" class="nav-link cart-link">
+                <i class="fa-solid fa-cart-shopping"></i> My Cart
+            </a>
+            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/dashboard/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
     <div class="mobile-nav-overlay"></div>
 
     <main>
-        <section class="hero-slider">
+        <section class="hero-slider" id="hero-slider">
             <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Buy & Sell Textbooks</h1>
                     <p>Find course materials from fellow students.</p>
-                    <a href="#" class="cta-button">Browse Books</a>
+                    <a href="#top-sections" class="cta-button">Browse Items</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?q=80&w=1974&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Latest Gadgets</h1>
                     <p>Upgrade your tech for less.</p>
-                    <a href="#" class="cta-button">Shop Electronics</a>
+                    <a href="/?category=Electronics" class="cta-button">Shop Electronics</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e2775d2?q=80&w=2070&auto=format&fit=crop');">
+                <div class="slide-content">
+                    <h1>Offer Your Skills</h1>
+                    <p>From tutoring to repairs, find help on campus.</p>
+                    <a href="/?type=service" class="cta-button">Browse Services</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1974&auto=format&fit=crop');">
+                <div class="slide-content">
+                    <h1>Find Your Next Hostel</h1>
+                    <p>Browse student rentals and hostels in Kabale.</p>
+                    <a href="/rentals/" class="cta-button">View Rentals</a>
                 </div>
             </div>
         </section>
@@ -187,61 +251,70 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-number" data-target="500">0</div>
+                        <div class="stat-number" data-target="67">0</div>
                         <div class="stat-label">Registered Students</div>
+                        <div class="stat-sublabel">Last Month</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon"><i class="fas fa-box"></i></div>
-                        <div class="stat-number" data-target="1200">0</div>
+                        <div class="stat-number" data-target="114">0</div>
                         <div class="stat-label">Items Listed</div>
+                        <div class="stat-sublabel">Last Month</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon"><i class="fas fa-star"></i></div>
                         <div class="stat-number">4.8</div>
                         <div class="stat-label">Average Rating</div>
+                        <div class="stat-sublabel">All Time</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon"><i class="fas fa-building-columns"></i></div>
-                        <div class="stat-number" data-target="50">0</div>
-                        <div class="stat-label">Hostels Listed</div>
+                        <div class="stat-number" data-target="4">0</div>
+                        <div class="stat-label">Rental Listings</div>
+                        <div class="stat-sublabel">Last Month</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="top-sections">
+        <section class="top-sections" id="top-sections">
             <div class="container">
                 <h2>What We Offer</h2>
                 <div class="sections-grid">
                     <a href="/" class="section-card">
                         <i class="fas fa-store"></i>
                         <h3>Buy Items</h3>
-                        <p>Discover amazing deals on textbooks, electronics, furniture, and more from students in Kabale.</p>
+                        <p>Discover deals on textbooks, electronics, and more from students in Kabale.</p>
                     </a>
                     <a href="/upload/" class="section-card">
                         <i class="fas fa-cash-register"></i>
                         <h3>Sell Your Stuff</h3>
-                        <p>Turn your unused items into cash. List your products and connect with buyers in your campus community.</p>
+                        <p>Turn your unused items into cash and connect with buyers in your campus community.</p>
                     </a>
                     <a href="/rentals/" class="section-card">
                         <i class="fas fa-house-user"></i>
                         <h3>Find Hostels</h3>
-                        <p>Browse listings for student hostels and rentals near campus, with details and contact information.</p>
+                        <p>Browse listings for student hostels and rentals near campus, with details and contacts.</p>
                     </a>
                     <a href="/?type=service" class="section-card">
                         <i class="fas fa-concierge-bell"></i>
-                        <h3>Discover Services</h3>
-                        <p>Find local services offered by students and residents, from tutoring to repairs and more.</p>
+                        <h3>Offer a Service</h3>
+                        <p>Promote your skills, from tutoring and graphic design to repairs and errands, on our services hub.</p>
+                    </a>
+                    <a href="/lost-and-found/" class="section-card">
+                        <i class="fas fa-magnifying-glass-plus"></i>
+                        <h3>Lost & Found</h3>
+                        <p>Post a notice for a lost item or report something you've found to help our community.</p>
                     </a>
                 </div>
             </div>
         </section>
 
-        <section class="trending-section">
-            <h2>Trending Products</h2>
+        <section class="deals-section">
+            <h2>Today's Top Deals</h2>
             <div class="product-carousel-wrapper">
-                <div class="product-carousel" id="trending-products-grid">
-                    <p>Loading products...</p>
+                <div class="product-carousel" id="deals-grid">
+                    <p>Loading deals...</p>
                 </div>
             </div>
         </section>
@@ -251,13 +324,13 @@
                 <h2>Ready to Start?</h2>
                 <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px;">Join our community today and discover a smarter way to buy and sell on campus.</p>
                 <div class="cta-buttons">
-                    <a href="/" class="cta-btn cta-buy">Start Buying</a>
+                    <a href="#deals-grid" class="cta-btn cta-buy">Start Buying</a>
                     <a href="/upload/" class="cta-btn cta-sell">Start Selling</a>
                 </div>
             </div>
         </section>
 
-        <section class="testimonial-section">
+        <section class="testimonial-section" id="testimonials">
             <h2 class="section-title">Community Voices</h2>
             <div id="testimonial-grid" class="testimonial-grid">
                 </div>
@@ -281,37 +354,47 @@
     document.addEventListener('DOMContentLoaded', () => {
         // --- THEME TOGGLE LOGIC ---
         const themeToggle = document.getElementById('theme-toggle');
-        const currentTheme = localStorage.getItem('theme');
-
-        if (currentTheme) {
-            document.body.classList.add(currentTheme);
-            if (currentTheme === 'light-mode') {
+        
+        // Function to set theme
+        function setTheme(theme) {
+            if (theme === 'dark-mode') {
+                document.body.classList.remove('light-mode');
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = false;
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
                 themeToggle.checked = true;
             }
+            localStorage.setItem('theme', theme);
         }
 
+        // Check for saved theme, default to light
+        const currentTheme = localStorage.getItem('theme') || 'light-mode';
+        setTheme(currentTheme);
+        
         themeToggle.addEventListener('change', function() {
             if (this.checked) {
-                document.body.classList.add('light-mode');
-                localStorage.setItem('theme', 'light-mode');
+                setTheme('light-mode');
             } else {
-                document.body.classList.remove('light-mode');
-                localStorage.setItem('theme', 'dark-mode');
+                setTheme('dark-mode');
             }
         });
 
         // --- HERO SLIDER LOGIC ---
         const slides = document.querySelectorAll('.hero-slider .slide');
         let currentSlide = 0;
-        setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 5000); // Change slide every 5 seconds
+        if (slides.length > 0) {
+            setInterval(() => {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 5000);
+        }
 
         // --- ANIMATED STATS COUNTER ---
         const counters = document.querySelectorAll('.stat-number');
-        const speed = 200; // The lower the number, the faster the count
+        const speed = 200; 
 
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
@@ -319,18 +402,18 @@
                     const counter = entry.target;
                     const animate = () => {
                         const target = +counter.getAttribute('data-target');
-                        const count = +counter.innerText;
+                        const count = +counter.innerText.replace(/,/g, '');
                         const inc = target / speed;
 
                         if (count < target) {
                             counter.innerText = Math.ceil(count + inc);
-                            setTimeout(animate, 1);
+                            setTimeout(animate, 10);
                         } else {
                             counter.innerText = target.toLocaleString();
                         }
                     };
                     animate();
-                    observer.unobserve(counter); // Stop observing once animated
+                    observer.unobserve(counter);
                 }
             });
         }, { threshold: 0.5 });
@@ -340,12 +423,6 @@
                 observer.observe(counter);
             }
         });
-
-        // NOTE: Your existing main.js would still be needed to fetch
-        // the actual data for the trending products and testimonials.
-        // For example:
-        // fetchTrendingProducts(); -> would populate #trending-products-grid
-        // fetchTestimonials(); -> would populate #testimonial-grid
     });
     </script>
     
