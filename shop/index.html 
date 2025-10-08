@@ -650,14 +650,27 @@
         </section>
 
         <section class="deals-section" id="deals-section" style="display: none;">
-            <h2 class="section-title">Today's Top Deals</h2>
-            <div class="deals-carousel-wrapper">
-                <div id="deals-grid" class="deals-grid">
-                    </div>
-            </div>
-        </section>
+    <h2 class="section-title">Today's Top Deals</h2>
+    <div class="deals-carousel-wrapper">
+        <div id="deals-grid" class="deals-grid"></div>
+    </div>
+</section>
 
-        <main>
+<section class="save-on-more-section" id="save-on-more-section" style="display: none; margin-top: 40px;">
+    <h2 class="section-title">Save on More</h2>
+    <div class="deals-carousel-wrapper">
+        <div id="save-on-more-grid" class="deals-grid"></div>
+    </div>
+</section>
+
+<section class="sponsored-section" id="sponsored-section" style="display: none; margin-top: 40px;">
+    <h2 class="section-title">Sponsored Items</h2>
+    <div class="deals-carousel-wrapper">
+        <div id="sponsored-grid" class="deals-grid"></div>
+    </div>
+</section>
+
+<main>
             <h2 id="listings-title" class="section-title">Recent Items</h2>
             <div id="product-grid" class="product-grid"></div>
 
