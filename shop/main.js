@@ -22,7 +22,7 @@ function getCloudinaryTransformedUrl(url, type) {
 }
 
 // --- FIREBASE IMPORTS ---
-import { db, auth } from "./firebase.js";
+import { db, auth } from "../firebase.js";
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Import onSnapshot
