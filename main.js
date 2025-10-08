@@ -162,7 +162,6 @@ function renderProducts(productsToDisplay) {
     initializeWishlistButtons();
 }
 
-
 // --- DATA FETCHING FUNCTIONS ---
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
@@ -191,10 +190,13 @@ async function fetchAndRenderProducts() {
         if (state.currentPage > 0 || state.searchTerm) {
             const targetElement = document.getElementById('listings-title');
             if (targetElement) {
-                window.scrollTo({
-                    top: targetElement.offsetTop - 130, // Adjust offset for your sticky header
-                    behavior: 'smooth'
-                });
+                // A small timeout ensures the DOM is painted before we scroll
+                setTimeout(() => {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
             }
         }
     }
@@ -266,7 +268,6 @@ async function fetchAndDisplayCategoryCounts() {
         }
     } catch (error) { console.error('Error fetching category counts:', error); }
 }
-
 
 // --- UI & EVENT HANDLERS ---
 function updatePaginationUI() {
