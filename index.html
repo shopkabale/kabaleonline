@@ -220,6 +220,76 @@
         .intro-section { padding: 50px 15px; text-align: center; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); }
         .intro-section h2 { font-size: 1.8em; margin-top: 0; margin-bottom: 15px; }
         .intro-section p { font-size: 1.1em; color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.7; }
+/* Add this CSS to your <style> block */
+
+.how-to-section {
+    padding: 60px 15px;
+}
+.how-to-section .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+.how-to-card {
+    padding: 30px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: white;
+}
+.how-to-card h3 {
+    font-size: 1.6em;
+    margin: 15px 0 10px;
+}
+.how-to-card p {
+    margin: 0 0 25px;
+    opacity: 0.9;
+}
+.how-to-icon {
+    font-size: 2.5em;
+}
+.how-to-btn {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    transition: background-color 0.2s, color 0.2s;
+}
+.how-to-card.buy-card .how-to-btn:hover {
+    background-color: white;
+    color: #007bff;
+}
+.how-to-card.sell-card .how-to-btn:hover {
+    background-color: white;
+    color: #d99a00;
+}
+
+/* Attractive background colors */
+.buy-card {
+    background: linear-gradient(135deg, #007bff, #0056b3); /* Blue gradient */
+}
+.sell-card {
+    background: linear-gradient(135deg, #ffc107, #d99a00); /* Yellow/Orange gradient */
+}
+
+@media (min-width: 768px) {
+    .how-to-section .container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.how-to-list {
+    text-align: left;
+    display: inline-block;
+    margin: 0 0 25px 0;
+    padding-left: 20px;
+}
+.how-to-list li {
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
     </style>
 </head>
 <body class="light-mode">
@@ -386,7 +456,36 @@
                 </div>
             </div>
         </section>
-
+<section class="how-to-section">
+    <div class="container">
+        <div class="how-to-card buy-card">
+            <div class="how-to-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3>How to Buy</h3>
+            <ol class="how-to-list">
+                <li><strong>Browse</strong> for items in our shop.</li>
+                <li>Add what you like to your <strong>Cart</strong>.</li>
+                <li>Go to <strong>Checkout</strong> and confirm your order.</li>
+                <li>The seller will call you to arrange delivery.</li>
+            </ol>
+            <a href="/shop/" class="how-to-btn">Start Browsing</a>
+        </div>
+        <div class="how-to-card sell-card">
+            <div class="how-to-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <h3>How to Sell</h3>
+            <ol class="how-to-list">
+                <li><strong>Upload</strong> your item in under a minute.</li>
+                <li>Check your <strong>Dashboard</strong> for new orders.</li>
+                <li><strong>Contact</strong> the buyer to arrange delivery.</li>
+                <li>Mark the order as "Delivered" to update stock.</li>
+            </ol>
+            <a href="/upload/" class="how-to-btn">Start Selling</a>
+        </div>
+    </div>
+</section>
         <section class="testimonial-section" id="testimonials">
             <h2 class="section-title">Community Voices</h2>
             <div id="testimonial-grid" class="testimonial-grid"></div>
