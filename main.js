@@ -25,13 +25,17 @@ function getCloudinaryTransformedUrl(url, type) {
 import { db, auth } from "./firebase.js";
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Import onSnapshot
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENT REFERENCES ---
 const productGrid = document.getElementById("product-grid");
 const listingsTitle = document.getElementById("listings-title");
 const dealsSection = document.getElementById("deals-section");
 const dealsGrid = document.getElementById("deals-grid");
+const saveOnMoreSection = document.getElementById("save-on-more-section");
+const saveOnMoreGrid = document.getElementById("save-on-more-grid");
+const sponsoredSection = document.getElementById("sponsored-section");
+const sponsoredGrid = document.getElementById("sponsored-grid");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
@@ -40,17 +44,8 @@ const paginationContainer = document.getElementById("pagination-container");
 const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
-const dynamicHeader = document.getElementById('dynamic-header');
-const headerSlidesContainer = document.getElementById('header-slides-container');
-const headerPrevBtn = document.getElementById('header-prev-btn');
-const headerNextBtn = document.getElementById('header-next-btn');
-
-// --- MODAL DOM REFERENCES ---
 const modal = document.getElementById('custom-modal');
-const modalIcon = document.getElementById('modal-icon');
-const modalTitle = document.getElementById('modal-title');
-const modalMessage = document.getElementById('modal-message');
-const modalButtons = document.getElementById('modal-buttons');
+
 
 // --- APPLICATION STATE ---
 const state = {
@@ -63,21 +58,19 @@ const state = {
     wishlist: new Set()
 };
 
-// --- HEADER SLIDER STATE ---
-let headerSlides = [];
-let currentSlideIndex = 0;
-let slideInterval;
+// --- HELPER & RENDER FUNCTIONS ---
 
-
-// --- MODAL FUNCTIONS ---
 function showModal({ icon, title, message, theme = 'info', buttons }) {
     if (!modal) return;
-    modal.className = `modal-overlay modal-theme-${theme}`; // Reset and set theme
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalButtons = document.getElementById('modal-buttons');
+    modal.className = `modal-overlay modal-theme-${theme}`;
     modalIcon.innerHTML = icon;
     modalTitle.textContent = title;
     modalMessage.textContent = message;
-    modalButtons.innerHTML = ''; // Clear old buttons
-
+    modalButtons.innerHTML = '';
     buttons.forEach(btnInfo => {
         const button = document.createElement('button');
         button.textContent = btnInfo.text;
@@ -85,58 +78,11 @@ function showModal({ icon, title, message, theme = 'info', buttons }) {
         button.addEventListener('click', btnInfo.onClick);
         modalButtons.appendChild(button);
     });
-    
     modal.classList.add('show');
 }
 
 function hideModal() {
-    if (!modal) return;
-    modal.classList.remove('show');
-}
-
-// --- DYNAMIC CONTENT FUNCTIONS ---
-function renderHeaderSlides() {
-    if (!headerSlidesContainer || headerSlides.length === 0) {
-        if (dynamicHeader) dynamicHeader.style.display = 'none';
-        return;
-    }
-    headerSlidesContainer.innerHTML = '';
-    const fragment = document.createDocumentFragment();
-    headerSlides.forEach(slide => {
-        const slideDiv = document.createElement('div');
-        slideDiv.className = 'header-slide';
-        const thumbnailUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'thumbnail');
-        const placeholderUrl = getCloudinaryTransformedUrl(slide.imageUrl, 'placeholder');
-        slideDiv.innerHTML = `
-            <a href="/product.html?id=${slide.productId}" class="product-card-link">
-              <div class="product-card">
-                <h3>${slide.description}</h3>
-                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${slide.description}" class="lazy">
-                <p class="price">UGX ${slide.price ? slide.price.toLocaleString() : "N/A"}</p>
-              </div>
-            </a>
-        `;
-        fragment.appendChild(slideDiv);
-    });
-    headerSlidesContainer.appendChild(fragment);
-    observeLazyImages();
-    showSlide(0);
-    startSlideShow();
-}
-function showSlide(index) { if (!headerSlidesContainer) return; const offset = -index * 100; headerSlidesContainer.style.transform = `translateX(${offset}%)`; currentSlideIndex = index; }
-function nextSlide() { if (headerSlides.length === 0) return; const newIndex = (currentSlideIndex + 1) % headerSlides.length; showSlide(newIndex); }
-function prevSlide() { if (headerSlides.length === 0) return; const newIndex = (currentSlideIndex - 1 + headerSlides.length) % headerSlides.length; showSlide(newIndex); }
-function startSlideShow() { stopSlideShow(); slideInterval = setInterval(nextSlide, 5000); }
-function stopSlideShow() { clearInterval(slideInterval); }
-async function fetchHeaderSlides() {
-    if (!dynamicHeader) return;
-    try {
-        const slidesQuery = query(collection(db, 'products'), where('isHero', '==', true), orderBy('heroTimestamp', 'desc'), limit(6));
-        const snapshot = await getDocs(slidesQuery);
-        headerSlides = snapshot.docs.map(doc => ({ id: doc.id, productId: doc.id, description: doc.data().name, imageUrl: doc.data().imageUrls?.[0], price: doc.data().price })).filter(slide => slide.imageUrl); 
-        if (headerSlides.length === 0) { dynamicHeader.style.display = 'none'; return; }
-        renderHeaderSlides();
-    } catch (error) { console.error("Error fetching header slides:", error); dynamicHeader.style.display = 'none'; }
+    if (modal) modal.classList.remove('show');
 }
 
 function renderSkeletonLoaders(container, count) {
@@ -150,6 +96,7 @@ function renderSkeletonLoaders(container, count) {
     }
     container.appendChild(fragment);
 }
+
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -161,45 +108,36 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
         }
     });
 }, { rootMargin: "0px 0px 200px 0px" });
-function observeLazyImages() { const imagesToLoad = document.querySelectorAll('img.lazy'); imagesToLoad.forEach(img => { lazyImageObserver.observe(img); }); }
 
-function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = "";
-    if (productsToDisplay.length === 0) {
-        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
-        return;
-    }
+function observeLazyImages() {
+    const imagesToLoad = document.querySelectorAll('img.lazy');
+    imagesToLoad.forEach(img => { lazyImageObserver.observe(img); });
+}
+
+function renderCarouselProducts(gridElement, products) {
     const fragment = document.createDocumentFragment();
-    productsToDisplay.forEach(product => {
+    products.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
-        const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
-        const verifiedTextHTML = isVerified ? `<p class="verified-text">✓ Verified Seller</p>` : '';
+        const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
-
-        const isSold = product.isSold;
-        const soldClass = isSold ? 'is-sold' : '';
-        const soldOverlayHTML = isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
-
-        // NEW: Logic for stock status
+        const soldClass = product.isSold ? 'is-sold' : '';
+        const soldOverlayHTML = product.isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         let stockStatusHTML = '';
-        const quantity = product.quantity;
-        if (quantity > 5) {
+        if (product.quantity > 5) {
             stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
-        } else if (quantity > 0 && quantity <= 5) {
-            stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left!</p>`;
+        } else if (product.quantity > 0 && product.quantity <= 5) {
+            stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
-
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
-
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
-            ${soldOverlayHTML}
-            <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+             ${soldOverlayHTML}
+             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
@@ -211,11 +149,23 @@ function renderProducts(productsToDisplay) {
         `;
         fragment.appendChild(productLink);
     });
-    productGrid.appendChild(fragment);
+    gridElement.innerHTML = '';
+    gridElement.appendChild(fragment);
+}
+
+function renderProducts(productsToDisplay) {
+    productGrid.innerHTML = "";
+    if (productsToDisplay.length === 0) {
+        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+        return;
+    }
+    renderCarouselProducts(productGrid, productsToDisplay);
     observeLazyImages();
     initializeWishlistButtons();
 }
 
+
+// --- DATA FETCHING FUNCTIONS ---
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
@@ -234,118 +184,25 @@ async function fetchAndRenderProducts() {
         renderProducts(products);
     } catch (error) {
         console.error("Error fetching from Algolia:", error);
-        productGrid.innerHTML = `<p class="loading-indicator">Sorry, could not load listings. Please try again later.</p>`;
+        productGrid.innerHTML = `<p class="loading-indicator">Could not load listings. Please try again later.</p>`;
     } finally {
         state.isFetching = false;
         updatePaginationUI();
-        if (state.currentPage > 0) { window.scrollTo({ top: productGrid.offsetTop - 150, behavior: 'smooth' }); }
-    }
-}
-function updatePaginationUI() {
-    if (state.totalPages > 1) {
-        paginationContainer.style.display = 'flex';
-        pageIndicator.textContent = `Page ${state.currentPage + 1} of ${state.totalPages}`;
-        prevPageBtn.disabled = state.isFetching || state.currentPage === 0;
-        nextPageBtn.disabled = state.isFetching || state.currentPage >= state.totalPages - 1;
-    } else {
-        paginationContainer.style.display = 'none';
-    }
-}
-function updateListingsTitle() {
-    let title = "All Listings";
-    if (state.filters.category) { title = state.filters.category; }
-    else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
-    if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
-    listingsTitle.textContent = title;
-}
-
-// --- WISHLIST FUNCTIONS ---
-async function handleWishlistClick(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!state.currentUser) {
-        showModal({
-            icon: '🔒', title: 'Login Required', message: 'You need an account to save items. It\'s free!',
-            buttons: [ { text: 'Cancel', class: 'secondary', onClick: hideModal }, { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } } ]
-        });
-        return;
-    }
-    const button = event.currentTarget;
-    const productId = button.dataset.productId;
-    const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
-    button.disabled = true;
-    try {
-        if (state.wishlist.has(productId)) {
-            await deleteDoc(wishlistRef);
-            state.wishlist.delete(productId);
-            updateWishlistButtonUI(button, false);
-        } else {
-            await setDoc(wishlistRef, { name: button.dataset.productName, price: parseFloat(button.dataset.productPrice) || 0, imageUrl: button.dataset.productImage || '', addedAt: serverTimestamp() });
-            state.wishlist.add(productId);
-            updateWishlistButtonUI(button, true);
-            showModal({ icon: '❤️', title: 'Added!', message: 'Item added to your wishlist.', theme: 'success', buttons: [ { text: 'Great!', class: 'primary', onClick: hideModal } ] });
+        
+        // THIS BLOCK HANDLES SCROLLING ON SEARCH AND PAGINATION
+        if (state.currentPage > 0 || state.searchTerm) {
+            const targetElement = document.getElementById('listings-title');
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 130, // Adjust offset for your sticky header
+                    behavior: 'smooth'
+                });
+            }
         }
-    } catch (error) { console.error("Error updating wishlist:", error); } finally { button.disabled = false; }
-}
-function updateWishlistButtonUI(button, isInWishlist) {
-    const icon = button.querySelector('i');
-    if (isInWishlist) {
-        button.classList.add('active');
-        icon.classList.remove('fa-regular');
-        icon.classList.add('fa-solid');
-    } else {
-        button.classList.remove('active');
-        icon.classList.remove('fa-solid');
-        icon.classList.add('fa-regular');
     }
-}
-function initializeWishlistButtons() {
-    const wishlistButtons = document.querySelectorAll('.wishlist-btn');
-    wishlistButtons.forEach(button => {
-        button.removeEventListener('click', handleWishlistClick);
-        button.addEventListener('click', handleWishlistClick);
-    });
-}
-async function fetchUserWishlist() {
-    if (!state.currentUser) { state.wishlist.clear(); return; }
-    try {
-        const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
-        const wishlistSnapshot = await getDocs(wishlistCol);
-        const wishlistIds = wishlistSnapshot.docs.map(doc => doc.id);
-        state.wishlist = new Set(wishlistIds);
-    } catch (error) { console.error("Could not fetch user wishlist:", error); state.wishlist.clear(); }
-}
-
-// --- EVENT HANDLERS & INITIALIZATION ---
-function handleSearch() {
-    const term = searchInput.value.trim();
-    if (state.searchTerm === term) return;
-    state.searchTerm = term; state.currentPage = 0; state.filters.type = ''; state.filters.category = '';
-    fetchAndRenderProducts();
-}
-function handleFilterLinkClick(event) {
-    const link = event.target.closest('a[href*="?"]');
-    if (!link) return;
-    event.preventDefault();
-    const url = new URL(link.href);
-    const type = url.searchParams.get('type') || '';
-    const category = url.searchParams.get('category') || '';
-    state.filters.type = type; state.filters.category = category; state.currentPage = 0; state.searchTerm = '';
-    searchInput.value = '';
-    fetchAndRenderProducts();
-    document.querySelector('.mobile-nav')?.classList.remove('active');
-    document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
-}
-function initializeStateFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    state.filters.type = params.get('type') || '';
-    state.filters.category = params.get('category') || '';
-    state.searchTerm = params.get('q') || '';
 }
 
 async function fetchDeals() {
-    const dealsGrid = document.getElementById("deals-grid");
-    const dealsSection = document.getElementById("deals-section");
     if (!dealsGrid || !dealsSection) return;
     renderSkeletonLoaders(dealsGrid, 5);
     dealsSection.style.display = 'block';
@@ -353,70 +210,41 @@ async function fetchDeals() {
         const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
         if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
-        dealsGrid.innerHTML = "";
-        const fragment = document.createDocumentFragment();
-        snapshot.docs.forEach(doc => {
-            const product = { id: doc.id, ...doc.data() };
-            const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
-            const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
-            const isVerified = product.sellerBadges?.includes('verified') || product.sellerIsVerified;
-            const verifiedTextHTML = isVerified ? `<p class="verified-text">✓ Verified Seller</p>` : '';
-            const isInWishlist = state.wishlist.has(product.id);
-            const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
-            const wishlistClass = isInWishlist ? 'active' : '';
-            const isSold = product.isSold;
-            const soldClass = isSold ? 'is-sold' : '';
-            const soldOverlayHTML = isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
-
-            // NEW: Logic for stock status
-            let stockStatusHTML = '';
-            const quantity = product.quantity;
-            if (quantity > 5) {
-                stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
-            } else if (quantity > 0 && quantity <= 5) {
-                stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left!</p>`;
-            }
-
-            const productLink = document.createElement("a");
-            productLink.href = `/product.html?id=${product.id}`;
-            productLink.className = "product-card-link";
-            productLink.innerHTML = `
-              <div class="product-card ${soldClass}">
-                 ${soldOverlayHTML}
-                 <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
-                    <i class="${wishlistIcon} fa-heart"></i>
-                </button>
-                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
-                <h3>${product.name}</h3>
-                ${stockStatusHTML}
-                <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-                ${verifiedTextHTML}
-              </div>
-            `;
-            fragment.appendChild(productLink);
-        });
-        dealsGrid.appendChild(fragment);
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCarouselProducts(dealsGrid, products);
         observeLazyImages();
         initializeWishlistButtons();
     } catch (error) { console.error("Error fetching deals:", error); dealsSection.style.display = 'none'; }
 }
 
-async function fetchTestimonials() {
-    const testimonialGrid = document.getElementById('testimonial-grid');
-    if (!testimonialGrid) return;
+async function fetchSaveOnMore() {
+    if (!saveOnMoreGrid || !saveOnMoreSection) return;
+    renderSkeletonLoaders(saveOnMoreGrid, 5);
+    saveOnMoreSection.style.display = 'block';
     try {
-        const testimonialsQuery = query(collection(db, 'testimonials'), where('status', '==', 'approved'), orderBy('order', 'asc'), limit(2));
-        const querySnapshot = await getDocs(testimonialsQuery);
-        if (querySnapshot.empty) { testimonialGrid.closest('.testimonial-section').style.display = 'none'; return; }
-        testimonialGrid.innerHTML = '';
-        querySnapshot.forEach(doc => {
-            const testimonial = doc.data();
-            const card = document.createElement('div');
-            card.className = 'testimonial-card';
-            card.innerHTML = `<p class="testimonial-text">"${testimonial.quote}"</p><p class="testimonial-author">&ndash; ${testimonial.authorName} <span>${testimonial.authorDetail || ''}</span></p>`;
-            testimonialGrid.appendChild(card);
-        });
-    } catch (error) { console.error("Error fetching testimonials:", error); }
+        const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) { saveOnMoreSection.style.display = 'none'; return; }
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCarouselProducts(saveOnMoreGrid, products);
+        observeLazyImages();
+        initializeWishlistButtons();
+    } catch (error) { console.error("Error fetching Save on More:", error); saveOnMoreSection.style.display = 'none'; }
+}
+
+async function fetchSponsoredItems() {
+    if (!sponsoredGrid || !sponsoredSection) return;
+    renderSkeletonLoaders(sponsoredGrid, 5);
+    sponsoredSection.style.display = 'block';
+    try {
+        const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) { sponsoredSection.style.display = 'none'; return; }
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCarouselProducts(sponsoredGrid, products);
+        observeLazyImages();
+        initializeWishlistButtons();
+    } catch (error) { console.error("Error fetching Sponsored Items:", error); sponsoredSection.style.display = 'none'; }
 }
 
 async function fetchAndDisplayCategoryCounts() {
@@ -441,12 +269,86 @@ async function fetchAndDisplayCategoryCounts() {
     } catch (error) { console.error('Error fetching category counts:', error); }
 }
 
-function listenForCartUpdates(userId) {
-    const cartBadges = document.querySelectorAll('.cart-badge');
-    if (!userId) {
-        cartBadges.forEach(badge => badge.classList.remove('visible'));
+// --- UI & EVENT HANDLERS ---
+function updatePaginationUI() {
+    if (state.totalPages > 1) {
+        paginationContainer.style.display = 'flex';
+        pageIndicator.textContent = `Page ${state.currentPage + 1} of ${state.totalPages}`;
+        prevPageBtn.disabled = state.isFetching || state.currentPage === 0;
+        nextPageBtn.disabled = state.isFetching || state.currentPage >= state.totalPages - 1;
+    } else {
+        paginationContainer.style.display = 'none';
+    }
+}
+
+function updateListingsTitle() {
+    let title = "Recent Items";
+    if (state.filters.category) { title = state.filters.category; }
+    else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
+    if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
+    listingsTitle.textContent = title;
+}
+
+async function handleWishlistClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!state.currentUser) {
+        showModal({
+            icon: '🔒', title: 'Login Required', message: 'You need an account to save items.',
+            buttons: [ { text: 'Cancel', class: 'secondary', onClick: hideModal }, { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } } ]
+        });
         return;
     }
+    const button = event.currentTarget;
+    const productId = button.dataset.productId;
+    const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
+    button.disabled = true;
+    try {
+        if (state.wishlist.has(productId)) {
+            await deleteDoc(wishlistRef);
+            state.wishlist.delete(productId);
+            updateWishlistButtonUI(button, false);
+        } else {
+            await setDoc(wishlistRef, { name: button.dataset.productName, price: parseFloat(button.dataset.productPrice) || 0, imageUrl: button.dataset.productImage || '', addedAt: serverTimestamp() });
+            state.wishlist.add(productId);
+            updateWishlistButtonUI(button, true);
+        }
+    } catch (error) { console.error("Error updating wishlist:", error); } finally { button.disabled = false; }
+}
+
+function updateWishlistButtonUI(button, isInWishlist) {
+    const icon = button.querySelector('i');
+    if (isInWishlist) {
+        button.classList.add('active'); icon.classList.remove('fa-regular'); icon.classList.add('fa-solid');
+    } else {
+        button.classList.remove('active'); icon.classList.remove('fa-solid'); icon.classList.add('fa-regular');
+    }
+}
+
+function initializeWishlistButtons() {
+    const allProductCards = document.querySelectorAll('.product-card-link');
+    allProductCards.forEach(card => {
+        const wishlistButton = card.querySelector('.wishlist-btn');
+        if (wishlistButton) {
+            wishlistButton.removeEventListener('click', handleWishlistClick);
+            wishlistButton.addEventListener('click', handleWishlistClick);
+        }
+    });
+}
+
+async function fetchUserWishlist() {
+    if (!state.currentUser) { state.wishlist.clear(); return; }
+    try {
+        const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
+        const wishlistSnapshot = await getDocs(wishlistCol);
+        const wishlistIds = wishlistSnapshot.docs.map(doc => doc.id);
+        state.wishlist = new Set(wishlistIds);
+    } catch (error) { console.error("Could not fetch user wishlist:", error); }
+}
+
+function listenForCartUpdates(userId) {
+    const cartBadges = document.querySelectorAll('.cart-badge');
+    if (!userId) { cartBadges.forEach(badge => badge.classList.remove('visible')); return; }
     const cartRef = collection(db, 'users', userId, 'cart');
     onSnapshot(cartRef, (snapshot) => {
         const count = snapshot.size;
@@ -458,15 +360,46 @@ function listenForCartUpdates(userId) {
     });
 }
 
+function handleSearch() {
+    const term = searchInput.value.trim();
+    if (state.searchTerm === term) return;
+    state.searchTerm = term; state.currentPage = 0; state.filters.type = ''; state.filters.category = '';
+    fetchAndRenderProducts();
+}
+
+function handleFilterLinkClick(event) {
+    const link = event.target.closest('a[href*="?"]');
+    if (!link) return;
+    event.preventDefault();
+    const url = new URL(link.href);
+    const type = url.searchParams.get('type') || '';
+    const category = url.searchParams.get('category') || '';
+    state.filters.type = type; state.filters.category = category; state.currentPage = 0; state.searchTerm = '';
+    searchInput.value = '';
+    fetchAndRenderProducts();
+    if (mobileNav) { mobileNav.classList.remove('active'); document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); }
+}
+
+function initializeStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    state.filters.type = params.get('type') || '';
+    state.filters.category = params.get('category') || '';
+    state.searchTerm = params.get('q') || '';
+    if (state.searchTerm) searchInput.value = state.searchTerm;
+}
+
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+    
     function loadPageContent() {
-        fetchHeaderSlides();
         fetchDeals();
-        fetchTestimonials();
+        fetchSaveOnMore();
+        fetchSponsoredItems();
         fetchAndDisplayCategoryCounts();
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
+
     onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
         await fetchUserWishlist();
@@ -479,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         listenForCartUpdates(null);
         loadPageContent();
     });
+    
     if (modal) {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
@@ -486,10 +420,16 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
-    prevPageBtn.addEventListener('click', () => { if (state.currentPage > 0) { state.currentPage--; fetchAndRenderProducts(); } });
-    nextPageBtn.addEventListener('click', () => { if (state.currentPage < state.totalPages - 1) { state.currentPage++; fetchAndRenderProducts(); } });
-    if (headerNextBtn && headerPrevBtn) {
-        headerNextBtn.addEventListener('click', () => { nextSlide(); startSlideShow(); });
-        headerPrevBtn.addEventListener('click', () => { prevSlide(); startSlideShow(); });
-    }
+    prevPageBtn.addEventListener('click', () => {
+        if (state.currentPage > 0) {
+            state.currentPage--;
+            fetchAndRenderProducts();
+        }
+    });
+    nextPageBtn.addEventListener('click', () => {
+        if (state.currentPage < state.totalPages - 1) {
+            state.currentPage++;
+            fetchAndRenderProducts();
+        }
+    });
 });
