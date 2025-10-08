@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </footer>
 
     <script type="module" src="./ui.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="main.js"></script>
     <script type="module" src="./shared.js"></script>
 </body>
 </html>
