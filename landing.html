@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kabale Online | The #1 Student Marketplace in Kabale</title>
+    <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* --- NEW THEME DESIGN --- */
         :root {
             --primary-gradient: linear-gradient(90deg, #007bff, #0056b3);
             --accent-gradient: linear-gradient(90deg, #ffc107, #f7b733);
@@ -16,30 +16,23 @@
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-
             --bg-dark: #0f172a;
             --bg-card-dark: #1e293b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
-            
             --ko-primary: #007bff;
             --ko-accent: #ffc107;
         }
-
-        /* --- LIGHT MODE (DEFAULT) --- */
-        body {
+        body.light-mode {
             --bg-main: var(--bg-light);
             --bg-card: var(--bg-card-light);
             --text-main: var(--text-main-light);
             --text-secondary: var(--text-secondary-light);
             --border-color: var(--border-color-light);
         }
-
-        /* --- DARK MODE THEME --- */
         body.dark-mode {
             --bg-main: var(--bg-dark);
             --bg-card: var(--bg-card-dark);
@@ -47,19 +40,15 @@
             --text-secondary: var(--text-secondary-dark);
             --border-color: var(--border-color-dark);
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             background-color: var(--bg-main);
             color: var(--text-main);
             line-height: 1.6;
             transition: background-color 0.3s, color 0.3s;
         }
-
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-
-        /* --- STICKY HEADER --- */
         .sticky-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background-color: var(--bg-card);
@@ -73,8 +62,6 @@
         .header-spacer { flex-grow: 1; }
         .header-icons { display: flex; align-items: center; gap: 20px; }
         .header-icons a { color: var(--text-main); font-size: 22px; text-decoration: none; }
-        
-        /* --- THEME TOGGLE SWITCH --- */
         .theme-switch-wrapper { display: flex; align-items: center; cursor: pointer; }
         .theme-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .theme-switch input { opacity: 0; width: 0; height: 0; }
@@ -82,8 +69,6 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--ko-primary); }
         input:checked + .slider:before { transform: translateX(18px); }
-
-        /* --- MOBILE NAV (FROM YOUR ORIGINAL) --- */
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
         .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
@@ -95,8 +80,6 @@
         .mobile-nav a:hover { background-color: rgba(0,0,0,0.05); }
         .mobile-nav-footer { padding: 15px; background-color: var(--bg-main); }
         .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; }
-
-        /* --- HERO SLIDER --- */
         .hero-slider { position: relative; min-height: 400px; overflow: hidden; margin-top: 65px; display: flex; align-items: center; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; background-size: cover; background-position: center; }
         .slide.active { opacity: 1; }
@@ -104,8 +87,6 @@
         .slide-content h1 { font-size: 2.5em; color: white; margin: 0; }
         .slide-content p { color: #eee; font-size: 1.2em; margin: 10px 0 20px; }
         .slide-content .cta-button { background: var(--primary-gradient); color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; }
-
-        /* --- STATS SECTION --- */
         .stats-section { padding: 60px 15px; text-align: center; }
         .stats-section h2 { font-size: 2em; margin-bottom: 40px; }
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
@@ -114,8 +95,6 @@
         .stat-card .stat-number { font-size: 2.2em; font-weight: bold; }
         .stat-card .stat-label { font-size: 0.9em; color: var(--text-secondary); }
         .stat-card .stat-sublabel { font-size: 0.8em; color: var(--text-secondary); opacity: 0.8; margin-top: 4px; }
-
-        /* --- TOP SECTIONS --- */
         .top-sections { padding: 60px 15px; }
         .top-sections h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
         .sections-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
@@ -124,10 +103,8 @@
         .section-card i { font-size: 1.5em; color: var(--ko-primary); margin-bottom: 15px; }
         .section-card h3 { margin: 0 0 10px; }
         .section-card p { color: var(--text-secondary); margin: 0; }
-
-        /* --- DEALS CAROUSEL --- */
-        .deals-section { padding: 60px 0; }
-        .deals-section h2 { text-align: center; font-size: 2em; margin-bottom: 40px; padding: 0 15px; }
+        .trending-section { padding: 60px 0; }
+        .trending-section h2 { text-align: center; font-size: 2em; margin-bottom: 40px; padding: 0 15px; }
         .product-carousel-wrapper { overflow-x: auto; padding: 0 15px 20px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
@@ -136,24 +113,18 @@
         .product-card-content { padding: 15px; }
         .product-card h3 { margin: 0 0 5px; font-size: 1em; }
         .product-card .price { font-weight: bold; color: var(--ko-primary); }
-
-        /* --- CTA SECTION --- */
         .cta-section { padding: 60px 15px; background: var(--bg-card); text-align: center; margin: 40px 0; }
         .cta-section h2 { font-size: 2em; margin-bottom: 20px; }
         .cta-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; }
         .cta-btn { padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; min-width: 200px; }
         .cta-buy { background: var(--primary-gradient); color: white; }
         .cta-sell { background: var(--ko-accent); color: #212529; }
-
-        /* --- TESTIMONIAL SECTION (ADAPTED) --- */
         .testimonial-section { padding: 60px 15px; }
-        .testimonial-section h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
+        .testimonial-section .section-title { text-align: center; font-size: 2em; margin-bottom: 40px; border-bottom: none; }
         .testimonial-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .testimonial-card { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--ko-primary); }
         .testimonial-text { font-style: italic; color: var(--text-secondary); margin: 0 0 15px; }
         .testimonial-author { font-weight: bold; text-align: right; }
-        
-        /* --- FOOTER (ADAPTED) --- */
         footer { background-color: #0f172a; color: #e2e8f0; padding: 60px 15px 20px; text-align: center; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
         .footer-logo span { color: var(--ko-accent); }
@@ -161,7 +132,15 @@
         .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
         .footer-copyright { font-size: 0.9em; color: #64748b; }
 
-        /* --- RESPONSIVE ADJUSTMENTS --- */
+        /* Modal for navigation */
+        .nav-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .nav-modal-content { background-color: var(--bg-card); margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 400px; text-align: center; }
+        .nav-modal-content h3 { margin-top: 0; }
+        .nav-modal-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .nav-modal-btn { padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .btn-confirm { background-color: var(--ko-primary); color: white; }
+        .btn-cancel { background-color: #6c757d; color: white; }
+
         @media (min-width: 768px) {
             .stats-grid { grid-template-columns: repeat(4, 1fr); }
             .sections-grid { grid-template-columns: repeat(3, 1fr); }
@@ -193,22 +172,20 @@
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
-            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-            <a href="/cart.html" class="nav-link cart-link">
-                <i class="fa-solid fa-cart-shopping"></i> My Cart
-            </a>
-            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
-            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
-            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+            <a href="/shop/" class="nav-link modal-trigger" data-url="/shop/"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/shop/?type=service" class="nav-link modal-trigger" data-url="https://gigs.kabaleonline.com"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/shop/events/" class="nav-link modal-trigger" data-url="/shop/events/"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="/shop/stories.html" class="nav-link modal-trigger" data-url="/shop/stories.html"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/shop/wishlist.html" class="nav-link modal-trigger" data-url="/shop/wishlist.html"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/cart.html" class="nav-link modal-trigger" data-url="/cart.html"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/my-orders.html" class="nav-link modal-trigger" data-url="/my-orders.html"><i class="fa-solid fa-box"></i> My Orders</a>
+            <a href="/shop/inbox.html" class="nav-link modal-trigger" data-url="/shop/inbox.html"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+            <a href="/shop/rentals/" class="nav-link modal-trigger" data-url="/shop/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/shop/requests/view.html" class="nav-link modal-trigger" data-url="/shop/requests/view.html"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/shop/lost-and-found/" class="nav-link modal-trigger" data-url="/shop/lost-and-found/"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
         </div>
         <div class="mobile-nav-footer">
-            <a href="/dashboard/" class="post-button">Post Something Free</a>
+            <a href="/dashboard/" class="post-button modal-trigger" data-url="/dashboard/">Post Something Free</a>
         </div>
     </nav>
     <div class="mobile-nav-overlay"></div>
@@ -219,28 +196,28 @@
                 <div class="slide-content">
                     <h1>Buy & Sell Textbooks</h1>
                     <p>Find course materials from fellow students.</p>
-                    <a href="#top-sections" class="cta-button">Browse Items</a>
+                    <a href="/shop/" class="cta-button modal-trigger" data-url="/shop/">Browse Items</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?q=80&w=1974&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Latest Gadgets</h1>
                     <p>Upgrade your tech for less.</p>
-                    <a href="/?category=Electronics" class="cta-button">Shop Electronics</a>
+                    <a href="/shop/?category=Electronics" class="cta-button modal-trigger" data-url="/shop/?category=Electronics">Shop Electronics</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e2775d2?q=80&w=2070&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Offer Your Skills</h1>
                     <p>From tutoring to repairs, find help on campus.</p>
-                    <a href="/?type=service" class="cta-button">Browse Services</a>
+                    <a href="https://gigs.kabaleonline.com" class="cta-button modal-trigger" data-url="https://gigs.kabaleonline.com">Browse Services</a>
                 </div>
             </div>
             <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1974&auto=format&fit=crop');">
                 <div class="slide-content">
                     <h1>Find Your Next Hostel</h1>
                     <p>Browse student rentals and hostels in Kabale.</p>
-                    <a href="/rentals/" class="cta-button">View Rentals</a>
+                    <a href="/shop/rentals/" class="cta-button modal-trigger" data-url="/shop/rentals/">View Rentals</a>
                 </div>
             </div>
         </section>
@@ -281,27 +258,27 @@
             <div class="container">
                 <h2>What We Offer</h2>
                 <div class="sections-grid">
-                    <a href="/" class="section-card">
+                    <a href="/shop/" class="section-card modal-trigger" data-url="/shop/">
                         <i class="fas fa-store"></i>
                         <h3>Buy Items</h3>
                         <p>Discover deals on textbooks, electronics, and more from students in Kabale.</p>
                     </a>
-                    <a href="/upload/" class="section-card">
+                    <a href="/upload/" class="section-card modal-trigger" data-url="/upload/">
                         <i class="fas fa-cash-register"></i>
                         <h3>Sell Your Stuff</h3>
                         <p>Turn your unused items into cash and connect with buyers in your campus community.</p>
                     </a>
-                    <a href="/rentals/" class="section-card">
+                    <a href="/shop/rentals/" class="section-card modal-trigger" data-url="/shop/rentals/">
                         <i class="fas fa-house-user"></i>
                         <h3>Find Hostels</h3>
                         <p>Browse listings for student hostels and rentals near campus, with details and contacts.</p>
                     </a>
-                    <a href="/?type=service" class="section-card">
+                    <a href="https://gigs.kabaleonline.com" class="section-card modal-trigger" data-url="https://gigs.kabaleonline.com">
                         <i class="fas fa-concierge-bell"></i>
                         <h3>Offer a Service</h3>
-                        <p>Promote your skills, from tutoring and graphic design to repairs and errands, on our services hub.</p>
+                        <p>Promote your skills, from tutoring to repairs, on our services hub.</p>
                     </a>
-                    <a href="/lost-and-found/" class="section-card">
+                    <a href="/shop/lost-and-found/" class="section-card modal-trigger" data-url="/shop/lost-and-found/">
                         <i class="fas fa-magnifying-glass-plus"></i>
                         <h3>Lost & Found</h3>
                         <p>Post a notice for a lost item or report something you've found to help our community.</p>
@@ -310,11 +287,11 @@
             </div>
         </section>
 
-        <section class="deals-section">
-            <h2>Today's Top Deals</h2>
+        <section class="trending-section">
+            <h2>Trending Products</h2>
             <div class="product-carousel-wrapper">
-                <div class="product-carousel" id="deals-grid">
-                    <p>Loading deals...</p>
+                <div class="product-carousel" id="trending-products-grid">
+                    <p style="padding: 0 15px;">Loading trending products...</p>
                 </div>
             </div>
         </section>
@@ -324,16 +301,15 @@
                 <h2>Ready to Start?</h2>
                 <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px;">Join our community today and discover a smarter way to buy and sell on campus.</p>
                 <div class="cta-buttons">
-                    <a href="#deals-grid" class="cta-btn cta-buy">Start Buying</a>
-                    <a href="/upload/" class="cta-btn cta-sell">Start Selling</a>
+                    <a href="/shop/" class="cta-btn cta-buy modal-trigger" data-url="/shop/">Start Buying</a>
+                    <a href="/upload/" class="cta-btn cta-sell modal-trigger" data-url="/upload/">Start Selling</a>
                 </div>
             </div>
         </section>
 
         <section class="testimonial-section" id="testimonials">
             <h2 class="section-title">Community Voices</h2>
-            <div id="testimonial-grid" class="testimonial-grid">
-                </div>
+            <div id="testimonial-grid" class="testimonial-grid"></div>
         </section>
     </main>
 
@@ -350,84 +326,19 @@
         </div>
     </footer>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- THEME TOGGLE LOGIC ---
-        const themeToggle = document.getElementById('theme-toggle');
-        
-        // Function to set theme
-        function setTheme(theme) {
-            if (theme === 'dark-mode') {
-                document.body.classList.remove('light-mode');
-                document.body.classList.add('dark-mode');
-                themeToggle.checked = false;
-            } else {
-                document.body.classList.remove('dark-mode');
-                document.body.classList.add('light-mode');
-                themeToggle.checked = true;
-            }
-            localStorage.setItem('theme', theme);
-        }
-
-        // Check for saved theme, default to light
-        const currentTheme = localStorage.getItem('theme') || 'light-mode';
-        setTheme(currentTheme);
-        
-        themeToggle.addEventListener('change', function() {
-            if (this.checked) {
-                setTheme('light-mode');
-            } else {
-                setTheme('dark-mode');
-            }
-        });
-
-        // --- HERO SLIDER LOGIC ---
-        const slides = document.querySelectorAll('.hero-slider .slide');
-        let currentSlide = 0;
-        if (slides.length > 0) {
-            setInterval(() => {
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }, 5000);
-        }
-
-        // --- ANIMATED STATS COUNTER ---
-        const counters = document.querySelectorAll('.stat-number');
-        const speed = 200; 
-
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counter = entry.target;
-                    const animate = () => {
-                        const target = +counter.getAttribute('data-target');
-                        const count = +counter.innerText.replace(/,/g, '');
-                        const inc = target / speed;
-
-                        if (count < target) {
-                            counter.innerText = Math.ceil(count + inc);
-                            setTimeout(animate, 10);
-                        } else {
-                            counter.innerText = target.toLocaleString();
-                        }
-                    };
-                    animate();
-                    observer.unobserve(counter);
-                }
-            });
-        }, { threshold: 0.5 });
-
-        counters.forEach(counter => {
-            if (counter.getAttribute('data-target')) {
-                observer.observe(counter);
-            }
-        });
-    });
-    </script>
+    <div id="nav-modal" class="nav-modal">
+        <div class="nav-modal-content">
+            <h3>Confirm Navigation</h3>
+            <p id="nav-modal-message"></p>
+            <div class="nav-modal-buttons">
+                <button id="nav-cancel-btn" class="nav-modal-btn btn-cancel">Stay Here</button>
+                <a id="nav-confirm-btn" class="nav-modal-btn btn-confirm">Proceed</a>
+            </div>
+        </div>
+    </div>
     
+    <script type="module" src="js/landing-page.js"></script>
     <script type="module" src="ui.js"></script>
-    <script type="module" src="main.js"></script>
-    <script type="module" src="shared.js"></script>
+    <script type="module" src="firebase.js"></script>
 </body>
 </html>
