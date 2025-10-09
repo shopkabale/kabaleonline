@@ -2,8 +2,8 @@ import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, getDocs, doc, deleteDoc, getDoc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// --- DOM ELEMENTS ---
-const cartItemsContainer = document.getElementById('cart-items-container');
+// --- CORRECTED DOM ELEMENT REFERENCE ---
+const cartItemsContainer = document.getElementById('cart-items-container'); // Corrected from 'cart-container'
 const orderSummarySection = document.getElementById('order-summary-section');
 const subtotalPriceEl = document.getElementById('summary-subtotal');
 const totalPriceEl = document.getElementById('summary-total');
@@ -22,16 +22,19 @@ onAuthStateChanged(auth, user => {
     }
 });
 
+// --- RENDER & DISPLAY FUNCTIONS ---
+
 function showEmptyCartMessage(message, linkUrl) {
     cartItemsContainer.style.display = "none";
-    orderSummarySection.style.display = "none";
+    if(orderSummarySection) orderSummarySection.style.display = "none";
+    if (checkoutBtn) checkoutBtn.style.display = 'none';
     if (emptyCartMessage) {
         emptyCartMessage.style.display = 'block';
         emptyCartMessage.innerHTML = `
             <div class="empty-cart-message">
                 <i class="fas fa-shopping-cart"></i>
                 <p>${message}</p>
-                <a href="${linkUrl || '/shop/'}" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto; border-width: 2px;">Start Shopping</a>
+                <a href="${linkUrl || '/shop/'}" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto; border: 2px solid var(--primary-color);">Start Shopping</a>
             </div>`;
     }
 }
@@ -80,8 +83,9 @@ function renderCart() {
     }
 
     cartItemsContainer.style.display = 'block';
-    orderSummarySection.style.display = 'block';
-    emptyCartMessage.style.display = 'none';
+    if(orderSummarySection) orderSummarySection.style.display = 'block';
+    if(checkoutBtn) checkoutBtn.style.display = 'block';
+    if(emptyCartMessage) emptyCartMessage.style.display = 'none';
     cartItemsContainer.innerHTML = '';
     
     let subtotal = 0;
@@ -108,9 +112,10 @@ function renderCart() {
         cartItemsContainer.appendChild(itemDiv);
     });
     
-    subtotalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
-    totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
+    if(subtotalPriceEl) subtotalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
+    if(totalPriceEl) totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
 }
+
 
 async function updateQuantity(productId, change) {
     const item = cartItemsData.find(i => i.productId === productId);
@@ -119,7 +124,7 @@ async function updateQuantity(productId, change) {
     const newQuantity = item.quantity + change;
 
     if (newQuantity > item.stock) {
-        alert(`Action failed: Only ${item.stock} of "${item.productName}" are available in stock.`);
+        alert(`Sorry, only ${item.stock} of this item are available.`);
         return;
     }
     if (newQuantity < 1) return;
@@ -129,9 +134,8 @@ async function updateQuantity(productId, change) {
         await updateDoc(cartItemRef, { quantity: newQuantity });
         
         item.quantity = newQuantity;
-        renderCart(); // Re-render to update UI and button states
+        renderCart();
         alert(`Quantity for "${item.productName}" updated to ${newQuantity}.`);
-
     } catch (error) {
         console.error("Error updating quantity:", error);
         alert("Could not update quantity. Please try again.");
@@ -153,7 +157,7 @@ async function removeItem(productId) {
 }
 
 // --- EVENT LISTENERS ---
-cartContainer.addEventListener('click', (e) => {
+cartItemsContainer.addEventListener('click', (e) => {
     const button = e.target.closest('button');
     if (!button || !button.dataset.id) return;
     
@@ -167,3 +171,10 @@ cartContainer.addEventListener('click', (e) => {
         removeItem(id);
     }
 });
+
+if (continueShoppingBtn) {
+    continueShoppingBtn.addEventListener('click', () => { window.location.href = '/shop/'; });
+}
+if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', () => { window.location.href = '/checkout/'; });
+}
