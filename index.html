@@ -378,6 +378,12 @@ body.dark-mode .action-button:hover {
 }
 
 @media (min-width: 768px) {
+    /* This makes the parent card wider on desktops */
+    .action-menu-card {
+        max-width: 750px; 
+    }
+
+    /* This arranges the buttons inside into two columns */
     .action-buttons-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
