@@ -682,17 +682,7 @@
 
         </main>
 
-        <section class="how-it-works-section">
-            <h2 class="section-title" style="text-align: center;">How It Works</h2>
-            <div class="how-it-works-container">
-                <div class="step-item"><i class="fa-solid fa-camera"></i><h3>1. Post Your Ad</h3><p>List your item or service for free in under a minute.</p></div>
-                <div class="step-item"><i class="fa-brands fa-whatsapp"></i><h3>2. Connect Safely</h3><p>Chat directly with local buyers and sellers on WhatsApp.</p></div>
-                <div class="step-item"><i class="fa-solid fa-handshake"></i><h3>3. Meet & Sell</h3><p>Meet in a public place in Kabale to finalize your deal.</p></div>
-            </div>
-        </section>
-
-
-
+        
         <div class="cta-wrapper">
             <h2>What would you like to do?</h2>
             <div class="cta-container">
