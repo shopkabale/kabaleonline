@@ -55,6 +55,27 @@
         .kabale-footer-links { margin-top: 20px; }
         .kabale-footer-link { color: var(--primary-color); margin: 0 10px; text-decoration: none; font-weight: 500; }
         .copyright { text-align: center; font-size: 0.8em; color: #6c757d; padding: 20px 0; border-top: 1px solid #e9ecef; margin-top: 20px; }
+.add-more-items {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.add-more-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.add-more-btn:hover {
+    background-color: #0056b3;
+}
     </style>
 </head>
 <body>
@@ -86,6 +107,9 @@
                 <p>Loading your cart...</p>
             </div>
         </div>
+<div class="add-more-items">
+    <a href="/" class="add-more-btn"><i class="fa-solid fa-plus"></i> Add More Items</a>
+</div>
     </main>
 
     <footer>
