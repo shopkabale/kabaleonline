@@ -1,7 +1,7 @@
 // sw.js (Fully Corrected)
 
-const CACHE_NAME = 'kabaleonline-cache-v20.1';
-const IMAGE_CACHE = 'kabaleonline-images-v2.1';
+const CACHE_NAME = 'kabaleonline-cache-v20.3';
+const IMAGE_CACHE = 'kabaleonline-images-v2.3';
 
 const APP_SHELL_FILES = [
   '/', '/index.html', '/offline.html', '/manifest.json', '/favicon.webp',
