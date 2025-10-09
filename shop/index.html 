@@ -94,8 +94,14 @@
         .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
         .site-title span { color: var(--accent-color); }
         .header-spacer { flex-grow: 1; }
-        .header-icons { display: flex; align-items: center; gap: 18px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+        .header-icons { display: flex; align-items: center; gap: 20px; } /* Increased gap slightly */
+.header-icons a {
+    color: var(--text-dark); /* Ensures icons are dark, not blue */
+    font-size: 22px;
+    text-decoration: none;
+    display: flex; /* Helps with vertical alignment */
+    align-items: center;
+}
         .header-search-bar { padding: 8px 15px 10px; border-top: 1px solid var(--border-color); }
         .search-container { display: flex; }
         #search-input { width: 100%; padding: 9px 15px; font-size: 0.95em; border: 1px solid #ddd; border-right: none; border-radius: 20px 0 0 20px; box-sizing: border-box; -webkit-appearance: none; }
@@ -583,18 +589,21 @@
 /* Add this CSS to your <style> block */
 
 /* Style for the cart counter badge in the header */
+.header-icons .cart-link {
+    position: relative; /* This is crucial for positioning the badge */
+}
 .cart-badge {
     position: absolute;
-    top: -8px;
-    right: -10px;
-    background-color: var(--danger-color, #dc3545);
+    top: -5px;      /* Move it up */
+    right: -8px;     /* Move it right */
+    background-color: var(--danger-color);
     color: white;
-    font-size: 11px;
+    font-size: 10px; /* Smaller number */
     font-weight: bold;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex; /* Changed to flex to always show */
+    width: 18px;     /* Smaller circle */
+    height: 18px;    /* Smaller circle */
+    display: flex;
     justify-content: center;
     align-items: center;
     border: 2px solid white;
@@ -605,20 +614,20 @@
     position: absolute;
     bottom: 10px;
     right: 10px;
-    background-color: var(--danger-color, #dc3545);
+    background-color: var(--danger-color);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
+    width: 38px;  /* Slightly smaller button */
+    height: 38px; /* Slightly smaller button */
+    font-size: 18px; /* This makes the '+' icon smaller */
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     transition: transform 0.2s, background-color 0.2s;
-    z-index: 3; /* Ensures it's on top of the card content */
+    z-index: 3;
 }
 
 .add-to-cart-btn:hover {
