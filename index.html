@@ -311,12 +311,8 @@
 }
 
 .action-menu-section {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Aligns to top, matching screenshot */
-    min-height: calc(100vh - 65px); /* Full viewport height minus header */
-    padding: 30px 15px; /* Add some padding around the card */
-    background-color: var(--bg-main); /* Match body background */
+    padding: 60px 15px; /* Adds more space above and below */
+    background-color: var(--bg-main);
 }
 
 .action-menu-card {
@@ -325,8 +321,10 @@
     box-shadow: var(--shadow);
     padding: 30px;
     width: 100%;
-    max-width: 450px; /* Limits the width as seen in the screenshot */
+    max-width: 500px;  /* A slightly wider max-width for better spacing */
+    margin: 0 auto;    /* This centers the card on the page */
     text-align: left;
+    box-sizing: border-box; /* Ensures padding is included in the width */
 }
 
 .action-menu-card h2 {
@@ -334,13 +332,13 @@
     color: var(--text-main);
     margin-top: 0;
     margin-bottom: 25px;
-    text-align: center; /* Center the title */
+    text-align: center;
 }
 
 .action-buttons-grid {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Space between buttons */
+    gap: 15px;
 }
 
 .action-button {
