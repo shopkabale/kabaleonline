@@ -1,176 +1,205 @@
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, doc, getDoc, getDocs, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showModal } from '../shared.js'; // Assuming shared.js is in the root js folder
 
-// --- DOM ELEMENT VARIABLES (DECLARED) ---
-let cartItemsContainer, emptyCartMessage, orderSummarySection, summarySubtotal, summaryTotal, checkoutBtn, continueShoppingBtn;
+// --- DOM ELEMENT VARIABLES ---
+let cartContainer;
+let orderSummarySection;
+let subtotalPriceEl;
+let totalPriceEl;
+let emptyCartMessage;
+let checkoutBtn;
+let continueShoppingBtn;
 
-// --- STATE ---
+let cartItemsData = [];
 let currentUser = null;
-let cartItems = [];
 
-// --- UTILITY & RENDER FUNCTIONS ---
-function formatPrice(price) { return `UGX ${price.toLocaleString()}`; }
+// --- MAIN INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Assign elements ONLY after the DOM is fully loaded
+    cartContainer = document.getElementById('cart-items-container');
+    orderSummarySection = document.getElementById('order-summary-section');
+    subtotalPriceEl = document.getElementById('summary-subtotal');
+    totalPriceEl = document.getElementById('summary-total');
+    emptyCartMessage = document.getElementById('empty-cart-message');
+    checkoutBtn = document.querySelector('.checkout-btn');
+    continueShoppingBtn = document.querySelector('.continue-shopping-btn');
 
-function renderCart() {
-    if (cartItems.length === 0) {
+    // Attach Event Listeners
+    cartContainer.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (!button || !button.dataset.id) return;
+        
+        const id = button.dataset.id;
+    
+        if (button.classList.contains('plus-btn')) {
+            updateQuantity(id, 1);
+        } else if (button.classList.contains('minus-btn')) {
+            updateQuantity(id, -1);
+        } else if (button.classList.contains('delete-btn')) {
+            removeItem(id);
+        }
+    });
+
+    if (continueShoppingBtn) {
+        continueShoppingBtn.addEventListener('click', () => { window.location.href = '/shop/'; });
+    }
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => { window.location.href = '/checkout/'; });
+    }
+    
+    // Start Authentication Check
+    onAuthStateChanged(auth, user => {
+        currentUser = user;
+        if (user) {
+            loadCart(user.uid);
+        } else {
+            showEmptyCartMessage("Please log in to view your cart.", "/login/");
+        }
+    });
+});
+
+
+// --- FUNCTIONS ---
+
+function showEmptyCartMessage(message, linkUrl) {
+    if (cartContainer) cartContainer.style.display = "none";
+    if (orderSummarySection) orderSummarySection.style.display = "none";
+    if (emptyCartMessage) {
         emptyCartMessage.style.display = 'block';
-        orderSummarySection.style.display = 'none';
-        checkoutBtn.style.display = 'none';
-        cartItemsContainer.innerHTML = '';
         emptyCartMessage.innerHTML = `
             <div class="empty-cart-message">
                 <i class="fas fa-shopping-cart"></i>
-                <p>Your cart is empty.</p>
-                <a href="/shop/" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto; border-width: 2px;">Start Shopping</a>
+                <p>${message}</p>
+                <a href="${linkUrl || '/shop/'}" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto; border: 2px solid var(--primary-color);">Start Shopping</a>
             </div>`;
+    }
+}
+
+async function loadCart(userId) {
+    if (!cartContainer) return;
+    cartContainer.innerHTML = `<p class="loading-indicator">Loading cart...</p>`;
+    try {
+        const cartQuery = query(collection(db, 'users', userId, 'cart'), orderBy('addedAt', 'desc'));
+        const cartSnapshot = await getDocs(cartQuery);
+
+        if (cartSnapshot.empty) {
+            showEmptyCartMessage("Your cart is empty.", "/shop/");
+            return;
+        }
+
+        const itemPromises = cartSnapshot.docs.map(async (cartDoc) => {
+            const cartData = cartDoc.data();
+            
+            // FIX: Check if cartData and productId exist before proceeding
+            if (!cartData || !cartData.productId) {
+                await deleteDoc(doc(db, 'users', userId, 'cart', cartDoc.id)); // Delete bad data
+                return null;
+            }
+            
+            const productRef = doc(db, 'products', cartData.productId);
+            const productSnap = await getDoc(productRef);
+
+            if (productSnap.exists()) {
+                const productData = productSnap.data();
+                // FIX: Ensure sellerId exists before grouping
+                if (!productData.sellerId) {
+                     await deleteDoc(doc(db, 'users', userId, 'cart', cartDoc.id)); // Delete cart item if product is invalid
+                     return null;
+                }
+                return {
+                    cartId: cartDoc.id,
+                    ...cartData,
+                    stock: productData.quantity || 0,
+                    sellerId: productData.sellerId // Ensure we get the sellerId from the product
+                };
+            } else {
+                await deleteDoc(doc(db, 'users', userId, 'cart', cartDoc.id));
+                return null;
+            }
+        });
+
+        cartItemsData = (await Promise.all(itemPromises)).filter(item => item !== null);
+        renderCart();
+
+    } catch (error) {
+        console.error("Error loading cart:", error);
+        cartContainer.innerHTML = `<p>Could not load cart. Please try again.</p>`;
+    }
+}
+
+function renderCart() {
+    if (cartItemsData.length === 0) {
+        showEmptyCartMessage("Your cart is empty.", "/shop/");
         return;
     }
 
-    emptyCartMessage.style.display = 'none';
+    cartContainer.style.display = 'block';
     orderSummarySection.style.display = 'block';
-    checkoutBtn.style.display = 'block';
-    cartItemsContainer.innerHTML = '';
+    emptyCartMessage.style.display = 'none';
+    cartContainer.innerHTML = '';
     
     let subtotal = 0;
 
-    cartItems.forEach(item => {
+    cartItemsData.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'cart-item-card';
-        itemDiv.dataset.productId = item.productId;
+        itemDiv.dataset.id = item.productId;
         subtotal += item.price * item.quantity;
 
         itemDiv.innerHTML = `
             <img src="${item.imageUrl || 'https://placehold.co/80'}" alt="${item.productName}" class="cart-item-image">
             <div class="cart-item-details">
                 <h4>${item.productName}</h4>
-                <p class="cart-item-price">${formatPrice(item.price)}</p>
+                <p class="cart-item-price">UGX ${item.price.toLocaleString()}</p>
                 <div class="quantity-controls">
-                    <button class="minus-btn" data-product-id="${item.productId}" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
-                    <span class="item-quantity-display">${item.quantity}</span>
-                    <button class="plus-btn" data-product-id="${item.productId}" ${item.quantity >= item.stockQuantity ? 'disabled' : ''}>+</button>
+                    <button class="minus-btn" data-id="${item.productId}" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                    <span class="quantity-display">${item.quantity}</span>
+                    <button class="plus-btn" data-id="${item.productId}" ${item.quantity >= item.stock ? 'disabled' : ''}>+</button>
                 </div>
             </div>
-            <button class="delete-btn" data-product-id="${item.productId}" aria-label="Remove item">
-                <i class="fas fa-trash-alt"></i>
-            </button>
+            <button class="delete-btn" data-id="${item.productId}" title="Remove item"><i class="fa-solid fa-trash-can"></i></button>
         `;
-        cartItemsContainer.appendChild(itemDiv);
+        cartContainer.appendChild(itemDiv);
     });
     
-    summarySubtotal.textContent = formatPrice(subtotal);
-    summaryTotal.textContent = formatPrice(subtotal);
+    subtotalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
+    totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
 }
 
-// --- CART ACTIONS ---
-async function fetchCartItems(uid) {
-    cartItemsContainer.innerHTML = '<p class="loading-indicator">Loading cart...</p>';
-    if (!uid) { renderCart(); return; }
+async function updateQuantity(productId, change) {
+    const item = cartItemsData.find(i => i.productId === productId);
+    if (!item) return;
 
-    try {
-        const cartCollectionRef = collection(db, 'users', uid, 'cart');
-        const cartSnapshot = await getDocs(query(cartCollectionRef, orderBy('addedAt', 'desc')));
-        
-        const fetchedItemsPromises = cartSnapshot.docs.map(async (cartDoc) => {
-            const cartData = cartDoc.data();
-            const productRef = doc(db, 'products', cartData.productId);
-            const productSnap = await getDoc(productRef);
-            if (productSnap.exists()) {
-                const productData = productSnap.data();
-                return {
-                    cartItemId: cartDoc.id,
-                    productId: cartData.productId,
-                    name: productData.name,
-                    price: productData.price,
-                    imageUrl: productData.imageUrls?.[0],
-                    sellerName: productData.sellerName,
-                    quantity: cartData.quantity,
-                    stockQuantity: productData.quantity || 0,
-                };
-            } else {
-                await deleteDoc(doc(db, 'users', uid, 'cart', cartDoc.id));
-                return null;
-            }
-        });
-        cartItems = (await Promise.all(fetchedItemsPromises)).filter(Boolean);
-        renderCart();
-    } catch (error) {
-        console.error("Error fetching cart items:", error);
-        cartItemsContainer.innerHTML = '<p class="error-message">Failed to load cart. Please try again.</p>';
-    }
-}
+    const newQuantity = item.quantity + change;
 
-async function updateItemQuantity(productId, newQuantity) {
-    if (!currentUser) return;
-    const itemToUpdate = cartItems.find(item => item.productId === productId);
-    if (!itemToUpdate) return;
-    
-    if (newQuantity > itemToUpdate.stockQuantity) {
-        alert(`Only ${itemToUpdate.stockQuantity} of "${itemToUpdate.name}" are available.`);
+    if (newQuantity > item.stock) {
+        alert(`Sorry, only ${item.stock} of this item are available.`);
         return;
     }
-    if (newQuantity < 1) newQuantity = 1;
+    if (newQuantity < 1) return;
 
     try {
-        const cartItemDocRef = doc(db, 'users', currentUser.uid, 'cart', itemToUpdate.cartItemId);
-        await updateDoc(cartItemDocRef, { quantity: newQuantity });
-        itemToUpdate.quantity = newQuantity;
+        const cartItemRef = doc(db, 'users', auth.currentUser.uid, 'cart', item.cartId);
+        await updateDoc(cartItemRef, { quantity: newQuantity });
+        item.quantity = newQuantity;
         renderCart();
-    } catch (error) { console.error("Error updating quantity:", error); }
-}
-
-async function removeCartItem(productId) {
-    if (!currentUser) return;
-    const itemToRemove = cartItems.find(item => item.productId === productId);
-    if (!itemToRemove) return;
-
-    if (confirm(`Are you sure you want to remove "${itemToRemove.name}"?`)) {
-        try {
-            await deleteDoc(doc(db, 'users', currentUser.uid, 'cart', itemToRemove.cartItemId));
-            cartItems = cartItems.filter(item => item.productId !== productId);
-            renderCart();
-        } catch (error) { console.error("Error removing item:", error); }
+    } catch (error) {
+        console.error("Error updating quantity:", error);
+        alert("Could not update quantity. Please try again.");
     }
 }
 
-// --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Assign DOM Elements once the page is loaded
-    cartItemsContainer = document.getElementById('cart-items-container');
-    emptyCartMessage = document.getElementById('empty-cart-message');
-    orderSummarySection = document.getElementById('order-summary-section');
-    summarySubtotal = document.getElementById('summary-subtotal');
-    summaryTotal = document.getElementById('summary-total');
-    checkoutBtn = document.querySelector('.checkout-btn');
-    continueShoppingBtn = document.querySelector('.continue-shopping-btn');
+async function removeItem(productId) {
+    const item = cartItemsData.find(i => i.productId === productId);
+    if (!item || !confirm(`Remove "${item.productName}" from your cart?`)) return;
 
-    // Attach Event Listeners
-    cartItemsContainer.addEventListener('click', (event) => {
-        const targetButton = event.target.closest('button');
-        if (!targetButton) return;
-        
-        const productId = targetButton.dataset.productId;
-        if (!productId) return;
-        
-        const item = cartItems.find(i => i.productId === productId);
-        if (!item) return;
-
-        if (targetButton.classList.contains('minus-btn')) {
-            updateItemQuantity(productId, item.quantity - 1);
-        } else if (targetButton.classList.contains('plus-btn')) {
-            updateItemQuantity(productId, item.quantity + 1);
-        } else if (targetButton.classList.contains('delete-btn')) {
-            removeCartItem(productId);
-        }
-    });
-    
-    if (checkoutBtn) checkoutBtn.addEventListener('click', () => window.location.href = '/checkout/');
-    if (continueShoppingBtn) continueShoppingBtn.addEventListener('click', () => window.location.href = '/shop/');
-    
-    // Start Authentication Check
-    onAuthStateChanged(auth, async (user) => {
-        currentUser = user;
-        await fetchCartItems(user?.uid);
-    });
-});
+    try {
+        await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'cart', item.cartId));
+        cartItemsData = cartItemsData.filter(i => i.productId !== productId);
+        renderCart();
+    } catch (error) {
+        console.error("Error removing item:", error);
+        alert("Could not remove item. Please try again.");
+    }
+}
