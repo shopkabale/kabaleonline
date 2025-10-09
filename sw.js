@@ -1,43 +1,15 @@
-// sw.js
+// sw.js (Fully Corrected)
 
-const CACHE_NAME = 'kabaleonline-cache-v20.2'; // Version bumped to trigger update
-const IMAGE_CACHE = 'kabaleonline-images-v2.2';
+const CACHE_NAME = 'kabaleonline-cache-v20.1';
+const IMAGE_CACHE = 'kabaleonline-images-v2.1';
 
 const APP_SHELL_FILES = [
-  // Core App Shell
-  '/', 
-  '/index.html', 
-  '/offline.html',
-  '/manifest.json',
-  '/favicon.webp',
-  '/icons/192.png', 
-  '/icons/512.png',
-
-  // Core Scripts & Styles
-  '/styles.css', 
-  '/firebase.js',
-  '/auth.js',
-  '/shared.js',
-  '/ui.js',
-
-  // Dashboard Pages & Scripts
-  '/dashboard/', 
-  '/profile/', 
-  '/referrals/', 
-  '/products/', 
-  '/upload/', 
-  '/settings/', 
-  '/login/',
-'/shop/', 
-  '/signup/', 
-  '/admin/',
-
-  // NEW E-COMMERCE & ORDER PAGES
-  '/cart.html',
-  '/checkout.html',
-  '/order-success.html',
-  '/my-orders.html',
-  '/dashboard/orders/'
+  '/', '/index.html', '/offline.html', '/manifest.json', '/favicon.webp',
+  '/icons/192.png', '/icons/512.png', '/styles.css', '/firebase.js',
+  '/auth.js', '/shared.js', '/ui.js', '/dashboard/', '/profile/', 
+  '/referrals/', '/products/', '/upload/', '/settings/', '/login/', 
+  '/signup/', '/admin/', '/cart.html', '/checkout.html', '/shop/',
+  '/order-success.html', '/my-orders.html', '/dashboard/orders/'
 ];
 
 self.addEventListener('install', event => {
@@ -74,7 +46,7 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Strategy 1: Network First for HTML pages.
+  // Strategy 1: Network First for HTML pages (No change needed here)
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -88,7 +60,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Strategy 2: Cache First for images.
+  // Strategy 2: Cache First for images (No change needed here)
   if (request.destination === 'image') {
     event.respondWith(
         caches.match(request, { cacheName: IMAGE_CACHE }).then(cacheRes => {
@@ -106,13 +78,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Strategy 3: Network First for dynamic data (API/Firestore calls).
-  // CORRECTED BLOCK: Only caches GET requests to avoid 'POST' method error.
+  // Strategy 3: Network First for dynamic data (API/Firestore calls)
   if (url.href.includes('firestore.googleapis.com') || url.href.includes('/.netlify/functions/')) {
     event.respondWith(
         fetch(request).then(networkResponse => {
-            // Check if the request is a GET request before caching
-            if (request.method === 'GET') {
+            if (request.method === 'GET') { // FIX APPLIED HERE
                 const responseClone = networkResponse.clone();
                 caches.open(CACHE_NAME).then(cache => {
                     cache.put(request, responseClone);
@@ -120,7 +90,6 @@ self.addEventListener('fetch', event => {
             }
             return networkResponse;
         }).catch(() => {
-            // Only try to match from cache for GET requests
             if (request.method === 'GET') {
                 return caches.match(request);
             }
@@ -129,12 +98,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Strategy 4: Cache First for all other assets (CSS, JS, fonts).
+  // Strategy 4: Cache First for all other assets (CSS, JS, fonts)
   event.respondWith(
     caches.match(request).then(cacheRes => {
       return cacheRes || fetch(request).then(networkRes => {
-        const cacheClone = networkRes.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, cacheClone));
+        // FIX APPLIED HERE AS WELL
+        if (request.method === 'GET') {
+            const cacheClone = networkRes.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, cacheClone));
+        }
         return networkRes;
       });
     })
