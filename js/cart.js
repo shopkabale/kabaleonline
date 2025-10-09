@@ -27,12 +27,14 @@ onAuthStateChanged(auth, user => {
 function showEmptyCartMessage(message, linkUrl) {
     cartContainer.style.display = "none";
     orderSummarySection.style.display = "none";
-    checkoutBtn.style.display = 'none';
-    emptyCartMessage.style.display = 'block';
-    emptyCartMessage.innerHTML = `
-        <i class="fas fa-shopping-cart"></i>
-        <p>${message}</p>
-        <a href="${linkUrl || '/shop/'}" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto;">Start Shopping</a>`;
+    if (checkoutBtn) checkoutBtn.style.display = 'none';
+    if (emptyCartMessage) {
+        emptyCartMessage.style.display = 'block';
+        emptyCartMessage.innerHTML = `
+            <i class="fas fa-shopping-cart"></i>
+            <p>${message}</p>
+            <a href="${linkUrl || '/shop/'}" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto;">Start Shopping</a>`;
+    }
 }
 
 function renderCart() {
@@ -43,6 +45,7 @@ function renderCart() {
 
     cartContainer.style.display = 'block';
     orderSummarySection.style.display = 'block';
+    if (checkoutBtn) checkoutBtn.style.display = 'block';
     emptyCartMessage.style.display = 'none';
     cartContainer.innerHTML = '';
     
@@ -71,7 +74,7 @@ function renderCart() {
     });
     
     subtotalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
-    totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`; // Assuming no other fees for now
+    totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
 }
 
 
@@ -155,17 +158,21 @@ async function removeItem(productId) {
 // --- EVENT LISTENERS ---
 cartContainer.addEventListener('click', (e) => {
     const target = e.target;
-    const id = target.dataset.id || target.closest('button')?.dataset.id;
-    if (!id) return;
+    // Use closest to get the button, then dataset.id from that button
+    const button = target.closest('button');
+    if (!button || !button.dataset.id) return;
+    
+    const id = button.dataset.id;
 
-    if (target.matches('.plus-btn')) {
+    if (button.classList.contains('plus-btn')) {
         updateQuantity(id, 1);
-    } else if (target.matches('.minus-btn')) {
+    } else if (button.classList.contains('minus-btn')) {
         updateQuantity(id, -1);
-    } else if (target.closest('.delete-btn')) {
+    } else if (button.classList.contains('delete-btn')) {
         removeItem(id);
     }
 });
+
 
 if (continueShoppingBtn) {
     continueShoppingBtn.addEventListener('click', () => { window.location.href = '/shop/'; });
