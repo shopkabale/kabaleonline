@@ -1,257 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Orders | Kabale Online</title>
-  <meta name="robots" content="noindex" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-
-  <style>
-    :root {
-      --primary-color: #007bff;
-      --text-dark: #34495e;
-      --card-bg: #ffffff;
-      --bg-light: #f8f9fa;
-      --danger-color: #dc3545;
-      --success-color: #28a745;
-      --border-radius: 8px;
-      --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      background-color: var(--bg-light);
-      color: var(--text-dark);
-      padding-top: 65px;
-    }
-
-    /* --- Header & Navigation (from wishlist page) --- */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--card-bg);
-      z-index: 1000;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 8px 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 65px;
-    }
-
-    .logo {
-      text-decoration: none;
-      color: var(--text-dark);
-      font-size: 1.8em;
-      font-weight: bold;
-    }
-
-    .logo span {
-      color: var(--primary-color);
-    }
-
-    nav ul {
-      display: flex;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      gap: 18px;
-    }
-
-    nav ul li a {
-      text-decoration: none;
-      color: var(--text-dark);
-      font-weight: 500;
-      font-size: 0.95em;
-    }
-
-    .hamburger {
-      display: none;
-      font-size: 1.5em;
-      background: none;
-      border: none;
-      color: var(--text-dark);
-    }
-
-    @media (max-width: 768px) {
-      nav ul {
-        display: none;
-        position: absolute;
-        top: 65px;
-        left: 0;
-        right: 0;
-        background-color: var(--card-bg);
-        flex-direction: column;
-        border-top: 1px solid #eee;
-      }
-
-      nav ul.active {
-        display: flex;
-      }
-
-      .hamburger {
-        display: block;
-      }
-    }
-
-    /* --- Page Content --- */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 15px;
-    }
-
-    .page-header {
-      border-bottom: 1px solid #e0e0e0;
-      margin-bottom: 30px;
-      padding-bottom: 15px;
-    }
-
-    .page-header h1 {
-      font-size: 2em;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .page-header i {
-      color: var(--primary-color);
-    }
-
-    #orders-container {
-      overflow-x: auto;
-    }
-
-    .orders-table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: var(--card-bg);
-      box-shadow: var(--shadow);
-      border-radius: var(--border-radius);
-      overflow: hidden;
-    }
-
-    .orders-table th,
-    .orders-table td {
-      padding: 15px;
-      text-align: left;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    .orders-table th {
-      background-color: #f8f9fa;
-      font-weight: bold;
-    }
-
-    .orders-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .status-badge {
-      padding: 5px 10px;
-      border-radius: 15px;
-      font-weight: bold;
-      font-size: 0.8em;
-      color: white;
-    }
-
-    .status-pending {
-      background-color: #ffc107;
-      color: var(--text-dark);
-    }
-
-    .status-confirmed {
-      background-color: var(--primary-color);
-    }
-
-    .status-delivered {
-      background-color: var(--success-color);
-    }
-
-    .placeholder-message {
-      text-align: center;
-      padding: 40px;
-    }
-
-    /* --- Footer --- */
-    footer {
-      background-color: var(--card-bg);
-      padding: 20px 15px;
-      text-align: center;
-      border-top: 1px solid #eee;
-      color: var(--text-dark);
-      margin-top: 40px;
-    }
-
-    footer p {
-      margin: 6px 0;
-      font-size: 0.9em;
-    }
-
-    footer a {
-      color: var(--primary-color);
-      text-decoration: none;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Orders | Kabale Online</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --card-bg: #ffffff; --bg-light: #f8f9fa; --danger-color: #dc3545; --success-color: #28a745; }
+        body { padding-top: 70px; font-family: Arial, sans-serif; margin:0; background-color: #f4f7f6; color: var(--text-dark); }
+        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 50px; max-width: 1200px; margin: 0 auto; }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
+        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.6em; font-weight: bold; }
+        .site-title span { color: var(--accent-color); }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
+        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; transition: left 0.3s ease; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: #007bff; }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; display: none; }
+        .mobile-nav-overlay.active { display: block; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
+        .page-header { border-bottom: 1px solid #e0e0e0; margin-bottom: 30px; padding-bottom: 15px; }
+        .page-header h1 { font-size: 2em; margin: 0; display: flex; align-items: center; gap: 12px; }
+        .page-header i { color: var(--primary-color); }
+        #orders-container { overflow-x: auto; }
+        .orders-table { width: 100%; border-collapse: collapse; background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.07); border-radius: 8px; overflow: hidden; }
+        .orders-table th, .orders-table td { padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        .orders-table th { background-color: #f8f9fa; font-weight: bold; }
+        .status-badge { padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.8em; color: white; }
+        .status-pending { background-color: #ffc107; color: var(--text-dark); }
+        .status-confirmed { background-color: var(--primary-color); }
+        .status-delivered { background-color: var(--success-color); }
+        .placeholder-message { text-align: center; padding: 40px; }
+        footer { background-color: #fff; border-top: 1px solid #e9ecef; padding-top: 20px; }
+        .kabale-contact-info-section { text-align: center; padding: 20px 0; }
+        .kabale-contact-title { font-size: 1.2em; color: var(--text-dark); margin-bottom: 15px; }
+        .kabale-contact-details p { margin: 5px 0; color: #6c757d; }
+        .kabale-footer-links { margin-top: 20px; }
+        .kabale-footer-link { color: var(--primary-color); margin: 0 10px; text-decoration: none; font-weight: 500; }
+        .copyright { text-align: center; font-size: 0.8em; color: #6c757d; padding: 20px 0; border-top: 1px solid #e9ecef; margin-top: 20px; }
+    </style>
 </head>
-
 <body>
-  <!-- HEADER -->
-  <header>
-    <div class="nav-container">
-      <a href="/" class="logo">Kabale <span>Online</span></a>
-      <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
-      <nav>
-        <ul id="nav-links">
-          <li><a href="/">Home</a></li>
-          <li><a href="/wishlist.html">Wishlist</a></li>
-          <li><a href="/my-orders.html" class="active">My Orders</a></li>
-          <li><a href="/account.html">Account</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+    <header class="sticky-header">
+        <div class="header-top-bar">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-icons">
+                <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+    <nav class="mobile-nav">
+        </nav>
+    <div class="mobile-nav-overlay"></div>
 
-  <!-- MAIN CONTENT -->
-  <main class="container">
-    <div class="page-header">
-      <h1><i class="fa-solid fa-box"></i> My Order History</h1>
-    </div>
-    <div id="orders-container">
-      <div class="placeholder-message">
-        <p>Loading your order history...</p>
-      </div>
-    </div>
-  </main>
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-box"></i> My Order History</h1>
+        </div>
+        <div id="orders-container">
+            <div class="placeholder-message"><p>Loading your order history...</p></div>
+        </div>
+    </main>
 
-  <!-- FOOTER -->
-  <footer>
-    <p>© 2025 KabaleOnline — All Rights Reserved.</p>
-    <p>
-      <a href="/">Home</a> •
-      <a href="/about.html">About</a> •
-      <a href="/contact.html">Contact</a>
-    </p>
-  </footer>
+    <footer>
+        <div class="kabale-contact-info-section">
+            <h3 class="kabale-contact-title">Get in Touch</h3>
+            <div class="kabale-contact-details">
+                <p>📞 +256 784655792</p>
+                <p>📧 shopkabale@gmail.com</p>
+            </div>
+            <div class="kabale-footer-links">
+                <a href="/about.html" class="kabale-footer-link">About Us</a>
+                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
+                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </footer>
 
-  <script>
-    // Mobile nav toggle
-    document.getElementById("hamburger").addEventListener("click", function () {
-      document.getElementById("nav-links").classList.toggle("active");
-    });
-  </script>
-
-  <script type="module" src="js/my-orders.js"></script>
-  <script type="module" src="firebase.js"></script>
+    <script type="module" src="js/my-orders.js"></script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="js/ui.js"></script>
 </body>
 </html>
