@@ -1,4 +1,4 @@
-/**
+ /**
  * Creates an optimized and transformed Cloudinary URL.
  * @param {string} url The original Cloudinary URL.
  * @param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
@@ -23,8 +23,9 @@ function getCloudinaryTransformedUrl(url, type) {
 
 // --- FIREBASE IMPORTS ---
 import { db, auth } from "./firebase.js";
-import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENT REFERENCES ---
 const productGrid = document.getElementById("product-grid");
@@ -44,7 +45,6 @@ const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 const pageIndicator = document.getElementById("page-indicator");
 const modal = document.getElementById('custom-modal');
-const cartBadge = document.getElementById("cart-badge");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -54,7 +54,7 @@ const state = {
     searchTerm: '',
     filters: { type: '', category: '' },
     currentUser: null,
-    cart: new Set() // Tracks product IDs in the user's cart
+    wishlist: new Set()
 };
 
 // --- HELPER & RENDER FUNCTIONS ---
@@ -112,16 +112,15 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => { lazyImageObserver.observe(img); });
 }
 
-function renderProductCards(gridElement, products) {
+function renderCarouselProducts(gridElement, products) {
     const fragment = document.createDocumentFragment();
     products.forEach(product => {
-        const productCardContainer = document.createElement('div');
-        productCardContainer.className = 'product-card'; // Main container is the card itself now
-        productCardContainer.style.position = 'relative'; // Ensure button positioning is correct
-
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
+        const isInWishlist = state.wishlist.has(product.id);
+        const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
+        const wishlistClass = isInWishlist ? 'active' : '';
         const soldClass = product.isSold ? 'is-sold' : '';
         const soldOverlayHTML = product.isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         let stockStatusHTML = '';
@@ -130,32 +129,40 @@ function renderProductCards(gridElement, products) {
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
-
-        const isInCart = state.cart.has(product.id);
-
-        productCardContainer.innerHTML = `
-            ${soldOverlayHTML}
-            <a href="/product.html?id=${product.id}" class="product-card-link">
-                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
-                <div class="product-card-content">
-                    <h3>${product.name}</h3>
-                    ${stockStatusHTML}
-                    <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-                    ${verifiedTextHTML}
-                </div>
-            </a>
-            <button class="add-to-cart-btn ${isInCart ? 'in-cart' : ''}" data-product-id="${product.id}" aria-label="Add to cart">
-                <i class="fa-solid ${isInCart ? 'fa-check' : 'fa-plus'}"></i>
+        const productLink = document.createElement("a");
+        productLink.href = `/product.html?id=${product.id}`;
+        productLink.className = "product-card-link";
+        productLink.innerHTML = `
+          <div class="product-card ${soldClass}">
+             ${soldOverlayHTML}
+             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+                <i class="${wishlistIcon} fa-heart"></i>
             </button>
+            <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
+            <h3>${product.name}</h3>
+            ${stockStatusHTML}
+            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+            ${verifiedTextHTML}
+          </div>
         `;
-        fragment.appendChild(productCardContainer);
+        fragment.appendChild(productLink);
     });
     gridElement.innerHTML = '';
     gridElement.appendChild(fragment);
-    observeLazyImages();
 }
 
-// --- DATA FETCHING & UI UPDATE FUNCTIONS ---
+function renderProducts(productsToDisplay) {
+    productGrid.innerHTML = "";
+    if (productsToDisplay.length === 0) {
+        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+        return;
+    }
+    renderCarouselProducts(productGrid, productsToDisplay);
+    observeLazyImages();
+    initializeWishlistButtons();
+}
+
+// --- DATA FETCHING FUNCTIONS ---
 async function fetchAndRenderProducts() {
     if (state.isFetching) return;
     state.isFetching = true;
@@ -171,41 +178,73 @@ async function fetchAndRenderProducts() {
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
         const { products, totalPages } = await response.json();
         state.totalPages = totalPages;
-        renderProductCards(productGrid, products);
+        renderProducts(products);
     } catch (error) {
         console.error("Error fetching from Algolia:", error);
-        productGrid.innerHTML = `<p class="loading-indicator">Could not load listings.</p>`;
+        productGrid.innerHTML = `<p class="loading-indicator">Could not load listings. Please try again later.</p>`;
     } finally {
         state.isFetching = false;
         updatePaginationUI();
+
+        // THIS BLOCK HANDLES SCROLLING ON SEARCH AND PAGINATION
         if (state.currentPage > 0 || state.searchTerm) {
             const targetElement = document.getElementById('listings-title');
             if (targetElement) {
+                // A small timeout ensures the DOM is painted before we scroll
                 setTimeout(() => {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }, 100);
             }
         }
     }
 }
 
-async function fetchCarouselData(gridElement, sectionElement, queryOptions) {
-    if (!gridElement || !sectionElement) return;
-    renderSkeletonLoaders(gridElement, 5);
-    sectionElement.style.display = 'block';
+async function fetchDeals() {
+    if (!dealsGrid || !dealsSection) return;
+    renderSkeletonLoaders(dealsGrid, 5);
+    dealsSection.style.display = 'block';
     try {
-        const q = query(collection(db, 'products'), ...queryOptions);
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            sectionElement.style.display = 'none';
-            return;
-        }
+        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+        const snapshot = await getDocs(dealsQuery);
+        if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProductCards(gridElement, products);
-    } catch (error) {
-        console.error(`Error fetching for ${gridElement.id}:`, error);
-        sectionElement.style.display = 'none';
-    }
+        renderCarouselProducts(dealsGrid, products);
+        observeLazyImages();
+        initializeWishlistButtons();
+    } catch (error) { console.error("Error fetching deals:", error); dealsSection.style.display = 'none'; }
+}
+
+async function fetchSaveOnMore() {
+    if (!saveOnMoreGrid || !saveOnMoreSection) return;
+    renderSkeletonLoaders(saveOnMoreGrid, 5);
+    saveOnMoreSection.style.display = 'block';
+    try {
+        const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) { saveOnMoreSection.style.display = 'none'; return; }
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCarouselProducts(saveOnMoreGrid, products);
+        observeLazyImages();
+        initializeWishlistButtons();
+    } catch (error) { console.error("Error fetching Save on More:", error); saveOnMoreSection.style.display = 'none'; }
+}
+
+async function fetchSponsoredItems() {
+    if (!sponsoredGrid || !sponsoredSection) return;
+    renderSkeletonLoaders(sponsoredGrid, 5);
+    sponsoredSection.style.display = 'block';
+    try {
+        const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) { sponsoredSection.style.display = 'none'; return; }
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCarouselProducts(sponsoredGrid, products);
+        observeLazyImages();
+        initializeWishlistButtons();
+    } catch (error) { console.error("Error fetching Sponsored Items:", error); sponsoredSection.style.display = 'none'; }
 }
 
 async function fetchAndDisplayCategoryCounts() {
@@ -230,6 +269,7 @@ async function fetchAndDisplayCategoryCounts() {
     } catch (error) { console.error('Error fetching category counts:', error); }
 }
 
+// --- UI & EVENT HANDLERS ---
 function updatePaginationUI() {
     if (state.totalPages > 1) {
         paginationContainer.style.display = 'flex';
@@ -249,89 +289,77 @@ function updateListingsTitle() {
     listingsTitle.textContent = title;
 }
 
-// --- CART LOGIC ---
-function listenForCartUpdates(userId) {
-    cartBadge.textContent = '0';
-    cartBadge.style.display = 'flex'; // Always show badge
-
-    if (!userId) {
-        state.cart.clear();
-        return;
-    }
-
-    const cartRef = collection(db, 'users', userId, 'cart');
-    onSnapshot(cartRef, (snapshot) => {
-        const count = snapshot.size;
-        state.cart.clear();
-        snapshot.forEach(doc => state.cart.add(doc.id));
-        cartBadge.textContent = count;
-        
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            const productId = button.dataset.productId;
-            const isInCart = state.cart.has(productId);
-            button.classList.toggle('in-cart', isInCart);
-            button.querySelector('i').className = `fa-solid ${isInCart ? 'fa-check' : 'fa-plus'}`;
-        });
-    });
-}
-
-async function handleAddToCartClick(event) {
-    const button = event.target.closest('.add-to-cart-btn');
-    if (!button) return;
-
+async function handleWishlistClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
     if (!state.currentUser) {
         showModal({
-            icon: '🔒', title: 'Login Required', message: 'Please log in or create an account to use the cart.',
+            icon: '🔒', title: 'Login Required', message: 'You need an account to save items.',
             buttons: [ { text: 'Cancel', class: 'secondary', onClick: hideModal }, { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } } ]
         });
         return;
     }
-
+    const button = event.currentTarget;
     const productId = button.dataset.productId;
-    const isInCart = state.cart.has(productId);
-
-    if (isInCart) {
-        showModal({
-            icon: '🛒', title: 'Item is in Your Cart', message: 'You can manage quantity or remove this item from your cart page.',
-            theme: 'info',
-            buttons: [
-                { text: 'Continue Shopping', class: 'secondary', onClick: hideModal },
-                { text: 'Go to Cart', class: 'primary', onClick: () => { window.location.href = '/cart.html'; } },
-            ]
-        });
-    } else {
-        const productRef = doc(db, 'products', productId);
-        const productSnap = await getDoc(productRef);
-        if (!productSnap.exists() || productSnap.data().isSold || productSnap.data().quantity < 1) {
-            alert("Sorry, this item is no longer available.");
-            return;
+    const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
+    button.disabled = true;
+    try {
+        if (state.wishlist.has(productId)) {
+            await deleteDoc(wishlistRef);
+            state.wishlist.delete(productId);
+            updateWishlistButtonUI(button, false);
+        } else {
+            await setDoc(wishlistRef, { name: button.dataset.productName, price: parseFloat(button.dataset.productPrice) || 0, imageUrl: button.dataset.productImage || '', addedAt: serverTimestamp() });
+            state.wishlist.add(productId);
+            updateWishlistButtonUI(button, true);
         }
-        const productData = productSnap.data();
+    } catch (error) { console.error("Error updating wishlist:", error); } finally { button.disabled = false; }
+}
 
-        const cartItem = {
-            productId: productId,
-            productName: productData.name,
-            price: productData.price,
-            imageUrl: productData.imageUrls ? productData.imageUrls[0] : '',
-            quantity: 1,
-            sellerId: productData.sellerId,
-            addedAt: serverTimestamp()
-        };
-
-        await setDoc(doc(db, 'users', state.currentUser.uid, 'cart', productId), cartItem);
-
-        showModal({
-            icon: '✅', title: 'Added to Cart!', message: `${productData.name} has been added to your cart.`,
-            theme: 'success',
-            buttons: [
-                { text: 'Continue Shopping', class: 'secondary', onClick: hideModal },
-                { text: 'Go to Cart', class: 'primary', onClick: () => { window.location.href = '/cart.html'; } }
-            ]
-        });
+function updateWishlistButtonUI(button, isInWishlist) {
+    const icon = button.querySelector('i');
+    if (isInWishlist) {
+        button.classList.add('active'); icon.classList.remove('fa-regular'); icon.classList.add('fa-solid');
+    } else {
+        button.classList.remove('active'); icon.classList.remove('fa-solid'); icon.classList.add('fa-regular');
     }
 }
 
-// --- OTHER EVENT HANDLERS ---
+function initializeWishlistButtons() {
+    const allProductCards = document.querySelectorAll('.product-card-link');
+    allProductCards.forEach(card => {
+        const wishlistButton = card.querySelector('.wishlist-btn');
+        if (wishlistButton) {
+            wishlistButton.removeEventListener('click', handleWishlistClick);
+            wishlistButton.addEventListener('click', handleWishlistClick);
+        }
+    });
+}
+
+async function fetchUserWishlist() {
+    if (!state.currentUser) { state.wishlist.clear(); return; }
+    try {
+        const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
+        const wishlistSnapshot = await getDocs(wishlistCol);
+        const wishlistIds = wishlistSnapshot.docs.map(doc => doc.id);
+        state.wishlist = new Set(wishlistIds);
+    } catch (error) { console.error("Could not fetch user wishlist:", error); }
+}
+
+function listenForCartUpdates(userId) {
+    const cartBadges = document.querySelectorAll('.cart-badge');
+    if (!userId) { cartBadges.forEach(badge => badge.classList.remove('visible')); return; }
+    const cartRef = collection(db, 'users', userId, 'cart');
+    onSnapshot(cartRef, (snapshot) => {
+        const count = snapshot.size;
+        cartBadges.forEach(badge => {
+            badge.textContent = count;
+            badge.classList.toggle('visible', true);
+            badge.classList.toggle('is-zero', count === 0);
+        });
+    });
+}
+
 function handleSearch() {
     const term = searchInput.value.trim();
     if (state.searchTerm === term) return;
@@ -362,23 +390,28 @@ function initializeStateFromURL() {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     function loadPageContent() {
-        fetchCarouselData(dealsGrid, dealsSection, [where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8)]);
-        fetchCarouselData(saveOnMoreGrid, saveOnMoreSection, [where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8)]);
-        fetchCarouselData(sponsoredGrid, sponsoredSection, [where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8)]);
+        fetchDeals();
+        fetchSaveOnMore();
+        fetchSponsoredItems();
         fetchAndDisplayCategoryCounts();
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
+        await fetchUserWishlist();
         listenForCartUpdates(user ? user.uid : null);
         loadPageContent();
+    }, (error) => {
+        console.error("Firebase auth state error:", error);
+        state.currentUser = null;
+        state.wishlist.clear();
+        listenForCartUpdates(null);
+        loadPageContent();
     });
-    
-    document.body.addEventListener('click', handleAddToCartClick);
 
     if (modal) {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
