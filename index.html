@@ -120,6 +120,7 @@
             color: var(--text-main);
             line-height: 1.6;
             transition: background-color 0.3s, color 0.3s;
+animation: animate-bg-color 15s ease-in-out infinite;
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .sticky-header {
@@ -390,6 +391,17 @@ body.dark-mode .action-button:hover {
     }
 }
 
+@keyframes animate-bg-color {
+  0% {
+    background-color: #f8f9fa; /* Original light color */
+  }
+  50% {
+    background-color: #f0f6ff; /* A very light, soft blue */
+  }
+  100% {
+    background-color: #f8f9fa; /* Return to original for a smooth loop */
+  }
+}
 
 
     </style>
