@@ -310,6 +310,75 @@
   animation: peek-a-boo 1.5s ease-in-out 1s; /* 1s delay before starting */
 }
 
+.action-menu-section {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Aligns to top, matching screenshot */
+    min-height: calc(100vh - 65px); /* Full viewport height minus header */
+    padding: 30px 15px; /* Add some padding around the card */
+    background-color: var(--bg-main); /* Match body background */
+}
+
+.action-menu-card {
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 30px;
+    width: 100%;
+    max-width: 450px; /* Limits the width as seen in the screenshot */
+    text-align: left;
+}
+
+.action-menu-card h2 {
+    font-size: 1.8em;
+    color: var(--text-main);
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: center; /* Center the title */
+}
+
+.action-buttons-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between buttons */
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-light); /* Lighter background for buttons */
+    color: var(--text-main);
+    text-decoration: none;
+    padding: 15px 20px;
+    border-radius: var(--border-radius); /* Rounded corners for buttons */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+body.dark-mode .action-button {
+    background-color: #2a384b; /* Darker button background for dark mode */
+}
+
+.action-button i {
+    font-size: 1.3em;
+    margin-right: 15px;
+    color: var(--ko-primary); /* Use primary color for icons */
+    min-width: 25px; /* Ensure icon has consistent space */
+    text-align: center;
+}
+
+.action-button:hover {
+    background-color: var(--border-color); /* Slightly darker on hover */
+    transform: translateY(-2px); /* Lift effect on hover */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+body.dark-mode .action-button:hover {
+    background-color: #3b4d63; /* Darker hover for dark mode */
+}
+
     </style>
 </head>
 <body class="light-mode">
@@ -456,6 +525,44 @@
                 </div>
             </div>
         </section>
+
+<section class="action-menu-section">
+    <div class="container">
+        <div class="action-menu-card">
+            <h2>What would you like to do?</h2>
+            <div class="action-buttons-grid">
+                <a href="/upload/" class="action-button">
+                    <i class="fa-solid fa-plus-circle"></i> Upload an item
+                </a>
+                <a href="https://gigs.kabaleonline.com" class="action-button">
+                    <i class="fa-solid fa-utensils"></i> Explore Services
+                </a>
+                <a href="https://gigs.kabaleonline.com/upload" class="action-button">
+                    <i class="fa-solid fa-bullhorn"></i> Offer a Service
+                </a>
+                <a href="/blog/" class="action-button">
+                    <i class="fa-solid fa-book"></i> Read Our Blog
+                </a>
+                <a href="/requests/create.html" class="action-button">
+                    <i class="fa-solid fa-clipboard-list"></i> Request an Item
+                </a>
+                <a href="/stories/submit.html" class="action-button">
+                    <i class="fa-solid fa-edit"></i> Share a Story
+                </a>
+                <a href="/feedback.html" class="action-button">
+                    <i class="fa-solid fa-comment-dots"></i> Share Feedback
+                </a>
+                <a href="/lost-and-found/" class="action-button">
+                    <i class="fa-solid fa-magnifying-glass"></i> Report Lost & Found
+                </a>
+                <a href="/rentals/list.html" class="action-button">
+                    <i class="fa-solid fa-home"></i> List a Rental
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
 
         <section class="trending-section">
             <h2>Trending Products</h2>
