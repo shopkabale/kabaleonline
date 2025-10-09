@@ -2,16 +2,18 @@ import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { collection, getDocs, doc, deleteDoc, getDoc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// --- DOM ELEMENTS ---
 const cartContainer = document.getElementById('cart-container');
-const orderSummary = document.getElementById('order-summary-section');
+const orderSummarySection = document.getElementById('order-summary-section');
 const subtotalPriceEl = document.getElementById('summary-subtotal');
 const totalPriceEl = document.getElementById('summary-total');
 const emptyCartMessage = document.getElementById('empty-cart-message');
 const checkoutBtn = document.getElementById('checkout-btn');
 const continueShoppingBtn = document.getElementById('continue-shopping-btn');
 
-let cartItemsData = []; // To store the full cart data
+let cartItemsData = []; // To store the full cart data including stock
 
+// --- AUTHENTICATION ---
 onAuthStateChanged(auth, user => {
     if (user) {
         loadCart(user.uid);
@@ -20,16 +22,60 @@ onAuthStateChanged(auth, user => {
     }
 });
 
+// --- RENDER & DISPLAY FUNCTIONS ---
+
 function showEmptyCartMessage(message, linkUrl) {
-    cartContainer.style.display = 'none';
-    orderSummary.style.display = 'none';
+    cartContainer.style.display = "none";
+    orderSummarySection.style.display = "none";
     checkoutBtn.style.display = 'none';
     emptyCartMessage.style.display = 'block';
     emptyCartMessage.innerHTML = `
         <i class="fas fa-shopping-cart"></i>
         <p>${message}</p>
-        <a href="${linkUrl || '/shop/'}" style="text-decoration:none; font-weight:bold; color:var(--primary-color);">Start Shopping</a>`;
+        <a href="${linkUrl || '/shop/'}" class="continue-shopping-btn" style="text-decoration:none; display:inline-block; width:auto;">Start Shopping</a>`;
 }
+
+function renderCart() {
+    if (cartItemsData.length === 0) {
+        showEmptyCartMessage("Your cart is empty.", "/shop/");
+        return;
+    }
+
+    cartContainer.style.display = 'block';
+    orderSummarySection.style.display = 'block';
+    emptyCartMessage.style.display = 'none';
+    cartContainer.innerHTML = '';
+    
+    let subtotal = 0;
+
+    cartItemsData.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item-card';
+        itemDiv.dataset.id = item.productId;
+        subtotal += item.price * item.quantity;
+
+        itemDiv.innerHTML = `
+            <img src="${item.imageUrl || 'https://placehold.co/80'}" alt="${item.productName}" class="cart-item-image">
+            <div class="cart-item-details">
+                <h4>${item.productName}</h4>
+                <p class="cart-item-price">UGX ${item.price.toLocaleString()}</p>
+                <div class="quantity-controls">
+                    <button class="minus-btn" data-id="${item.productId}" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                    <span class="quantity-display">${item.quantity}</span>
+                    <button class="plus-btn" data-id="${item.productId}" ${item.quantity >= item.stock ? 'disabled' : ''}>+</button>
+                </div>
+            </div>
+            <button class="delete-btn" data-id="${item.productId}" title="Remove item"><i class="fa-solid fa-trash-can"></i></button>
+        `;
+        cartContainer.appendChild(itemDiv);
+    });
+    
+    subtotalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
+    totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`; // Assuming no other fees for now
+}
+
+
+// --- DATA & CART LOGIC ---
 
 async function loadCart(userId) {
     cartContainer.innerHTML = `<p class="loading-indicator">Loading cart...</p>`;
@@ -68,45 +114,6 @@ async function loadCart(userId) {
     }
 }
 
-function renderCart() {
-    if (cartItemsData.length === 0) {
-        showEmptyCartMessage("Your cart is empty.", "/shop/");
-        return;
-    }
-
-    cartContainer.style.display = 'block';
-    orderSummary.style.display = 'block';
-    emptyCartMessage.style.display = 'none';
-    cartContainer.innerHTML = '';
-    
-    let subtotal = 0;
-
-    cartItemsData.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'cart-item-card';
-        itemDiv.dataset.id = item.productId;
-        subtotal += item.price * item.quantity;
-
-        itemDiv.innerHTML = `
-            <img src="${item.imageUrl || 'https://placehold.co/80'}" alt="${item.productName}" class="cart-item-image">
-            <div class="cart-item-details">
-                <h4>${item.productName}</h4>
-                <p class="cart-item-price">UGX ${item.price.toLocaleString()}</p>
-                <div class="quantity-controls">
-                    <button class="minus-btn" data-id="${item.productId}" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
-                    <span class="quantity-display">${item.quantity}</span>
-                    <button class="plus-btn" data-id="${item.productId}" ${item.quantity >= item.stock ? 'disabled' : ''}>+</button>
-                </div>
-            </div>
-            <button class="delete-btn" data-id="${item.productId}" title="Remove item"><i class="fa-solid fa-trash-can"></i></button>
-        `;
-        cartContainer.appendChild(itemDiv);
-    });
-    
-    subtotalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
-    totalPriceEl.textContent = `UGX ${subtotal.toLocaleString()}`;
-}
-
 async function updateQuantity(productId, change) {
     const item = cartItemsData.find(i => i.productId === productId);
     if (!item) return;
@@ -123,7 +130,6 @@ async function updateQuantity(productId, change) {
         const cartItemRef = doc(db, 'users', auth.currentUser.uid, 'cart', item.cartId);
         await updateDoc(cartItemRef, { quantity: newQuantity });
         
-        // Update local data and re-render
         item.quantity = newQuantity;
         renderCart();
     } catch (error) {
@@ -134,7 +140,7 @@ async function updateQuantity(productId, change) {
 
 async function removeItem(productId) {
     const item = cartItemsData.find(i => i.productId === productId);
-    if (!item || !confirm(`Remove "${item.productName}" from cart?`)) return;
+    if (!item || !confirm(`Remove "${item.productName}" from your cart?`)) return;
 
     try {
         await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'cart', item.cartId));
@@ -146,17 +152,18 @@ async function removeItem(productId) {
     }
 }
 
-// Event Delegation for all buttons
+// --- EVENT LISTENERS ---
 cartContainer.addEventListener('click', (e) => {
-    const id = e.target.dataset.id;
+    const target = e.target;
+    const id = target.dataset.id || target.closest('button')?.dataset.id;
     if (!id) return;
 
-    if (e.target.matches('.plus-btn')) {
+    if (target.matches('.plus-btn')) {
         updateQuantity(id, 1);
-    } else if (e.target.matches('.minus-btn')) {
+    } else if (target.matches('.minus-btn')) {
         updateQuantity(id, -1);
-    } else if (e.target.closest('.delete-btn')) {
-        removeItem(e.target.closest('.delete-btn').dataset.id);
+    } else if (target.closest('.delete-btn')) {
+        removeItem(id);
     }
 });
 
