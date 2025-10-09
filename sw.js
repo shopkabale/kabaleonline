@@ -1,5 +1,7 @@
-const CACHE_NAME = 'kabaleonline-cache-v20.1'; // Version bumped to trigger update
-const IMAGE_CACHE = 'kabaleonline-images-v2.1';
+// sw.js
+
+const CACHE_NAME = 'kabaleonline-cache-v20.2'; // Version bumped to trigger update
+const IMAGE_CACHE = 'kabaleonline-images-v2.2';
 
 const APP_SHELL_FILES = [
   // Core App Shell
@@ -25,7 +27,8 @@ const APP_SHELL_FILES = [
   '/products/', 
   '/upload/', 
   '/settings/', 
-  '/login/', 
+  '/login/',
+'/shop/', 
   '/signup/', 
   '/admin/',
 
@@ -104,18 +107,23 @@ self.addEventListener('fetch', event => {
   }
 
   // Strategy 3: Network First for dynamic data (API/Firestore calls).
+  // CORRECTED BLOCK: Only caches GET requests to avoid 'POST' method error.
   if (url.href.includes('firestore.googleapis.com') || url.href.includes('/.netlify/functions/')) {
     event.respondWith(
-      fetch(request)
-        .then(networkResponse => {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseClone);
-          });
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match(request);
+        fetch(request).then(networkResponse => {
+            // Check if the request is a GET request before caching
+            if (request.method === 'GET') {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(request, responseClone);
+                });
+            }
+            return networkResponse;
+        }).catch(() => {
+            // Only try to match from cache for GET requests
+            if (request.method === 'GET') {
+                return caches.match(request);
+            }
         })
     );
     return;
