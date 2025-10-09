@@ -686,7 +686,25 @@
         <div class="cta-wrapper">
             <h2>What would you like to do?</h2>
             <div class="cta-container">
-                <div class="cta-item"><a href="/sell/" class="cta-button"><i class="fa-solid fa-plus-circle"></i>Post an Ad</a></div>
+                <div class="cta-item"><a href="/dashboard/" class="cta-button"><i class="fa-solid fa-plus-circle"></i>Upload an item </a></div>
+
+<div class="cta-item">
+    <a href="https://gigs.kabaleonline.com" class="cta-button">
+        <i class="fa-solid fa-concierge-bell"></i>Explore Services
+    </a>
+</div>
+
+<div class="cta-item">
+    <a href="https://gigs.kabaleonline.com" class="cta-button">
+        <i class="fa-solid fa-bullhorn"></i>Offer a Service
+    </a>
+</div>
+
+<div class="cta-item">
+    <a href="/blog/" class="cta-button">
+        <i class="fa-solid fa-book-open"></i>Read Our Blog
+    </a>
+</div>
                 <div class="cta-item"><a href="/requests/view.html" class="cta-button"><i class="fa-solid fa-clipboard-list"></i>Request an Item</a></div>
                 <div class="cta-item"><a href="/submit-story.html" class="cta-button"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
                 <div class="cta-item"><a href="/submit-testimonial.html" class="cta-button"><i class="fa-solid fa-comments"></i>Share Feedback</a></div>
