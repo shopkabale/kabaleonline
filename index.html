@@ -390,7 +390,56 @@ body.dark-mode .action-button:hover {
     }
 }
 
+/* Add this CSS to your <style> block */
+.founder-section {
+    padding: 60px 15px;
+    background-color: var(--bg-card); /* Uses your theme's card background */
+    margin: 40px 0;
+}
+.founder-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.founder-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--ko-primary);
+    margin-bottom: 20px;
+}
+.founder-content h2 {
+    font-size: 2em;
+    margin: 0 0 15px;
+}
+.founder-quote {
+    font-size: 1.1em;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin: 0 0 25px;
+    max-width: 650px;
+}
+.founder-signature {
+    font-weight: bold;
+    color: var(--text-main);
+    line-height: 1.5;
+}
 
+@media (min-width: 768px) {
+    .founder-card {
+        flex-direction: row;
+        text-align: left;
+        gap: 30px;
+    }
+    .founder-photo {
+        margin-bottom: 0;
+    }
+}
 
     </style>
 </head>
@@ -635,6 +684,23 @@ body.dark-mode .action-button:hover {
                 <li>Mark the order as "Delivered" to update stock.</li>
             </ol>
             <a href="/upload/" class="how-to-btn">Start Selling</a>
+        </div>
+    </div>
+</section>
+<section class="founder-section">
+    <div class="container">
+        <div class="founder-card">
+            <img src="https://placehold.co/150x150" alt="Founder & CEO" class="founder-photo">
+            <div class="founder-content">
+                <h2>A Message from the Founder</h2>
+                <p class="founder-quote">
+                    "As a former student in Kabale, I know the challenge of finding affordable items and selling what you no longer need. Kabale Online was built to solve that problem—a trustworthy platform for our local student community. We're here to make campus life easier and more connected."
+                </p>
+                <p class="founder-signature">
+    <strong>- AMPEIRE SAMUEL</strong><br>
+    Kab Student and Founder KabaleOnline
+</p>
+            </div>
         </div>
     </div>
 </section>
