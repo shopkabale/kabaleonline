@@ -443,7 +443,7 @@ body.dark-mode .action-button:hover {
 
     </style>
 </head>
-<body class="light-mode">
+<body class="dark-mode">
 
     <header class="sticky-header">
         <div class="header-top-bar">
@@ -453,7 +453,7 @@ body.dark-mode .action-button:hover {
             <div class="header-icons">
                 <div class="theme-switch-wrapper">
                     <label class="theme-switch" for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle" checked />
+                        <input type="checkbox" id="theme-toggle"/>
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -690,7 +690,7 @@ body.dark-mode .action-button:hover {
 <section class="founder-section">
     <div class="container">
         <div class="founder-card">
-            <img src="https://placehold.co/150x150" alt="Founder & CEO" class="founder-photo">
+            <img src="https://res.cloudinary.com/dwy9svlwf/image/upload/w_300,h_300,c_fill,g_face,r_max/v1760068302/20250922_065926_ir8pln.jpg" alt="AMPEIRE SAMUEL, Founder & CEO" class="founder-photo">
             <div class="founder-content">
                 <h2>A Message from the Founder</h2>
                 <p class="founder-quote">
@@ -844,7 +844,7 @@ body.dark-mode .action-button:hover {
             localStorage.setItem('theme', theme);
             themeToggle.checked = (theme === 'light-mode');
         }
-        const currentTheme = localStorage.getItem('theme') || 'light-mode';
+        const currentTheme = localStorage.getItem('theme') || 'dark-mode';
         setTheme(currentTheme);
         themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'light-mode' : 'dark-mode'));
 
