@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://www.kabaleonline.com/sitemap.xml
+
+# Exclude private or non-SEO pages
+Disallow: /auth
+Disallow: /inbox
+Disallow: /chat
+Disallow: /profile
+Disallow: /wishlist
+Disallow: /dashboard
+Disallow: /events/edit
+Disallow: /events/upload
+Disallow: /rentals/post
+Disallow: /requests/view
+
+# Optional crawl delay (helps reduce server load)
+Crawl-delay: 5
