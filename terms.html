@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -13,279 +12,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service | Kabale Online</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#007bff">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* --- Basic Styles & Variables --- */
+        /* --- THEME-AWARE CSS VARIABLES --- */
         :root {
-            --primary-color: #007bff;
-            --text-dark: #34495e;
-            --text-medium: #6c757d;
-            --card-bg: #ffffff;
+            --ko-primary: #007aff;
+            --ko-accent: #ffc107;
+            
             --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            padding-top: 85px; /* Push content below fixed header */
+        /* --- THEME-SWITCHING LOGIC --- */
+        body.light-mode {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
         }
 
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        .page-content {
-            padding-bottom: 40px;
-        }
-
-        .page-welcome {
-            text-align: center;
-            margin-bottom: 30px;
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
         }
         
-        .page-welcome h1 {
-            margin-bottom: 10px;
+        /* --- GENERAL & HEADER STYLES --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
         }
-        
-        .page-welcome p {
-            color: var(--text-medium);
-            font-size: 1.1em;
-        }
+        .container { max-width: 960px; margin: 0 auto; padding: 0 15px; }
+        .page-content { padding-top: 90px; padding-bottom: 40px; }
 
-        .terms-section {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .terms-section h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        /* --- Header --- */
         .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 
-        .header-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 8px 15px;
-            height: 65px;
-        }
-        
-        .site-title {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-        
-        .site-title span {
-            color: var(--primary-color);
-        }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
+        .header-icons a:hover { color: var(--ko-primary); }
 
-        .hamburger-menu {
-            font-size: 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-dark);
-        }
-
-        /* Desktop nav */
-        .desktop-nav { display: none; }
-        @media (min-width: 992px) {
-            .desktop-nav { display: flex; }
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) {
             .hamburger-menu { display: none; }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
         }
 
-        /* Mobile nav sidebar */
-        .mobile-nav {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background-color: #fff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            z-index: 1100;
-            padding-top: 20px;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        .mobile-nav.active { left: 0; }
+        /* --- MOBILE NAV STYLES --- */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; transform: translateX(0); }
+        .mobile-nav.active { transform: translateX(280px); }
+        .mobile-nav .nav-header { padding: 15px 20px; font-size: 1.5em; font-weight: bold; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        .mobile-nav .nav-header span { color: var(--ko-primary); }
+        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; font-size: 1.1em; }
+        .mobile-nav a:hover { background-color: var(--bg-main); }
+        .mobile-nav a i { margin-right: 15px; width: 20px; text-align: center; color: var(--ko-primary); }
         
-        .mobile-nav .nav-header {
-            padding: 15px 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            border-bottom: 1px solid #f0f0f0;
-            color: var(--text-dark);
-        }
-        .mobile-nav .nav-header span { color: var(--primary-color); }
+        /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
+        .page-welcome { text-align: center; margin-bottom: 30px; }
+        .page-welcome h1 { margin-bottom: 10px; }
+        .page-welcome p { color: var(--text-secondary); font-size: 1.1em; }
+        .terms-section { background-color: var(--bg-card); padding: 25px; border-radius: var(--border-radius); margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+        .terms-section h3 { margin-top: 0; color: var(--ko-primary); }
+        .terms-section p, .terms-section li { color: var(--text-secondary); }
         
-        .mobile-nav a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: #333;
-            text-decoration: none;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 1.1em;
-        }
-        .mobile-nav a:hover { background-color: var(--bg-light); }
-        .mobile-nav a i { margin-right: 15px; color: var(--primary-color); width: 20px; text-align: center; }
-
-        /* Overlay */
-        .mobile-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1090;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
-        }
-        .mobile-nav-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
-        }
-
-        /* --- FOOTER --- */
-        footer { background-color: var(--text-dark); color: white; padding: 40px 20px; text-align: center; }
-        footer a { color: #bdc3c7; }
-        #contact-us-section h2 { margin-top: 0; }
-        .contact-buttons-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
-        .contact-btn { background-color: #25D366; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
-        .contact-btn.email { background-color: #555; }
-        .footer-links { margin: 20px 0; }
-        .footer-link { color: #bdc3c7; margin: 0 10px; text-decoration: none; }
-        .copyright { color: #aaa; }
+        /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-links { margin: 25px 0; }
+        .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; }
     </style>
 </head>
 <body>
+    <script src="/theme.js"></script>
 
-<div class="mobile-nav-overlay"></div>
-
-<nav class="mobile-nav">
-    <div class="nav-header">Kabale <span>Online</span></div>
-    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
-    <a href="/sell/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
-    <a href="/sell/"><i class="fa-solid fa-plus"></i> Post Something</a>
-    <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
-    <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
-    <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
-</nav>
-<header class="sticky-header">
-    <div class="header-top-bar">
-      <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-      <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <nav class="desktop-nav">
+    <div class="mobile-nav-overlay"></div>
+    <header class="sticky-header">
+      <div class="header-content container">
+        <a href="/" class="site-title">Kabale <span>Online</span></a>
+        <nav class="desktop-nav">
+            <a href="/shop/" class="nav-link">Shop</a>
+            <a href="/rentals/" class="nav-link">Hostels</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+            <a href="/events/" class="nav-link">Events</a>
+            <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
         </nav>
-    </div>
-</header>
-
-<main class="container page-content">
-    <div class="page-welcome">
-        <h1>Terms of Service</h1>
-        <p>Last updated: September 8, 2025</p>
-    </div>
-    
-    <p>Welcome to Kabale Online. By using our website, you agree to these terms. Our role is to act as a venue to allow users to offer, sell, and buy goods. We are not involved in the actual transaction between buyers and sellers.</p>
-
-    <div class="terms-section">
-        <h3>For Sellers</h3>
-        <ul>
-            <li>You must be the legal owner of any item you list for sale.</li>
-            <li>You are responsible for providing accurate and honest descriptions and photos of your items. Misleading information is prohibited.</li>
-            <li>The posting of illegal items, stolen goods, weapons, and any form of pornographic or obscene material is strictly forbidden.</li>
-            <li>You agree to communicate respectfully with potential buyers.</li>
-        </ul>
-    </div>
-    
-    <div class="terms-section">
-        <h3>For Buyers</h3>
-        <ul>
-            <li>You are responsible for communicating with the seller to arrange payment and collection of items.</li>
-            <li>We recommend inspecting items in person in a safe, public place before making a payment.</li>
-            <li>Kabale Online does not handle payments and is not responsible for any issues that arise from a transaction.</li>
-        </ul>
-    </div>
-    
-    <div class="terms-section">
-        <h3>Consequences of Violation</h3>
-        <p>Failure to adhere to these terms may result in the removal of your listings without notice. Users who post prohibited content, engage in fraudulent activity, or harass other users will have their accounts permanently banned from the platform. We reserve the right to report any illegal activity to the relevant authorities.</p>
-    </div>
-</main>
-
-<footer>
-    <section id="contact-us-section">
-        <h2>Get in Touch</h2>
-        <div class="contact-buttons-container">
-            <a href="https://wa.me/256740373021" class="contact-btn whatsapp" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
-            <a href="mailto:shopkabale@gmail.com" class="contact-btn email" target="_blank"><i class="fa-solid fa-envelope"></i> Send an Email</a>
+        <div class="header-icons">
+             <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+            <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
+            <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
         </div>
-    </section>
-    <div class="footer-links">
-        <a href="about.html" class="footer-link">About Us</a>
-        <a href="terms.html" class="footer-link">Terms of Service</a>
-    </div>
-    <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-</footer>
-<!-- PWA Install Banner -->
-<div id="pwa-banner" style="
-    display:none;
-    position:fixed;
-    bottom:-120px; /* start hidden below screen */
-    left:0;
-    width:100%;
-    background:#007bff;
-    color:#fff;
-    box-shadow:0 -2px 10px rgba(0,0,0,0.2);
-    padding:15px;
-    font-family:sans-serif;
-    z-index:9999;
-    border-top-left-radius:10px;
-    border-top-right-radius:10px;
-    transition: bottom 0.5s ease-in-out;
-">
-  <div style="display:flex; flex-direction:column; gap:5px;">
-    <strong style="font-size:16px;">KABALE ONLINE APP</strong>
-    <span style="font-size:14px;">Install Kabale Online for faster access, offline use, and under 1 MB!</span>
-    <div style="margin-top:8px; display:flex; gap:10px;">
-      <button id="pwa-install-btn" style="flex:1; background:#fff; color:#007bff; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">Install</button>
-      <button id="pwa-cancel-btn" style="flex:1; background:transparent; border:1px solid #fff; color:#fff; padding:8px 10px; border-radius:6px; cursor:pointer;">Cancel</button>
-    </div>
-  </div>
-</div>
+      </div>
+    </header>
 
-<script type="module" src="ui.js"></script>
-<script type="module" src="shared.js"></script> 
-<script src="/nav.js" defer></script>           
+    <nav class="mobile-nav">
+        <div class="nav-header">Kabale <span>Online</span></div>
+        <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/dashboard/"><i class="fa-regular fa-user"></i> Your Dashboard</a>
+        <a href="/upload/"><i class="fa-solid fa-plus"></i> Post Something</a>
+        <a href="/about.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
+        <a href="/blog/"><i class="fa-solid fa-newspaper"></i> Blog & Tips</a>
+        <a href="/terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+    </nav>
+    
+    <main class="container page-content">
+        <div class="page-welcome">
+            <h1>Terms of Service</h1>
+            <p>Last updated: September 8, 2025</p>
+        </div>
 
+        <p>Welcome to Kabale Online. By using our website, you agree to these terms. Our role is to act as a venue to allow users to offer, sell, and buy goods. We are not involved in the actual transaction between buyers and sellers.</p>
+
+        <div class="terms-section">
+            <h3>For Sellers</h3>
+            <ul>
+                <li>You must be the legal owner of any item you list for sale.</li>
+                <li>You are responsible for providing accurate and honest descriptions and photos of your items. Misleading information is prohibited.</li>
+                <li>The posting of illegal items, stolen goods, weapons, and any form of pornographic or obscene material is strictly forbidden.</li>
+                <li>You agree to communicate respectfully with potential buyers.</li>
+            </ul>
+        </div>
+
+        <div class="terms-section">
+            <h3>For Buyers</h3>
+            <ul>
+                <li>You are responsible for communicating with the seller to arrange payment and collection of items.</li>
+                <li>We recommend inspecting items in person in a safe, public place before making a payment.</li>
+                <li>Kabale Online does not handle payments and is not responsible for any issues that arise from a transaction.</li>
+            </ul>
+        </div>
+
+        <div class="terms-section">
+            <h3>Consequences of Violation</h3>
+            <p>Failure to adhere to these terms may result in the removal of your listings without notice. Users who post prohibited content, engage in fraudulent activity, or harass other users will have their accounts permanently banned from the platform. We reserve the right to report any illegal activity to the relevant authorities.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <div class="footer-links">
+                <a href="/about.html">About Us</a>
+                <a href="/blog/">Blog & Tips</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
+            <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+    
+    <div id="pwa-banner" style="display:none; /* ... pwa styles ... */">
+      </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const hamburger = document.querySelector('.hamburger-menu');
+          const mobileNav = document.querySelector('.mobile-nav');
+          const overlay = document.querySelector('.mobile-nav-overlay');
+          if (hamburger && mobileNav && overlay) {
+              hamburger.addEventListener('click', () => {
+                  mobileNav.classList.toggle('active');
+                  overlay.classList.toggle('active');
+              });
+              overlay.addEventListener('click', () => {
+                  mobileNav.classList.remove('active');
+                  overlay.classList.remove('active');
+              });
+          }
+        });
+    </script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="shared.js"></script> 
 </body>
 </html>
