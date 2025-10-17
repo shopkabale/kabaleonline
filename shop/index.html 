@@ -584,6 +584,7 @@
     </style>
 </head>
 <body>
+<script src="theme.js"></script>
     <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
         <div class="header-content-wrapper">
@@ -798,6 +799,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <script type="module" src="../ui.js"></script>
     <script type="module" src="main.js"></script>
     <script type="module" src="../shared.js"></script>
-<script src="theme.js"></script>
+
 </body>
 </html> 
