@@ -346,6 +346,92 @@
         .nav-modal-btn { padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
         .btn-confirm { background-color: var(--ko-primary); color: white; }
         .btn-cancel { background-color: #6c757d; color: white; }
+/* Add this to your main <style> block */
+
+.how-to-section .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+
+.how-to-card {
+    padding: 30px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: white;
+}
+
+.how-to-icon {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+}
+
+.how-to-card h3 {
+    font-size: 1.6em;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.how-to-list {
+    text-align: left;
+    padding-left: 20px;
+    margin: 0 0 25px 0;
+}
+
+.how-to-list li {
+    margin-bottom: 15px;
+    opacity: 0.9;
+    line-height: 1.7;
+}
+
+.how-to-btn {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.how-to-card.buy-card .how-to-btn:hover {
+    background-color: white;
+    color: var(--ko-primary);
+}
+
+.how-to-card.sell-card .how-to-btn:hover {
+    background-color: white;
+    color: var(--ko-accent);
+}
+
+/* Gradients for the cards */
+.buy-card {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+.sell-card {
+    background: linear-gradient(135deg, #ffc107, #d99a00);
+}
+
+@media (min-width: 768px) {
+    .how-to-section .container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.founder-quote {
+    font-size: 1.1em;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin: 0 0 25px;
+    max-width: 650px;
+}
+.founder-signature {
+    font-weight: bold;
+    color: var(--text-main);
+    line-height: 1.5;
+}
     </style>
 </head>
 <body class="dark-mode">
@@ -511,19 +597,52 @@
         </section>
 
         <section class="how-to-section">
-            <div class="container">
-                <div class="how-to-card buy-card">
-                    <h3>How to Buy</h3>
-                    <p>Simple steps to get what you need.</p>
-                    <a href="/shop/" class="how-to-btn">Start Browsing</a>
-                </div>
-                <div class="how-to-card sell-card">
-                    <h3>How to Sell</h3>
-                    <p>Turn your clutter into cash, fast.</p>
-                    <a href="/upload/" class="how-to-btn">Start Selling</a>
-                </div>
+    <div class="container">
+        <div class="how-to-card buy-card">
+            <div class="how-to-icon">
+                <i class="fas fa-shopping-bag"></i>
             </div>
-        </section>
+            <h3>How to Buy on Kabale Online</h3>
+            <ol class="how-to-list">
+                <li>
+                    <strong>Browse & Discover:</strong> Explore the shop or use the search bar to find exactly what you're looking for, from textbooks to electronics.
+                </li>
+                <li>
+                    <strong>Add to Cart:</strong> Found something you like? Simply add it to your shopping cart to save it for later.
+                </li>
+                <li>
+                    <strong>Confirm Your Order:</strong> When you're ready, proceed to checkout. Your order details will be sent directly to the seller.
+                </li>
+                <li>
+                    <strong>Arrange Delivery:</strong> The seller will contact you via the phone number you provided to arrange payment and a safe, convenient meetup for delivery.
+                </li>
+            </ol>
+            <a href="/shop/" class="how-to-btn">Start Browsing</a>
+        </div>
+
+        <div class="how-to-card sell-card">
+            <div class="how-to-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <h3>How to Sell in Minutes</h3>
+            <ol class="how-to-list">
+                <li>
+                    <strong>Create a Listing:</strong> Upload your item in under 60 seconds. Add clear photos, a good title, and an honest description.
+                </li>
+                <li>
+                    <strong>Get Notified:</strong> When a buyer places an order, you'll receive a notification. Check your seller dashboard for all the details.
+                </li>
+                <li>
+                    <strong>Contact the Buyer:</strong> Use the buyer's contact information to call or message them and arrange a time and public place for the exchange.
+                </li>
+                <li>
+                    <strong>Get Paid & Deliver:</strong> Meet the buyer, get paid (we recommend cash or mobile money), and hand over the item. Finally, mark the order as "Delivered" in your dashboard.
+                </li>
+            </ol>
+            <a href="/upload/" class="how-to-btn">Start Selling Now</a>
+        </div>
+    </div>
+</section>
 
         <section class="founder-section">
             <div class="container">
@@ -531,8 +650,13 @@
                     <img src="https://res.cloudinary.com/dwy9svlwf/image/upload/w_300,h_300,c_fill,g_face,r_max/v1760068302/20250922_065926_ir8pln.jpg" alt="AMPEIRE SAMUEL, Founder & CEO" class="founder-photo">
                     <div class="founder-content">
                         <h2>A Message from the Founder</h2>
-                        <p style="color: var(--text-secondary);">"As a student at Kabale University, I know the challenge of finding affordable items. Kabale Online was built to solve that problem—a trustworthy platform for our local student community to make campus life easier."</p>
-                        <p><strong>- AMPEIRE SAMUEL</strong><br>Founder, Kabale Online</p>
+                       <p class="founder-quote">
+    "As a fellow student at Kabale University, I faced the same frustrations many of us do: trying to find affordable textbooks, furnishing a room on a tight budget, or figuring out how to sell items I no longer needed. The search was scattered and often difficult. That experience is why I created Kabale Online. It’s more than a website; it's a tool built by a student, for our student community, to make campus life easier and more connected. Welcome aboard."
+</p>
+<p class="founder-signature">
+    <strong>- AMPEIRE SAMUEL</strong><br>
+    Founder, Kabale Online
+</p>
                     </div>
                 </div>
             </div>
