@@ -6,72 +6,187 @@
     <title>Login | Kabale Online</title>
     <meta name="description" content="Log in to your seller dashboard to manage your products and sales on Kabale Online.">
     <meta name="robots" content="noindex">
-    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary-color: #007bff; --accent-color: #ffc107; --text-dark: #34495e; --border-color: #e9ecef; }
-        body { padding-top: 70px; }
-        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .header-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; height: 50px; }
-        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-dark); }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.6em; font-weight: bold; }
-        .site-title span { color: var(--accent-color); }
+        /* --- THEME-AWARE CSS VARIABLES --- */
+        :root {
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
+            
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
+        }
+
+        /* --- THEME-SWITCHING LOGIC --- */
+        body.light-mode {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
+        }
+
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
+        }
+        
+        /* --- GENERAL & HEADER STYLES --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+            padding-top: 70px; /* Space for fixed header */
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
         .header-icons { display: flex; align-items: center; gap: 20px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
-        .desktop-nav { display: none; }
-        .mobile-nav { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background-color: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1100; padding-top: 60px; transition: left 0.3s ease; }
-        .mobile-nav.active { left: 0; }
-        .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 1em; }
-        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: #007bff; }
-        .mobile-nav a.post-button, .mobile-nav a.login-button { font-weight: bold; color: #007bff; }
-        .mobile-nav a:hover { background-color: #f8f9fa; }
-        .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
+        .header-icons a:hover { color: var(--ko-primary); }
+
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) {
+            .hamburger-menu { display: none; }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
+        }
+
+        /* --- MOBILE NAV STYLES --- */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; transform: translateX(0); }
+        .mobile-nav.active { transform: translateX(280px); }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); font-size: 1em; }
+        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); width: 20px; text-align: center; }
+        
+        /* --- AUTH FORM STYLES (THEMED) --- */
+        .page-content { padding-top: 30px; padding-bottom: 30px; }
+        .login-card { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 25px; max-width: 450px; margin: 0 auto; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+        .auth-title { text-align: center; font-size: 1.8em; margin: 0 0 10px; }
+        .auth-subtitle { text-align: center; color: var(--text-secondary); margin: 0 0 25px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9em; }
+        .form-group input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-main); color: var(--text-main); font-size: 1em; box-sizing: border-box; }
+        .form-group input:focus { outline: none; border-color: var(--ko-primary); box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.1); }
+        .password-wrapper { position: relative; }
+        .toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary); }
+        .auth-button { width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold; border: none; border-radius: 8px; background-color: var(--ko-primary); color: white; cursor: pointer; transition: background-color 0.2s; }
+        .login-card a { color: var(--ko-primary); text-decoration: none; font-weight: 600; }
+        .or-divider { text-align: center; margin: 25px 0; color: var(--text-secondary); font-size: 0.9em; display: flex; align-items: center; gap: 15px; }
+        .or-divider::before, .or-divider::after { content: ''; flex-grow: 1; height: 1px; background-color: var(--border-color); }
+        .google-btn { width: 100%; padding: 12px; font-size: 1em; font-weight: 600; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-card); color: var(--text-main); cursor: pointer; transition: background-color 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .google-btn i { font-size: 1.2em; }
+        
+        /* --- MESSAGE & LOADER STYLES (THEMED) --- */
+        .error-message, .success-message { border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
         .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
         .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
+
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .auth-button.loading, .cta-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
-        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; display: none; }
-        .mobile-nav-overlay.active { display: block; }
+        .auth-button.loading { display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: not-allowed; }
+
+        /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-tagline { color: #94a3b8; margin-top: -5px; margin-bottom: 20px; }
+        .footer-links { margin: 25px 0; }
+        .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; }
     </style>
 </head>
 <body>
+    <script src="/theme.js"></script>
+
     <header class="sticky-header">
-        <div class="header-top-bar">
-            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+        <div class="header-content">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <nav class="desktop-nav"></nav>
+            
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+            </nav>
+
             <div class="header-icons">
+                 <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
                 <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-                <a href="/upload/" aria-label="Post Something"><i class="fa-solid fa-plus"></i></a>
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             </div>
         </div>
-        <nav class="mobile-nav">
+    </header>
+
+    <div class="mobile-nav-overlay"></div>
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
             <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
             <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
             <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
             <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
-            <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
-            <hr>
-            <a href="/upload/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
-            <a href="/login/" class="nav-link login-button"><i class="fa-solid fa-key"></i> Login</a>
-        </nav>
-        <div class="mobile-nav-overlay"></div>
-    </header>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/dashboard/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
 
     <div class="container page-content">
         <div id="auth-container">
             <div class="login-card">
                 <h1 class="auth-title">Welcome Back!</h1>
-                <p class="auth-subtitle">Log in to access your seller dashboard.</p>
+                <p class="auth-subtitle">Log in to access your dashboard.</p>
                 <p id="auth-success" class="success-message" style="display: none;"></p>
                 <form id="login-form">
                     <p id="login-error" class="error-message"></p>
                     <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
                     <div class="form-group"><label for="login-password">Password</label><div class="password-wrapper"><input type="password" id="login-password" required><span class="toggle-password">👁️</span></div></div>
                     <button type="submit" class="auth-button">Login</button>
-                    <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
+                    <p style="text-align: right; margin-top: 15px;"><a href="#" id="forgot-password-link">Forgot Password?</a></p>
                 </form>
                 <p class="or-divider"><span>OR</span></p>
                 <button id="google-login-btn" class="google-btn"><i class="fa-brands fa-google"></i> Sign In with Google</button>
@@ -79,71 +194,72 @@
             </div>
         </div>
     </div>
-    
+
     <footer>
-        <div class="kabale-contact-info-section">
-            <h3 class="kabale-contact-title">Get in Touch</h3>
-            <div class="kabale-contact-details">
-                <p class="kabale-contact-item">📞 +256 784655792</p>
-                <p class="kabale-contact-item">📧 shopkabale@gmail.com</p>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
             </div>
-            <div class="kabale-footer-links">
-                <a href="/about.html" class="kabale-footer-link">About Us</a>
-                <a href="/blog/" class="kabale-footer-link">Blog & Tips</a>
-                <a href="/terms.html" class="kabale-footer-link">Terms of Service</a>
-            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
-        <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-<!-- Modal notification for Services link -->
-<div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-  background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
-  <div style="background:#fff; padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
-    box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif; animation:fadeIn 0.3s ease-out;">
-    <h3 style="margin-bottom:15px; color:#333;">Notice</h3>
-    <p style="margin-bottom:20px; color:#555;">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-    <button id="continue-btn" style="padding:10px 20px; background:#007bff; border:none; border-radius:8px; 
-      color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;">Continue</button>
-  </div>
-</div>
-
-<style>
-@keyframes fadeIn {
-  from { opacity:0; transform: scale(0.8); }
-  to { opacity:1; transform: scale(1); }
-}
-#continue-btn:hover {
-  background:#0056b3;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Target the Services link in mobile nav
-  const serviceLink = document.querySelector('a.nav-link[href="/?type=service"]');
-  const modal = document.getElementById('service-notice');
-  const continueBtn = document.getElementById('continue-btn');
-
-  if(serviceLink) {
-    serviceLink.addEventListener('click', function(e) {
-      e.preventDefault(); // Prevent default navigation
-      modal.style.display = 'flex'; // Show modal
-    });
-  }
-
-  continueBtn.addEventListener('click', function() {
-    window.location.href = 'https://gigs.kabaleonline.com';
-  });
-
-  // Optional: click outside modal content to close
-  modal.addEventListener('click', function(e) {
-    if(e.target === modal) modal.style.display = 'none';
-  });
-});
-</script>
     </footer>
+
+    <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+      background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
+      <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
+        box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif;">
+        <h3 style="margin-bottom:15px; color:var(--text-main);">Notice</h3>
+        <p style="margin-bottom:20px; color:var(--text-secondary);">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
+        <button id="continue-btn" style="padding:10px 20px; background:var(--ko-primary); border:none; border-radius:8px; 
+          color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
+      </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Logic for the service notice modal
+      const serviceLinks = document.querySelectorAll('a.service-link, a[href="/?type=service"]');
+      const modal = document.getElementById('service-notice');
+      const continueBtn = document.getElementById('continue-btn');
+
+      if (modal && continueBtn) {
+        serviceLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                modal.style.display = 'flex';
+            });
+        });
+        continueBtn.addEventListener('click', function() {
+            window.location.href = 'https://gigs.kabaleonline.com';
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+      
+      // Logic for the mobile nav toggle
+      const hamburger = document.querySelector('.hamburger-menu');
+      const mobileNav = document.querySelector('.mobile-nav');
+      const overlay = document.querySelector('.mobile-nav-overlay');
+      if (hamburger && mobileNav && overlay) {
+          hamburger.addEventListener('click', () => {
+              mobileNav.classList.toggle('active');
+              overlay.classList.toggle('active');
+          });
+          overlay.addEventListener('click', () => {
+              mobileNav.classList.remove('active');
+              overlay.classList.remove('active');
+          });
+      }
+    });
+    </script>
 
     <script type="module" src="/js/auth.js"></script>
     <script type="module" src="script.js"></script>
-    <script type="module" src="/js/ui.js"></script>
 </body>
 </html>
