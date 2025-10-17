@@ -683,18 +683,7 @@
                 });
             }
 
-            // --- THEME SWITCH LOGIC (UNCHANGED) ---
-            const themeToggle = document.getElementById('theme-toggle');
-            function setTheme(theme) {
-                document.body.className = '';
-                document.body.classList.add(theme);
-                localStorage.setItem('theme', theme);
-                themeToggle.checked = (theme === 'light-mode');
-            }
-            const currentTheme = localStorage.getItem('theme') || 'dark-mode';
-            setTheme(currentTheme);
-            themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'light-mode' : 'dark-mode'));
-
+            
             // --- COUNTER ANIMATION LOGIC (UNCHANGED) ---
             const counters = document.querySelectorAll('.stat-number');
             const observer = new IntersectionObserver(entries => {
