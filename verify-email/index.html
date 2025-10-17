@@ -5,32 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Your Email | Kabale Online</title>
     <meta name="robots" content="noindex">
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: #f4f7f6; }
-        .verification-card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; max-width: 450px; }
-        .verification-card h1 { margin-top: 0; color: #34495e; }
-        .verification-card p { color: #6c757d; line-height: 1.6; }
-        .user-email { font-weight: bold; color: #007bff; }
-        .cta-button { /* your button styles */ }
-        .auth-button { /* your button styles */ }
-        .loader { /* your loader styles */ }
-        .success-message, .error-message { /* your message styles */ }
+        /* --- THEME-AWARE CSS VARIABLES --- */
+        :root {
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
+            
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
+        }
+
+        /* --- THEME-SWITCHING LOGIC --- */
+        body.light-mode {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
+        }
+
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
+        }
+        
+        /* --- GENERAL & HEADER STYLES --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+        }
+        .container { max-width: 960px; margin: 0 auto; padding: 0 15px; }
+        .page-content { padding-top: 90px; padding-bottom: 30px; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 250px); }
+
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
+        .header-icons a:hover { color: var(--ko-primary); }
+
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) {
+            .hamburger-menu { display: none; }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
+        }
+
+        /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
+        .verification-card { 
+            background: var(--bg-card); 
+            padding: 40px; 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--shadow); 
+            text-align: center; 
+            max-width: 450px; 
+            border: 1px solid var(--border-color);
+        }
+        .verification-card h1 { margin-top: 0; color: var(--text-main); }
+        .verification-card p { color: var(--text-secondary); line-height: 1.6; }
+        .user-email { font-weight: bold; color: var(--ko-primary); }
+        .cta-button, .auth-button { padding: 12px 25px; font-size: 1.1em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .cta-button { background-color: var(--ko-primary); color: white; }
+        .auth-button { background-color: #6c757d; color: white; margin-top: 10px; }
+
+        /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-links { margin: 25px 0; }
+        .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; }
     </style>
 </head>
 <body>
-    <div class="verification-card">
-        <h1>Please Verify Your Email</h1>
-        <p>We've sent a verification link to <strong class="user-email">your email address</strong>.</p>
-<p> Sending an email takes a few seconds,  if the email doesn't come in 10 seconds click the  resend button below </p>
-<br>
-        <p>Please check your inbox (and spam folder) and click the link to activate your account. This page will redirect automatically once you are verified.</p>
-        <p id="message-area" style="display: none;"></p>
-        <div style="margin-top: 30px;">
-            <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
-            <button id="verification-logout-btn" class="auth-button" style="background-color: #6c757d; margin-top: 10px;">Logout</button>
+    <script src="/theme.js"></script>
+
+    <header class="sticky-header">
+      <div class="header-content container">
+        <a href="/" class="site-title">Kabale <span>Online</span></a>
+        <nav class="desktop-nav">
+            <a href="/shop/" class="nav-link">Shop</a>
+            <a href="/rentals/" class="nav-link">Hostels</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+            <a href="/events/" class="nav-link">Events</a>
+            <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+        </nav>
+        <div class="header-icons">
+             <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+            <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
+            <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
         </div>
-    </div>
+      </div>
+    </header>
+
+    <main class="container page-content">
+        <div class="verification-card">
+            <h1>Please Verify Your Email</h1>
+            <p>We've sent a verification link to <strong class="user-email">your email address</strong>.</p>
+            <p>If the email doesn't arrive within 10 seconds, please click the resend button below.</p>
+            <br>
+            <p>Check your inbox (and spam folder) and click the link to activate your account. This page will redirect automatically once you are verified.</p>
+            <p id="message-area" style="display: none;"></p>
+            <div style="margin-top: 30px;">
+                <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
+                <button id="verification-logout-btn" class="auth-button">Logout</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <div class="footer-links">
+                <a href="/about.html">About Us</a>
+                <a href="/blog/">Blog & Tips</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
+            <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    // Since this page has no mobile nav, we don't need the toggle script here.
+    // The main functionality is in the script tag below.
+    </script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
