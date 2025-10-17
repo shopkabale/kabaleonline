@@ -8,57 +8,125 @@
     <link rel="icon" href="/favicon.webp" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* --- THEME-AWARE CSS VARIABLES --- */
         :root {
-            --primary-color: #007bff; --accent-color: #ffc107; --bg-color: #f4f7f6;
-            --card-bg: #ffffff; --text-dark: #34495e; --text-light: #7f8c8d;
-            --border-color: #e9ecef; --border-radius: 12px; --shadow: 0 4px 15px rgba(0,0,0,0.07);
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
+            
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
-        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; }
-        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-dark); padding-right: 15px; }
-        .site-title { text-decoration: none; color: var(--text-dark); font-size: 1.4em; font-weight: bold; }
-        .site-title span { color: var(--accent-color); }
-        .header-spacer { flex-grow: 1; }
-        .header-icons { display: flex; align-items: center; gap: 18px; }
-        .header-icons a { color: var(--text-dark); font-size: 22px; text-decoration: none; }
-        .page-container { padding-top: 70px; padding-bottom: 20px; }
-        footer { background-color: var(--text-dark); color: white; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
-        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
 
-        /* Form Specific Styles */
-        .form-container {
-            background: var(--card-bg); padding: 30px; border-radius: var(--border-radius);
-            box-shadow: var(--shadow); max-width: 600px; margin: 20px auto;
+        /* --- THEME-SWITCHING LOGIC --- */
+        body.light-mode {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
         }
+
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
+        }
+        
+        /* --- GENERAL & HEADER STYLES --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .page-container { padding-top: 90px; padding-bottom: 20px; }
+
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
+        .header-icons a:hover { color: var(--ko-primary); }
+
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) {
+            .hamburger-menu { display: none; }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
+        }
+
+        /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
+        .form-container { background: var(--bg-card); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); max-width: 600px; margin: 20px auto; border: 1px solid var(--border-color); }
+        .form-container p { color: var(--text-secondary); }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 12px; border: 1px solid var(--border-color);
-            border-radius: 8px; font-family: inherit; font-size: 1em; box-sizing: border-box;
-        }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 1em; box-sizing: border-box; background-color: var(--bg-main); color: var(--text-main); }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--ko-primary); box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15); outline: none; }
         .form-group textarea { resize: vertical; min-height: 120px; }
-        .submit-btn {
-            width: 100%; padding: 15px; background: var(--primary-color); color: white;
-            border: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer;
-        }
+        .submit-btn { width: 100%; padding: 15px; background: var(--ko-primary); color: white; border: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
         .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
-        .form-message {
-            padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center;
-            display: none;
-        }
+        .form-message { padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center; display: none; }
         .form-message.success { background-color: #d4edda; color: #155724; }
         .form-message.error { background-color: #f8d7da; color: #721c24; }
+        body.dark-mode .form-message.success { background-color: #1f3c2b; color: #c3e6cb; }
+        body.dark-mode .form-message.error { background-color: #4a1c24; color: #f5c6cb; }
+
+        /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-links { margin: 25px 0; }
+        .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; }
     </style>
 </head>
 <body>
+    <script src="/theme.js"></script>
+
     <header class="sticky-header">
-        <div class="header-content-wrapper">
-            <div class="header-top-bar">
-                 <a href="/" style="font-size: 22px; color: var(--text-dark);"><i class="fa-solid fa-arrow-left"></i></a>
-                <a href="/" class="site-title" style="padding-left: 15px;">Kabale <span>Online</span></a>
-                <div class="header-spacer"></div>
+        <div class="header-content container">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+            </nav>
+            <div class="header-icons">
+                 <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             </div>
         </div>
     </header>
@@ -89,6 +157,7 @@
 
     <footer>
         <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
             <div class="footer-links">
                 <a href="/about.html">About</a>
                 <a href="/blog/">Blog</a>
@@ -99,6 +168,14 @@
         </div>
     </footer>
 
+    <script>
+        // Inline script for basic UI like the hamburger menu
+        document.addEventListener('DOMContentLoaded', function() {
+          const hamburger = document.querySelector('.hamburger-menu');
+          // This page does not have a mobile nav, so we don't need the toggle logic.
+          // If you add one later, the ui.js file would handle it.
+        });
+    </script>
     <script type="module" src="submit-testimonial.js"></script>
 </body>
 </html>
