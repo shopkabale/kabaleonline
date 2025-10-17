@@ -80,9 +80,9 @@
     </script>
 
     <style>
-        /* --- NEW THEME-AWARE CSS VARIABLES --- */
         :root {
             --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
             
             --bg-light: #f8f9fa;
@@ -92,7 +92,7 @@
             --border-color-light: #e9ecef;
             
             --bg-dark: #0f172a;
-            --bg-card-dark: #1e293b;
+            --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
@@ -101,7 +101,6 @@
             --border-radius: 12px;
         }
 
-        /* --- NEW THEME-SWITCHING LOGIC --- */
         body.light-mode {
             --bg-main: var(--bg-light);
             --bg-card: var(--bg-card-light);
@@ -118,28 +117,48 @@
             --border-color: var(--border-color-dark);
         }
         
-        /* --- UPDATED STYLES USING NEW VARIABLES --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--bg-card); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
-        .header-top-bar { display: flex; align-items: center; padding: 0 15px; height: 55px; }
-        .hamburger-menu { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--text-main); padding-right: 15px; }
-        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.4em; font-weight: bold; }
+
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
-        .header-spacer { flex-grow: 1; }
-        .header-icons { display: flex; align-items: center; gap: 18px; }
-        .header-icons a { color: var(--text-main); font-size: 22px; text-decoration: none; }
-        .header-search-bar { padding: 8px 15px 10px; border-top: 1px solid var(--border-color); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
+        .header-icons a:hover { color: var(--ko-primary); }
+
+        .desktop-nav { display: none; } 
+
+        @media (min-width: 1024px) {
+            .hamburger-menu { display: none; }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
+        }
+
+        .page-container { padding-top: 90px; padding-bottom: 20px; }
+
         .search-container { display: flex; }
-        #search-input { width: 100%; padding: 9px 15px; font-size: 0.95em; border: 1px solid var(--border-color); border-right: none; border-radius: 20px 0 0 20px; box-sizing: border-box; -webkit-appearance: none; background-color: var(--bg-main); color: var(--text-main); }
+        #search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; box-sizing: border-box; -webkit-appearance: none; background-color: var(--bg-card); color: var(--text-main); }
         #search-input:focus { outline: none; border-color: var(--ko-primary); }
-        #search-btn { padding: 9px 18px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 20px 20px 0; }
-        .page-container { padding-top: 115px; padding-bottom: 20px; }
-        .desktop-nav { display: none !important; }
+        #search-btn { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
+        
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column; }
-        .mobile-nav.active { left: 0; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; transform: translateX(0); }
+        .mobile-nav.active { transform: translateX(280px); }
         .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
         .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
         .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); font-size: 1em; }
@@ -148,21 +167,15 @@
         body.dark-mode .mobile-nav a:hover { background-color: #2a384b; }
         .mobile-nav-footer { padding: 15px; background-color: var(--bg-main); }
         .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; text-decoration: none; }
-        .hero-section { background: linear-gradient(145deg, #007bff, #003d7a); color: white; text-align: center; padding: 30px 15px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: var(--shadow); }
-        .hero-section h1 { font-size: 1.8em; margin: 0 0 8px; }
-        .hero-buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; }
-        .hero-btn { width: 90%; max-width: 280px; padding: 12px 20px; font-size: 1em; font-weight: bold; text-decoration: none; border-radius: 40px; }
-        .hero-browse { background-color: white; color: var(--ko-primary); }
-        .hero-start-selling { background-color: var(--ko-accent); color: #212529; }
+
         .section-title { border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         .product-card-link { text-decoration: none; color: inherit; }
         .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: #f0f0f0; }
+        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: var(--bg-main); }
         .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
-        .load-more-btn { background-color: var(--ko-primary); color: white; padding: 12px 25px; border-radius: 20px; font-size: 1em; font-weight: bold; border: none; cursor: pointer; }
         .cta-wrapper { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 25px 15px; margin-top: 30px; box-shadow: var(--shadow); }
         .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.5em; }
         .cta-container { display: flex; flex-direction: column; gap: 15px; }
@@ -171,22 +184,12 @@
         .cta-button i { font-size: 20px; width: 25px; text-align: center; }
         footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-        .category-section, .how-it-works-section, .testimonial-section, .deals-section { margin-top: 40px; }
+        .category-section, .deals-section { margin-top: 40px; }
         .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-card); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-main); box-shadow: var(--shadow); transition: transform 0.2s ease; text-align: center; }
         .category-item:hover { transform: translateY(-5px); }
         .category-item i { font-size: 24px; color: var(--ko-primary); margin-bottom: 8px; }
         .category-item span { font-size: 0.8em; font-weight: 600; }
-        .how-it-works-section { background-color: var(--bg-card); padding: 30px 15px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
-        .how-it-works-container { display: flex; flex-direction: column; gap: 25px; text-align: center; }
-        .step-item i { font-size: 30px; color: var(--ko-accent); margin-bottom: 10px; }
-        .step-item h3 { margin: 0 0 5px; font-size: 1.1em; }
-        .step-item p { margin: 0; color: var(--text-secondary); }
-        .testimonial-grid { display: flex; flex-direction: column; gap: 20px; }
-        .testimonial-card { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border-left: 4px solid var(--ko-primary); }
-        .testimonial-text { font-style: italic; color: var(--text-secondary); margin: 0 0 15px; }
-        .testimonial-author { font-weight: bold; text-align: right; }
-        .testimonial-author span { font-weight: normal; color: var(--text-secondary); font-size: 0.9em; }
         .pagination { display: none; justify-content: center; align-items: center; margin-top: 30px; gap: 12px; }
         .pagination button { background-color: var(--ko-primary); color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.9em; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.2s ease; }
         .pagination button:hover:not(:disabled) { background-color: #0056b3; }
@@ -213,8 +216,6 @@
             .product-grid { grid-template-columns: repeat(3, 1fr); }
             .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .category-grid { grid-template-columns: repeat(6, 1fr); }
-            .how-it-works-container { flex-direction: row; justify-content: space-around; }
-            .testimonial-grid { flex-direction: row; }
             .deals-grid .product-card { flex: 0 0 200px; width: 200px; }
         }
         .prompt-banner { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--text-main); color: var(--bg-main); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1001; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); transform: translateY(100%); transition: transform 0.4s ease-in-out; }
@@ -223,7 +224,7 @@
         .prompt-banner a { color: var(--ko-accent); font-weight: bold; text-decoration: underline; }
         #close-prompt-btn { background: none; border: none; color: var(--bg-main); font-size: 1.5em; cursor: pointer; }
         .product-card .verified-text { font-size: 0.85em; font-weight: bold; color: #28a745; margin: -10px 15px 15px; }
-        #dynamic-header { position: relative; width: 100%; overflow: hidden; margin-bottom: 25px; background-color: var(--bg-main); }
+        #dynamic-header { position: relative; width: 100%; overflow: hidden; margin-bottom: 25px; }
         #header-slides-container { display: flex; transition: transform 0.5s ease-in-out; }
         .header-slide { flex: 0 0 100%; box-sizing: border-box; padding: 20px 15px; display: flex; justify-content: center; align-items: center; }
         .header-slide .product-card-link { text-decoration: none; color: inherit; display: block; width: 100%; max-width: 320px; }
@@ -266,30 +267,28 @@
 <body>
     <script src="/theme.js"></script>
 
-    <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
-        <div class="header-content-wrapper">
-            <div class="header-top-bar">
+        <div class="header-content">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link active">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+            </nav>
+
+            <div class="header-icons">
+                 <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
                 <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-                <a href="/" class="site-title">Kabale <span>Online</span></a>
-                <div class="header-spacer"></div>
-                <div class="header-icons">
-                    <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
-                    <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell">
-                        <i class="fa-regular fa-bell"></i>
-                    </a>
-                    <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-                </div>
-            </div>
-            <div class="header-search-bar">
-                <div class="search-container">
-                    <input type="text" id="search-input" placeholder="Search category , items or services...">
-                    <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </div>
             </div>
         </div>
     </header>
 
+    <div class="mobile-nav-overlay"></div>
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
@@ -310,6 +309,11 @@
     </nav>
 
     <div class="container page-container">
+        <div class="search-container" style="margin-bottom: 25px;">
+            <input type="text" id="search-input" placeholder="Search for items, e.g. 'iPhone'">
+            <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        
         <section id="dynamic-header" class="dynamic-header">
             <div id="header-slides-container" class="header-slides-container"></div>
             <button id="header-prev-btn" class="header-nav-arrow prev" aria-label="Previous slide">&lt;</button>
