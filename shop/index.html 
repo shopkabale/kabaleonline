@@ -584,7 +584,7 @@
     </style>
 </head>
 <body>
-<script src="theme.js"></script>
+<script src="/theme.js"></script>
     <div class="mobile-nav-overlay"></div>
     <header class="sticky-header">
         <div class="header-content-wrapper">
