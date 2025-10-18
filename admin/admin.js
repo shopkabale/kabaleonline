@@ -1,6 +1,6 @@
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, getCountFromServer, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy, updateDoc, where, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENTS ---
 const adminContent = document.getElementById('admin-content');
@@ -37,15 +37,20 @@ let activityChart = null; // To hold the Chart.js instance
 function initializeAdminPanel() {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists() && userDoc.data().role === 'admin') {
-                adminNameEl.textContent = userDoc.data().name || user.email;
-                adminContent.style.display = 'block';
-                loader.style.display = 'none';
-                fetchAllStats();
-                fetchManagementData();
-                setupEventListeners();
-            } else {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists() && userDoc.data().role === 'admin') {
+                    adminNameEl.textContent = userDoc.data().name || user.email;
+                    adminContent.style.display = 'block';
+                    loader.style.display = 'none';
+                    fetchAllStats();
+                    fetchManagementData();
+                    setupEventListeners();
+                } else {
+                    showAccessDenied();
+                }
+            } catch (error) {
+                console.error("Error verifying admin role:", error);
                 showAccessDenied();
             }
         } else {
@@ -64,7 +69,30 @@ function showAccessDenied(redirectToLogin = false) {
 }
 
 /**
- * Fetches all high-level statistics concurrently for performance.
+ * A reusable helper function to get the document count of a collection by fetching docs.
+ * This method works with standard 'read' permissions.
+ * @param {string} collectionName - The name of the Firestore collection.
+ * @returns {Promise<number>} - The total number of documents.
+ */
+async function fetchCollectionCount(collectionName) {
+    const collRef = collection(db, collectionName);
+    const snapshot = await getDocs(collRef);
+    return snapshot.size;
+}
+
+/**
+ * A reusable helper function to get the count of items pending approval by fetching docs.
+ * @param {string} collectionName - The name of the Firestore collection.
+ * @returns {Promise<number>} - The number of documents with 'pending' status.
+ */
+async function fetchPendingCount(collectionName) {
+    const q = query(collection(db, collectionName), where('status', '==', 'pending'));
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+}
+
+/**
+ * Fetches all necessary statistics for the admin dashboard concurrently.
  */
 async function fetchAllStats() {
     try {
@@ -73,52 +101,41 @@ async function fetchAllStats() {
             testimonialCount, referralCount, pendingProducts, pendingTestimonials,
             salesData, wishlistCount
         ] = await Promise.all([
-            getCountFromServer(collection(db, 'users')),
-            getCountFromServer(collection(db, 'products')),
-            getCountFromServer(collection(db, 'orders')),
-            getCountFromServer(collection(db, 'rentals')),
-            getCountFromServer(collection(db, 'events')),
-            getCountFromServer(collection(db, 'testimonials')),
-            getCountFromServer(collection(db, 'referrals')),
-            getCountFromServer(query(collection(db, 'products'), where('status', '==', 'pending'))),
-            getCountFromServer(query(collection(db, 'testimonials'), where('status', '==', 'pending'))),
+            fetchCollectionCount('users'),
+            fetchCollectionCount('products'),
+            fetchCollectionCount('orders'),
+            fetchCollectionCount('rentals'),
+            fetchCollectionCount('events'),
+            fetchCollectionCount('testimonials'),
+            fetchCollectionCount('referrals'),
+            fetchPendingCount('products'),
+            fetchPendingCount('testimonials'),
             getDocs(query(collection(db, 'products'), where('isSold', '==', true))),
             getDocs(query(collection(db, 'users'), where('wishlist', '!=', [])))
         ]);
 
-        // Calculate total sales value
         const totalSalesValue = salesData.docs.reduce((sum, doc) => sum + (doc.data().price || 0), 0);
-
-        // Calculate total wishlisted items
         const totalWishlistedItems = wishlistCount.docs.reduce((sum, doc) => sum + (doc.data().wishlist?.length || 0), 0);
 
         // Update UI
-        totalUsersStat.textContent = userCount.data().count;
-        totalProductsStat.textContent = productCount.data().count;
-        totalOrdersStat.textContent = orderCount.data().count;
+        totalUsersStat.textContent = userCount;
+        totalProductsStat.textContent = productCount;
+        totalOrdersStat.textContent = orderCount;
         totalSalesStat.textContent = `UGX ${totalSalesValue.toLocaleString()}`;
         totalWishlistStat.textContent = totalWishlistedItems;
-        totalReferralsStat.textContent = referralCount.data().count;
-        totalRentalsStat.textContent = rentalCount.data().count;
-        totalEventsStat.textContent = eventCount.data().count;
-        pendingProductsCount.textContent = pendingProducts.data().count;
-        pendingTestimonialsCount.textContent = pendingTestimonials.data().count;
+        totalReferralsStat.textContent = referralCount;
+        totalRentalsStat.textContent = rentalCount;
+        totalEventsStat.textContent = eventCount;
+        pendingProductsCount.textContent = pendingProducts;
+        pendingTestimonialsCount.textContent = pendingTestimonials;
         
-        // Fetch data for the chart
         fetchChartData();
 
     } catch (error) {
         console.error("Error fetching stats:", error);
+        // Display an error message to the admin
+        document.querySelector('.stats-grid').innerHTML = '<p>Could not load statistics. Please check console for errors.</p>';
     }
-}
-
-/**
- * Fetches data for the management sections (paginated or full lists).
- */
-function fetchManagementData() {
-    fetchAllUsers();
-    fetchAllProducts();
-    fetchTestimonialsForAdmin();
 }
 
 /**
@@ -140,23 +157,28 @@ async function fetchChartData() {
         const q = query(collection(db, collectionName), where('createdAt', '>=', sevenDaysAgoTimestamp));
         const snapshot = await getDocs(q);
         snapshot.forEach(doc => {
-            const docDate = doc.data().createdAt.toDate();
-            const today = new Date();
-            const diffDays = Math.floor((today.getTime() - docDate.getTime()) / (1000 * 3600 * 24));
-            if (diffDays < 7) {
-                counts[6 - diffDays]++;
+            if (doc.data().createdAt) {
+                const docDate = doc.data().createdAt.toDate();
+                const today = new Date();
+                const diffDays = Math.floor((today.setHours(0,0,0,0) - docDate.setHours(0,0,0,0)) / (1000 * 3600 * 24));
+                if (diffDays >= 0 && diffDays < 7) {
+                    counts[6 - diffDays]++;
+                }
             }
         });
         return counts;
     };
 
-    const [userCounts, productCounts, orderCounts] = await Promise.all([
-        fetchDataForLast7Days('users'),
-        fetchDataForLast7Days('products'),
-        fetchDataForLast7Days('orders')
-    ]);
-
-    renderActivityChart(labels, userCounts, productCounts, orderCounts);
+    try {
+        const [userCounts, productCounts, orderCounts] = await Promise.all([
+            fetchDataForLast7Days('users'),
+            fetchDataForLast7Days('products'),
+            fetchDataForLast7Days('orders')
+        ]);
+        renderActivityChart(labels, userCounts, productCounts, orderCounts);
+    } catch (error) {
+        console.error("Error fetching chart data:", error);
+    }
 }
 
 /**
@@ -164,6 +186,7 @@ async function fetchChartData() {
  */
 function renderActivityChart(labels, userCounts, productCounts, orderCounts) {
     const ctx = document.getElementById('recent-activity-chart');
+    if (!ctx) return;
     if (activityChart) {
         activityChart.destroy();
     }
@@ -185,7 +208,7 @@ function renderActivityChart(labels, userCounts, productCounts, orderCounts) {
         options: {
             responsive: true,
             scales: {
-                y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
+                y: { beginAtZero: true, ticks: { color: labelColor, stepSize: 1 }, grid: { color: gridColor } },
                 x: { ticks: { color: labelColor }, grid: { color: gridColor } }
             },
             plugins: {
@@ -194,7 +217,6 @@ function renderActivityChart(labels, userCounts, productCounts, orderCounts) {
         }
     });
 }
-
 
 /**
  * Sets up global event listeners for the page.
@@ -217,7 +239,6 @@ function setupEventListeners() {
         });
     });
 
-    // Event delegation for dynamically created buttons
     adminContent.addEventListener('click', (e) => {
         const button = e.target.closest('button[data-action]');
         if (!button) return;
@@ -239,12 +260,19 @@ function setupEventListeners() {
             case 'delete-testimonial':
                 handleDeleteTestimonial(id);
                 break;
-            // Add other actions like toggle-deal if needed
         }
     });
 }
 
-// --- MANAGEMENT FUNCTIONS (ADAPTED FROM YOUR ORIGINAL CODE) ---
+/**
+ * Fetches data for the management sections.
+ */
+function fetchManagementData() {
+    fetchAllUsers();
+    fetchAllProducts();
+    fetchTestimonialsForAdmin();
+}
+
 async function fetchAllUsers() {
     userList.innerHTML = '<li>Loading users...</li>';
     try {
@@ -330,6 +358,7 @@ async function handleDeleteProduct(id, name) {
     try {
         await deleteDoc(doc(db, 'products', id));
         await fetchAllProducts(); // Refresh list
+        await fetchAllStats(); // Refresh stats
     } catch (e) {
         console.error("Error deleting product:", e);
         alert("Could not delete product.");
@@ -374,6 +403,7 @@ async function handleApproveTestimonial(id) {
     try {
         await updateDoc(doc(db, 'testimonials', id), { status: 'approved', order: Date.now() });
         await fetchTestimonialsForAdmin();
+        await fetchAllStats(); // Refresh stats
     } catch (e) {
         console.error("Error approving testimonial:", e);
         alert("Could not approve.");
@@ -385,6 +415,7 @@ async function handleDeleteTestimonial(id) {
     try {
         await deleteDoc(doc(db, 'testimonials', id));
         await fetchTestimonialsForAdmin();
+        await fetchAllStats(); // Refresh stats
     } catch (e) {
         console.error("Error deleting testimonial:", e);
         alert("Could not delete.");
