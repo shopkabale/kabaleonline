@@ -58,12 +58,12 @@
         .site-title span { color: var(--ko-accent); }
         .header-icons { display: flex; align-items: center; gap: 20px; }
         .header-icons button { background: none; border: none; font-size: 1em; color: var(--text-secondary); cursor: pointer; font-family: inherit; font-weight: 600; }
-        .desktop-nav, .hamburger-menu { display: none; } /* No nav needed for admin */
+        .desktop-nav, .hamburger-menu { display: none; }
 
         /* --- ADMIN DASHBOARD STYLES --- */
         h1, h2, h3 { color: var(--text-main); }
         .stats-grid, .action-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 30px; }
-        .stat-card, .action-card { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+        .stat-card, .action-card, .chart-container { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
         .stat-card h3 { margin: 0 0 10px; font-size: 1em; color: var(--text-secondary); }
         .stat-card .stat-number { font-size: 2.5em; font-weight: 700; color: var(--ko-primary); }
         .action-card { text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; }
@@ -71,6 +71,12 @@
         .action-card h3 { color: var(--ko-primary); }
         .action-card p { font-size: 2.5em; font-weight: 700; margin: 0; color: #dc3545; }
 
+        /* Chart Section Styles */
+        .chart-container { margin-bottom: 30px; }
+        .chart-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end; }
+        .chart-controls button { background-color: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; }
+        .chart-controls button.active { background-color: var(--ko-primary); color: white; border-color: var(--ko-primary); }
+        
         /* Accordion Styles */
         .accordion-item { background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); margin-bottom: 15px; }
         .accordion-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; font-weight: 600; }
@@ -107,13 +113,9 @@
     </header>
 
     <div class="container page-content">
-        <div id="loader">
-            <p>Loading Admin Dashboard...</p>
-        </div>
-
+        <div id="loader"><p>Loading Admin Dashboard...</p></div>
         <div id="access-denied" style="display: none;">
-            <h1>Access Denied</h1>
-            <p>You do not have permission to view this page. Redirecting...</p>
+            <h1>Access Denied</h1><p>You do not have permission to view this page. Redirecting...</p>
         </div>
 
         <main id="admin-content" style="display: none;">
@@ -130,6 +132,7 @@
                 <div class="stat-card"><h3>Referrals Made</h3><p id="total-referrals-stat" class="stat-number">0</p></div>
                 <div class="stat-card"><h3>Rentals/Hostels</h3><p id="total-rentals-stat" class="stat-number">0</p></div>
                 <div class="stat-card"><h3>Events</h3><p id="total-events-stat" class="stat-number">0</p></div>
+                <div class="stat-card"><h3>Services Listed</h3><p id="total-services-stat" class="stat-number">0</p></div>
             </div>
             
             <h2>Action Items</h2>
@@ -138,42 +141,37 @@
                 <a href="#testimonials-accordion" class="action-card"><h3>Testimonials to Approve</h3><p id="pending-testimonials-count">0</p></a>
             </div>
 
-            <h2>Recent Activity (Last 7 Days)</h2>
-            <div class="stat-card">
-                <canvas id="recent-activity-chart"></canvas>
+            <h2>Site Activity</h2>
+            <div class="chart-container">
+                <div class="chart-controls">
+                    <button id="weekly-view-btn" class="active">Last 7 Days</button>
+                    <button id="monthly-view-btn">Last 30 Days</button>
+                </div>
+                <canvas id="activity-chart"></canvas>
             </div>
 
             <h2 style="margin-top: 40px;">Site Management</h2>
             <div id="management-accordions">
                 <div class="accordion-item" id="users-accordion">
                     <div class="accordion-header">Manage Users <i class="fa-solid fa-chevron-down"></i></div>
-                    <div class="accordion-content">
-                        <div class="accordion-content-inner">
-                            <ul id="user-list" class="user-list"></ul>
-                        </div>
-                    </div>
+                    <div class="accordion-content"><div class="accordion-content-inner"><ul id="user-list" class="user-list"></ul></div></div>
                 </div>
                 <div class="accordion-item" id="products-accordion">
                     <div class="accordion-header">Manage All Products <i class="fa-solid fa-chevron-down"></i></div>
-                    <div class="accordion-content">
-                        <div class="accordion-content-inner">
-                             <div id="all-products-list" class="product-grid"></div>
-                        </div>
-                    </div>
+                    <div class="accordion-content"><div class="accordion-content-inner"><div id="all-products-list" class="product-grid"></div></div></div>
                 </div>
                 <div class="accordion-item" id="testimonials-accordion">
                     <div class="accordion-header">Manage Testimonials <i class="fa-solid fa-chevron-down"></i></div>
-                    <div class="accordion-content">
-                        <div class="accordion-content-inner">
-                            <h3>Pending</h3><ul id="pending-testimonials-list" class="user-list"></ul>
-                            <h3>Approved</h3><ul id="approved-testimonials-list" class="user-list"></ul>
-                        </div>
-                    </div>
+                    <div class="accordion-content"><div class="accordion-content-inner">
+                        <h3>Pending</h3><ul id="pending-testimonials-list" class="user-list"></ul>
+                        <h3>Approved</h3><ul id="approved-testimonials-list" class="user-list"></ul>
+                    </div></div>
                 </div>
             </div>
         </main>
     </div>
     
     <script type="module" src="admin.js"></script>
+    <script type="module" src="../ui.js"></script>
 </body>
 </html>
