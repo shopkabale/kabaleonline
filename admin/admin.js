@@ -136,12 +136,12 @@ async function fetchAllStats() {
  * Fetches and renders the chart based on the selected timespan (7 or 30 days).
  */
 async function fetchAndRenderChart(days) {
-    // ... (This function remains the same as the previous version) ...
     const today = new Date();
     const startDate = new Date();
     startDate.setDate(today.getDate() - days);
     const startTimestamp = Timestamp.fromDate(startDate);
     const labels = Array.from({ length: days }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (days - 1 - i)); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); });
+    
     const fetchDataForTimespan = async (collectionName) => {
         const counts = new Array(days).fill(0);
         const q = query(collection(db, collectionName), where('createdAt', '>=', startTimestamp));
@@ -159,37 +159,36 @@ async function fetchAndRenderChart(days) {
         });
         return counts;
     };
+    
     try {
-        const [userCounts, productCounts, orderCounts, serviceCounts] = await Promise.all([
+        const [userCounts, productCounts, orderCounts] = await Promise.all([
             fetchDataForTimespan('users'),
             fetchDataForTimespan('products'),
-            fetchDataForTimespan('orders'),
-            fetchDataForTimespan('services')
+            fetchDataForTimespan('orders')
         ]);
-        renderActivityChart(labels, userCounts, productCounts, orderCounts, serviceCounts);
+        renderActivityChart(labels, userCounts, productCounts, orderCounts);
     } catch (error) { console.error("Error fetching chart data:", error); }
 }
 
 /**
  * Renders a line chart with multiple datasets.
  */
-function renderActivityChart(labels, userCounts, productCounts, orderCounts, serviceCounts) {
-    // ... (This function remains the same as the previous version) ...
+function renderActivityChart(labels, userCounts, productCounts, orderCounts) {
     const ctx = document.getElementById('activity-chart');
     if (!ctx) return;
     if (activityChart) { activityChart.destroy(); }
     const isDarkMode = document.body.classList.contains('dark-mode');
     const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     const labelColor = isDarkMode ? '#e2e8f0' : '#34495e';
+    
     activityChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
-                { label: 'Users', data: userCounts, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1, fill: false },
-                { label: 'Products', data: productCounts, borderColor: 'rgba(255, 99, 132, 1)', tension: 0.1, fill: false },
-                { label: 'Orders', data: orderCounts, borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1, fill: false },
-                { label: 'Services', data: serviceCounts, borderColor: 'rgba(255, 159, 64, 1)', tension: 0.1, fill: false },
+                { label: 'New Users', data: userCounts, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1, fill: false },
+                { label: 'New Products', data: productCounts, borderColor: 'rgba(255, 99, 132, 1)', tension: 0.1, fill: false },
+                { label: 'New Orders', data: orderCounts, borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1, fill: false }
             ]
         },
         options: {
@@ -248,16 +247,12 @@ function setupEventListeners() {
     });
 }
 
-/**
- * CRITICAL FIX: Restore the calls to fetch data for the management sections.
- */
 function fetchManagementData() {
     fetchAllUsers();
     fetchAllProducts();
     fetchTestimonialsForAdmin();
 }
 
-// --- Management Functions (Unchanged) ---
 async function fetchAllUsers() {
     userList.innerHTML = '<li>Loading users...</li>';
     try {
@@ -348,7 +343,6 @@ async function handleDeleteTestimonial(id) {
         fetchAllStats();
     } catch (e) { console.error("Error deleting testimonial:", e); alert("Could not delete."); }
 }
-
 
 // --- START THE APP ---
 document.addEventListener('DOMContentLoaded', initializeAdminPanel);
