@@ -327,7 +327,7 @@
                 <a href="/?category=Clothing+%26+Apparel" class="category-item"><i class="fa-solid fa-shirt"></i><span>Clothing</span></a>
                 <a href="/?category=Home+%26+Furniture" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
                 <a href="/rentals/" class="category-item"><i class="fa-solid fa-house"></i><span>Rentals</span></a>
-                <a href="/?type=service" class="category-item"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
+                <a href="services.kabaleonline.com" class="category-item"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
                 <a href="/?category=Other" class="category-item"><i class="fa-solid fa-shapes"></i><span>Other</span></a>
             </div>
         </section>
