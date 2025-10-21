@@ -13,13 +13,13 @@ function initializeThemeToggle() {
     // Only proceed if the toggle button exists on the current page.
     if (themeToggle) {
         // Set the toggle's initial state based on the current theme.
-        const currentTheme = localStorage.getItem('theme') || 'dark-mode';
+        const currentTheme = localStorage.getItem('theme') || 'light-mode';
         themeToggle.checked = (currentTheme === 'light-mode');
 
         // Add an event listener to handle changes.
         themeToggle.addEventListener('change', function() {
             const newTheme = this.checked ? 'light-mode' : 'dark-mode';
-            
+
             // Apply the new theme.
             applyTheme(newTheme);
 
@@ -32,7 +32,7 @@ function initializeThemeToggle() {
 // --- Main Execution ---
 
 // 1. Immediately apply the saved theme on script load to prevent flashing.
-const savedTheme = localStorage.getItem('theme') || 'dark-mode'; // Default to dark-mode
+const savedTheme = localStorage.getItem('theme') || 'light-mode'; // Default to light-mode
 applyTheme(savedTheme);
 
 // 2. Set up the toggle button once the full page content has loaded.
