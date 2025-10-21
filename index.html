@@ -467,27 +467,29 @@
   opacity: 1;
 }
 
-/* ---------- Contact Section ---------- */
+/* ---------- Contact Section (Theme-Aware) ---------- */
 .contact-section {
     padding: 60px 0;
-    background: #f9f9f9;
+    background: var(--bg-main);
+    transition: background-color 0.3s;
 }
 
 .contact-form {
     max-width: 600px;
     margin: 0 auto;
     padding: 40px 30px;
-    background: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
 }
 
 .contact-form h2 {
     text-align: center;
     margin-bottom: 30px;
     font-size: 2rem;
-    color: #333333;
+    color: var(--text-main);
     position: relative;
 }
 
@@ -496,7 +498,7 @@
     display: block;
     width: 60px;
     height: 3px;
-    background: #ff6b6b;
+    background: var(--ko-primary);
     margin: 10px auto 0;
     border-radius: 2px;
 }
@@ -510,22 +512,24 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #555555;
+    color: var(--text-secondary);
 }
 
 .contact-form .form-control {
     width: 100%;
     padding: 12px 15px;
-    border: 1.5px solid #ddd;
-    border-radius: 10px;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--border-radius);
     font-size: 1rem;
     transition: all 0.3s ease;
     outline: none;
+    background: var(--bg-main);
+    color: var(--text-main);
 }
 
 .contact-form .form-control:focus {
-    border-color: #ff6b6b;
-    box-shadow: 0 0 10px rgba(255,107,107,0.2);
+    border-color: var(--ko-primary);
+    box-shadow: 0 0 10px rgba(var(--ko-primary-rgb), 0.2);
 }
 
 .contact-form textarea.form-control {
@@ -537,18 +541,18 @@
     display: block;
     width: 100%;
     padding: 14px 0;
-    background: #ff6b6b;
+    background: var(--ko-primary);
     color: #ffffff;
     font-size: 1.1rem;
     font-weight: 600;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .contact-form .btn-submit:hover {
-    background: #e55b5b;
+    background: #0056b3;
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0,0,0,0.1);
 }
