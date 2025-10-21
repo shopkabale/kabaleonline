@@ -1,46 +1,51 @@
-// File: theme.js
-
-// Apply the theme to the <body> tag
 function applyTheme(theme) {
-    document.body.className = ''; // Clear any existing theme class
+    document.body.className = '';
     document.body.classList.add(theme);
 }
 
-// Initialize the theme toggle functionality
 function initializeThemeToggle() {
     const themeToggle = document.getElementById('theme-toggle');
-    const themeHint = document.getElementById('theme-hint'); // <span> or <small> to show hint
+    const themeHint = document.getElementById('theme-hint');
 
-    if (themeToggle) {
-        // Load saved theme or default to light
+    if (themeToggle && themeHint) {
         const currentTheme = localStorage.getItem('theme') || 'light-mode';
         themeToggle.checked = (currentTheme === 'light-mode');
         applyTheme(currentTheme);
 
-        // Update hint text
-        if (themeHint) {
-            themeHint.textContent = themeToggle.checked
-                ? '🌞 Light mode is ON'
-                : '🌙 Dark mode is ON';
-        }
+        // Set hint text
+        themeHint.textContent = themeToggle.checked
+            ? '🌞 Light mode is ON'
+            : '🌙 Dark mode is ON';
 
-        // Listen for toggle change
+        // Show hint for 10 seconds on page load
+        themeHint.style.opacity = '1';
+        setTimeout(() => {
+            themeHint.style.opacity = '0';
+        }, 10000); // 10000ms = 10s
+
+        // Update theme on toggle
         themeToggle.addEventListener('change', function() {
             const newTheme = this.checked ? 'light-mode' : 'dark-mode';
             applyTheme(newTheme);
             localStorage.setItem('theme', newTheme);
 
-            // Update hint dynamically
-            if (themeHint) {
-                themeHint.textContent = this.checked
-                    ? '🌞 Light mode is ON'
-                    : '🌙 Dark mode is ON';
-            }
+            // Update hint text
+            themeHint.textContent = this.checked
+                ? '🌞 Light mode is ON'
+                : '🌙 Dark mode is ON';
+
+            // Show hint for 2 seconds after toggle (optional)
+            themeHint.style.opacity = '1';
+            setTimeout(() => {
+                themeHint.style.opacity = '0';
+            }, 2000);
         });
     }
 }
 
-// --- Main Execution ---
-const savedTheme = localStorage.getItem('theme') || 'light-mode'; // Default to light-mode
+// Apply saved theme immediately
+const savedTheme = localStorage.getItem('theme') || 'light-mode';
 applyTheme(savedTheme);
+
+// Initialize toggle when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeThemeToggle);
