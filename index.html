@@ -432,9 +432,43 @@
     color: var(--text-main);
     line-height: 1.5;
 }
+
+.theme-switch-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Hint text styling */
+.theme-hint-text {
+  position: absolute;
+  top: -25px; /* above the toggle */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+/* Show on hover */
+.theme-switch:hover .theme-hint-text {
+  opacity: 1;
+}
     </style>
 </head>
-<body class="dark-mode">
+<body>
 <script src="theme.js"></script>
     <header class="sticky-header">
         <div class="container">
@@ -450,12 +484,14 @@
                 </nav>
 
                 <div class="header-icons">
-                    <div class="theme-switch-wrapper">
-                        <label class="theme-switch" for="theme-toggle">
-                            <input type="checkbox" id="theme-toggle"/>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+  <div class="theme-switch-wrapper">
+    <label class="theme-switch" for="theme-toggle">
+      <input type="checkbox" id="theme-toggle" />
+      <span class="slider"></span>
+      <span id="theme-hint" class="theme-hint-text"></span>
+    </label>
+  </div>
+</div>
                     <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
                     <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
                     <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
