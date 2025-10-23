@@ -1,10 +1,10 @@
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 export async function handler(event, context) {
   try {
     const { message } = JSON.parse(event.body);
 
-    const hfKey = process.env.HUGGINGFACE_API_KEY; // ✅ Securely loaded from Netlify env vars
+    const hfKey = process.env.HUGGINGFACE_API_KEY;
     if (!hfKey) {
       return {
         statusCode: 500,
@@ -12,7 +12,7 @@ export async function handler(event, context) {
       };
     }
 
-    const response = await fetch("https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2", {
+    const response = await fetch("https://router.huggingface.co/mistralai/Mistral-7B-Instruct-v0.2", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${hfKey}`,
