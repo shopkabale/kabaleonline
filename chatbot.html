@@ -86,11 +86,37 @@
         .typing-indicator span:nth-child(3) { animation-delay: .4s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
         .chat-form-wrapper { padding: 15px 0; border-top: 1px solid var(--border-color); background-color: var(--bg-main); }
-        .quick-help { margin-bottom: 15px; }
-        .quick-help p { margin: 0 0 10px; font-weight: 500; color: var(--text-secondary); }
-        .quick-help-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
-        .quick-help button { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; }
-        .quick-help button:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
+        .quick-help { 
+    margin-bottom: 15px; 
+}
+.quick-help { 
+    margin-bottom: 15px; 
+}
+.quick-help p { 
+    margin: 0 0 10px; 
+    font-weight: 500; 
+    color: var(--text-secondary); 
+    font-size: 0.9em; /* Optional: slightly smaller label */
+}
+.quick-help-buttons { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 8px; /* Slightly reduced gap */
+}
+.quick-help button { 
+    background: none; 
+    border: 1px solid var(--border-color); 
+    color: var(--ko-primary); 
+    padding: 5px 12px; /* Reduced padding for smaller size */
+    border-radius: 20px; 
+    cursor: pointer; 
+    font-size: 0.8em; /* Reduced font size */
+    transition: all 0.2s ease; /* Added transition for smoother hover */
+}
+.quick-help button:hover { 
+    background-color: rgba(var(--ko-primary-rgb), 0.1); 
+    border-color: var(--ko-primary); 
+}
         .chat-form { display: flex; gap: 10px; }
         #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
         #message-input:focus { outline: none; border-color: var(--ko-primary); }
