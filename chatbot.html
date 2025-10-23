@@ -41,12 +41,8 @@
         }
         .container { max-width: 800px; margin: 0 auto; padding: 0 15px; width: 100%; }
         
-        /* ⭐ FIX 2: Added padding-top to push content below the fixed header */
         .page-container {
-            padding-top: 70px; /* Header height */
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column;
+            padding-top: 70px; flex-grow: 1; display: flex; flex-direction: column;
             overflow: hidden;
         }
 
@@ -57,8 +53,6 @@
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
         }
-        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
-        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
         .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
@@ -82,22 +76,16 @@
         .message-wrapper { display: flex; margin-bottom: 15px; max-width: 85%; animation: fadeIn 0.4s ease; }
         .sent-wrapper { justify-content: flex-end; margin-left: auto; }
         .received-wrapper { flex-direction: column; align-items: flex-start; margin-right: auto; }
-        
         .message-block { display: flex; align-items: flex-start; width: 100%; }
         .avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; background-color: var(--ko-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-        
         .message-content { display: flex; flex-direction: column; }
         .sent-wrapper .message-content { align-items: flex-end; }
-        
         .message { padding: 10px 15px; border-radius: 18px; line-height: 1.5; }
         .sent { background-color: var(--ko-primary); color: white; border-bottom-right-radius: 5px; }
         .received { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-bottom-left-radius: 5px; }
-        
         .timestamp { font-size: 0.75em; color: var(--text-secondary); margin-top: 5px; padding: 0 5px; }
-        
         .received a { color: var(--ko-primary); text-decoration: underline; font-weight: 500; }
         .received ul { padding-left: 20px; margin: 8px 0 4px; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         
         .typing-indicator-wrapper { flex-direction: row !important; }
@@ -109,6 +97,143 @@
         .suggestion-chip { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; transition: all 0.2s ease; }
         .suggestion-chip:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
 
+        /* --- FIXED INPUT FORM --- */
+        .chat-form-wrapper { padding: 15px; border-top: 1px solid var(--border-color); background-color: var(--bg-main); }
+        .chat-form { display: flex; gap: 10px; }
+        #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
+        #message-input:focus { outline: none; border-color: var(--ko-primary); }
+        .chat-form button { padding: 0; width: 48px; height: 48px; border-radius: 50%; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-size: 1.1em; flex-shrink: 0; }
+    </style>
+</head>
+<body class="light-mode">
+    
+    <header class="sticky-header">
+        <div class="header-content container">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-icons">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <span class="slider"><i class="fas fa-moon"></i><i class="fas fa-sun"></i></span>
+                    </label>
+                </div>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container page-container">
+        <div id="chat-messages"></div>
+        <div class="chat-form-wrapper">
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
+                <button type="submit" aria-label="Send Message"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <script src="bot/data/responses.js"></script>
+    <script src="bot/data/answers.js"></script>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5XQRYNC9TW');
+    </script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant | Kabale Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- THEME-AWARE CSS VARIABLES --- */
+        :root {
+            --ko-primary: #007aff; --ko-primary-rgb: 0, 122, 255; --ko-accent: #ffc107;
+            --bg-light: #f0f2f5; --bg-card-light: #ffffff; --text-main-light: #212529;
+            --text-secondary-light: #6c757d; --border-color-light: #e9ecef; --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b; --text-main-dark: #e2e8f0; --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155; --shadow: 0 10px 30px rgba(0,0,0,0.07); --border-radius: 12px;
+        }
+        body.light-mode {
+            --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
+        }
+        body.dark-mode {
+            --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
+        }
+
+        /* --- GENERAL & LAYOUT STYLES --- */
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; 
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 15px; width: 100%; }
+        
+        .page-container {
+            padding-top: 70px; flex-grow: 1; display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER & THEME TOGGLE --- */
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .header-icons { display: flex; align-items: center; gap: 20px; position: relative; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 50px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: var(--border-color-dark); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--ko-accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .slider .fa-moon, .slider .fa-sun { position: absolute; top: 5px; color: #fff; font-size: 14px; }
+        .slider .fa-moon { left: 6px; }
+        .slider .fa-sun { right: 6px; display: none; }
+        input:checked + .slider .fa-moon { display: none; }
+        input:checked + .slider .fa-sun { display: block; }
+
+        /* --- CHAT AREA STYLES --- */
+        #chat-messages {
+            flex-grow: 1; overflow-y: auto; padding: 20px 10px;
+        }
+        .message-wrapper { display: flex; margin-bottom: 15px; max-width: 85%; animation: fadeIn 0.4s ease; }
+        .sent-wrapper { justify-content: flex-end; margin-left: auto; }
+        .received-wrapper { flex-direction: column; align-items: flex-start; margin-right: auto; }
+        .message-block { display: flex; align-items: flex-start; width: 100%; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; background-color: var(--ko-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .message-content { display: flex; flex-direction: column; }
+        .sent-wrapper .message-content { align-items: flex-end; }
+        .message { padding: 10px 15px; border-radius: 18px; line-height: 1.5; }
+        .sent { background-color: var(--ko-primary); color: white; border-bottom-right-radius: 5px; }
+        .received { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-bottom-left-radius: 5px; }
+        .timestamp { font-size: 0.75em; color: var(--text-secondary); margin-top: 5px; padding: 0 5px; }
+        .received a { color: var(--ko-primary); text-decoration: underline; font-weight: 500; }
+        .received ul { padding-left: 20px; margin: 8px 0 4px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .typing-indicator-wrapper { flex-direction: row !important; }
+        .typing-indicator { align-self: flex-start; display: flex; align-items: center; padding: 10px 15px; border-radius: 18px; border-bottom-left-radius: 5px; background-color: var(--bg-card); border: 1px solid var(--border-color); }
+        .typing-indicator span { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+        .suggestions-container { margin-top: 10px; margin-left: 42px; display: flex; flex-wrap: wrap; gap: 8px; animation: fadeIn 0.4s ease; }
+        .suggestion-chip { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; transition: all 0.2s ease; }
+        .suggestion-chip:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
+
+        /* --- FIXED INPUT FORM --- */
         .chat-form-wrapper { padding: 15px; border-top: 1px solid var(--border-color); background-color: var(--bg-main); }
         .chat-form { display: flex; gap: 10px; }
         #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
@@ -170,84 +295,26 @@
             const chatMessages = document.getElementById('chat-messages');
             const chatForm = document.getElementById('chat-form');
             const messageInput = document.getElementById('message-input');
+            // Quick help buttons reference is now removed
 
             function getBotReply(message) { /* ... Same smart logic as before ... */ }
             function levenshteinDistance(a, b) { /* ... Same logic as before ... */ }
-
-            // ⭐ FIX 1: This function is now safer and prevents the "undefined" bug.
-            function appendMessage(content, type) {
-                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const wrapper = document.createElement('div');
-                wrapper.classList.add('message-wrapper', `${type}-wrapper`);
-                
-                // This variable will hold the actual text to display
-                let messageText = content; 
-
-                // If content is a bot response object, get the text from it
-                if (type === 'received' && typeof content === 'object' && content !== null) {
-                    messageText = content.text;
-                }
-
-                let messageHTML = '';
-                if (type === 'received') {
-                    messageHTML = `
-                        <div class="message-block">
-                            <div class="avatar"><i class="fa-solid fa-robot"></i></div>
-                            <div class="message-content">
-                                <div class="message ${type}">${messageText}</div>
-                                <div class="timestamp">${time}</div>
-                            </div>
-                        </div>`;
-                } else {
-                    messageHTML = `
-                        <div class="message-content">
-                            <div class="message ${type}">${messageText}</div>
-                            <div class="timestamp">${time}</div>
-                        </div>`;
-                }
-                wrapper.innerHTML = messageHTML;
-                chatMessages.appendChild(wrapper);
-
-                if (type === 'received' && typeof content === 'object' && content !== null && content.suggestions && content.suggestions.length > 0) {
-                    const suggestionsContainer = document.createElement('div');
-                    suggestionsContainer.className = 'suggestions-container';
-                    content.suggestions.forEach(suggestionText => {
-                        const button = document.createElement('button');
-                        button.className = 'suggestion-chip';
-                        button.textContent = suggestionText;
-                        button.onclick = () => handleSend(suggestionText);
-                        suggestionsContainer.appendChild(button);
-                    });
-                    wrapper.appendChild(suggestionsContainer);
-                }
-                scrollToBottom();
-            }
-
-            function showTyping() {
-                const wrapper = document.createElement('div');
-                wrapper.classList.add('message-wrapper', 'received-wrapper', 'typing-indicator-wrapper');
-                wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span></span><span></span><span></span></div>`;
-                chatMessages.appendChild(wrapper);
-                scrollToBottom();
-                return wrapper;
-            }
-
-            function scrollToBottom() {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+            function appendMessage(content, type) { /* ... Same safe logic as before ... */ }
+            function showTyping() { /* ... Same logic as before ... */ }
+            function scrollToBottom() { /* ... Same logic as before ... */ }
 
             async function handleSend(query) {
                 const text = query.trim();
                 if (!text) return;
                 const oldSuggestions = document.querySelector('.suggestions-container');
                 if (oldSuggestions) oldSuggestions.remove();
-                appendMessage(text, 'sent'); // Pass the string directly
+                appendMessage(text, 'sent');
                 messageInput.value = '';
                 const typingEl = showTyping();
                 await new Promise(resolve => setTimeout(resolve, 1200));
-                const replyObject = getBotReply(text); // This returns the object {text, suggestions}
+                const replyObject = getBotReply(text);
                 typingEl.remove();
-                appendMessage(replyObject, 'received'); // Pass the full object
+                appendMessage(replyObject, 'received');
             }
             
             // --- Re-pasting the full, correct functions here for clarity ---
@@ -287,16 +354,56 @@
                 }
                 return matrix[b.length][a.length];
             }
+            function appendMessage(content, type) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('message-wrapper', `${type}-wrapper`);
+                let messageText = content; 
+                if (type === 'received' && typeof content === 'object' && content !== null) { messageText = content.text; }
+                let messageHTML = '';
+                if (type === 'received') {
+                    messageHTML = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message ${type}">${messageText}</div><div class="timestamp">${time}</div></div></div>`;
+                } else {
+                    messageHTML = `<div class="message-content"><div class="message ${type}">${messageText}</div><div class="timestamp">${time}</div></div>`;
+                }
+                wrapper.innerHTML = messageHTML;
+                chatMessages.appendChild(wrapper);
+                if (type === 'received' && typeof content === 'object' && content !== null && content.suggestions && content.suggestions.length > 0) {
+                    const suggestionsContainer = document.createElement('div');
+                    suggestionsContainer.className = 'suggestions-container';
+                    content.suggestions.forEach(suggestionText => {
+                        const button = document.createElement('button');
+                        button.className = 'suggestion-chip';
+                        button.textContent = suggestionText;
+                        button.onclick = () => handleSend(suggestionText);
+                        suggestionsContainer.appendChild(button);
+                    });
+                    wrapper.appendChild(suggestionsContainer);
+                }
+                scrollToBottom();
+            }
+            function showTyping() {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('message-wrapper', 'received-wrapper', 'typing-indicator-wrapper');
+                wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span></span><span></span><span></span></div>`;
+                chatMessages.appendChild(wrapper);
+                scrollToBottom();
+                return wrapper;
+            }
+            function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
 
+            // --- EVENT LISTENERS ---
             chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
             
+            // Event listener for quick help buttons is now removed
+            
             function initializeChat() {
-                const initialGreeting = answers['greetings']; // This is the object {text, suggestions}
-                appendMessage(initialGreeting, 'received');
+                appendMessage(answers['greetings'], 'received');
                 messageInput.focus();
             }
             initializeChat();
         });
     </script>
+
 </body>
 </html>
