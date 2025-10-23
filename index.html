@@ -1272,12 +1272,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ⭐ FIX: Updated closeModal to reset all inline styles
+    // ⭐ FIX: This function now correctly closes the modal and resets its position for next time.
     function closeModal() {
         if (chatModalContainer) {
             chatModalContainer.classList.remove('active');
             
-            // This is crucial: Reset the position and transform properties.
+            // This is crucial: Reset all inline styles set by dragging/resizing.
             // This ensures the modal will always open smoothly in the center.
             chatModal.style.top = '';
             chatModal.style.left = '';
@@ -1287,6 +1287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Correctly attach all event listeners
     if (openChatButton) openChatButton.addEventListener('click', openModal);
     if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
     if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
@@ -1298,15 +1299,16 @@ document.addEventListener('DOMContentLoaded', function() {
     header.addEventListener('mousedown', (e) => {
         isDragging = true;
         
-        // ⭐ FIX: Calculate offset based on the element's rendered position
+        // ⭐ FIX: Calculate offset based on the element's rendered position, not its internal properties.
         const rect = chatModal.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
 
-        // ⭐ FIX: This line prevents the bounce by removing the centering transform
+        // ⭐ FIX: This line is the key to preventing the bounce.
+        // It removes the centering `transform` before we start moving the element.
         chatModal.style.transform = 'none';
         
-        // Set the top/left to the current pixel values before starting the drag
+        // Lock the top/left to their current pixel values before the drag starts.
         chatModal.style.left = `${rect.left}px`;
         chatModal.style.top = `${rect.top}px`;
         
