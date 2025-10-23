@@ -1,354 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KabaleOnline Assistant</title>
-  
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    /* 🎨 GENERAL PAGE STYLE */
-    :root {
-      --primary-color: #4CAF50;
-      --primary-dark: #388E3C;
-      --bg-gradient-start: #E8F5E9;
-      --bg-gradient-end: #C8E6C9;
-      --chat-bg: #ffffff;
-      --bot-msg-bg: #e0f2f1;
-      --user-msg-bg: var(--primary-color);
-      --text-color-dark: #212121;
-      --text-color-light: #ffffff;
-      --border-color: #e0e0e0;
-      --shadow-light: rgba(0, 0, 0, 0.1);
-      --shadow-medium: rgba(0, 0, 0, 0.15);
-      --link-color: #0066cc;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-      height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: var(--text-color-dark);
-      overflow: hidden;
-    }
-
-    .chat-container {
-      background: var(--chat-bg);
-      width: 95%;
-      max-width: 400px;
-      height: 90vh;
-      max-height: 700px;
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 15px 30px var(--shadow-medium);
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* 💬 HEADER */
-    .chat-header {
-      background: var(--primary-color);
-      color: var(--text-color-light);
-      text-align: center;
-      padding: 18px 15px;
-      font-size: 1.3em;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid var(--primary-dark);
-      box-shadow: 0 2px 5px var(--shadow-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .chat-header i {
-      margin-right: 10px;
-      font-size: 1.1em;
-    }
-
-    /* 🧠 CHAT BODY */
-    .chat-body {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-      background: #fdfdfd;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* 👤 USER + BOT MESSAGES */
-    .msg {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      font-size: 0.9em;
-      line-height: 1.5;
-      animation: fadeIn 0.3s ease-in-out;
-      word-wrap: break-word;
-      box-shadow: 0 1px 3px var(--shadow-light);
-    }
-
-    .user {
-      background: var(--user-msg-bg);
-      color: var(--text-color-light);
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
-    }
-
-    .bot {
-      background: var(--bot-msg-bg);
-      color: var(--text-color-dark);
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5XQRYNC9TW');
+    </script>
     
-    /* 🎨 STYLES FOR LINKS AND LISTS */
-    .bot a {
-      color: var(--link-color);
-      text-decoration: underline;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant | Kabale Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- THEME-AWARE CSS VARIABLES --- */
+        :root {
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
 
-    .bot a:hover {
-      color: #004c99;
-    }
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
 
-    .bot ul {
-      padding-left: 20px;
-      margin-top: 8px;
-      margin-bottom: 4px;
-    }
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
 
-    .bot li {
-      margin-bottom: 5px;
-      line-height: 1.4;
-    }
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
+        }
 
-    /* ✍️ TYPING INDICATOR */
-    .typing-indicator {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      align-self: flex-start;
-      background: var(--bot-msg-bg);
-      padding: 10px 15px;
-      border-radius: 18px;
-      border-bottom-left-radius: 4px;
-      box-shadow: 0 1px 3px var(--shadow-light);
-      width: fit-content;
-      max-width: 85%;
-      animation: fadeIn 0.3s ease-in-out;
-    }
+        /* --- THEME-SWITCHING LOGIC --- */
+        body.light-mode {
+            --bg-main: var(--bg-light);
+            --bg-card: var(--bg-card-light);
+            --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
+        }
 
-    .typing-indicator span {
-      height: 8px;
-      width: 8px;
-      margin: 0 3px;
-      background-color: #b0b0b0;
-      border-radius: 50%;
-      opacity: 0.7;
-      animation: bounce 1.4s infinite ease-in-out;
-    }
+        body.dark-mode {
+            --bg-main: var(--bg-dark);
+            --bg-card: var(--bg-card-dark);
+            --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
+        }
 
-    .typing-indicator span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
+        /* --- GENERAL & HEADER STYLES --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        .page-container { padding-top: 90px; flex-grow: 1; display: flex; flex-direction: column; }
 
-    .typing-indicator span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 
-    @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-8px); }
-    }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        
+        /* --- CHAT STYLES --- */
+        main { display: flex; flex-direction: column; height: 100%; flex-grow: 1; }
+        #chat-title { margin-bottom: 20px; font-size: 1.8em; color: var(--text-main); text-align: center; }
+        #chat-messages { flex-grow: 1; overflow-y: auto; background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); border: 1px solid var(--border-color); margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 80%; width: fit-content; padding: 10px 15px; border-radius: 18px; line-height: 1.5; animation: fadeIn 0.3s ease; }
+        
+        .sent { background-color: var(--ko-primary); color: white; margin-left: auto; border-bottom-right-radius: 5px; }
+        .received { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); margin-right: auto; border-bottom-left-radius: 5px; }
 
-    /* 💬 INPUT AREA */
-    .chat-footer {
-      display: flex;
-      padding: 12px 15px;
-      border-top: 1px solid var(--border-color);
-      background: var(--chat-bg);
-      gap: 8px;
-    }
+        /* Styles for links and lists inside bot messages */
+        .received a { color: var(--ko-primary); text-decoration: underline; font-weight: 500; }
+        .received ul { padding-left: 20px; margin: 8px 0 4px; }
+        .received li { margin-bottom: 5px; }
 
-    .chat-footer input {
-      flex: 1;
-      border: 1px solid var(--border-color);
-      border-radius: 25px;
-      padding: 10px 18px;
-      outline: none;
-      font-size: 0.95em;
-      transition: all 0.2s ease;
-      background: #f9f9f9;
-    }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    .chat-footer input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-      background: #ffffff;
-    }
+        /* Typing Indicator */
+        .typing-indicator { display: flex; align-items: center; padding: 10px 15px; border-radius: 18px; margin-right: auto; border-bottom-left-radius: 5px; background-color: var(--bg-main); border: 1px solid var(--border-color); }
+        .typing-indicator span { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing-indicator span:nth-child(2) { animation-delay: .2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: .4s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
 
-    .chat-footer button {
-      background: var(--primary-color);
-      border: none;
-      color: white;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      font-size: 1.2em;
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.1s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 5px var(--shadow-light);
-    }
+        /* Quick Help Buttons */
+        .quick-help { margin-bottom: 15px; }
+        .quick-help p { margin: 0 0 10px; font-weight: 500; color: var(--text-secondary); }
+        .quick-help-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+        .quick-help button { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
+        .quick-help button:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
 
-    .chat-footer button:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+        /* Chat Form */
+        .chat-form { display: flex; gap: 10px; }
+        #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; transition: border-color 0.2s; }
+        #message-input:focus { outline: none; border-color: var(--ko-primary); }
+        .chat-form button { padding: 12px 20px; border-radius: 25px; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-weight: bold; font-size: 1em; display: flex; align-items: center; justify-content: center; }
+        
+    </style>
 </head>
-<body>
+<body class="light-mode"> <header class="sticky-header">
+        <div class="header-content container">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <div class="header-icons">
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+            </div>
+        </div>
+    </header>
 
-  <div class="chat-container">
-    <div class="chat-header"><i class="fas fa-robot"></i> KabaleOnline Assistant</div>
+    <div class="container page-container">
+        <main>
+            <h1 id="chat-title">KabaleOnline AI Assistant</h1>
+            <div id="chat-messages" class="chat-messages">
+                </div>
+            
+            <div class="quick-help">
+                <p>Quick Help:</p>
+                <div class="quick-help-buttons">
+                    <button data-query="How to sell an item">Sell an Item</button>
+                    <button data-query="Find a hostel">Find a Hostel</button>
+                    <button data-query="Look for a job">Look for a Job</button>
+                    <button data-query="Contact admin">Contact Admin</button>
+                </div>
+            </div>
 
-    <div id="chat-body" class="chat-body">
-      <div class="msg bot">👋 Hello! I’m KabaleOnline Assistant. I can help you buy, sell, rent, find jobs, and more in Kabale. How can I help you today?</div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
+                <button type="submit" aria-label="Send Message"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </main>
     </div>
 
-    <div class="chat-footer">
-      <input id="user-input" type="text" placeholder="Type your message..." autocomplete="off">
-      <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
-    </div>
-  </div>
+    <script src="bot/data/responses.js"></script>
+    <script src="bot/data/answers.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const quickHelpButtons = document.querySelectorAll('.quick-help button');
 
-  
-<script src="bot/data/responses.js"></script>
-  <script src="bot/data/answers.js"></script>
+        // --- Core Chatbot Logic ---
 
-  <script>
-    const chatBody = document.getElementById("chat-body");
-    const userInput = document.getElementById("user-input");
-    const sendBtn = document.getElementById("send-btn");
-
-    function appendMessage(content, sender) {
-      const msg = document.createElement("div");
-      msg.classList.add("msg", sender);
-      msg.textContent = content;
-      chatBody.appendChild(msg);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    function showTyping() {
-      const typingEl = document.createElement("div");
-      typingEl.classList.add("typing-indicator");
-      typingEl.innerHTML = '<span></span><span></span><span></span>';
-      chatBody.appendChild(typingEl);
-      chatBody.scrollTop = chatBody.scrollHeight;
-      return typingEl;
-    }
-
-    function getBotReply(message) {
-      const text = message.toLowerCase().trim();
-      
-      if (typeof responses === 'undefined' || typeof answers === 'undefined') {
-          return "Error: Could not load chat data. Please check file paths.";
-      }
-
-      for (const key in responses) {
-        if (responses[key].some(word => text.includes(word))) {
-          return answers[key]; 
-        }
-      }
-
-      // Updated fallback with contact info
-      return `🤔 I'm not sure I understand that. You can try asking about how to 'sell an item', 'rent a house', or find 'jobs'. For more complex issues, please contact the <a href="https://wa.me/256784655792" target="_blank">admin on WhatsApp</a>.`;
-    }
-
-    function typeWriterEffect(htmlContent, element) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlContent;
-        const nodes = Array.from(tempDiv.childNodes);
-        let currentNodeIndex = 0;
-        let currentTextIndex = 0;
-
-        function type() {
-            if (currentNodeIndex < nodes.length) {
-                const node = nodes[currentNodeIndex];
-                
-                if (node.nodeType === Node.TEXT_NODE) {
-                    if (currentTextIndex < node.textContent.length) {
-                        element.innerHTML += node.textContent[currentTextIndex];
-                        currentTextIndex++;
-                    } else {
-                        currentNodeIndex++;
-                        currentTextIndex = 0;
-                    }
-                } else {
-                    element.innerHTML += node.outerHTML;
-                    currentNodeIndex++;
+        function levenshteinDistance(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+            for (let i = 0; i <= a.length; i++) { matrix[0][i] = i; }
+            for (let j = 0; j <= b.length; j++) { matrix[j][0] = j; }
+            for (let j = 1; j <= b.length; j++) {
+                for (let i = 1; i <= a.length; i++) {
+                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[j][i] = Math.min(matrix[j][i - 1] + 1, matrix[j - 1][i] + 1, matrix[j - 1][i - 1] + cost);
                 }
-                
-                chatBody.scrollTop = chatBody.scrollHeight;
-                setTimeout(type, 20);
             }
+            return matrix[b.length][a.length];
         }
-        type();
-    }
-    
-    async function handleSend() {
-      const text = userInput.value.trim();
-      if (!text) return;
 
-      appendMessage(text, "user");
-      userInput.value = "";
-      userInput.focus();
+        function getBotReply(message) {
+            const text = message.toLowerCase().trim();
+            const words = text.split(/\s+/);
+            
+            if (typeof responses === 'undefined' || typeof answers === 'undefined') {
+                return "Error: Could not load chat data. Please check file paths.";
+            }
 
-      const typingEl = showTyping();
-      
-      await new Promise(resolve => setTimeout(resolve, 800));
+            for (const key in responses) {
+                for (const keyword of responses[key]) {
+                    for (const word of words) {
+                        const distance = levenshteinDistance(word, keyword);
+                        let threshold = keyword.length > 5 ? 2 : 1;
+                        if (distance <= threshold) {
+                            return answers[key];
+                        }
+                    }
+                }
+            }
+            return answers['help']; // Default to the comprehensive help answer
+        }
 
-      const reply = getBotReply(text);
-      typingEl.remove();
+        // --- UI Manipulation Functions ---
 
-      const botMsg = document.createElement("div");
-      botMsg.classList.add("msg", "bot");
-      chatBody.appendChild(botMsg);
+        function appendMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', type);
+            messageDiv.innerHTML = content; // Use innerHTML to render links and lists
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
 
-      typeWriterEffect(reply, botMsg);
-    }
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('typing-indicator');
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+            return typingDiv;
+        }
 
-    sendBtn.addEventListener("click", handleSend);
-    userInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleSend();
-      }
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // --- Main Handler ---
+
+        async function handleSend(query) {
+            const text = query.trim();
+            if (!text) return;
+
+            appendMessage(text, 'sent');
+            messageInput.value = ''; // Clear input regardless of source
+            
+            const typingEl = showTyping();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // "Thinking" delay
+            
+            const reply = getBotReply(text);
+            typingEl.remove();
+            appendMessage(reply, 'received');
+        }
+
+        // --- Event Listeners ---
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleSend(messageInput.value);
+        });
+
+        quickHelpButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const query = button.getAttribute('data-query');
+                messageInput.value = query; // Optional: fill input for user
+                handleSend(query);
+            });
+        });
+
+        // --- Initial State ---
+
+        function initializeChat() {
+            const welcomeMessage = answers['greetings'];
+            appendMessage(welcomeMessage, 'received');
+            messageInput.focus();
+        }
+
+        initializeChat();
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        userInput.focus();
-    });
-  </script>
+    // Basic theme switcher logic for demonstration (can be replaced by theme.js)
+    // You can add a button to call toggleTheme()
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        document.body.classList.toggle('light-mode');
+    }
+
+    </script>
 </body>
 </html>
