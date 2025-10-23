@@ -59,8 +59,8 @@
             line-height: 1.6; 
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Full viewport height */
-            overflow: hidden; /* Prevent body scroll */
+            height: 100vh;
+            overflow: hidden;
         }
         .container { max-width: 800px; margin: 0 auto; padding: 0 15px; width: 100%; }
         
@@ -69,38 +69,32 @@
             background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
         }
         body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
         body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 
-        .header-content { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            height: 60px; /* MODIFIED: Was 70px */
-        }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
         .header-icons { display: flex; align-items: center; gap: 20px; position: relative; }
 
         /* --- THEME TOGGLE SWITCH --- */
-        .theme-switch-wrapper { display: flex; align-items: center; }
         .theme-switch { display: inline-block; height: 24px; position: relative; width: 50px; }
         .theme-switch input { display:none; }
         .slider { background-color: var(--border-color-dark); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
         .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; }
         input:checked + .slider { background-color: var(--ko-accent); }
         input:checked + .slider:before { transform: translateX(26px); }
-        .slider .fa-moon { position: absolute; left: 6px; top: 5px; color: #fff; font-size: 14px; }
-        .slider .fa-sun { position: absolute; right: 6px; top: 5px; color: #fff; font-size: 14px; display: none; }
+        .slider .fa-moon, .slider .fa-sun { position: absolute; top: 5px; color: #fff; font-size: 14px; }
+        .slider .fa-moon { left: 6px; }
+        .slider .fa-sun { right: 6px; display: none; }
         input:checked + .slider .fa-moon { display: none; }
         input:checked + .slider .fa-sun { display: block; }
-        #theme-hint { position: absolute; top: 120%; right: 0; background-color: var(--bg-card); padding: 5px 10px; border-radius: 6px; font-size: 0.8em; color: var(--text-secondary); white-space: nowrap; box-shadow: var(--shadow); border: 1px solid var(--border-color); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 
         /* --- FIXED LAYOUT & CHAT STYLES --- */
         .page-container {
-            padding-top: 60px; /* MODIFIED: Was 70px */
+            /* ⭐ THIS IS THE FIX ⭐ Pushes all content down below the 70px header */
+            padding-top: 70px; 
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -108,9 +102,9 @@
             overflow: hidden;
         }
         .chat-page-title {
-            font-size: 1.6em; /* MODIFIED: Was 1.8em */
+            font-size: 1.8em;
             text-align: center;
-            padding: 15px 0; /* MODIFIED: Was 20px 0 */
+            padding: 20px 0;
             font-weight: 700;
             background: linear-gradient(45deg, var(--ko-primary), var(--ko-accent));
             -webkit-background-clip: text;
@@ -119,8 +113,8 @@
             text-fill-color: transparent;
         }
         #chat-messages {
-            flex-grow: 1; 
-            overflow-y: auto; 
+            flex-grow: 1;
+            overflow-y: auto;
             padding: 0 10px 20px 10px;
             display: flex;
             flex-direction: column;
@@ -131,8 +125,6 @@
         .received { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); margin-right: auto; border-bottom-left-radius: 5px; }
         .received a { color: var(--ko-primary); text-decoration: underline; font-weight: 500; }
         .received ul { padding-left: 20px; margin: 8px 0 4px; }
-        .received li { margin-bottom: 5px; }
-        .received p { margin-top: 10px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .typing-indicator { display: flex; align-items: center; padding: 10px 15px; border-radius: 18px; margin-right: auto; border-bottom-left-radius: 5px; background-color: var(--bg-card); border: 1px solid var(--border-color); }
         .typing-indicator span { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
@@ -142,29 +134,19 @@
 
         /* FIXED FORM WRAPPER */
         .chat-form-wrapper {
-            padding: 10px 0; /* MODIFIED: Was 15px 0 */
+            padding: 15px 0;
             border-top: 1px solid var(--border-color);
             background-color: var(--bg-main);
         }
-        .quick-help { 
-            margin-bottom: 10px; /* MODIFIED: Was 15px */
-        }
-        .quick-help p { margin: 0 0 8px; font-weight: 500; color: var(--text-secondary); }
+        .quick-help { margin-bottom: 15px; }
+        .quick-help p { margin: 0 0 10px; font-weight: 500; color: var(--text-secondary); }
         .quick-help-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
-        .quick-help button { 
-            background: none; border: 1px solid var(--border-color); 
-            color: var(--ko-primary); 
-            padding: 6px 12px; /* MODIFIED: Was 8px 15px */
-            border-radius: 20px; 
-            cursor: pointer; 
-            font-size: 0.85em; /* MODIFIED: Was 0.9em */
-            transition: all 0.2s; 
-        }
+        .quick-help button { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
         .quick-help button:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
         .chat-form { display: flex; gap: 10px; }
-        #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; transition: border-color 0.2s; }
+        #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
         #message-input:focus { outline: none; border-color: var(--ko-primary); }
-        .chat-form button { padding: 12px 20px; border-radius: 25px; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-weight: bold; font-size: 1em; display: flex; align-items: center; justify-content: center; }
+        .chat-form button { padding: 12px 20px; border-radius: 25px; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-weight: bold; font-size: 1em; }
     </style>
 </head>
 <body class="light-mode">
@@ -182,7 +164,6 @@
                         </span>
                     </label>
                 </div>
-                <div id="theme-hint"></div>
                 <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
             </div>
         </div>
@@ -190,10 +171,7 @@
 
     <div class="container page-container">
         <h1 class="chat-page-title">Kabale Online Assistant</h1>
-        
-        <div id="chat-messages">
-            </div>
-
+        <div id="chat-messages"></div>
         <div class="chat-form-wrapper">
             <div class="quick-help">
                 <p>Quick Help:</p>
@@ -214,7 +192,6 @@
     <script src="bot/data/responses.js"></script>
     <script src="bot/data/answers.js"></script>
     <script>
-        // --- THEME LOGIC ---
         function applyTheme(theme) {
             document.body.className = '';
             document.body.classList.add(theme);
@@ -222,31 +199,21 @@
 
         function initializeThemeToggle() {
             const themeToggle = document.getElementById('theme-toggle');
-            const themeHint = document.getElementById('theme-hint');
-
-            if (themeToggle && themeHint) {
+            if (themeToggle) {
                 const currentTheme = localStorage.getItem('theme') || 'light-mode';
                 themeToggle.checked = (currentTheme === 'light-mode');
                 applyTheme(currentTheme);
-
-                themeHint.textContent = themeToggle.checked ? '🌞 Light mode is ON' : '🌙 Dark mode is ON';
-
                 themeToggle.addEventListener('change', function() {
                     const newTheme = this.checked ? 'light-mode' : 'dark-mode';
                     applyTheme(newTheme);
                     localStorage.setItem('theme', newTheme);
-                    themeHint.textContent = this.checked ? '🌞 Light mode is ON' : '🌙 Dark mode is ON';
-                    themeHint.style.opacity = '1';
-                    setTimeout(() => { themeHint.style.opacity = '0'; }, 2000);
                 });
             }
         }
-        const savedTheme = localStorage.getItem('theme') || 'light-mode';
-        applyTheme(savedTheme);
+        applyTheme(localStorage.getItem('theme') || 'light-mode');
 
-        // --- CHATBOT LOGIC ---
         document.addEventListener('DOMContentLoaded', function() {
-            initializeThemeToggle(); 
+            initializeThemeToggle();
 
             const chatMessages = document.getElementById('chat-messages');
             const chatForm = document.getElementById('chat-form');
