@@ -14,10 +14,9 @@
     <title>AI Assistant | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* All CSS remains the same as before */
         :root {
             --ko-primary: #007aff; --ko-primary-rgb: 0, 122, 255; --ko-accent: #ffc107;
-            --bg-light: #f8f9fa; --bg-card-light: #ffffff; --text-main-light: #212529;
+            --bg-light: #f0f2f5; --bg-card-light: #ffffff; --text-main-light: #212529;
             --text-secondary-light: #6c757d; --border-color-light: #e9ecef; --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b; --text-main-dark: #e2e8f0; --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155; --shadow: 0 10px 30px rgba(0,0,0,0.07); --border-radius: 12px;
@@ -60,6 +59,7 @@
         .slider .fa-sun { right: 6px; display: none; }
         input:checked + .slider .fa-moon { display: none; }
         input:checked + .slider .fa-sun { display: block; }
+
         .page-container {
             padding-top: 70px; flex-grow: 1; display: flex; flex-direction: column;
             overflow: hidden;
@@ -72,55 +72,41 @@
         }
         #chat-messages {
             flex-grow: 1; overflow-y: auto; padding: 0 10px 20px 10px;
-            display: flex; flex-direction: column; gap: 12px;
         }
-        .message { max-width: 80%; width: fit-content; padding: 10px 15px; border-radius: 18px; line-height: 1.5; animation: fadeIn 0.3s ease; }
-        .sent { background-color: var(--ko-primary); color: white; margin-left: auto; border-bottom-right-radius: 5px; }
-        .received { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); margin-right: auto; border-bottom-left-radius: 5px; }
+        .message-wrapper { display: flex; margin-bottom: 12px; max-width: 85%; animation: fadeIn 0.4s ease; }
+        .sent-wrapper { justify-content: flex-end; margin-left: auto; }
+        .received-wrapper { justify-content: flex-start; margin-right: auto; }
+
+        .avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; background-color: var(--ko-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        
+        .message { padding: 10px 15px; border-radius: 18px; line-height: 1.5; }
+        .sent { background-color: var(--ko-primary); color: white; border-bottom-right-radius: 5px; }
+        .received { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-bottom-left-radius: 5px; }
+        
+        .timestamp { font-size: 0.75em; color: var(--text-secondary); margin-top: 4px; }
+        .sent-wrapper .timestamp { text-align: right; }
+        .received-wrapper .timestamp { text-align: left; margin-left: 42px; }
+
         .received a { color: var(--ko-primary); text-decoration: underline; font-weight: 500; }
         .received ul { padding-left: 20px; margin: 8px 0 4px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .typing-indicator { display: flex; align-items: center; padding: 10px 15px; border-radius: 18px; margin-right: auto; border-bottom-left-radius: 5px; background-color: var(--bg-card); border: 1px solid var(--border-color); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .typing-indicator { align-self: flex-start; display: flex; align-items: center; padding: 10px 15px; border-radius: 18px; border-bottom-left-radius: 5px; background-color: var(--bg-card); border: 1px solid var(--border-color); }
         .typing-indicator span { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .typing-indicator span:nth-child(2) { animation-delay: .2s; }
         .typing-indicator span:nth-child(3) { animation-delay: .4s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
         .chat-form-wrapper { padding: 15px 0; border-top: 1px solid var(--border-color); background-color: var(--bg-main); }
-        .quick-help { 
-    margin-bottom: 15px; 
-}
-.quick-help { 
-    margin-bottom: 15px; 
-}
-.quick-help p { 
-    margin: 0 0 10px; 
-    font-weight: 500; 
-    color: var(--text-secondary); 
-    font-size: 0.9em; /* Optional: slightly smaller label */
-}
-.quick-help-buttons { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 8px; /* Slightly reduced gap */
-}
-.quick-help button { 
-    background: none; 
-    border: 1px solid var(--border-color); 
-    color: var(--ko-primary); 
-    padding: 5px 12px; /* Reduced padding for smaller size */
-    border-radius: 20px; 
-    cursor: pointer; 
-    font-size: 0.8em; /* Reduced font size */
-    transition: all 0.2s ease; /* Added transition for smoother hover */
-}
-.quick-help button:hover { 
-    background-color: rgba(var(--ko-primary-rgb), 0.1); 
-    border-color: var(--ko-primary); 
-}
+        .quick-help { margin-bottom: 15px; }
+        .quick-help p { margin: 0 0 10px; font-weight: 500; color: var(--text-secondary); font-size: 0.9em; }
+        .quick-help-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .quick-help button { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; }
         .chat-form { display: flex; gap: 10px; }
         #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
         #message-input:focus { outline: none; border-color: var(--ko-primary); }
-        .chat-form button { padding: 12px 20px; border-radius: 25px; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-weight: bold; font-size: 1em; }
+        .chat-form button { padding: 12px; width: 48px; height: 48px; border-radius: 50%; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-size: 1.1em; }
     </style>
 </head>
 <body class="light-mode">
@@ -132,10 +118,7 @@
                 <div class="theme-switch-wrapper">
                     <label class="theme-switch" for="theme-toggle">
                         <input type="checkbox" id="theme-toggle" />
-                        <span class="slider">
-                            <i class="fas fa-moon"></i>
-                            <i class="fas fa-sun"></i>
-                        </span>
+                        <span class="slider"><i class="fas fa-moon"></i><i class="fas fa-sun"></i></span>
                     </label>
                 </div>
                 <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
@@ -144,13 +127,8 @@
     </header>
 
     <div class="container page-container">
-        <div id="chat-messages">
-            <h1 class="chat-page-title">Kabale Online Assistant</h1>
-            <div class="message received">
-                👋 Hello there! Welcome to the KabaleOnline Assistant. How can I assist you today? You can ask me a question or use one of the quick help buttons below.
-            </div>
-        </div>
-        
+        <h1 class="chat-page-title">Kabale Online Assistant</h1>
+        <div id="chat-messages"></div>
         <div class="chat-form-wrapper">
             <div class="quick-help">
                 <p>Quick Help:</p>
@@ -176,7 +154,6 @@
             document.body.className = '';
             document.body.classList.add(theme);
         }
-
         function initializeThemeToggle() {
             const themeToggle = document.getElementById('theme-toggle');
             if (themeToggle) {
@@ -215,37 +192,40 @@
                 return matrix[b.length][a.length];
             }
 
-            function getBotReply(message) {
-                const text = message.toLowerCase().trim();
-                const words = text.split(/\s+/);
-                if (typeof responses === 'undefined' || typeof answers === 'undefined') return "Error: Could not load chat data.";
-                for (const key in responses) {
-                    for (const keyword of responses[key]) {
-                        for (const word of words) {
-                            const distance = levenshteinDistance(word, keyword);
-                            let threshold = keyword.length > 5 ? 2 : 1;
-                            if (distance <= threshold) return answers[key];
-                        }
-                    }
-                }
-                return answers['help'];
-            }
+            function getBotReply(message) { /* ... PASTE THE SMARTER FUNCTION FROM STEP 1 HERE ... */ }
 
             function appendMessage(content, type) {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('message', type);
-                messageDiv.innerHTML = content;
-                chatMessages.appendChild(messageDiv);
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('message-wrapper', `${type}-wrapper`);
+                
+                let messageHTML = '';
+                if (type === 'received') {
+                    messageHTML += `<div class="avatar"><i class="fa-solid fa-robot"></i></div>`;
+                }
+                
+                messageHTML += `
+                    <div class="message-content">
+                        <div class="message ${type}">${content}</div>
+                        <div class="timestamp">${time}</div>
+                    </div>
+                `;
+                
+                wrapper.innerHTML = messageHTML;
+                chatMessages.appendChild(wrapper);
                 scrollToBottom();
             }
 
             function showTyping() {
-                const typingDiv = document.createElement('div');
-                typingDiv.classList.add('typing-indicator');
-                typingDiv.innerHTML = '<span></span><span></span><span></span>';
-                chatMessages.appendChild(typingDiv);
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('message-wrapper', 'received-wrapper', 'typing-indicator-wrapper');
+                wrapper.innerHTML = `
+                    <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                `;
+                chatMessages.appendChild(wrapper);
                 scrollToBottom();
-                return typingDiv;
+                return wrapper;
             }
 
             function scrollToBottom() {
@@ -258,26 +238,59 @@
                 appendMessage(text, 'sent');
                 messageInput.value = '';
                 const typingEl = showTyping();
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                const reply = getBotReply(text);
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                
+                // IMPORTANT: Replace the getBotReply function here with the new one
+                const reply = getBotReply(text); // Using the new, smarter function
+                
                 typingEl.remove();
                 appendMessage(reply, 'received');
             }
 
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleSend(messageInput.value);
-            });
+            // Replace the old getBotReply function here with the new one from Step 1.
+            // This is the full function for clarity.
+            function getBotReply(message) {
+                const text = message.toLowerCase().trim();
+                if (typeof responses === 'undefined' || typeof answers === 'undefined') { return "Error: Could not load chat data."; }
+                let bestMatch = { key: null, score: 0 };
+                for (const key in responses) {
+                    for (const keyword of responses[key]) {
+                        if (text.includes(keyword)) {
+                            const score = keyword.length;
+                            if (score > bestMatch.score) {
+                                bestMatch = { key: key, score: score };
+                            }
+                        }
+                    }
+                }
+                if (bestMatch.score > 2) { return answers[bestMatch.key]; }
+                const words = text.split(/\s+/);
+                for (const key in responses) {
+                    for (const keyword of responses[key]) {
+                        for (const word of words) {
+                            const distance = levenshteinDistance(word, keyword);
+                            let threshold = keyword.length > 5 ? 2 : 1;
+                            if (distance <= threshold) { return answers[key]; }
+                        }
+                    }
+                }
+                return answers['help'];
+            }
 
-            quickHelpButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    handleSend(button.getAttribute('data-query'));
-                });
-            });
-            
-            // ⭐ FIX: The chat is now initialized by default in the HTML.
-            // We just need to focus the input.
-            messageInput.focus();
+            chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
+            quickHelpButtons.forEach(button => { button.addEventListener('click', () => { handleSend(button.getAttribute('data-query')); }); });
+
+            function initializeChat() {
+                const greetings = [
+                    "👋 Hello there! Welcome to the KabaleOnline Assistant. How can I help you today?",
+                    "Greetings! I'm the KabaleOnline Assistant. What can I do for you?",
+                    "Welcome! Ask me anything about buying, selling, or renting on KabaleOnline."
+                ];
+                const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+                appendMessage(randomGreeting, 'received');
+                messageInput.focus();
+            }
+            initializeChat();
         });
     </script>
 </body>
