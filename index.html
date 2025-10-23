@@ -706,6 +706,29 @@
             transform: scale(1);
             opacity: 1;
         }
+/* ... add this to your existing AI CHAT MODAL STYLES ... */
+
+        /* Make the header draggable */
+        .chat-modal-header {
+            cursor: move;
+        }
+
+        /* Style the resize handle */
+        #resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            cursor: se-resize;
+            background: linear-gradient(135deg, transparent 50%, var(--border-color) 50%);
+        }
+
+        /* Prevent iframe from blocking mouse events during drag/resize */
+        body.is-dragging .chat-modal-content iframe,
+        body.is-resizing .chat-modal-content iframe {
+            pointer-events: none;
+        }
 
     </style>
 </head>
@@ -1011,6 +1034,7 @@
                 </button>
             </div>
             <iframe id="chat-iframe" src="/chatbot.html" title="KabaleOnline AI Assistant"></iframe>
+<div id="resize-handle"></div>
         </div>
     </div>
     <script type="module">
@@ -1230,39 +1254,76 @@
     });
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get references to the elements
-        const openChatButton = document.getElementById('open-chat-button');
-        const closeChatButton = document.getElementById('close-chat-button');
-        const chatModalContainer = document.getElementById('chat-modal-container');
-        const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Get all required elements ---
+    const openChatButton = document.getElementById('open-chat-button');
+    const closeChatButton = document.getElementById('close-chat-button');
+    const chatModalContainer = document.getElementById('chat-modal-container');
+    const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+    const chatModal = document.querySelector('.chat-modal-content');
+    const header = document.querySelector('.chat-modal-header');
+    const resizeHandle = document.getElementById('resize-handle');
 
-        // Function to open the modal
-        function openModal() {
-            if (chatModalContainer) {
-                chatModalContainer.classList.add('active');
-            }
-        }
+    // --- Open/Close Modal Logic ---
+    function openModal() { if (chatModalContainer) chatModalContainer.classList.add('active'); }
+    function closeModal() { if (chatModalContainer) chatModalContainer.classList.remove('active'); }
 
-        // Function to close the modal
-        function closeModal() {
-            if (chatModalContainer) {
-                chatModalContainer.classList.remove('active');
-            }
-        }
+    if (openChatButton) openChatButton.addEventListener('click', openModal);
+    if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
+    if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
 
-        // Add click event listeners
-        if (openChatButton) {
-            openChatButton.addEventListener('click', openModal);
+    // --- Movable (Drag) Logic ---
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - chatModal.getBoundingClientRect().left;
+        offsetY = e.clientY - chatModal.getBoundingClientRect().top;
+        document.body.classList.add('is-dragging');
+    });
+
+    // --- Resizable Logic ---
+    let isResizing = false;
+    let lastX, lastY;
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        document.body.classList.add('is-resizing');
+    });
+
+    // --- Global Mouse Events for Dragging and Resizing ---
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            chatModal.style.left = `${e.clientX - offsetX}px`;
+            chatModal.style.top = `${e.clientY - offsetY}px`;
         }
-        if (closeChatButton) {
-            closeChatButton.addEventListener('click', closeModal);
-        }
-        if (chatModalOverlay) {
-            // Close the modal when clicking the background overlay
-            chatModalOverlay.addEventListener('click', closeModal);
+        if (isResizing) {
+            e.preventDefault();
+            const width = chatModal.offsetWidth + (e.clientX - lastX);
+            const height = chatModal.offsetHeight + (e.clientY - lastY);
+            // Enforce minimum size
+            if (width > 300) chatModal.style.width = `${width}px`;
+            if (height > 400) chatModal.style.height = `${height}px`;
+            lastX = e.clientX;
+            lastY = e.clientY;
         }
     });
-    </script>
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            document.body.classList.remove('is-dragging');
+        }
+        if (isResizing) {
+            isResizing = false;
+            document.body.classList.remove('is-resizing');
+        }
+    });
+});
+</script>
 </body>
 </html>
