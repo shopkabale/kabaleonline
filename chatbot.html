@@ -4,24 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KabaleOnline Assistant</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* 🎨 GENERAL PAGE STYLE */
     :root {
-      --primary-color: #4CAF50; /* A friendly green */
+      --primary-color: #4CAF50;
       --primary-dark: #388E3C;
-      --secondary-color: #FFC107; /* A bright yellow for accents */
-      --bg-gradient-start: #E8F5E9; /* Light green background */
-      --bg-gradient-end: #C8E6C9; /* Slightly darker green */
+      --bg-gradient-start: #E8F5E9;
+      --bg-gradient-end: #C8E6C9;
       --chat-bg: #ffffff;
-      --bot-msg-bg: #e0f2f1; /* Light teal for bot */
+      --bot-msg-bg: #e0f2f1;
       --user-msg-bg: var(--primary-color);
       --text-color-dark: #212121;
       --text-color-light: #ffffff;
       --border-color: #e0e0e0;
       --shadow-light: rgba(0, 0, 0, 0.1);
       --shadow-medium: rgba(0, 0, 0, 0.15);
+      --link-color: #0066cc;
     }
 
     body {
@@ -33,15 +35,15 @@
       justify-content: center;
       align-items: center;
       color: var(--text-color-dark);
-      overflow: hidden; /* Prevent body scroll */
+      overflow: hidden;
     }
 
     .chat-container {
       background: var(--chat-bg);
       width: 95%;
-      max-width: 400px; /* Slightly narrower for mobile focus */
-      height: 90vh; /* Taller on mobile */
-      max-height: 700px; /* Max height on larger screens */
+      max-width: 400px;
+      height: 90vh;
+      max-height: 700px;
       border-radius: 20px;
       display: flex;
       flex-direction: column;
@@ -76,56 +78,61 @@
       flex: 1;
       padding: 15px;
       overflow-y: auto;
-      background: #fdfdfd; /* Very light background for chat */
+      background: #fdfdfd;
       display: flex;
       flex-direction: column;
-      gap: 12px; /* Slightly more space between messages */
+      gap: 12px;
       scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
-    }
-
-    /* Scrollbar Styling */
-    .chat-body::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .chat-body::-webkit-scrollbar-track {
-      background: #f0f0f0;
-    }
-
-    .chat-body::-webkit-scrollbar-thumb {
-      background: #ccc;
-      border-radius: 4px;
-    }
-
-    .chat-body::-webkit-scrollbar-thumb:hover {
-      background: #aaa;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* 👤 USER + BOT MESSAGES */
     .msg {
-      max-width: 85%; /* Slightly wider messages */
-      padding: 12px 16px; /* More padding */
-      border-radius: 18px; /* More rounded corners */
-      font-size: 0.9em; /* Slightly smaller font for density */
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 0.9em;
       line-height: 1.5;
       animation: fadeIn 0.3s ease-in-out;
       word-wrap: break-word;
-      box-shadow: 0 1px 3px var(--shadow-light); /* Subtle shadow for depth */
+      box-shadow: 0 1px 3px var(--shadow-light);
     }
 
     .user {
       background: var(--user-msg-bg);
       color: var(--text-color-light);
       align-self: flex-end;
-      border-bottom-right-radius: 4px; /* Pointy corner towards input */
+      border-bottom-right-radius: 4px;
     }
 
     .bot {
       background: var(--bot-msg-bg);
       color: var(--text-color-dark);
       align-self: flex-start;
-      border-bottom-left-radius: 4px; /* Pointy corner towards where it came from */
+      border-bottom-left-radius: 4px;
+    }
+    
+    /* 🎨 STYLES FOR LINKS AND LISTS */
+    .bot a {
+      color: var(--link-color);
+      text-decoration: underline;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .bot a:hover {
+      color: #004c99;
+    }
+
+    .bot ul {
+      padding-left: 20px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+
+    .bot li {
+      margin-bottom: 5px;
+      line-height: 1.4;
     }
 
     /* ✍️ TYPING INDICATOR */
@@ -148,7 +155,7 @@
       height: 8px;
       width: 8px;
       margin: 0 3px;
-      background-color: #b0b0b0; /* Dimmer dots */
+      background-color: #b0b0b0;
       border-radius: 50%;
       opacity: 0.7;
       animation: bounce 1.4s infinite ease-in-out;
@@ -163,12 +170,8 @@
     }
 
     @keyframes bounce {
-      0%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-8px);
-      }
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
     }
 
     /* 💬 INPUT AREA */
@@ -177,13 +180,13 @@
       padding: 12px 15px;
       border-top: 1px solid var(--border-color);
       background: var(--chat-bg);
-      gap: 8px; /* Space between input and button */
+      gap: 8px;
     }
 
     .chat-footer input {
       flex: 1;
       border: 1px solid var(--border-color);
-      border-radius: 25px; /* Fully rounded input */
+      border-radius: 25px;
       padding: 10px 18px;
       outline: none;
       font-size: 0.95em;
@@ -193,7 +196,7 @@
 
     .chat-footer input:focus {
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* Green glow on focus */
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
       background: #ffffff;
     }
 
@@ -202,9 +205,9 @@
       border: none;
       color: white;
       border-radius: 50%;
-      width: 48px; /* Slightly larger button */
+      width: 48px;
       height: 48px;
-      font-size: 1.2em; /* Larger icon */
+      font-size: 1.2em;
       cursor: pointer;
       transition: background 0.2s ease, transform 0.1s ease;
       display: flex;
@@ -218,50 +221,9 @@
       transform: translateY(-1px);
     }
 
-    .chat-footer button:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 3px var(--shadow-light);
-    }
-
-    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 480px) {
-      .chat-container {
-        width: 100%;
-        height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-      }
-      .chat-header {
-        padding: 15px;
-        font-size: 1.2em;
-      }
-      .chat-body {
-        padding: 10px;
-        gap: 10px;
-      }
-      .msg {
-        max-width: 90%;
-        padding: 10px 14px;
-        font-size: 0.85em;
-      }
-      .chat-footer {
-        padding: 10px;
-      }
-      .chat-footer input {
-        padding: 8px 15px;
-        font-size: 0.9em;
-      }
-      .chat-footer button {
-        width: 45px;
-        height: 45px;
-        font-size: 1.1em;
-      }
     }
   </style>
 </head>
@@ -271,7 +233,7 @@
     <div class="chat-header"><i class="fas fa-robot"></i> KabaleOnline Assistant</div>
 
     <div id="chat-body" class="chat-body">
-      <div class="msg bot">👋 Hello! I’m KabaleOnline Assistant. How can I help you today?</div>
+      <div class="msg bot">👋 Hello! I’m KabaleOnline Assistant. I can help you buy, sell, rent, find jobs, and more in Kabale. How can I help you today?</div>
     </div>
 
     <div class="chat-footer">
@@ -280,7 +242,8 @@
     </div>
   </div>
 
-  <script src="bot/data/responses.js"></script>
+  
+<script src="bot/data/responses.js"></script>
   <script src="bot/data/answers.js"></script>
 
   <script>
@@ -302,14 +265,12 @@
       typingEl.innerHTML = '<span></span><span></span><span></span>';
       chatBody.appendChild(typingEl);
       chatBody.scrollTop = chatBody.scrollHeight;
-      return typingEl; // Return the element to remove it later
+      return typingEl;
     }
 
-    // Offline logic
     function getBotReply(message) {
       const text = message.toLowerCase().trim();
       
-      // Check if the data files were loaded correctly
       if (typeof responses === 'undefined' || typeof answers === 'undefined') {
           return "Error: Could not load chat data. Please check file paths.";
       }
@@ -320,20 +281,39 @@
         }
       }
 
-      return "🤖 I'm not sure I understand. Try asking about how to 'sell', 'rent', or find 'jobs'.";
+      // Updated fallback with contact info
+      return `🤔 I'm not sure I understand that. You can try asking about how to 'sell an item', 'rent a house', or find 'jobs'. For more complex issues, please contact the <a href="https://wa.me/256784655792" target="_blank">admin on WhatsApp</a>.`;
     }
 
-    function typeWriterEffect(text, element) {
-      let i = 0;
-      function type() {
-        if (i < text.length) {
-          element.textContent += text.charAt(i);
-          i++;
-          chatBody.scrollTop = chatBody.scrollHeight;
-          setTimeout(type, 20);
+    function typeWriterEffect(htmlContent, element) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        const nodes = Array.from(tempDiv.childNodes);
+        let currentNodeIndex = 0;
+        let currentTextIndex = 0;
+
+        function type() {
+            if (currentNodeIndex < nodes.length) {
+                const node = nodes[currentNodeIndex];
+                
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (currentTextIndex < node.textContent.length) {
+                        element.innerHTML += node.textContent[currentTextIndex];
+                        currentTextIndex++;
+                    } else {
+                        currentNodeIndex++;
+                        currentTextIndex = 0;
+                    }
+                } else {
+                    element.innerHTML += node.outerHTML;
+                    currentNodeIndex++;
+                }
+                
+                chatBody.scrollTop = chatBody.scrollHeight;
+                setTimeout(type, 20);
+            }
         }
-      }
-      type();
+        type();
     }
     
     async function handleSend() {
@@ -370,3 +350,5 @@
         userInput.focus();
     });
   </script>
+</body>
+</html>
