@@ -10,252 +10,274 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Shop Deals on Electronics, Textbooks & More in Kabale | Kabale Online</title>
-<meta name="description" content="Find the best prices on new and used items in Kabale. Shop for electronics, student textbooks, fashion, and more. Secure checkout and local delivery available.">
-<meta name="keywords" content="online shopping kabale, buy electronics kabale, second-hand phones uganda, textbook prices, best deals in kabale, online store kabale">
-<meta name="author" content="Kabale Online">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://www.kabaleonline.com/shop/">
+    <meta name="description" content="Find the best prices on new and used items in Kabale. Shop for electronics, student textbooks, fashion, and more. Secure checkout and local delivery available.">
+    <meta name="keywords" content="online shopping kabale, buy electronics kabale, second-hand phones uganda, textbook prices, best deals in kabale, online store kabale">
+    <meta name="author" content="Kabale Online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.kabaleonline.com/shop/">
 
-<meta property="og:title" content="Online Shop for Kabale | Deals on Phones, Laptops & More">
-<meta property="og:description" content="Browse and buy products from local sellers on Kabale Online. Great deals and a wide selection.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.kabaleonline.com/shop/">
-<meta property="og:image" content="https://www.kabaleonline.com/assets/social-share-shop-image.jpg"> <meta property="og:site_name" content="Kabale Online">
-<meta property="og:locale" content="en_UG">
+    <meta property="og:title" content="Online Shop for Kabale | Deals on Phones, Laptops & More">
+    <meta property="og:description" content="Browse and buy products from local sellers on Kabale Online. Great deals and a wide selection.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.kabaleonline.com/shop/">
+    <meta property="og:image" content="https://www.kabaleonline.com/assets/social-share-shop-image.jpg">
+    <meta property="og:site_name" content="Kabale Online">
+    <meta property="og:locale" content="en_UG">
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Shop Online in Kabale | Best Prices on Electronics & More">
-<meta name="twitter:description" content="Find great deals on a wide range of products at the Kabale Online shop.">
-<meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-shop-image.jpg">
-<meta name="twitter:site" content="@kabaleonline">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Shop Online in Kabale | Best Prices on Electronics & More">
+    <meta name="twitter:description" content="Find great deals on a wide range of products at the Kabale Online shop.">
+    <meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-shop-image.jpg">
+    <meta name="twitter:site" content="@kabaleonline">
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#007bff">
-<link rel="icon" href="/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <link rel="icon" href="/favicon.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "46fb657e-75a2-4140-9d08-69a746055814",
-    });
-  });
-</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "46fb657e-75a2-4140-9d08-69a746055814",
+        });
+      });
+    </script>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Shop Online in Kabale",
-  "url": "https://www.kabaleonline.com/shop/",
-  "description": "Browse and purchase a variety of products including electronics, textbooks, and fashion from sellers in the Kabale area."
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Kabale Online",
-  "url": "https://www.kabaleonline.com/",
-  "logo": "https://www.kabaleonline.com/icons/512.png"
-}
-</script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Shop Online in Kabale",
+      "url": "https://www.kabaleonline.com/shop/",
+      "description": "Browse and purchase a variety of products including electronics, textbooks, and fashion from sellers in the Kabale area."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Kabale Online",
+      "url": "https://www.kabaleonline.com/",
+      "logo": "https://www.kabaleonline.com/icons/512.png"
+    }
+    </script>
     <style>
         :root {
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-            
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
-
         body.light-mode {
-            --bg-main: var(--bg-light);
-            --bg-card: var(--bg-card-light);
-            --text-main: var(--text-main-light);
-            --text-secondary: var(--text-secondary-light);
-            --border-color: var(--border-color-light);
+            --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
         }
-
         body.dark-mode {
-            --bg-main: var(--bg-dark);
-            --bg-card: var(--bg-card-dark);
-            --text-main: var(--text-main-dark);
-            --text-secondary: var(--text-secondary-dark);
-            --border-color: var(--border-color-dark);
+            --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
         }
-        
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-
         .sticky-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
         }
         body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
         body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
-
-        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
         .header-icons { display: flex; align-items: center; gap: 20px; }
-        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
-        .header-icons a:hover { color: var(--ko-primary); }
-
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
         .desktop-nav { display: none; } 
-
         @media (min-width: 1024px) {
             .hamburger-menu { display: none; }
-            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
-            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
-            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
+            .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;}
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; }
         }
-
         .page-container { padding-top: 90px; padding-bottom: 20px; }
-
-        .search-container { display: flex; }
-        #search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; box-sizing: border-box; -webkit-appearance: none; background-color: var(--bg-card); color: var(--text-main); }
-        #search-input:focus { outline: none; border-color: var(--ko-primary); }
+        .search-container { display: flex; margin-bottom: 25px; }
+        #search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-card); color: var(--text-main); }
         #search-btn { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
-        
-        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
-        .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; transform: translateX(0); }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
         .mobile-nav.active { transform: translateX(280px); }
         .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
-        .mobile-nav-links { flex-grow: 1; overflow-y: auto; }
-        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); font-size: 1em; }
-        .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); width: 20px; text-align: center; }
-        body.light-mode .mobile-nav a:hover { background-color: #f8f9fa; }
-        body.dark-mode .mobile-nav a:hover { background-color: #2a384b; }
-        .mobile-nav-footer { padding: 15px; background-color: var(--bg-main); }
-        .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; margin: 10px; text-decoration: none; }
-
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
+        .mobile-nav a i { margin-right: 15px; color: var(--ko-primary); }
+        .mobile-nav-footer { padding: 15px; }
+        .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; text-decoration: none; }
         .section-title { border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         .product-card-link { text-decoration: none; color: inherit; }
-        .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background-color: var(--bg-main); }
+        .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; }
+        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
         .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
-        .cta-wrapper { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 25px 15px; margin-top: 30px; box-shadow: var(--shadow); }
-        .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.5em; }
-        .cta-container { display: flex; flex-direction: column; gap: 15px; }
-        .cta-item { text-align: center; }
-        .cta-button { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background-color: var(--bg-main); border-radius: var(--border-radius); padding: 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 1em; transition: background-color 0.2s ease; }
-        .cta-button i { font-size: 20px; width: 25px; text-align: center; }
-        footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
-        .footer-links a { color: #bdc3c7; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-        .category-section, .deals-section { margin-top: 40px; }
         .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-card); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-main); box-shadow: var(--shadow); transition: transform 0.2s ease; text-align: center; }
-        .category-item:hover { transform: translateY(-5px); }
+        .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-card); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-main); }
         .category-item i { font-size: 24px; color: var(--ko-primary); margin-bottom: 8px; }
         .category-item span { font-size: 0.8em; font-weight: 600; }
-        .pagination { display: none; justify-content: center; align-items: center; margin-top: 30px; gap: 12px; }
-        .pagination button { background-color: var(--ko-primary); color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.9em; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.2s ease; }
-        .pagination button:hover:not(:disabled) { background-color: #0056b3; }
-        .pagination button:disabled { cursor: not-allowed; background-color: #a0a0a0; opacity: 0.7; }
-        .pagination span { font-weight: 600; color: var(--text-secondary); }
-        .loading-indicator { text-align: center; padding: 40px; color: var(--text-secondary); }
-        .skeleton-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); }
-        .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient( 90deg, #e0e0e0 0px, #f0f0f0 40px, #e0e0e0 80px ); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
-        body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color: #334155; background-image: linear-gradient( 90deg, #334155 0px, #475569 40px, #334155 80px ); }
+        .skeleton-card { background: var(--bg-card); border-radius: var(--border-radius); }
+        .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
+        body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color: #334155; background-image: linear-gradient(90deg, #334155, #475569, #334155); }
         .skeleton-image { width: 100%; aspect-ratio: 1 / 1; }
         .skeleton-text { height: 1.2rem; margin: 12px 15px 0; border-radius: 4px; }
         .skeleton-text.w-75 { width: 75%; }
         .skeleton-text.w-50 { width: 50%; margin-top: 10px; margin-bottom: 15px; }
-        @keyframes skeleton-shimmer { 0% { background-position: -150px; } 100% { background-position: 150px; } }
-        .product-card img.lazy { opacity: 0; transition: opacity 0.4s ease-in-out; }
-        .product-card img.lazy.loaded { opacity: 1; }
-        .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        @keyframes skeleton-shimmer { 100% { background-position: 250px; } }
+        .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -webkit-overflow-scrolling: touch;}
         .deals-carousel-wrapper::-webkit-scrollbar { display: none; }
         .deals-grid { display: flex; gap: 15px; }
         .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
-        .deals-grid .product-card h3 { font-size: 0.85rem; }
-        .deals-grid .product-card .price { font-size: 1rem; }
         @media (min-width: 768px) {
             .product-grid { grid-template-columns: repeat(3, 1fr); }
-            .cta-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .category-grid { grid-template-columns: repeat(6, 1fr); }
             .deals-grid .product-card { flex: 0 0 200px; width: 200px; }
         }
-        .prompt-banner { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--text-main); color: var(--bg-main); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1001; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); transform: translateY(100%); transition: transform 0.4s ease-in-out; }
-        .prompt-banner.visible { transform: translateY(0); }
-        .prompt-banner p { margin: 0; }
-        .prompt-banner a { color: var(--ko-accent); font-weight: bold; text-decoration: underline; }
-        #close-prompt-btn { background: none; border: none; color: var(--bg-main); font-size: 1.5em; cursor: pointer; }
-        .product-card .verified-text { font-size: 0.85em; font-weight: bold; color: #28a745; margin: -10px 15px 15px; }
-        #dynamic-header { position: relative; width: 100%; overflow: hidden; margin-bottom: 25px; }
-        #header-slides-container { display: flex; transition: transform 0.5s ease-in-out; }
-        .header-slide { flex: 0 0 100%; box-sizing: border-box; padding: 20px 15px; display: flex; justify-content: center; align-items: center; }
-        .header-slide .product-card-link { text-decoration: none; color: inherit; display: block; width: 100%; max-width: 320px; }
-        .header-slide .product-card { background: var(--bg-card); box-shadow: var(--shadow); border-radius: var(--border-radius); overflow: hidden; text-align: center; }
-        .header-slide .product-card h3 { font-size: 1.1em; padding: 12px 10px; margin: 0; }
-        .header-slide .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
-        .header-slide .product-card .price { font-size: 1.2em; font-weight: bold; color: var(--ko-primary); padding: 12px 10px; margin: 0; }
-        .header-nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(0, 0, 0, 0.4); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.5em; cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; }
-        .header-nav-arrow.prev { left: 10px; }
-        .header-nav-arrow.next { right: 10px; }
-        @media (min-width: 768px) { .header-slide .product-card-link { max-width: 350px; } }
-        .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); transition: transform 0.2s ease, color 0.2s ease; backdrop-filter: blur(2px); }
-        .product-card .wishlist-btn:hover { transform: scale(1.1); }
-        .product-card .wishlist-btn.active { color: #e74c3c; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(3px); }
-        .modal-overlay.show { display: flex; }
-        .modal-content { background-color: var(--bg-card); padding: 25px 30px; border-radius: var(--border-radius); box-shadow: 0 5px 25px rgba(0,0,0,0.15); text-align: center; max-width: 350px; width: 100%; animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        .modal-icon { font-size: 48px; margin-bottom: 15px; }
-        #modal-title { margin: 0 0 10px; font-size: 1.5em; color: var(--text-main); }
-        #modal-message { margin: 0 0 25px; color: var(--text-secondary); line-height: 1.5; }
-        .modal-buttons { display: flex; gap: 15px; justify-content: center; }
-        .modal-btn { padding: 10px 20px; border: none; border-radius: 20px; font-size: 1em; font-weight: bold; cursor: pointer; min-width: 100px; transition: transform 0.2s ease; }
-        .modal-btn:hover { transform: translateY(-2px); }
-        .modal-btn-primary { background-color: var(--ko-primary); color: white; }
-        .modal-btn-secondary { background-color: #e9ecef; color: var(--text-main); }
-        .modal-theme-success #modal-title { color: #28a745; }
-        .modal-theme-info #modal-title { color: #007bff; }
-        .category-count { font-weight: normal; color: var(--text-secondary); font-size: 0.9em; }
-        .product-card.is-sold { position: relative; }
-        .product-card-sold-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; }
-        .product-card-sold-overlay span { color: #dc3545; font-size: 1.8em; font-weight: bold; border: 3px solid #dc3545; padding: 5px 15px; border-radius: 5px; transform: rotate(-15deg); background-color: rgba(255, 255, 255, 0.9); }
-        .product-card.is-sold img { filter: grayscale(90%); }
+        .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); }
         .stock-info { font-size: 0.85em; font-weight: bold; margin: -10px 15px 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-        .in-stock { color: #155724; background-color: #d4edda; }
         .low-stock { color: #856404; background-color: #fff3cd; }
-        .out-of-stock { color: #721c24; background-color: #f8d7da; }
+        
+        @media (min-width: 1400px) {
+            .container { max-width: 95%; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+            .category-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+        }
+        
+        .load-more-container { text-align: center; padding: 30px 0; display: none; }
+        #load-more-btn {
+            background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 12px 25px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        #load-more-btn .loading-icon { animation: rotate 1.5s linear infinite; }
+        @keyframes rotate { to { transform: rotate(360deg); } }
+
+        #back-to-top-btn {
+            position: fixed; bottom: 100px; right: 25px; width: 45px; height: 45px;
+            background-color: rgba(var(--ko-primary-rgb), 0.8); color: white; border: none; border-radius: 50%;
+            font-size: 18px; cursor: pointer; z-index: 998; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transform: translateY(20px);
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+        }
+        #back-to-top-btn.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+        #open-chat-button {
+            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
+            background-color: var(--ko-primary); color: white; border: none; border-radius: 50%;
+            font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            animation: bounce 2s ease infinite 4s;
+        }
+        #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
+        .chat-modal-content {
+            position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%;
+            max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+            overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .chat-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .chat-modal-header h3 { margin: 0; font-size: 1.2em; color: var(--text-main); }
+        #close-chat-button { background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; padding: 5px; }
+        #chat-iframe { width: 100%; height: 100%; border: none; }
+        #chat-modal-container.active { display: flex; }
+        #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
+        #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+/* ==================================================== */
+        /* CALL-TO-ACTION (CTA) SECTION STYLES         */
+        /* ==================================================== */
+
+        .cta-wrapper {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 30px 20px;
+            margin-top: 40px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        .cta-wrapper h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            color: var(--text-main);
+        }
+        .cta-container {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column on mobile */
+            gap: 15px;
+        }
+        .cta-item {
+            text-align: center;
+        }
+        .cta-button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-color: var(--ko-primary);
+        }
+        .cta-button i {
+            font-size: 20px;
+            width: 25px;
+            text-align: center;
+            color: var(--ko-primary);
+        }
+
+        /* Make it a two-column grid on larger screens */
+        @media (min-width: 768px) {
+            .cta-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .cta-wrapper {
+                padding: 40px;
+            }
+        }
     </style>
 </head>
 <body>
     <script src="/theme.js"></script>
 
     <header class="sticky-header">
-        <div class="header-content">
+        <div class="header-content container">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link active">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
@@ -263,7 +285,6 @@
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
             </nav>
-
             <div class="header-icons">
                  <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
                 <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
@@ -273,87 +294,61 @@
         </div>
     </header>
 
-    <div class="mobile-nav-overlay"></div>
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
             <a href="/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
-            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
             <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="/dashboard/" class="post-button">Post Something Free</a>
         </div>
     </nav>
+    <div class="mobile-nav-overlay"></div>
 
     <div class="container page-container">
-        <div class="search-container" style="margin-bottom: 25px;">
+        <div class="search-container">
             <input type="text" id="search-input" placeholder="Search for items, e.g. 'iPhone'">
             <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
-        
-        <section id="dynamic-header" class="dynamic-header">
-            <div id="header-slides-container" class="header-slides-container"></div>
-            <button id="header-prev-btn" class="header-nav-arrow prev" aria-label="Previous slide">&lt;</button>
-            <button id="header-next-btn" class="header-nav-arrow next" aria-label="Next slide">&gt;</button>
-        </section>
 
-        <section class="category-section">
+        <section class="category-section" style="margin-top: 25px;">
             <h2 class="section-title">Browse by Category</h2>
             <div class="category-grid">
                 <a href="/?category=Electronics" class="category-item"><i class="fa-solid fa-mobile-screen-button"></i><span>Electronics</span></a>
                 <a href="/?category=Clothing+%26+Apparel" class="category-item"><i class="fa-solid fa-shirt"></i><span>Clothing</span></a>
                 <a href="/?category=Home+%26+Furniture" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
                 <a href="/rentals/" class="category-item"><i class="fa-solid fa-house"></i><span>Rentals</span></a>
-                <a href="https://services.kabaleonline.com" class="category-item"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
+                <a href="https://gigs.kabaleonline.com" class="category-item service-link"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
                 <a href="/?category=Other" class="category-item"><i class="fa-solid fa-shapes"></i><span>Other</span></a>
             </div>
         </section>
 
-        <section class="deals-section" id="deals-section" style="display: none;">
+        <section class="deals-section" id="deals-section" style="display: none; margin-top: 40px;">
             <h2 class="section-title">Today's Top Deals</h2>
             <div class="deals-carousel-wrapper">
                 <div id="deals-grid" class="deals-grid"></div>
             </div>
         </section>
 
-        <section class="save-on-more-section" id="save-on-more-section" style="display: none; margin-top: 40px;">
-            <h2 class="section-title">Save on More</h2>
-            <div class="deals-carousel-wrapper">
-                <div id="save-on-more-grid" class="deals-grid"></div>
-            </div>
-        </section>
-
-        <section class="sponsored-section" id="sponsored-section" style="display: none; margin-top: 40px;">
-            <h2 class="section-title">Sponsored Items</h2>
-            <div class="deals-carousel-wrapper">
-                <div id="sponsored-grid" class="deals-grid"></div>
-            </div>
-        </section>
-
-        <main>
+        <main style="margin-top: 40px;">
             <h2 id="listings-title" class="section-title">Recent Items</h2>
             <div id="product-grid" class="product-grid"></div>
-            <div id="pagination-container" class="pagination">
-                <button id="prev-page-btn" disabled>&laquo; Previous</button>
-                <span id="page-indicator">Page 1 of 1</span>
-                <button id="next-page-btn" disabled>Next &raquo;</button>
-            </div>
-        </main>
+            
+            <div id="load-more-container" class="load-more-container">
+            <button id="load-more-btn">
+                <i class="fa-solid fa-rotate"></i>
+                <span>LOAD MORE</span>
+            </button>
+        </div>
 
         <div class="cta-wrapper">
             <h2>What would you like to do?</h2>
             <div class="cta-container">
                 <div class="cta-item"><a href="/dashboard/" class="cta-button"><i class="fa-solid fa-plus-circle"></i>Upload an item </a></div>
-                <div class="cta-item"><a href="https://gigs.kabaleonline.com" class="cta-button"><i class="fa-solid fa-concierge-bell"></i>Explore Services</a></div>
-                <div class="cta-item"><a href="https://gigs.kabaleonline.com" class="cta-button"><i class="fa-solid fa-bullhorn"></i>Offer a Service</a></div>
+                <div class="cta-item"><a href="https://gigs.kabaleonline.com" class="cta-button service-link"><i class="fa-solid fa-concierge-bell"></i>Explore Services</a></div>
+                <div class="cta-item"><a href="https://gigs.kabaleonline.com" class="cta-button service-link"><i class="fa-solid fa-bullhorn"></i>Offer a Service</a></div>
                 <div class="cta-item"><a href="/blog/" class="cta-button"><i class="fa-solid fa-book-open"></i>Read Our Blog</a></div>
                 <div class="cta-item"><a href="/requests/view.html" class="cta-button"><i class="fa-solid fa-clipboard-list"></i>Request an Item</a></div>
                 <div class="cta-item"><a href="/submit-story.html" class="cta-button"><i class="fa-solid fa-pen-to-square"></i>Share a Story</a></div>
@@ -362,69 +357,27 @@
                 <div class="cta-item"><a href="/rentals/" class="cta-button"><i class="fa-solid fa-house"></i>List a Rental</a></div>
             </div>
         </div>
-    </div>
-    <div id="login-prompt-banner" class="prompt-banner" style="display: none;">
-        <p><strong>Want to save items or sell your own?</strong> <a href="/login/">Log in</a> or <a href="/signup/">Sign Up</a>!</p>
-        <button id="close-prompt-btn">&times;</button>
-    </div>
-    <button id="install-button" class="cta-button" style="display: none; max-width: 250px; margin: 20px auto; justify-content: center;">
-        <i class="fa-solid fa-download"></i> Install Kabale Online App
-    </button>
-    <footer>
+
+    </main>
+    
+    
+    <footer style="margin-top: 30px;">
         <div class="container">
-            <div class="footer-logo">Kabale <span>Online</span></div>
-            <p class="footer-tagline">Your Community Marketplace</p>
-            <div class="footer-socials">
-                 <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            </div>
-            <div class="footer-links">
-                <a href="/about.html">About</a>
-                <a href="/blog/">Blog</a>
-                <a href="/terms.html">Terms</a>
-                <a href="/contact.html">Contact</a>
-            </div>
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-        </div>
-        <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
-            <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif; animation:fadeIn 0.3s ease-out;">
-                <h3 style="margin-bottom:15px; color:var(--text-main);">Notice</h3>
-                <p style="margin-bottom:20px; color:var(--text-secondary);">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-                <button id="continue-btn" style="padding:10px 20px; background:var(--ko-primary); border:none; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;">Continue</button>
-            </div>
-        </div>
-        <style>
-        @keyframes fadeIn { from { opacity:0; transform: scale(0.8); } to { opacity:1; transform: scale(1); } }
-        #continue-btn:hover { background:#0056b3; }
-        </style>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          const serviceLinks = document.querySelectorAll('a[href="/?type=service"]');
-          const modal = document.getElementById('service-notice');
-          const continueBtn = document.getElementById('continue-btn');
-          serviceLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-              e.preventDefault();
-              modal.style.display = 'flex';
-            });
-          });
-          continueBtn.addEventListener('click', function() { window.location.href = 'https://gigs.kabaleonline.com'; });
-          modal.addEventListener('click', function(e) { if(e.target === modal) modal.style.display = 'none'; });
-        });
-        </script>
-        <div id="custom-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div id="modal-icon" class="modal-icon"></div>
-                <h3 id="modal-title"></h3>
-                <p id="modal-message"></p>
-                <div id="modal-buttons" class="modal-buttons"></div>
-            </div>
         </div>
     </footer>
 
-    <script type="module" src="../ui.js"></script>
-    <script type="module" src="main.js"></script>
-    <script type="module" src="../shared.js"></script>
+    <button id="back-to-top-btn" aria-label="Back to Top"><i class="fa-solid fa-arrow-up"></i></button>
+    <button id="open-chat-button" aria-label="Open AI Assistant"><i class="fa-solid fa-robot"></i></button>
+    <div id="chat-modal-container">
+        <div class="chat-modal-overlay"></div>
+        <div class="chat-modal-content">
+            <div class="chat-modal-header">
+                <h3>KabaleOnline Assistant</h3>
+                <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <iframe id="chat-iframe" src="/chat.html" title="KabaleOnline AI Assistant"></iframe>
+        </div>
+    </div>
 </body>
 </html>
