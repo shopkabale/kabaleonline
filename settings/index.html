@@ -12,19 +12,16 @@
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-            
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
             --danger-color: #dc3545;
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
@@ -38,7 +35,6 @@
             --text-secondary: var(--text-secondary-light);
             --border-color: var(--border-color-light);
         }
-
         body.dark-mode {
             --bg-main: var(--bg-dark);
             --bg-card: var(--bg-card-dark);
@@ -46,7 +42,7 @@
             --text-secondary: var(--text-secondary-dark);
             --border-color: var(--border-color-dark);
         }
-        
+
         /* --- GENERAL & HEADER STYLES --- */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -54,6 +50,7 @@
             background-color: var(--bg-main); 
             color: var(--text-main); 
             line-height: 1.6; 
+            transition: background-color 0.3s, color 0.3s;
         }
         .container { max-width: 960px; margin: 0 auto; padding: 0 15px; }
         .page-content { padding-top: 90px; padding-bottom: 30px; }
@@ -76,14 +73,6 @@
         .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
         .header-icons a:hover { color: var(--ko-primary); }
 
-        .desktop-nav { display: none; } 
-        @media (min-width: 1024px) {
-            .hamburger-menu { display: none; }
-            .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
-            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
-            .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
-        }
-
         /* --- MOBILE NAV STYLES --- */
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
         .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
@@ -93,10 +82,10 @@
         .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
         .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); }
         .mobile-nav .post-button { font-weight: bold; color: var(--ko-primary); }
-        
+
         /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
         .home-link { color: var(--ko-primary); text-decoration: none; font-weight: 600; margin-bottom: 15px; display: inline-block; }
-        .settings-card { background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; border: 1px solid var(--border-color); }
+        .settings-card { background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s;}
         .settings-card h2 { margin-top: 0; color: var(--text-main); font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
         .setting-item:last-child { border-bottom: none; }
@@ -119,19 +108,12 @@
         .danger-zone button:last-child { border-bottom: none; }
         .danger-zone button strong { color: var(--danger-color); }
         .danger-zone button:hover { background-color: rgba(220, 53, 69, 0.1); }
-
+        
         /* Loader Styles */
         .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--ko-primary); border-radius: 50%; box-shadow: 0 0 0 0 rgba(var(--ko-primary-rgb), 1); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--ko-primary-rgb), 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(var(--ko-primary-rgb), 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--ko-primary-rgb), 0); } }
 
-        /* Message styles */
-        .error-message, .success-message { display: none; border-radius: 5px; padding: 10px; text-align: center; margin-bottom: 20px; font-weight: bold; font-size: 0.9em; border: 1px solid; }
-        body.light-mode .error-message { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
-        body.dark-mode .error-message { color: #f5c6cb; background-color: #4a1c24; border-color: var(--danger-color); }
-        body.light-mode .success-message { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
-        body.dark-mode .success-message { color: #c3e6cb; background-color: #1f3c2b; border-color: #28a745; }
-
-        /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
+        /* --- FOOTER STYLES --- */
         footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
         .footer-logo span { color: var(--ko-accent); }
@@ -141,18 +123,10 @@
     </style>
 </head>
 <body>
-    <script src="/theme.js"></script>
 
     <header class="sticky-header">
         <div class="header-content container">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            <nav class="desktop-nav">
-                <a href="/shop/" class="nav-link">Shop</a>
-                <a href="/rentals/" class="nav-link">Hostels</a>
-                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
-                <a href="/events/" class="nav-link">Events</a>
-                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
-            </nav>
             <div class="header-icons">
                 <a href="/cart.html"><i class="fa-solid fa-cart-shopping"></i></a>
                 <a href="/inbox.html"><i class="fa-regular fa-bell"></i></a>
@@ -167,11 +141,6 @@
         <div class="mobile-nav-header">Kabale Online</div>
         <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
         <a href="/?type=service" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-        <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-        <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-        <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
-        <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
-        <hr>
         <a href="/upload/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
     </nav>
 
@@ -179,11 +148,9 @@
         <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
         <h1>Settings</h1>
 
-        <div id="settings-loader"><div class="loader-pulse"></div></div>
+        <div id="settings-loader" style="display:none;"><div class="loader-pulse"></div></div>
 
-        <div id="settings-content" style="display:none;">
-            <p id="settings-message" style="display: none;"></p>
-
+        <div id="settings-content">
             <div class="settings-card">
                 <h2>Appearance</h2>
                 <div class="setting-item">
@@ -210,35 +177,10 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <div class="setting-item">
-                    <div class="label">
-                        <p>Messages in Inbox</p>
-                        <span>Get an email when a user sends you a message.</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="messages-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="settings-card">
-                <h2>Privacy Settings</h2>
-                <div class="setting-item">
-                    <div class="label">
-                        <p>Show WhatsApp on Listings</p>
-                        <span>Allow any visitor to see your number on your product pages.</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="whatsapp-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
             </div>
 
             <div class="settings-card danger-zone">
                 <h2>Account Management</h2>
-                <button id="change-password-btn">Change Password</button>
                 <button id="deactivate-account-btn">Deactivate Account</button>
                 <button id="delete-account-btn"><strong>Delete Account Permanently</strong></button>
             </div>
@@ -256,57 +198,51 @@
             <p class="copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
-    
-    <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-        background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1201;">
-      <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
-        box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif;">
-        <h3 style="margin-bottom:15px; color:var(--text-main);">Notice</h3>
-        <p style="margin-bottom:20px; color:var(--text-secondary);">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-        <button id="continue-btn" style="padding:10px 20px; background:var(--ko-primary); border:none; border-radius:8px; 
-          color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
-      </div>
-    </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Logic for the mobile nav toggle and service modal
-      const hamburger = document.querySelector('.hamburger-menu');
-      const mobileNav = document.querySelector('.mobile-nav');
-      const overlay = document.querySelector('.mobile-nav-overlay');
-      if (hamburger && mobileNav && overlay) {
-          hamburger.addEventListener('click', () => {
-              mobileNav.classList.toggle('active');
-              overlay.classList.toggle('active');
-          });
-          overlay.addEventListener('click', () => {
-              mobileNav.classList.remove('active');
-              overlay.classList.remove('active');
-          });
-      }
-      
-      const serviceLinks = document.querySelectorAll('a.service-link');
-      const modal = document.getElementById('service-notice');
-      const continueBtn = document.getElementById('continue-btn');
-      if(modal && continueBtn && serviceLinks.length > 0) {
-        serviceLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-              e.preventDefault();
-              modal.style.display = 'flex';
-            });
-        });
-        continueBtn.addEventListener('click', function() {
-            window.location.href = 'https://gigs.kabaleonline.com';
-        });
-        modal.addEventListener('click', function(e) {
-            if(e.target === modal) modal.style.display = 'none';
-        });
-      }
-    });
-    </script>
+        // --- THEME LOGIC ---
+        function applyTheme(theme) {
+            document.body.className = '';
+            document.body.classList.add(theme);
+        }
 
-    <script type="module" src="../js/shared.js"></script>
-    <script type="module" src="script.js"></script>
-    <script type="module" src="../js/ui.js"></script>
+        function initializeThemeToggle() {
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                const currentTheme = localStorage.getItem('theme') || 'light-mode';
+                themeToggle.checked = (currentTheme === 'light-mode');
+                applyTheme(currentTheme);
+                themeToggle.addEventListener('change', function() {
+                    const newTheme = this.checked ? 'light-mode' : 'dark-mode';
+                    applyTheme(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+        }
+
+        // --- MOBILE NAV LOGIC ---
+        function initializeMobileNav() {
+            const hamburger = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            if (hamburger && mobileNav && overlay) {
+                hamburger.addEventListener('click', () => {
+                    mobileNav.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+                overlay.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        }
+        
+        // --- INITIALIZE ALL LOGIC ON PAGE LOAD ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeThemeToggle();
+            initializeMobileNav();
+            // You can add other initialization functions here, like fetching user settings
+        });
+    </script>
 </body>
 </html>
