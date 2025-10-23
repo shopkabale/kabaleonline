@@ -379,5 +379,37 @@
             <iframe id="chat-iframe" src="/chat.html" title="KabaleOnline AI Assistant"></iframe>
         </div>
     </div>
+<script type="module" src="../ui.js"></script>
+    <script type="module" src="main.js"></script>
+    <script type="module" src="../shared.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openChatButton = document.getElementById('open-chat-button');
+        const closeChatButton = document.getElementById('close-chat-button');
+        const chatModalContainer = document.getElementById('chat-modal-container');
+        const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+
+        // Function to open the modal
+        function openModal() {
+            if (chatModalContainer) {
+                chatModalContainer.classList.add('active');
+            }
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            if (chatModalContainer) {
+                chatModalContainer.classList.remove('active');
+            }
+        }
+
+        // Add click event listeners
+        if (openChatButton) openChatButton.addEventListener('click', openModal);
+        if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
+        if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+    });
+    </script>
+
 </body>
 </html>
