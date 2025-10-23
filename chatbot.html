@@ -93,12 +93,11 @@
 
         /* --- FIXED LAYOUT & CHAT STYLES --- */
         .page-container {
-            /* ⭐ THIS IS THE FIX ⭐ Pushes all content down below the 70px header */
-            padding-top: 70px; 
+            padding-top: 70px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            /* height: 100%; <--- THIS LINE WAS REMOVED. IT'S THE FIX. */
             overflow: hidden;
         }
         .chat-page-title {
@@ -141,7 +140,7 @@
         .quick-help { margin-bottom: 15px; }
         .quick-help p { margin: 0 0 10px; font-weight: 500; color: var(--text-secondary); }
         .quick-help-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
-        .quick-help button { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
+        .quick-help button { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; }
         .quick-help button:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
         .chat-form { display: flex; gap: 10px; }
         #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
@@ -192,6 +191,7 @@
     <script src="bot/data/responses.js"></script>
     <script src="bot/data/answers.js"></script>
     <script>
+        // --- THEME LOGIC ---
         function applyTheme(theme) {
             document.body.className = '';
             document.body.classList.add(theme);
@@ -212,6 +212,7 @@
         }
         applyTheme(localStorage.getItem('theme') || 'light-mode');
 
+        // --- CHATBOT LOGIC ---
         document.addEventListener('DOMContentLoaded', function() {
             initializeThemeToggle();
 
@@ -221,8 +222,7 @@
             const quickHelpButtons = document.querySelectorAll('.quick-help button');
 
             function levenshteinDistance(a, b) {
-                if (a.length === 0) return b.length;
-                if (b.length === 0) return a.length;
+                if (a.length === 0) return b.length; if (b.length === 0) return a.length;
                 const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
                 for (let i = 0; i <= a.length; i++) { matrix[0][i] = i; }
                 for (let j = 0; j <= b.length; j++) { matrix[j][0] = j; }
