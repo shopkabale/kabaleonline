@@ -576,25 +576,41 @@
         /* ==================================================== */
 
         /* 1. The Floating Button Styles */
-        #open-chat-button {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            background-color: var(--ko-primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
+        /* Add this to your main <style> block */
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+}
+#open-chat-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--ko-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+
+    /* ⭐ ADD THIS LINE ⭐ */
+    animation: bounce 2s ease infinite 3s;
+}
 
         #open-chat-button:hover {
             transform: scale(1.1);
