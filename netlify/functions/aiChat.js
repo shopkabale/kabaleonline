@@ -1,50 +1,43 @@
-import fetch from "node-fetch";
+import fs from "fs";
+import path from "path";
 
-export async function handler(event, context) {
+export async function handler(event) {
   try {
-    const { message } = JSON.parse(event.body);
-
-    const hfKey = process.env.HUGGINGFACE_API_KEY;
-    if (!hfKey) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "Missing Hugging Face API key in environment variables." }),
-      };
+    const { message } = JSON.parse(event.body || "{}");
+    if (!message) {
+      return { statusCode: 400, body: JSON.stringify({ reply: "No message received." }) };
     }
 
-    const response = await fetch("https://router.huggingface.co/mistralai/Mistral-7B-Instruct-v0.2", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${hfKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: message,
-        parameters: { max_new_tokens: 150 },
-      }),
-    });
+    const text = message.toLowerCase();
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Hugging Face API Error:", err);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: "AI API call failed", details: err }),
-      };
+    // Load local data
+    const basePath = path.resolve("./bot/data");
+    const responses = JSON.parse(fs.readFileSync(path.join(basePath, "responses.json")));
+    const answers = JSON.parse(fs.readFileSync(path.join(basePath, "answers.json")));
+
+    // Match user message with keywords
+    for (const key in responses) {
+      if (responses[key].some(word => text.includes(word))) {
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ reply: answers[key] }),
+        };
+      }
     }
 
-    const data = await response.json();
-    const botReply = data[0]?.generated_text || "Sorry, I couldn’t understand that.";
-
+    // Default fallback
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply: botReply }),
+      body: JSON.stringify({
+        reply:
+          "🤖 I'm not sure I understand yet, but you can visit www.kabaleonline.com for help or contact support on WhatsApp.",
+      }),
     };
-  } catch (error) {
-    console.error("Server Error:", error);
+  } catch (err) {
+    console.error("Offline AI Chat Error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal Server Error", details: error.message }),
+      body: JSON.stringify({ reply: "Internal error occurred. Please try again later." }),
     };
   }
 }
