@@ -1255,108 +1255,46 @@
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Get all required elements ---
+    // --- Get the essential elements ---
     const openChatButton = document.getElementById('open-chat-button');
     const closeChatButton = document.getElementById('close-chat-button');
     const chatModalContainer = document.getElementById('chat-modal-container');
     const chatModalOverlay = document.querySelector('.chat-modal-overlay');
-    const chatModal = document.querySelector('.chat-modal-content');
-    const header = document.querySelector('.chat-modal-header');
-    const resizeHandle = document.getElementById('resize-handle');
-    const body = document.body;
 
-    // --- Open/Close Modal Logic ---
+    // --- Simple and reliable open/close functions ---
+    
+    // Function to open the modal
     function openModal() {
         if (chatModalContainer) {
+            // This simply makes the container visible
             chatModalContainer.classList.add('active');
         }
     }
 
-    // ⭐ FIX: This function now correctly closes the modal and resets its position for next time.
+    // Function to close the modal
     function closeModal() {
         if (chatModalContainer) {
+            // This simply hides the container again
             chatModalContainer.classList.remove('active');
-            
-            // This is crucial: Reset all inline styles set by dragging/resizing.
-            // This ensures the modal will always open smoothly in the center.
-            chatModal.style.top = '';
-            chatModal.style.left = '';
-            chatModal.style.width = '';
-            chatModal.style.height = '';
-            chatModal.style.transform = '';
         }
     }
 
-    // Correctly attach all event listeners
-    if (openChatButton) openChatButton.addEventListener('click', openModal);
-    if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
-    if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+    // --- Attach the click event listeners ---
 
-    // --- Movable (Drag) Logic ---
-    let isDragging = false;
-    let offsetX, offsetY;
+    // When the floating button is clicked, open the modal
+    if (openChatButton) {
+        openChatButton.addEventListener('click', openModal);
+    }
 
-    header.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        
-        // ⭐ FIX: Calculate offset based on the element's rendered position, not its internal properties.
-        const rect = chatModal.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
+    // When the 'X' button inside the modal is clicked, close it
+    if (closeChatButton) {
+        closeChatButton.addEventListener('click', closeModal);
+    }
 
-        // ⭐ FIX: This line is the key to preventing the bounce.
-        // It removes the centering `transform` before we start moving the element.
-        chatModal.style.transform = 'none';
-        
-        // Lock the top/left to their current pixel values before the drag starts.
-        chatModal.style.left = `${rect.left}px`;
-        chatModal.style.top = `${rect.top}px`;
-        
-        body.classList.add('is-dragging');
-    });
-
-    // --- Resizable Logic ---
-    let isResizing = false;
-    let lastX, lastY;
-
-    resizeHandle.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
-        body.classList.add('is-resizing');
-    });
-
-    // --- Global Mouse Events for Dragging and Resizing ---
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            e.preventDefault();
-            chatModal.style.left = `${e.clientX - offsetX}px`;
-            chatModal.style.top = `${e.clientY - offsetY}px`;
-        }
-        if (isResizing) {
-            e.preventDefault();
-            const width = chatModal.offsetWidth + (e.clientX - lastX);
-            const height = chatModal.offsetHeight + (e.clientY - lastY);
-            
-            // Set new dimensions, respecting min-width/height from CSS
-            chatModal.style.width = `${width}px`;
-            chatModal.style.height = `${height}px`;
-
-            lastX = e.clientX;
-            lastY = e.clientY;
-        }
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (isDragging) {
-            isDragging = false;
-            body.classList.remove('is-dragging');
-        }
-        if (isResizing) {
-            isResizing = false;
-            body.classList.remove('is-resizing');
-        }
-    });
+    // When the dark background overlay is clicked, close the modal
+    if (chatModalOverlay) {
+        chatModalOverlay.addEventListener('click', closeModal);
+    }
 });
 </script>
 </body>
