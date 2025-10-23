@@ -14,56 +14,29 @@
     <title>AI Assistant | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* --- THEME-AWARE CSS VARIABLES --- */
+        /* All CSS remains the same as before */
         :root {
-            --ko-primary: #007aff;
-            --ko-primary-rgb: 0, 122, 255;
-            --ko-accent: #ffc107;
-            --bg-light: #f8f9fa;
-            --bg-card-light: #ffffff;
-            --text-main-light: #212529;
-            --text-secondary-light: #6c757d;
-            --border-color-light: #e9ecef;
-            --bg-dark: #0f172a;
-            --bg-card-dark: #1e2b3b;
-            --text-main-dark: #e2e8f0;
-            --text-secondary-dark: #94a3b8;
-            --border-color-dark: #334155;
-            --shadow: 0 10px 30px rgba(0,0,0,0.07);
-            --border-radius: 12px;
+            --ko-primary: #007aff; --ko-primary-rgb: 0, 122, 255; --ko-accent: #ffc107;
+            --bg-light: #f8f9fa; --bg-card-light: #ffffff; --text-main-light: #212529;
+            --text-secondary-light: #6c757d; --border-color-light: #e9ecef; --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b; --text-main-dark: #e2e8f0; --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155; --shadow: 0 10px 30px rgba(0,0,0,0.07); --border-radius: 12px;
         }
-
-        /* --- THEME-SWITCHING LOGIC --- */
         body.light-mode {
-            --bg-main: var(--bg-light);
-            --bg-card: var(--bg-card-light);
-            --text-main: var(--text-main-light);
-            --text-secondary: var(--text-secondary-light);
-            --border-color: var(--border-color-light);
+            --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
         }
         body.dark-mode {
-            --bg-main: var(--bg-dark);
-            --bg-card: var(--bg-card-dark);
-            --text-main: var(--text-main-dark);
-            --text-secondary: var(--text-secondary-dark);
-            --border-color: var(--border-color-dark);
+            --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
         }
-
-        /* --- GENERAL & HEADER STYLES --- */
         * { box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-            line-height: 1.6; 
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; 
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
         .container { max-width: 800px; margin: 0 auto; padding: 0 15px; width: 100%; }
-        
         .sticky-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
@@ -72,13 +45,10 @@
         }
         body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
         body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
-
         .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
         .header-icons { display: flex; align-items: center; gap: 20px; position: relative; }
-
-        /* --- THEME TOGGLE SWITCH --- */
         .theme-switch { display: inline-block; height: 24px; position: relative; width: 50px; }
         .theme-switch input { display:none; }
         .slider { background-color: var(--border-color-dark); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
@@ -90,34 +60,19 @@
         .slider .fa-sun { right: 6px; display: none; }
         input:checked + .slider .fa-moon { display: none; }
         input:checked + .slider .fa-sun { display: block; }
-
-        /* --- FIXED LAYOUT & CHAT STYLES --- */
         .page-container {
-            padding-top: 70px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            /* height: 100%; <--- THIS LINE WAS REMOVED. IT'S THE FIX. */
+            padding-top: 70px; flex-grow: 1; display: flex; flex-direction: column;
             overflow: hidden;
         }
         .chat-page-title {
-            font-size: 1.8em;
-            text-align: center;
-            padding: 20px 0;
-            font-weight: 700;
+            font-size: 1.8em; text-align: center; padding: 20px 0; font-weight: 700;
             background: linear-gradient(45deg, var(--ko-primary), var(--ko-accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; text-fill-color: transparent; margin: 0;
         }
         #chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 0 10px 20px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex-grow: 1; overflow-y: auto; padding: 0 10px 20px 10px;
+            display: flex; flex-direction: column; gap: 12px;
         }
         .message { max-width: 80%; width: fit-content; padding: 10px 15px; border-radius: 18px; line-height: 1.5; animation: fadeIn 0.3s ease; }
         .sent { background-color: var(--ko-primary); color: white; margin-left: auto; border-bottom-right-radius: 5px; }
@@ -130,13 +85,7 @@
         .typing-indicator span:nth-child(2) { animation-delay: .2s; }
         .typing-indicator span:nth-child(3) { animation-delay: .4s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
-
-        /* FIXED FORM WRAPPER */
-        .chat-form-wrapper {
-            padding: 15px 0;
-            border-top: 1px solid var(--border-color);
-            background-color: var(--bg-main);
-        }
+        .chat-form-wrapper { padding: 15px 0; border-top: 1px solid var(--border-color); background-color: var(--bg-main); }
         .quick-help { margin-bottom: 15px; }
         .quick-help p { margin: 0 0 10px; font-weight: 500; color: var(--text-secondary); }
         .quick-help-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -169,8 +118,13 @@
     </header>
 
     <div class="container page-container">
-        <h1 class="chat-page-title">Kabale Online Assistant</h1>
-        <div id="chat-messages"></div>
+        <div id="chat-messages">
+            <h1 class="chat-page-title">Kabale Online Assistant</h1>
+            <div class="message received">
+                👋 Hello there! Welcome to the KabaleOnline Assistant. How can I assist you today? You can ask me a question or use one of the quick help buttons below.
+            </div>
+        </div>
+        
         <div class="chat-form-wrapper">
             <div class="quick-help">
                 <p>Quick Help:</p>
@@ -294,12 +248,10 @@
                     handleSend(button.getAttribute('data-query'));
                 });
             });
-
-            function initializeChat() {
-                appendMessage(answers['greetings'], 'received');
-                messageInput.focus();
-            }
-            initializeChat();
+            
+            // ⭐ FIX: The chat is now initialized by default in the HTML.
+            // We just need to focus the input.
+            messageInput.focus();
         });
     </script>
 </body>
