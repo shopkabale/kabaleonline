@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KabaleOnline Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* 🎨 GENERAL PAGE STYLE */
+    :root {
+      --primary-color: #4CAF50; /* A friendly green */
+      --primary-dark: #388E3C;
+      --secondary-color: #FFC107; /* A bright yellow for accents */
+      --bg-gradient-start: #E8F5E9; /* Light green background */
+      --bg-gradient-end: #C8E6C9; /* Slightly darker green */
+      --chat-bg: #ffffff;
+      --bot-msg-bg: #e0f2f1; /* Light teal for bot */
+      --user-msg-bg: var(--primary-color);
+      --text-color-dark: #212121;
+      --text-color-light: #ffffff;
+      --border-color: #e0e0e0;
+      --shadow-light: rgba(0, 0, 0, 0.1);
+      --shadow-medium: rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-color-dark);
+      overflow: hidden; /* Prevent body scroll */
+    }
+
+    .chat-container {
+      background: var(--chat-bg);
+      width: 95%;
+      max-width: 400px; /* Slightly narrower for mobile focus */
+      height: 90vh; /* Taller on mobile */
+      max-height: 700px; /* Max height on larger screens */
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 15px 30px var(--shadow-medium);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 💬 HEADER */
+    .chat-header {
+      background: var(--primary-color);
+      color: var(--text-color-light);
+      text-align: center;
+      padding: 18px 15px;
+      font-size: 1.3em;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--primary-dark);
+      box-shadow: 0 2px 5px var(--shadow-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-header i {
+      margin-right: 10px;
+      font-size: 1.1em;
+    }
+
+    /* 🧠 CHAT BODY */
+    .chat-body {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #fdfdfd; /* Very light background for chat */
+      display: flex;
+      flex-direction: column;
+      gap: 12px; /* Slightly more space between messages */
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
+    }
+
+    /* Scrollbar Styling */
+    .chat-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-body::-webkit-scrollbar-track {
+      background: #f0f0f0;
+    }
+
+    .chat-body::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    .chat-body::-webkit-scrollbar-thumb:hover {
+      background: #aaa;
+    }
+
+    /* 👤 USER + BOT MESSAGES */
+    .msg {
+      max-width: 85%; /* Slightly wider messages */
+      padding: 12px 16px; /* More padding */
+      border-radius: 18px; /* More rounded corners */
+      font-size: 0.9em; /* Slightly smaller font for density */
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease-in-out;
+      word-wrap: break-word;
+      box-shadow: 0 1px 3px var(--shadow-light); /* Subtle shadow for depth */
+    }
+
+    .user {
+      background: var(--user-msg-bg);
+      color: var(--text-color-light);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px; /* Pointy corner towards input */
+    }
+
+    .bot {
+      background: var(--bot-msg-bg);
+      color: var(--text-color-dark);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px; /* Pointy corner towards where it came from */
+    }
+
+    /* ✍️ TYPING INDICATOR */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      align-self: flex-start;
+      background: var(--bot-msg-bg);
+      padding: 10px 15px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 3px var(--shadow-light);
+      width: fit-content;
+      max-width: 85%;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .typing-indicator span {
+      height: 8px;
+      width: 8px;
+      margin: 0 3px;
+      background-color: #b0b0b0; /* Dimmer dots */
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-8px);
+      }
+    }
+
+    /* 💬 INPUT AREA */
+    .chat-footer {
+      display: flex;
+      padding: 12px 15px;
+      border-top: 1px solid var(--border-color);
+      background: var(--chat-bg);
+      gap: 8px; /* Space between input and button */
+    }
+
+    .chat-footer input {
+      flex: 1;
+      border: 1px solid var(--border-color);
+      border-radius: 25px; /* Fully rounded input */
+      padding: 10px 18px;
+      outline: none;
+      font-size: 0.95em;
+      transition: all 0.2s ease;
+      background: #f9f9f9;
+    }
+
+    .chat-footer input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* Green glow on focus */
+      background: #ffffff;
+    }
+
+    .chat-footer button {
+      background: var(--primary-color);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 48px; /* Slightly larger button */
+      height: 48px;
+      font-size: 1.2em; /* Larger icon */
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 5px var(--shadow-light);
+    }
+
+    .chat-footer button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .chat-footer button:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 3px var(--shadow-light);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .chat-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .chat-header {
+        padding: 15px;
+        font-size: 1.2em;
+      }
+      .chat-body {
+        padding: 10px;
+        gap: 10px;
+      }
+      .msg {
+        max-width: 90%;
+        padding: 10px 14px;
+        font-size: 0.85em;
+      }
+      .chat-footer {
+        padding: 10px;
+      }
+      .chat-footer input {
+        padding: 8px 15px;
+        font-size: 0.9em;
+      }
+      .chat-footer button {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header"><i class="fas fa-robot"></i> KabaleOnline Assistant</div>
+
+    <div id="chat-body" class="chat-body">
+      <div class="msg bot">👋 Hello! I’m KabaleOnline Assistant. How can I help you today?</div>
+    </div>
+
+    <div class="chat-footer">
+      <input id="user-input" type="text" placeholder="Type your message..." autocomplete="off">
+      <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <script src="data/responses.js"></script>
+  <script src="data/answers.js"></script>
+
+  <script>
+    const chatBody = document.getElementById("chat-body");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    function appendMessage(content, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("msg", sender);
+      msg.textContent = content;
+      chatBody.appendChild(msg);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function showTyping() {
+      const typingEl = document.createElement("div");
+      typingEl.classList.add("typing-indicator");
+      typingEl.innerHTML = '<span></span><span></span><span></span>';
+      chatBody.appendChild(typingEl);
+      chatBody.scrollTop = chatBody.scrollHeight;
+      return typingEl; // Return the element to remove it later
+    }
+
+    // Offline logic from the previous explanation
+    function getBotReply(message) {
+      const text = message.toLowerCase().trim();
+      
+      for (const key in responses) {
+        if (responses[key].some(word => text.includes(word))) {
+          return answers[key]; 
+        }
+      }
+
+      return "🤖 I'm not sure I understand. Try asking about how to 'sell', 'rent', or find 'jobs'.";
+    }
+
+    function typeWriterEffect(text, element) {
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          chatBody.scrollTop = chatBody.scrollHeight;
+          setTimeout(type, 20); // Slightly faster typing for more natural feel
+        }
+      }
+      type();
+    }
+    
+    async function handleSend() {
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      appendMessage(text, "user");
+      userInput.value = "";
+      userInput.focus(); // Keep focus on input after sending
+
+      const typingEl = showTyping();
+      
+      // Simulate network/thinking delay before getting reply
+      await new Promise(resolve => setTimeout(resolve, 800)); // 0.8-second delay
+
+      const reply = getBotReply(text);
+      typingEl.remove(); // Remove the typing indicator
+
+      const botMsg = document.createElement("div");
+      botMsg.classList.add("msg", "bot");
+      chatBody.appendChild(botMsg);
+
+      typeWriterEffect(reply, botMsg);
+    }
+
+    sendBtn.addEventListener("click", handleSend);
+    userInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault(); // Prevent default form submission if any
+        handleSend();
+      }
+    });
+
+    // Initial focus on input for quick start
+    document.addEventListener('DOMContentLoaded', () => {
+        userInput.focus();
+    });
+  </script>
+</body>
+</html>
