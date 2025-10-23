@@ -21,6 +21,8 @@
             --text-secondary-light: #6c757d; --border-color-light: #e9ecef; --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b; --text-main-dark: #e2e8f0; --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155; --shadow: 0 10px 30px rgba(0,0,0,0.07); --border-radius: 12px;
+            --header-height: 70px;
+            --form-wrapper-height: 88px; /* Approximate height of the input area */
         }
         body.light-mode {
             --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
@@ -36,24 +38,21 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; 
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            height: 100vh; overflow: hidden;
             transition: background-color 0.3s, color 0.3s;
         }
         .container { max-width: 800px; margin: 0 auto; padding: 0 15px; width: 100%; }
         
-        .page-container {
-            padding-top: 70px; flex-grow: 1; display: flex; flex-direction: column;
-            overflow: hidden;
-        }
-
         /* --- HEADER & THEME TOGGLE --- */
         .sticky-header {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: var(--header-height);
             background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
         }
-        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 100%; }
         .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
         .header-icons { display: flex; align-items: center; gap: 20px; position: relative; }
@@ -69,9 +68,13 @@
         input:checked + .slider .fa-moon { display: none; }
         input:checked + .slider .fa-sun { display: block; }
 
-        /* --- CHAT AREA STYLES --- */
+        /* --- CHAT AREA STYLES (THE FIX) --- */
         #chat-messages {
-            flex-grow: 1; overflow-y: auto; padding: 20px 10px;
+            /* This is the core fix. It fills the exact space between the header and the form. */
+            height: calc(100vh - var(--header-height) - var(--form-wrapper-height));
+            margin-top: var(--header-height);
+            overflow-y: auto; 
+            padding: 20px 10px;
         }
         .message-wrapper { display: flex; margin-bottom: 15px; max-width: 85%; animation: fadeIn 0.4s ease; }
         .sent-wrapper { justify-content: flex-end; margin-left: auto; }
@@ -97,9 +100,18 @@
         .suggestion-chip { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; transition: all 0.2s ease; }
         .suggestion-chip:hover { background-color: rgba(var(--ko-primary-rgb), 0.1); border-color: var(--ko-primary); }
 
-        /* --- FIXED INPUT FORM --- */
-        .chat-form-wrapper { padding: 15px; border-top: 1px solid var(--border-color); background-color: var(--bg-main); }
-        .chat-form { display: flex; gap: 10px; }
+        /* FIXED INPUT FORM (THE FIX) */
+        .chat-form-wrapper { 
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px; 
+            border-top: 1px solid var(--border-color); 
+            background-color: var(--bg-main); 
+            height: var(--form-wrapper-height);
+        }
+        .chat-form { display: flex; gap: 10px; max-width: 800px; margin: 0 auto; }
         #message-input { flex-grow: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-main); font-size: 1em; }
         #message-input:focus { outline: none; border-color: var(--ko-primary); }
         .chat-form button { padding: 0; width: 48px; height: 48px; border-radius: 50%; border: none; background-color: var(--ko-primary); color: white; cursor: pointer; font-size: 1.1em; flex-shrink: 0; }
@@ -122,27 +134,22 @@
         </div>
     </header>
 
-    <div class="container page-container">
+    <div class="container">
         <div id="chat-messages"></div>
-        <div class="chat-form-wrapper">
-            <form id="chat-form" class="chat-form">
-                <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
-                <button type="submit" aria-label="Send Message"><i class="fa-solid fa-paper-plane"></i></button>
-            </form>
-        </div>
+    </div>
+
+    <div class="chat-form-wrapper">
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="message-input" placeholder="Type a message..." required autocomplete="off">
+            <button type="submit" aria-label="Send Message"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
     </div>
 
     <script src="bot/data/responses.js"></script>
     <script src="bot/data/answers.js"></script>
     <script>
         // --- THEME LOGIC ---
-        // Applies the selected theme by adding a class to the body.
-        function applyTheme(theme) {
-            document.body.className = '';
-            document.body.classList.add(theme);
-        }
-
-        // Initializes the theme toggle switch, reading from localStorage.
+        function applyTheme(theme) { document.body.className = ''; document.body.classList.add(theme); }
         function initializeThemeToggle() {
             const themeToggle = document.getElementById('theme-toggle');
             if (themeToggle) {
@@ -156,28 +163,42 @@
                 });
             }
         }
-        // Apply theme immediately on script load to prevent flashing
         applyTheme(localStorage.getItem('theme') || 'light-mode');
 
         // --- CHATBOT LOGIC ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize all functionalities once the page is fully loaded
             initializeThemeToggle();
 
-            // DOM Element References
             const chatMessages = document.getElementById('chat-messages');
             const chatForm = document.getElementById('chat-form');
             const messageInput = document.getElementById('message-input');
 
-            /**
-             * Calculates the Levenshtein distance between two strings for typo correction.
-             * @param {string} a - First string.
-             * @param {string} b - Second string.
-             * @returns {number} The distance score.
-             */
+            function getBotReply(message) {
+                const text = message.toLowerCase().trim();
+                if (typeof responses === 'undefined' || typeof answers === 'undefined') { return answers['help']; }
+                let bestMatch = { key: null, score: 0 };
+                for (const key in responses) {
+                    for (const keyword of responses[key]) {
+                        if (text.includes(keyword)) {
+                            const score = keyword.length;
+                            if (score > bestMatch.score) { bestMatch = { key: key, score: score }; }
+                        }
+                    }
+                }
+                if (bestMatch.score > 2) { return answers[bestMatch.key]; }
+                const words = text.split(/\s+/);
+                for (const key in responses) {
+                    for (const keyword of responses[key]) {
+                        for (const word of words) {
+                            if (levenshteinDistance(word, keyword) <= (keyword.length > 5 ? 2 : 1)) { return answers[key]; }
+                        }
+                    }
+                }
+                return answers['help'];
+            }
+
             function levenshteinDistance(a, b) {
-                if (a.length === 0) return b.length;
-                if (b.length === 0) return a.length;
+                if (a.length === 0) return b.length; if (b.length === 0) return a.length;
                 const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
                 for (let i = 0; i <= a.length; i++) { matrix[0][i] = i; }
                 for (let j = 0; j <= b.length; j++) { matrix[j][0] = j; }
@@ -190,55 +211,12 @@
                 return matrix[b.length][a.length];
             }
 
-            /**
-             * Determines the best bot reply using a smart, two-step matching process.
-             * @param {string} message - The user's input message.
-             * @returns {object} The complete answer object {text, suggestions}.
-             */
-            function getBotReply(message) {
-                const text = message.toLowerCase().trim();
-                if (typeof responses === 'undefined' || typeof answers === 'undefined') { return answers['help']; }
-                
-                let bestMatch = { key: null, score: 0 };
-                // Step 1: Prioritize exact and partial phrase matches.
-                for (const key in responses) {
-                    for (const keyword of responses[key]) {
-                        if (text.includes(keyword)) {
-                            const score = keyword.length; // Longer matches are better
-                            if (score > bestMatch.score) { bestMatch = { key: key, score: score }; }
-                        }
-                    }
-                }
-                if (bestMatch.score > 2) { return answers[bestMatch.key]; }
-                
-                // Step 2: If no good match, use fuzzy logic for typo correction.
-                const words = text.split(/\s+/);
-                for (const key in responses) {
-                    for (const keyword of responses[key]) {
-                        for (const word of words) {
-                            if (levenshteinDistance(word, keyword) <= (keyword.length > 5 ? 2 : 1)) {
-                                return answers[key];
-                            }
-                        }
-                    }
-                }
-                
-                // Step 3: If still no match, return the general help answer.
-                return answers['help'];
-            }
-
-            /**
-             * Renders a message (sent or received) in the chat window.
-             * @param {string|object} content - The message string or the bot's answer object.
-             * @param {string} type - 'sent' or 'received'.
-             */
             function appendMessage(content, type) {
                 const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const wrapper = document.createElement('div');
                 wrapper.classList.add('message-wrapper', `${type}-wrapper`);
-                
                 let messageText = (type === 'received' && typeof content === 'object') ? content.text : content;
-                
+                if (messageText === undefined) { messageText = "I'm not sure how to respond to that. Could you try asking in a different way?"; }
                 let messageHTML = '';
                 if (type === 'received') {
                     messageHTML = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message ${type}">${messageText}</div><div class="timestamp">${time}</div></div></div>`;
@@ -247,8 +225,6 @@
                 }
                 wrapper.innerHTML = messageHTML;
                 chatMessages.appendChild(wrapper);
-
-                // If the bot's response has suggestions, display them as clickable chips.
                 if (type === 'received' && typeof content === 'object' && content.suggestions && content.suggestions.length > 0) {
                     const suggestionsContainer = document.createElement('div');
                     suggestionsContainer.className = 'suggestions-container';
@@ -264,7 +240,6 @@
                 scrollToBottom();
             }
 
-            // Renders the typing indicator animation.
             function showTyping() {
                 const wrapper = document.createElement('div');
                 wrapper.classList.add('message-wrapper', 'received-wrapper', 'typing-indicator-wrapper');
@@ -274,47 +249,32 @@
                 return wrapper;
             }
 
-            // Utility to keep the chat scrolled to the newest message.
             function scrollToBottom() {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
 
-            /**
-             * Main function to handle the entire send/reply cycle.
-             * @param {string} query - The user's query text.
-             */
             async function handleSend(query) {
                 const text = query.trim();
                 if (!text) return;
-
-                // Remove any previous suggestion chips to keep the UI clean.
                 const oldSuggestions = document.querySelector('.suggestions-container');
                 if (oldSuggestions) oldSuggestions.remove();
-
                 appendMessage(text, 'sent');
                 messageInput.value = '';
                 const typingEl = showTyping();
-                
-                // Simulate bot "thinking" time for a more natural feel.
                 await new Promise(resolve => setTimeout(resolve, 1200));
-                
                 const replyObject = getBotReply(text);
                 typingEl.remove();
                 appendMessage(replyObject, 'received');
             }
 
-            // --- EVENT LISTENERS & INITIALIZATION ---
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleSend(messageInput.value);
-            });
+            chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
             
-            // Starts the chat with a welcome message.
             function initializeChat() {
                 appendMessage(answers['greetings'], 'received');
                 messageInput.focus();
             }
-            
             initializeChat();
         });
     </script>
+</body>
+</html>
