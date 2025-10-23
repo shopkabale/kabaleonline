@@ -1,4 +1,4 @@
- /**
+/**
  * Creates an optimized and transformed Cloudinary URL.
  * @param {string} url The original Cloudinary URL.
  * @param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
@@ -23,7 +23,7 @@ function getCloudinaryTransformedUrl(url, type) {
 
 // --- FIREBASE IMPORTS ---
 import { db, auth } from "./firebase.js";
-import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -40,11 +40,12 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-const paginationContainer = document.getElementById("pagination-container");
-const prevPageBtn = document.getElementById("prev-page-btn");
-const nextPageBtn = document.getElementById("next-page-btn");
-const pageIndicator = document.getElementById("page-indicator");
 const modal = document.getElementById('custom-modal');
+
+// ⭐ NEW & UPDATED REFERENCES FOR NEW FEATURES ⭐
+const loadMoreContainer = document.getElementById("load-more-container");
+const loadMoreBtn = document.getElementById("load-more-btn");
+const backToTopBtn = document.getElementById("back-to-top-btn");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -58,6 +59,7 @@ const state = {
 };
 
 // --- HELPER & RENDER FUNCTIONS ---
+
 function showModal({ icon, title, message, theme = 'info', buttons }) {
     if (!modal) return;
     const modalIcon = document.getElementById('modal-icon');
@@ -100,7 +102,7 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
         if (entry.isIntersecting) {
             const img = entry.target;
             img.src = img.dataset.src;
-            img.onload = () => { img.classList.add('loaded'); };
+            img.onload = () => img.classList.add('loaded');
             img.onerror = () => { img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error'; img.classList.add('loaded'); };
             observer.unobserve(img);
         }
@@ -109,12 +111,20 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
 
 function observeLazyImages() {
     const imagesToLoad = document.querySelectorAll('img.lazy');
-    imagesToLoad.forEach(img => { lazyImageObserver.observe(img); });
+    imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-function renderCarouselProducts(gridElement, products) {
+function renderProducts(productsToDisplay, append = false) {
+    if (!append) {
+        productGrid.innerHTML = "";
+    }
+    if (productsToDisplay.length === 0 && !append) {
+        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+        return;
+    }
+    
     const fragment = document.createDocumentFragment();
-    products.forEach(product => {
+    productsToDisplay.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
@@ -129,6 +139,7 @@ function renderCarouselProducts(gridElement, products) {
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
+
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
@@ -147,58 +158,49 @@ function renderCarouselProducts(gridElement, products) {
         `;
         fragment.appendChild(productLink);
     });
-    gridElement.innerHTML = '';
-    gridElement.appendChild(fragment);
-}
-
-function renderProducts(productsToDisplay) {
-    productGrid.innerHTML = "";
-    if (productsToDisplay.length === 0) {
-        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
-        return;
-    }
-    renderCarouselProducts(productGrid, productsToDisplay);
+    
+    productGrid.appendChild(fragment); // Appends new products instead of replacing
     observeLazyImages();
     initializeWishlistButtons();
 }
 
 // --- DATA FETCHING FUNCTIONS ---
-async function fetchAndRenderProducts() {
+async function fetchAndRenderProducts(append = false) {
     if (state.isFetching) return;
     state.isFetching = true;
-    renderSkeletonLoaders(productGrid, 12);
-    updatePaginationUI();
+
+    if (!append) {
+        renderSkeletonLoaders(productGrid, 12);
+    } else {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner loading-icon"></i> <span>LOADING...</span>`;
+    }
+    
+    updateLoadMoreUI();
     updateListingsTitle();
+
     try {
         const params = new URLSearchParams({ page: state.currentPage });
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
+        
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+        
         const { products, totalPages } = await response.json();
         state.totalPages = totalPages;
-        renderProducts(products);
+        renderProducts(products, append);
     } catch (error) {
-        console.error("Error fetching from Algolia:", error);
+        console.error("Error fetching products:", error);
         productGrid.innerHTML = `<p class="loading-indicator">Could not load listings. Please try again later.</p>`;
     } finally {
         state.isFetching = false;
-        updatePaginationUI();
-
-        // THIS BLOCK HANDLES SCROLLING ON SEARCH AND PAGINATION
-        if (state.currentPage > 0 || state.searchTerm) {
-            const targetElement = document.getElementById('listings-title');
-            if (targetElement) {
-                // A small timeout ensures the DOM is painted before we scroll
-                setTimeout(() => {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 100);
-            }
+        if (append) {
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.innerHTML = `<i class="fa-solid fa-rotate"></i> <span>LOAD MORE</span>`;
         }
+        updateLoadMoreUI();
     }
 }
 
@@ -211,7 +213,7 @@ async function fetchDeals() {
         const snapshot = await getDocs(dealsQuery);
         if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderCarouselProducts(dealsGrid, products);
+        renderProducts(dealsGrid, products);
         observeLazyImages();
         initializeWishlistButtons();
     } catch (error) { console.error("Error fetching deals:", error); dealsSection.style.display = 'none'; }
@@ -226,7 +228,7 @@ async function fetchSaveOnMore() {
         const snapshot = await getDocs(q);
         if (snapshot.empty) { saveOnMoreSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderCarouselProducts(saveOnMoreGrid, products);
+        renderProducts(saveOnMoreGrid, products);
         observeLazyImages();
         initializeWishlistButtons();
     } catch (error) { console.error("Error fetching Save on More:", error); saveOnMoreSection.style.display = 'none'; }
@@ -241,7 +243,7 @@ async function fetchSponsoredItems() {
         const snapshot = await getDocs(q);
         if (snapshot.empty) { sponsoredSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderCarouselProducts(sponsoredGrid, products);
+        renderProducts(sponsoredGrid, products);
         observeLazyImages();
         initializeWishlistButtons();
     } catch (error) { console.error("Error fetching Sponsored Items:", error); sponsoredSection.style.display = 'none'; }
@@ -258,7 +260,7 @@ async function fetchAndDisplayCategoryCounts() {
             'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
             'Other': document.querySelector('a[href="/?category=Other"] span'),
             'Rentals': document.querySelector('a[href="/rentals/"] span'),
-            'Services': document.querySelector('a[href="/?type=service"] span')
+            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] span')
         };
         for (const category in counts) {
             const span = categoryMapping[category];
@@ -270,14 +272,12 @@ async function fetchAndDisplayCategoryCounts() {
 }
 
 // --- UI & EVENT HANDLERS ---
-function updatePaginationUI() {
-    if (state.totalPages > 1) {
-        paginationContainer.style.display = 'flex';
-        pageIndicator.textContent = `Page ${state.currentPage + 1} of ${state.totalPages}`;
-        prevPageBtn.disabled = state.isFetching || state.currentPage === 0;
-        nextPageBtn.disabled = state.isFetching || state.currentPage >= state.totalPages - 1;
+function updateLoadMoreUI() {
+    if (state.totalPages > 1 && state.currentPage < state.totalPages - 1) {
+        loadMoreContainer.style.display = 'block';
+        loadMoreBtn.disabled = state.isFetching;
     } else {
-        paginationContainer.style.display = 'none';
+        loadMoreContainer.style.display = 'none';
     }
 }
 
@@ -362,9 +362,11 @@ function listenForCartUpdates(userId) {
 
 function handleSearch() {
     const term = searchInput.value.trim();
-    if (state.searchTerm === term) return;
-    state.searchTerm = term; state.currentPage = 0; state.filters.type = ''; state.filters.category = '';
-    fetchAndRenderProducts();
+    state.searchTerm = term;
+    state.currentPage = 0;
+    state.filters.type = '';
+    state.filters.category = '';
+    fetchAndRenderProducts(false); // New search replaces content
 }
 
 function handleFilterLinkClick(event) {
@@ -374,9 +376,12 @@ function handleFilterLinkClick(event) {
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
-    state.filters.type = type; state.filters.category = category; state.currentPage = 0; state.searchTerm = '';
+    state.filters.type = type;
+    state.filters.category = category;
+    state.currentPage = 0;
+    state.searchTerm = '';
     searchInput.value = '';
-    fetchAndRenderProducts();
+    fetchAndRenderProducts(false); // New filter replaces content
     if (mobileNav) { mobileNav.classList.remove('active'); document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); }
 }
 
@@ -416,20 +421,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
+    
+    // --- ALL EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
     mobileNav.addEventListener('click', handleFilterLinkClick);
     categoryGrid.addEventListener('click', handleFilterLinkClick);
-    prevPageBtn.addEventListener('click', () => {
-        if (state.currentPage > 0) {
-            state.currentPage--;
-            fetchAndRenderProducts();
-        }
-    });
-    nextPageBtn.addEventListener('click', () => {
+
+    // ⭐ NEW EVENT LISTENERS FOR NEW FEATURES ⭐
+    loadMoreBtn.addEventListener('click', () => {
         if (state.currentPage < state.totalPages - 1) {
             state.currentPage++;
-            fetchAndRenderProducts();
+            fetchAndRenderProducts(true); // Call with append = true
+        }
+    });
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
         }
     });
 });
