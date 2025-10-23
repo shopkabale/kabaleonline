@@ -41,8 +41,6 @@ const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
 const modal = document.getElementById('custom-modal');
-
-// ⭐ NEW & UPDATED REFERENCES FOR NEW FEATURES ⭐
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
 const backToTopBtn = document.getElementById("back-to-top-btn");
@@ -114,17 +112,17 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-function renderProducts(productsToDisplay, append = false) {
+function renderProducts(gridElement, products, append = false) {
     if (!append) {
-        productGrid.innerHTML = "";
+        gridElement.innerHTML = "";
     }
-    if (productsToDisplay.length === 0 && !append) {
-        productGrid.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+    if (products.length === 0 && !append) {
+        gridElement.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
     }
     
     const fragment = document.createDocumentFragment();
-    productsToDisplay.forEach(product => {
+    products.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
@@ -159,7 +157,7 @@ function renderProducts(productsToDisplay, append = false) {
         fragment.appendChild(productLink);
     });
     
-    productGrid.appendChild(fragment); // Appends new products instead of replacing
+    gridElement.appendChild(fragment);
     observeLazyImages();
     initializeWishlistButtons();
 }
@@ -190,7 +188,7 @@ async function fetchAndRenderProducts(append = false) {
         
         const { products, totalPages } = await response.json();
         state.totalPages = totalPages;
-        renderProducts(products, append);
+        renderProducts(productGrid, products, append);
     } catch (error) {
         console.error("Error fetching products:", error);
         productGrid.innerHTML = `<p class="loading-indicator">Could not load listings. Please try again later.</p>`;
@@ -214,8 +212,6 @@ async function fetchDeals() {
         if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProducts(dealsGrid, products);
-        observeLazyImages();
-        initializeWishlistButtons();
     } catch (error) { console.error("Error fetching deals:", error); dealsSection.style.display = 'none'; }
 }
 
@@ -229,8 +225,6 @@ async function fetchSaveOnMore() {
         if (snapshot.empty) { saveOnMoreSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProducts(saveOnMoreGrid, products);
-        observeLazyImages();
-        initializeWishlistButtons();
     } catch (error) { console.error("Error fetching Save on More:", error); saveOnMoreSection.style.display = 'none'; }
 }
 
@@ -244,8 +238,6 @@ async function fetchSponsoredItems() {
         if (snapshot.empty) { sponsoredSection.style.display = 'none'; return; }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProducts(sponsoredGrid, products);
-        observeLazyImages();
-        initializeWishlistButtons();
     } catch (error) { console.error("Error fetching Sponsored Items:", error); sponsoredSection.style.display = 'none'; }
 }
 
@@ -273,11 +265,13 @@ async function fetchAndDisplayCategoryCounts() {
 
 // --- UI & EVENT HANDLERS ---
 function updateLoadMoreUI() {
-    if (state.totalPages > 1 && state.currentPage < state.totalPages - 1) {
-        loadMoreContainer.style.display = 'block';
-        loadMoreBtn.disabled = state.isFetching;
-    } else {
-        loadMoreContainer.style.display = 'none';
+    if (loadMoreContainer) {
+        if (state.totalPages > 1 && state.currentPage < state.totalPages - 1) {
+            loadMoreContainer.style.display = 'block';
+            loadMoreBtn.disabled = state.isFetching;
+        } else {
+            loadMoreContainer.style.display = 'none';
+        }
     }
 }
 
@@ -366,7 +360,7 @@ function handleSearch() {
     state.currentPage = 0;
     state.filters.type = '';
     state.filters.category = '';
-    fetchAndRenderProducts(false); // New search replaces content
+    fetchAndRenderProducts(false);
 }
 
 function handleFilterLinkClick(event) {
@@ -381,7 +375,7 @@ function handleFilterLinkClick(event) {
     state.currentPage = 0;
     state.searchTerm = '';
     searchInput.value = '';
-    fetchAndRenderProducts(false); // New filter replaces content
+    fetchAndRenderProducts(false);
     if (mobileNav) { mobileNav.classList.remove('active'); document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); }
 }
 
@@ -397,10 +391,12 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
+        // ⭐ THIS IS THE FIX: These function calls are restored. ⭐
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
         fetchAndDisplayCategoryCounts();
+        
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
@@ -425,26 +421,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ALL EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
-    mobileNav.addEventListener('click', handleFilterLinkClick);
-    categoryGrid.addEventListener('click', handleFilterLinkClick);
+    if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
+    if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
 
     // ⭐ NEW EVENT LISTENERS FOR NEW FEATURES ⭐
-    loadMoreBtn.addEventListener('click', () => {
-        if (state.currentPage < state.totalPages - 1) {
-            state.currentPage++;
-            fetchAndRenderProducts(true); // Call with append = true
-        }
-    });
+    if(loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            if (state.currentPage < state.totalPages - 1) {
+                state.currentPage++;
+                fetchAndRenderProducts(true);
+            }
+        });
+    }
 
-    backToTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    if(backToTopBtn) {
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
 
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 400) {
-            backToTopBtn.classList.add('visible');
-        } else {
-            backToTopBtn.classList.remove('visible');
-        }
-    });
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+    }
 });
