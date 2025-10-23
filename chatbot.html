@@ -280,8 +280,8 @@
     </div>
   </div>
 
-  <script src="data/responses.js"></script>
-  <script src="data/answers.js"></script>
+  <script src="bot/data/responses.js"></script>
+  <script src="bot/data/answers.js"></script>
 
   <script>
     const chatBody = document.getElementById("chat-body");
@@ -305,10 +305,15 @@
       return typingEl; // Return the element to remove it later
     }
 
-    // Offline logic from the previous explanation
+    // Offline logic
     function getBotReply(message) {
       const text = message.toLowerCase().trim();
       
+      // Check if the data files were loaded correctly
+      if (typeof responses === 'undefined' || typeof answers === 'undefined') {
+          return "Error: Could not load chat data. Please check file paths.";
+      }
+
       for (const key in responses) {
         if (responses[key].some(word => text.includes(word))) {
           return answers[key]; 
@@ -325,7 +330,7 @@
           element.textContent += text.charAt(i);
           i++;
           chatBody.scrollTop = chatBody.scrollHeight;
-          setTimeout(type, 20); // Slightly faster typing for more natural feel
+          setTimeout(type, 20);
         }
       }
       type();
@@ -337,15 +342,14 @@
 
       appendMessage(text, "user");
       userInput.value = "";
-      userInput.focus(); // Keep focus on input after sending
+      userInput.focus();
 
       const typingEl = showTyping();
       
-      // Simulate network/thinking delay before getting reply
-      await new Promise(resolve => setTimeout(resolve, 800)); // 0.8-second delay
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       const reply = getBotReply(text);
-      typingEl.remove(); // Remove the typing indicator
+      typingEl.remove();
 
       const botMsg = document.createElement("div");
       botMsg.classList.add("msg", "bot");
@@ -357,15 +361,12 @@
     sendBtn.addEventListener("click", handleSend);
     userInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault(); // Prevent default form submission if any
+        e.preventDefault();
         handleSend();
       }
     });
 
-    // Initial focus on input for quick start
     document.addEventListener('DOMContentLoaded', () => {
         userInput.focus();
     });
   </script>
-</body>
-</html>
