@@ -101,9 +101,32 @@
         .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
         @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } .category-grid { grid-template-columns: repeat(6, 1fr); } .deals-grid .product-card { flex: 0 0 200px; width: 200px; } }
         .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
-        .stock-info { font-size: 0.85em; font-weight: bold; margin: -10px 15px 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-        .low-stock { color: #856404; background-color: #fff3cd; }
-        .sold-out { color: #721c24; background-color: #f8d7da; }
+        .stock-info {
+    font-size: 0.85em;
+    font-weight: bold;
+    margin: -10px 15px 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Green for "In Stock" */
+.in-stock {
+    color: #155724;         /* Dark Green Text */
+    background-color: #d4edda; /* Light Green Background */
+}
+
+/* Yellow for "Low Stock" */
+.low-stock {
+    color: #856404;         /* Dark Yellow/Brown Text */
+    background-color: #fff3cd; /* Light Yellow Background */
+}
+
+/* Red for "Out of Stock" or "Sold Out" */
+.out-of-stock, .sold-out {
+    color: #721c24;         /* Dark Red Text */
+    background-color: #f8d7da; /* Light Red Background */
+}
         .product-card.is-sold { position: relative; cursor: not-allowed; }
         .product-card.is-sold img { filter: grayscale(90%); }
         .product-card-sold-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; }
