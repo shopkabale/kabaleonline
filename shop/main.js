@@ -129,10 +129,17 @@ function renderProducts(gridElement, products, append = false) {
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
-        const soldClass = product.isSold ? 'is-sold' : '';
-        const soldOverlayHTML = product.isSold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+        
+        // --- UPDATED SOLD LOGIC ---
+        // An item is considered sold if `isSold` is true OR `quantity` is 0
+        const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
+        const soldClass = isActuallySold ? 'is-sold' : '';
+        const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+        
         let stockStatusHTML = '';
-        if (product.quantity > 5) {
+        if (product.quantity === undefined || product.quantity <= 0) {
+            stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`; // Changed to "Sold Out"
+        } else if (product.quantity > 5) {
             stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
@@ -141,6 +148,13 @@ function renderProducts(gridElement, products, append = false) {
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
+        
+        // ⭐ FREEZE CLICKING ON SOLD ITEMS ⭐
+        if (isActuallySold) {
+            productLink.style.pointerEvents = 'none'; // Disable click
+            productLink.style.cursor = 'default';     // Change cursor
+        }
+
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
@@ -169,6 +183,8 @@ async function fetchAndRenderProducts(append = false) {
 
     if (!append) {
         renderSkeletonLoaders(productGrid, 12);
+        // ⭐ AUTO-SCROLL TO TOP ON NEW SEARCH/FILTER ⭐
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
     } else {
         loadMoreBtn.disabled = true;
         loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner loading-icon"></i> <span>LOADING...</span>`;
@@ -205,7 +221,7 @@ async function fetchAndRenderProducts(append = false) {
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     renderSkeletonLoaders(dealsGrid, 5);
-    dealsSection.style.display = 'block';
+    dealsSection.style.display = 'block'; // Ensure section is initially visible for loading
     try {
         const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
@@ -218,7 +234,7 @@ async function fetchDeals() {
 async function fetchSaveOnMore() {
     if (!saveOnMoreGrid || !saveOnMoreSection) return;
     renderSkeletonLoaders(saveOnMoreGrid, 5);
-    saveOnMoreSection.style.display = 'block';
+    saveOnMoreSection.style.display = 'block'; // Ensure section is initially visible for loading
     try {
         const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(q);
@@ -231,7 +247,7 @@ async function fetchSaveOnMore() {
 async function fetchSponsoredItems() {
     if (!sponsoredGrid || !sponsoredSection) return;
     renderSkeletonLoaders(sponsoredGrid, 5);
-    sponsoredSection.style.display = 'block';
+    sponsoredSection.style.display = 'block'; // Ensure section is initially visible for loading
     try {
         const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(q);
@@ -391,7 +407,7 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
-        // ⭐ THIS IS THE FIX: These function calls are restored. ⭐
+        // ⭐ THESE ARE THE CRUCIAL FUNCTION CALLS FOR THE SECTIONS ⭐
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
