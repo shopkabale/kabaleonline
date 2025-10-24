@@ -81,6 +81,14 @@ const responses = {
     "admin", "contact", "support", "problem", "issue", "report", "sensitive", "manager", "stuck", "bug", "complaint", "talk to a person", "customer support", "report a user", "problem with seller"
   ],
 
+
+// Add these new categories to your responses.js file
+
+"category_electronics": ["electronics", "phones", "laptops", "gadgets", "chargers"],
+"category_clothing": ["clothing", "clothes", "fashion", "apparel", "shoes", "dresses", "shirts"],
+"category_furniture": ["furniture", "home", "decor", "tables", "chairs", "sofas"],
+
+
   "help": [
     "help", "guide", "how to", "assistance", "support", "tutorial", "how do i", "where can i", "navigation", "site guide", "steps", "directions", "instructions", "how does this work"
   ]
