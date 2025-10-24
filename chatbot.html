@@ -38,7 +38,7 @@
         .avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; background-color: var(--ko-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
         .message-content { display: flex; flex-direction: column; }
         .sent-wrapper .message-content { align-items: flex-end; }
-        .message { padding: 10px 15px; border-radius: 18px; line-height: 1.5; }
+        .message { padding: 10px 15px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
         .sent { background-color: var(--ko-primary); color: white; border-bottom-right-radius: 5px; }
         .received { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-bottom-left-radius: 5px; }
         .timestamp { font-size: 0.75em; color: var(--text-secondary); margin-top: 5px; padding: 0 5px; }
@@ -108,34 +108,45 @@
                     });
                     if (!res.ok) throw new Error('Server error');
                     const data = await res.json();
-                    return { text: data.text, suggestions: ["How do I buy?", "Contact the admin"] };
+                    return { text: data.text, suggestions: ["How do I buy an item?", "Contact the admin"] };
                 } catch (err) {
                     console.error("Product lookup API failed:", err);
                     return answers['help']; // Fallback to a safe, local answer
                 }
             }
 
-            // --- HYBRID BOT BRAIN ---
+            // --- HYBRID BOT BRAIN (COMPLETE) ---
             async function getBotReply(message) {
                 const text = message.toLowerCase().trim();
                 
-                // PRIORITY 1: Check for a product query
-                for (const trigger of responses.product_query) {
-                    if (text.startsWith(trigger)) {
-                        const productName = text.replace(trigger, '').trim();
-                        if (productName) {
+                // PRIORITY 1: Check if the entire query is a specific product name
+                if (responses.specific_products) {
+                    for (const productName of responses.specific_products) {
+                        if (levenshteinDistance(text, productName) <= 1) {
                             return await callProductLookupAPI(productName);
                         }
                     }
                 }
+
+                // PRIORITY 2: Check for a product query starting with a trigger
+                if (responses.product_query) {
+                    for (const trigger of responses.product_query) {
+                        if (text.startsWith(trigger)) {
+                            const productName = text.replace(trigger, '').trim();
+                            if (productName) {
+                                return await callProductLookupAPI(productName);
+                            }
+                        }
+                    }
+                }
                 
-                // PRIORITY 2: Handle general offline queries
+                // PRIORITY 3: Handle general offline queries (exact/partial match)
                 if (typeof responses === 'undefined' || typeof answers === 'undefined') {
                     return { text: "Error: Could not load chat data.", suggestions: [] };
                 }
                 let bestMatch = { key: null, score: 0 };
                 for (const key in responses) {
-                    if (key === 'product_query') continue;
+                    if (key === 'product_query' || key === 'specific_products') continue;
                     for (const keyword of responses[key]) {
                         if (text.includes(keyword)) {
                             const score = keyword.length;
@@ -145,9 +156,10 @@
                 }
                 if (bestMatch.score > 2) { return answers[bestMatch.key]; }
                 
+                // PRIORITY 4: Fuzzy matching for general queries
                 const words = text.split(/\s+/);
                 for (const key in responses) {
-                    if (key === 'product_query') continue;
+                    if (key === 'product_query' || key === 'specific_products') continue;
                     for (const keyword of responses[key]) {
                         for (const word of words) {
                             if (levenshteinDistance(word, keyword) <= (keyword.length > 5 ? 2 : 1)) {
@@ -157,7 +169,7 @@
                     }
                 }
                 
-                return answers['help'];
+                return answers['help']; // Final fallback
             }
 
             // --- UI FUNCTIONS ---
@@ -166,6 +178,7 @@
                 const wrapper = document.createElement('div');
                 wrapper.classList.add('message-wrapper', `${type}-wrapper`);
                 let messageText = (type === 'received' && typeof content === 'object') ? content.text : content;
+                if (messageText === undefined) { messageText = "I'm not sure how to respond to that. Could you try asking in a different way?"; }
                 let messageHTML = '';
                 if (type === 'received') {
                     messageHTML = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message ${type}">${messageText}</div><div class="timestamp">${time}</div></div></div>`;
@@ -202,11 +215,25 @@
             function scrollToBottom() {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+            
+            // --- QUERY LOGGING FUNCTION ---
+            async function logQueryToServer(message) {
+              try {
+                await fetch('/.netlify/functions/log-query', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: message })
+                });
+              } catch (error) {
+                console.warn("Could not log query to the server.");
+              }
+            }
 
             // --- MAIN HANDLER ---
             async function handleSend(query) {
                 const text = query.trim();
                 if (!text) return;
+
                 const oldSuggestions = document.querySelector('.suggestions-container');
                 if (oldSuggestions) oldSuggestions.remove();
                 
@@ -224,18 +251,7 @@
                 appendMessage(replyObject, 'received');
             }
             
-            async function logQueryToServer(message) {
-              try {
-                await fetch('/.netlify/functions/log-query', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ message: message })
-                });
-              } catch (error) {
-                console.warn("Could not log query to the server.");
-              }
-            }
-            
+            // --- EVENT LISTENERS & INITIALIZATION ---
             chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
             
             function initializeChat() {
