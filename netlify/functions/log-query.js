@@ -1,7 +1,7 @@
-// File: netlify/functions/log-query.js
+// File Path: netlify/functions/log-query.js
 
 exports.handler = async (event) => {
-  // Only allow POST requests
+  // Only allow POST requests for security
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -14,11 +14,11 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: 'No message found.' };
     }
 
-    // ⭐ PASTE YOUR SHEETDB API URL HERE ⭐
+    // Your actual SheetDB API URL is now included
     const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/1jck3z015a84c';
 
     const dataToLog = {
-      // Keys must match your Google Sheet column headers
+      // Keys 'Timestamp' and 'Query' must exactly match your Google Sheet column headers
       'Timestamp': new Date().toISOString(),
       'Query': message
     };
@@ -27,13 +27,13 @@ exports.handler = async (event) => {
     await fetch(SHEETDB_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: [dataToLog] }),
+      body: JSON.stringify({ data: [dataToLog] }), // SheetDB expects data in this format
     });
 
-    return { statusCode: 200 };
+    return { statusCode: 200, body: 'Query logged.' }; // Success
 
   } catch (err) {
     console.error('Logging Error:', err);
-    return { statusCode: 500 };
+    return { statusCode: 500, body: 'Internal Server Error.' };
   }
 }
