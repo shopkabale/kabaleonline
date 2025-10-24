@@ -4,18 +4,14 @@ const algoliasearch = require("algoliasearch");
 
 // --- INITIALIZATION ---
 const APP_ID = process.env.ALGOLIA_APP_ID;
-const SEARCH_KEY = process.env.ALGOLIA_SEARCH_API_KEY; // Use the Search key, not Admin key, for frontend queries
+const SEARCH_KEY = process.env.ALGOLIA_SEARCH_API_KEY;
 
 if (!APP_ID || !SEARCH_KEY) {
-    console.error("FATAL: Algolia environment variables (ALGOLIA_APP_ID or ALGOLIA_SEARCH_API_KEY) are not set.");
+    console.error("FATAL: Algolia environment variables are not set.");
 }
 
 const algoliaClient = algoliasearch(APP_ID, SEARCH_KEY);
-
-// Initialize the main index (for relevance-based search)
 const mainIndex = algoliaClient.initIndex('products');
-
-// ⭐ FIX: Initialize the new replica index that is sorted by date
 const replicaIndex = algoliaClient.initIndex('products_createdAt_desc');
 
 
@@ -36,19 +32,25 @@ exports.handler = async (event) => {
             page: parseInt(page, 10)
         };
 
-        // --- FILTERING LOGIC (remains the same) ---
-        const filterClauses = [`isSold:false`]; // Always filter out sold items
+        // --- FILTERING LOGIC ---
+        // ⭐ THIS IS THE FIX ⭐
+        // We start with an empty array. The `isSold:false` filter has been removed.
+        const filterClauses = []; 
+        
         if (type) {
             filterClauses.push(`listing_type:${type}`);
         }
         if (category) {
             filterClauses.push(`category:"${category}"`);
         }
-        searchOptions.filters = filterClauses.join(' AND ');
+
+        // Only add the filters if there are any to add.
+        if (filterClauses.length > 0) {
+            searchOptions.filters = filterClauses.join(' AND ');
+        }
         
-        // --- ⭐ FIX: CHOOSE THE CORRECT INDEX FOR SORTING ⭐ ---
-        // If the user provided a search term, use the main index to sort by relevance.
-        // If the search term is empty, use the replica to sort by newest first.
+        // --- CHOOSE THE CORRECT INDEX FOR SORTING ---
+        // This logic remains the same and is correct.
         const indexToUse = searchTerm ? mainIndex : replicaIndex;
 
         // Perform the search on the chosen index
