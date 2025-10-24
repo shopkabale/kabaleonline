@@ -244,49 +244,85 @@ footer {
 }
 
 /* ==================================================== */
-        /* ⭐ NEW IMAGE CATEGORY SECTION STYLES ⭐          */
-        /* ==================================================== */
-        .image-category-section {
-            padding: 20px 0;
-        }
-        .image-category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 columns on all screen sizes */
-            gap: 20px;
-        }
-        .image-category-card {
-            text-decoration: none;
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            overflow: hidden; /* This makes the image corners rounded */
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .image-category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-        }
-        .image-category-card img {
-            width: 100%;
-            aspect-ratio: 4 / 3; /* Maintains shape */
-            object-fit: cover; /* Prevents image distortion */
-            display: block;
-        }
-        .image-category-card h3 {
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 1.1em;
-            margin: 0;
-            padding: 20px 10px;
-        }
-        /* On larger screens, you can optionally make the grid wider */
-        @media (min-width: 1024px) {
-            .image-category-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
+/* ⭐ IMAGE CATEGORY SECTION (WITH FLOATING TEXT) ⭐     */
+/* ==================================================== */
+
+.image-category-section {
+    padding: 60px 15px;
+    background-color: var(--bg-main);
+}
+
+.image-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    gap: 20px;
+}
+
+.image-category-card {
+    position: relative; /* This is crucial for positioning the text inside */
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    overflow: hidden; /* This makes the image corners rounded */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block;
+}
+
+.image-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+/* Adds a dark gradient overlay for text readability */
+.image-category-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70%; /* Covers the bottom 70% of the image */
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.image-category-card:hover::after {
+    opacity: 0.8; /* Slightly darkens the gradient on hover */
+}
+
+.image-category-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.image-category-card:hover img {
+    transform: scale(1.05); /* Adds a subtle zoom effect on hover */
+}
+
+.image-category-card h3 {
+    position: absolute; /* This makes the text float */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    color: #ffffff; /* White text for contrast */
+    font-weight: 700;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 20px;
+    z-index: 2; /* Ensures text is on top of the gradient */
+    text-align: left; /* Aligns text to the left */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4); /* Adds a slight shadow to text */
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 1024px) {
+    .image-category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
     </style>
 </head>
 <body>
