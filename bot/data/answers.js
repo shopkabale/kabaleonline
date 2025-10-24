@@ -2,8 +2,8 @@ const answers = {
   // --- CORE FEATURES ---
 
   "greetings": {
-    text: "👋 Hello there! Welcome to the KabaleOnline Assistant. I can help you find items, post listings, get support, and much more. What can I help you with today?",
-    suggestions: ["How to sell something?", "Find a hostel", "I need help with my account"]
+    text: "👋 Hello! I'm the KabaleOnline Assistant, your guide to buying, selling, and discovering everything in our community. How can I help you today?",
+    suggestions: ["How do I sell an item?", "Find a hostel", "What is KabaleOnline?"]
   },
 
   "rent": {
@@ -11,7 +11,7 @@ const answers = {
     <ul>
       <li>Start by browsing all listings in our <a href='/rentals/' target='_blank'>Hostels & Rentals</a> section.</li>
       <li>Use filters to narrow your search by type: Single Rooms, Full Houses, Hostels, or even Shop Spaces.</li>
-      <li><b>Pro Tip:</b> Always visit a place before making a payment. If a deal seems too good to be true, it might be.</li>
+      <li><b>Pro Tip:</b> Always visit a place in person before making any payment. If a deal seems too good to be true, be cautious.</li>
     </ul>`,
     suggestions: ["How do I sell an item?", "Are there jobs available?", "What is KabaleOnline?"]
   },
@@ -114,6 +114,57 @@ const answers = {
     suggestions: ["Tell me about events", "Who is the founder?", "I need general help"]
   },
 
+  // --- KABALE ONLINE INFO (EXPANDED) ---
+
+  "about": {
+    text: `💡 **KabaleOnline** is a digital marketplace and community hub built specifically for the students and residents of Kabale. It's a one-stop platform to buy and sell goods, find housing, discover local services, and stay connected with community events.`,
+    suggestions: ["What is your mission?", "Who is the founder?", "When was it founded?"]
+  },
+  "mission_vision": {
+    text: `🎯 Our mission is to **empower the Kabale community** by making local commerce and services simple, accessible, and safe. Our vision is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them.`,
+    suggestions: ["Who is the founder?", "How do I sell an item?", "I need to contact support"]
+  },
+  "founder": {
+    text: `👨‍💻 KabaleOnline was founded and is run by **AMPEIRE SAMUEL**, a student at Kabale University. The platform was born from a direct need to solve the challenges students face, making it a project built by a student, for the students and the entire community.`,
+    suggestions: ["What is the mission?", "When was it founded?", "How can I help?"]
+  },
+  "history_founded": {
+    text: `📅 KabaleOnline was founded in **August 2025**. It started as a final year project to create a practical solution for the local community's needs and has been growing ever since!`,
+    suggestions: ["Who is the founder?", "What is the vision?", "Browse all items"]
+  },
+  "contact": {
+    text: `📞 For any technical problems, reporting a user, or complex issues that require direct help, please contact the admin. This is for when something is broken or you have a serious complaint.
+    <ul>
+      <li><b>WhatsApp (Fastest Response):</b> <a href="https://wa.me/256784655792" target="_blank">0784655792</a></li>
+      <li><b>Email/Form:</b> Send a detailed message via our <a href='/contact.html' target='_blank'>Contact Form</a>.</li>
+    </ul>`,
+    suggestions: []
+  },
+
+  // --- CATEGORIES ---
+
+  "category_electronics": {
+    text: `Great! Here are all the electronics listings. You can find phones, laptops, and more.
+    <ul>
+      <li><a href="/shop/?category=Electronics" target="_blank">Browse all Electronics</a></li>
+    </ul>`,
+    suggestions: ["Show me clothing", "How do I sell my phone?"]
+  },
+  "category_clothing": {
+    text: `Of course! Check out the latest in fashion from sellers in Kabale.
+    <ul>
+      <li><a href="/shop/?category=Clothing+%26+Apparel" target="_blank">Browse all Clothing & Apparel</a></li>
+    </ul>`,
+    suggestions: ["Do you have furniture?", "How to sell an item"]
+  },
+  "category_furniture": {
+    text: `Yes, we do. You can find items to furnish your room or hostel right here.
+    <ul>
+      <li><a href="/shop/?category=Home+%26+Furniture" target="_blank">Browse all Home & Furniture</a></li>
+    </ul>`,
+    suggestions: ["Show me electronics", "I need help"]
+  },
+
   // --- OTHER INFO ---
 
   "deliveries": {
@@ -129,75 +180,36 @@ const answers = {
     </ul>`,
     suggestions: ["Read the campus blog", "How do I find a job?", "I need help"]
   },
-
-  "about": {
-    text: `💡 **About KabaleOnline:** We are a digital platform built by a student, for students and the entire Kabale community.
-    <ul>
-      <li>Our mission is to connect people with services, power local business, and make campus life easier through technology.</li>
-      <li>The platform was founded and is run by **AMPEIRE SAMUEL**.</li>
-    </ul>`,
-    suggestions: ["How do I contact the admin?", "How can I help?", "How to sell something"]
-  },
-
-  "contact": {
-    text: `📞 For any technical problems, reporting a user, or complex issues that require direct help, please contact the admin.
-    <ul>
-      <li><b>WhatsApp (Fastest Response):</b> <a href="https://wa.me/256784655792" target="_blank">0784655792</a></li>
-      <li><b>Email/Form:</b> Send a detailed message via our <a href='/contact.html' target='_blank'>Contact Form</a>.</li>
-    </ul>`,
-    suggestions: [] // No suggestions after providing direct contact info
-  },
-// Add these new answers to your answers.js file
-
-"category_electronics": {
-  text: `Great! Here are all the electronics listings. You can find phones, laptops, and more.
-  <ul>
-    <li><a href="/shop/?category=Electronics" target="_blank">Browse all Electronics</a></li>
-  </ul>`,
-  suggestions: ["Show me clothing", "How do I sell my phone?"]
-},
-
-"category_clothing": {
-  text: `Of course! Check out the latest in fashion from sellers in Kabale.
-  <ul>
-    <li><a href="/shop/?category=Clothing+%26+Apparel" target="_blank">Browse all Clothing & Apparel</a></li>
-  </ul>`,
-  suggestions: ["Do you have furniture?", "How to sell an item"]
-},
-
-"category_furniture": {
-  text: `Yes, we do. You can find items to furnish your room or hostel right here.
-  <ul>
-    <li><a href="/shop/?category=Home+%26+Furniture" target="_blank">Browse all Home & Furniture</a></li>
-  </ul>`,
-  suggestions: ["Show me electronics", "I need help"]
-},
-
-// Add this new "specific_products" category to your responses.js file
-
-"specific_products": [
-  "iphone xs",
-  "airtel mifi",
-  "handbag",
-  "textbook",
-  "laptop",
-  "samsung phone",
-  "nike shoes"
-],
-
-
+  
+  // --- THE "MASSIVELY HELPFUL" HELP SECTION ---
 
   "help": {
-    text: `🆘 Of course! I can help with many things. Here is a full guide to the platform's features:
+    text: `🆘 I can help with almost anything on KabaleOnline! Here’s a quick guide to what I know. Just ask me a question about any of these topics:
+    
+    <br><strong>🛒 Shopping & Selling</strong>
     <ul>
-      <li><b>Shopping:</b> <a href='/shop/' target='_blank'>Browse & Buy Items</a> safely.</li>
-      <li><b>Selling:</b> <a href='/upload/' target='_blank'>Sell or Upload Items</a> for free.</li>
-      <li><b>Housing:</b> <a href='/rentals/' target='_blank'>Find Hostels & Rentals</a>.</li>
-      <li><b>Services:</b> <a href='https://gigs.kabaleonline.com' target='_blank'>Offer or Book Local Services</a>.</li>
-      <li><b>Events:</b> <a href='/events/' target='_blank'>Explore or Promote Events</a>.</li>
-      <li><b>Account:</b> Manage everything from your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
+      <li><b>"How to Buy":</b> I can explain the process of finding and purchasing items.</li>
+      <li><b>"How to Sell":</b> I'll guide you on creating a great listing that sells fast.</li>
+      <li><b>"Safety Tips":</b> Ask me for advice on how to transact safely.</li>
+      <li><b>"Show me electronics":</b> Ask me to show you any product category.</li>
+      <li><b>"Price of iPhone XS":</b> Ask me about specific products to search for them.</li>
     </ul>
-    <p>If you can't find what you're looking for, please <a href="https://wa.me/256784655792" target="_blank">contact the admin on WhatsApp</a>.</p>`,
-    suggestions: ["How to sell?", "Find a rental", "Contact admin"]
+    
+    <strong>👤 Your Account</strong>
+    <ul>
+      <li><b>"Dashboard":</b> Learn how to manage your account and listings.</li>
+      <li><b>"My Orders":</b> I can show you where to track your purchases.</li>
+      <li><b>"My Wishlist":</b> Learn about saving items for later.</li>
+    </ul>
+
+    <strong>🏢 About KabaleOnline</strong>
+    <ul>
+      <li><b>"What is your mission?":</b> Learn about our purpose and goals.</li>
+      <li><b>"Who is the founder?":</b> Find out more about who created the platform.</li>
+      <li><b>"When was it founded?":</b> Learn about the history of the site.</li>
+    </ul>
+    
+    <p>If you have a serious problem or need to report something, ask me to "contact the admin".</p>`,
+    suggestions: ["How do I sell safely?", "Tell me about the founder", "Find a hostel"]
   }
 };
