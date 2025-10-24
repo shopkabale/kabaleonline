@@ -729,7 +729,58 @@
         body.is-resizing .chat-modal-content iframe {
             pointer-events: none;
         }
+/* ==================================================== */
+        /* ⭐ NEW IMAGE CATEGORY SECTION STYLES ⭐          */
+        /* ==================================================== */
 
+        .image-category-section {
+            padding: 60px 15px;
+            background-color: var(--bg-main);
+        }
+
+        .image-category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+            gap: 20px;
+        }
+
+        .image-category-card {
+            text-decoration: none;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden; /* This makes the image corners rounded */
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .image-category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .image-category-card img {
+            width: 100%;
+            height: 160px; /* Adjust height as needed */
+            object-fit: cover; /* Prevents image distortion */
+            display: block;
+        }
+
+        .image-category-card h3 {
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 1.1em;
+            margin: 0;
+            padding: 20px 10px;
+        }
+
+        /* Responsive adjustments for larger screens */
+        @media (min-width: 768px) {
+            .image-category-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns on tablets and desktops */
+            }
+        }
     </style>
 </head>
 <body>
@@ -834,7 +885,34 @@
                 </div>
             </div>
         </section>
-
+<section class="image-category-section">
+    <div class="container">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="image-category-grid">
+            <a href="/shop/?category=Electronics" class="image-category-card">
+                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Electronics category">
+                <h3>Electronics</h3>
+            </a>
+            <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
+                <img src="https://images.unsplash.com/photo-1593030103051-1372f5c84a28?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Clothing & Apparel category">
+                <h3>Clothing</h3>
+            </a>
+            <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
+                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Home & Furniture category">
+                <h3>Furniture</h3>
+            </a>
+            <a href="/rentals/" class="image-category-card">
+                <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Hostels & Rentals category">
+                <h3>Rentals</h3>
+            </a>
+            
+            <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
+                <img src="https://images.unsplash.com/photo-1581888227599-7da69a726725?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Services category">
+                <h3>Services</h3>
+            </a>
+        </div>
+    </div>
+</section>
         <section class="top-sections" id="top-sections">
             <div class="container">
                 <h2 class="section-title">What We Offer</h2>
