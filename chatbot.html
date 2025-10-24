@@ -83,7 +83,7 @@
             const chatForm = document.getElementById('chat-form');
             const messageInput = document.getElementById('message-input');
             
-            // --- OFFLINE BOT BRAIN & LOGIC (TYPO-CORRECTION, ETC.) ---
+            // --- TYPO-CORRECTION LOGIC ---
             function levenshteinDistance(a, b) {
                 if (a.length === 0) return b.length; if (b.length === 0) return a.length;
                 const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
@@ -98,13 +98,44 @@
                 return matrix[b.length][a.length];
             }
 
-            function getBotReply(message) {
+            // --- ONLINE PRODUCT LOOKUP FUNCTION ---
+            async function callProductLookupAPI(productName) {
+                try {
+                    const res = await fetch('/.netlify/functions/product-lookup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productName: productName })
+                    });
+                    if (!res.ok) throw new Error('Server error');
+                    const data = await res.json();
+                    return { text: data.text, suggestions: ["How do I buy?", "Contact the admin"] };
+                } catch (err) {
+                    console.error("Product lookup API failed:", err);
+                    return answers['help']; // Fallback to a safe, local answer
+                }
+            }
+
+            // --- HYBRID BOT BRAIN ---
+            async function getBotReply(message) {
                 const text = message.toLowerCase().trim();
+                
+                // PRIORITY 1: Check for a product query
+                for (const trigger of responses.product_query) {
+                    if (text.startsWith(trigger)) {
+                        const productName = text.replace(trigger, '').trim();
+                        if (productName) {
+                            return await callProductLookupAPI(productName);
+                        }
+                    }
+                }
+                
+                // PRIORITY 2: Handle general offline queries
                 if (typeof responses === 'undefined' || typeof answers === 'undefined') {
                     return { text: "Error: Could not load chat data.", suggestions: [] };
                 }
                 let bestMatch = { key: null, score: 0 };
                 for (const key in responses) {
+                    if (key === 'product_query') continue;
                     for (const keyword of responses[key]) {
                         if (text.includes(keyword)) {
                             const score = keyword.length;
@@ -113,8 +144,10 @@
                     }
                 }
                 if (bestMatch.score > 2) { return answers[bestMatch.key]; }
+                
                 const words = text.split(/\s+/);
                 for (const key in responses) {
+                    if (key === 'product_query') continue;
                     for (const keyword of responses[key]) {
                         for (const word of words) {
                             if (levenshteinDistance(word, keyword) <= (keyword.length > 5 ? 2 : 1)) {
@@ -123,6 +156,7 @@
                         }
                     }
                 }
+                
                 return answers['help'];
             }
 
@@ -169,7 +203,27 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
 
-            // ⭐ NEW: This function silently logs the query to your Netlify function
+            // --- MAIN HANDLER ---
+            async function handleSend(query) {
+                const text = query.trim();
+                if (!text) return;
+                const oldSuggestions = document.querySelector('.suggestions-container');
+                if (oldSuggestions) oldSuggestions.remove();
+                
+                appendMessage(text, 'sent');
+                messageInput.value = '';
+
+                logQueryToServer(text);
+
+                const typingEl = showTyping();
+                await new Promise(resolve => setTimeout(resolve, 1200)); 
+                
+                const replyObject = await getBotReply(text); 
+                
+                typingEl.remove();
+                appendMessage(replyObject, 'received');
+            }
+            
             async function logQueryToServer(message) {
               try {
                 await fetch('/.netlify/functions/log-query', {
@@ -178,37 +232,11 @@
                   body: JSON.stringify({ message: message })
                 });
               } catch (error) {
-                // Fails silently if offline or if there's an error.
                 console.warn("Could not log query to the server.");
               }
             }
-
-            // --- MAIN HANDLER ---
-            async function handleSend(query) {
-                const text = query.trim();
-                if (!text) return;
-
-                const oldSuggestions = document.querySelector('.suggestions-container');
-                if (oldSuggestions) oldSuggestions.remove();
-                
-                appendMessage(text, 'sent');
-                messageInput.value = '';
-
-                // ⭐ ADDED: Call the logger function
-                logQueryToServer(text);
-
-                const typingEl = showTyping();
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate thinking
-                const replyObject = getBotReply(text); // Get the local, offline response
-                typingEl.remove();
-                appendMessage(replyObject, 'received');
-            }
-
-            // --- EVENT LISTENERS & INITIALIZATION ---
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleSend(messageInput.value);
-            });
+            
+            chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
             
             function initializeChat() {
                 appendMessage(answers['greetings'], 'received');
