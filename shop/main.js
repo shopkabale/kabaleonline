@@ -129,32 +129,24 @@ function renderProducts(gridElement, products, append = false) {
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
-        
-        // --- UPDATED SOLD LOGIC ---
-        // An item is considered sold if `isSold` is true OR `quantity` is 0
         const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
-        
         let stockStatusHTML = '';
         if (product.quantity === undefined || product.quantity <= 0) {
-            stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`; // Changed to "Sold Out"
+            stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
         } else if (product.quantity > 5) {
             stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
-
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
-        
-        // ⭐ FREEZE CLICKING ON SOLD ITEMS ⭐
         if (isActuallySold) {
-            productLink.style.pointerEvents = 'none'; // Disable click
-            productLink.style.cursor = 'default';     // Change cursor
+            productLink.style.pointerEvents = 'none';
+            productLink.style.cursor = 'default';
         }
-
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
@@ -183,8 +175,6 @@ async function fetchAndRenderProducts(append = false) {
 
     if (!append) {
         renderSkeletonLoaders(productGrid, 12);
-        // ⭐ AUTO-SCROLL TO TOP ON NEW SEARCH/FILTER ⭐
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
     } else {
         loadMoreBtn.disabled = true;
         loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner loading-icon"></i> <span>LOADING...</span>`;
@@ -221,7 +211,7 @@ async function fetchAndRenderProducts(append = false) {
 async function fetchDeals() {
     if (!dealsGrid || !dealsSection) return;
     renderSkeletonLoaders(dealsGrid, 5);
-    dealsSection.style.display = 'block'; // Ensure section is initially visible for loading
+    dealsSection.style.display = 'block';
     try {
         const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(dealsQuery);
@@ -234,7 +224,7 @@ async function fetchDeals() {
 async function fetchSaveOnMore() {
     if (!saveOnMoreGrid || !saveOnMoreSection) return;
     renderSkeletonLoaders(saveOnMoreGrid, 5);
-    saveOnMoreSection.style.display = 'block'; // Ensure section is initially visible for loading
+    saveOnMoreSection.style.display = 'block';
     try {
         const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(q);
@@ -247,7 +237,7 @@ async function fetchSaveOnMore() {
 async function fetchSponsoredItems() {
     if (!sponsoredGrid || !sponsoredSection) return;
     renderSkeletonLoaders(sponsoredGrid, 5);
-    sponsoredSection.style.display = 'block'; // Ensure section is initially visible for loading
+    sponsoredSection.style.display = 'block';
     try {
         const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
         const snapshot = await getDocs(q);
@@ -376,23 +366,43 @@ function handleSearch() {
     state.currentPage = 0;
     state.filters.type = '';
     state.filters.category = '';
+    
+    // ⭐ ADDED: Scroll to results on search
+    document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     fetchAndRenderProducts(false);
 }
 
 function handleFilterLinkClick(event) {
-    const link = event.target.closest('a[href*="?"]');
+    const link = event.target.closest('a.category-item'); // More specific selector
     if (!link) return;
     event.preventDefault();
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
+    
+    // This part handles the external gigs.kabaleonline.com link separately
+    if (link.href.includes('gigs.kabaleonline.com')) {
+        // You might want to show your service modal here if you have one
+        window.location.href = link.href;
+        return;
+    }
+    
     state.filters.type = type;
     state.filters.category = category;
     state.currentPage = 0;
     state.searchTerm = '';
     searchInput.value = '';
+
+    // ⭐ ADDED: Scroll to results on filter
+    document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     fetchAndRenderProducts(false);
-    if (mobileNav) { mobileNav.classList.remove('active'); document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); }
+
+    if (mobileNav) { 
+        mobileNav.classList.remove('active'); 
+        document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); 
+    }
 }
 
 function initializeStateFromURL() {
@@ -407,7 +417,7 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
-        // ⭐ THESE ARE THE CRUCIAL FUNCTION CALLS FOR THE SECTIONS ⭐
+        // These function calls load your special sections
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
@@ -440,7 +450,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
 
-    // ⭐ NEW EVENT LISTENERS FOR NEW FEATURES ⭐
+    // Event listener for the new image-based category grid
+    const imageCategoryGrid = document.querySelector('.image-category-grid');
+    if (imageCategoryGrid) {
+        imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
+    }
+    
     if(loadMoreBtn) {
         loadMoreBtn.addEventListener('click', () => {
             if (state.currentPage < state.totalPages - 1) {
