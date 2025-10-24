@@ -1,6 +1,6 @@
 // sw.js (Fully Corrected)
 
-const CACHE_NAME = 'kabaleonline-cache-v20.5';
+const CACHE_NAME = 'kabaleonline-cache-v21.5';
 const IMAGE_CACHE = 'kabaleonline-images-v2.4';
 
 const APP_SHELL_FILES = [
