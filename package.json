@@ -4,7 +4,6 @@
   "dependencies": {
     "algoliasearch": "^4.20.0",
     "cloudinary": "^1.41.0",
-    "firebase-admin": "^11.10.1",
-    "@google-cloud/dialogflow": "^5.7.0"
+    "firebase-admin": "^11.10.1"
   }
 }
