@@ -147,6 +147,45 @@ const answers = {
     </ul>`,
     suggestions: [] // No suggestions after providing direct contact info
   },
+// Add these new answers to your answers.js file
+
+"category_electronics": {
+  text: `Great! Here are all the electronics listings. You can find phones, laptops, and more.
+  <ul>
+    <li><a href="/shop/?category=Electronics" target="_blank">Browse all Electronics</a></li>
+  </ul>`,
+  suggestions: ["Show me clothing", "How do I sell my phone?"]
+},
+
+"category_clothing": {
+  text: `Of course! Check out the latest in fashion from sellers in Kabale.
+  <ul>
+    <li><a href="/shop/?category=Clothing+%26+Apparel" target="_blank">Browse all Clothing & Apparel</a></li>
+  </ul>`,
+  suggestions: ["Do you have furniture?", "How to sell an item"]
+},
+
+"category_furniture": {
+  text: `Yes, we do. You can find items to furnish your room or hostel right here.
+  <ul>
+    <li><a href="/shop/?category=Home+%26+Furniture" target="_blank">Browse all Home & Furniture</a></li>
+  </ul>`,
+  suggestions: ["Show me electronics", "I need help"]
+},
+
+// Add this new "specific_products" category to your responses.js file
+
+"specific_products": [
+  "iphone xs",
+  "airtel mifi",
+  "handbag",
+  "textbook",
+  "laptop",
+  "samsung phone",
+  "nike shoes"
+],
+
+
 
   "help": {
     text: `🆘 Of course! I can help with many things. Here is a full guide to the platform's features:
