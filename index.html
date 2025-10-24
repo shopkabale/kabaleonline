@@ -730,7 +730,7 @@
             pointer-events: none;
         }
 /* ==================================================== */
-/* ⭐ NEW IMAGE CATEGORY SECTION STYLES (2-COLUMN) ⭐     */
+/* ⭐ IMAGE CATEGORY SECTION (WITH FLOATING TEXT) ⭐     */
 /* ==================================================== */
 
 .image-category-section {
@@ -740,20 +740,18 @@
 
 .image-category-grid {
     display: grid;
-    /* This creates a 2-column grid on all screen sizes */
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
     gap: 20px;
 }
 
 .image-category-card {
+    position: relative; /* This is crucial for positioning the text inside */
     text-decoration: none;
-    background-color: var(--bg-card);
     border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
     overflow: hidden; /* This makes the image corners rounded */
-    text-align: center;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block;
 }
 
 .image-category-card:hover {
@@ -761,24 +759,52 @@
     box-shadow: var(--shadow);
 }
 
+/* Adds a dark gradient overlay for text readability */
+.image-category-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70%; /* Covers the bottom 70% of the image */
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.image-category-card:hover::after {
+    opacity: 0.8; /* Slightly darkens the gradient on hover */
+}
+
 .image-category-card img {
     width: 100%;
-    /* This makes the image responsive while maintaining its shape */
     aspect-ratio: 4 / 3;
-    object-fit: cover; /* Prevents image distortion */
+    object-fit: cover;
     display: block;
+    transition: transform 0.3s ease;
+}
+
+.image-category-card:hover img {
+    transform: scale(1.05); /* Adds a subtle zoom effect on hover */
 }
 
 .image-category-card h3 {
-    color: var(--text-main);
-    font-weight: 600;
-    font-size: 1.1em;
+    position: absolute; /* This makes the text float */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    color: #ffffff; /* White text for contrast */
+    font-weight: 700;
+    font-size: 1.2em;
     margin: 0;
-    padding: 20px 10px;
+    padding: 20px;
+    z-index: 2; /* Ensures text is on top of the gradient */
+    text-align: left; /* Aligns text to the left */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4); /* Adds a slight shadow to text */
 }
 
-/* On very large screens, you could optionally go to 3 columns if you like */
-@media (min-width: 1200px) {
+/* Responsive adjustments for larger screens */
+@media (min-width: 1024px) {
     .image-category-grid {
         grid-template-columns: repeat(3, 1fr);
     }
