@@ -1,8 +1,8 @@
 // File Path: netlify/functions/get-reply.js
 
 const dialogflow = require('@google-cloud/dialogflow');
-// This line requires your answers.js file. Make sure the path is correct!
-// If your functions folder is at the root, and answers.js is in bot/data, this path is correct.
+// This line requires your answers.js file. Make sure this path is correct.
+// It assumes your answers.js file is at `bot/data/answers.js`.
 const { answers } = require('../../bot/data/answers.js');
 
 // --- READ SECRETS FROM NETLIFY ENVIRONMENT ---
