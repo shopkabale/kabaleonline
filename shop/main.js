@@ -40,6 +40,7 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
+const imageCategoryGrid = document.querySelector(".image-category-grid"); // Added reference for image grid
 const modal = document.getElementById('custom-modal');
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
@@ -133,7 +134,7 @@ function renderProducts(gridElement, products, append = false) {
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         let stockStatusHTML = '';
-        if (product.quantity === undefined || product.quantity <= 0) {
+        if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
         } else if (product.quantity > 5) {
             stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
@@ -373,20 +374,23 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
+// ⭐ CORRECTED to handle BOTH types of category links
 function handleFilterLinkClick(event) {
-    const link = event.target.closest('a.category-item'); // More specific selector
+    const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
-    event.preventDefault();
-    const url = new URL(link.href);
-    const type = url.searchParams.get('type') || '';
-    const category = url.searchParams.get('category') || '';
-    
-    // This part handles the external gigs.kabaleonline.com link separately
-    if (link.href.includes('gigs.kabaleonline.com')) {
+
+    // This handles the external gigs.kabaleonline.com link separately
+    if (link.classList.contains('service-link')) {
         // You might want to show your service modal here if you have one
         window.location.href = link.href;
         return;
     }
+
+    event.preventDefault(); // Stop the page from reloading
+
+    const url = new URL(link.href);
+    const type = url.searchParams.get('type') || '';
+    const category = url.searchParams.get('category') || '';
     
     state.filters.type = type;
     state.filters.category = category;
@@ -417,12 +421,10 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
-        // These function calls load your special sections
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
         fetchAndDisplayCategoryCounts();
-        
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
@@ -447,14 +449,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ALL EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
+    
+    // ⭐ CORRECTED: Attach listeners to ALL category types
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
-
-    // Event listener for the new image-based category grid
-    const imageCategoryGrid = document.querySelector('.image-category-grid');
-    if (imageCategoryGrid) {
-        imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
-    }
+    if(imageCategoryGrid) imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
     
     if(loadMoreBtn) {
         loadMoreBtn.addEventListener('click', () => {
