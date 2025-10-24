@@ -242,6 +242,51 @@ footer {
         grid-template-columns: 2fr 1fr 1fr 1fr; /* Four columns for desktop */
     }
 }
+
+/* ==================================================== */
+        /* ⭐ NEW IMAGE CATEGORY SECTION STYLES ⭐          */
+        /* ==================================================== */
+        .image-category-section {
+            padding: 20px 0;
+        }
+        .image-category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on all screen sizes */
+            gap: 20px;
+        }
+        .image-category-card {
+            text-decoration: none;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden; /* This makes the image corners rounded */
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .image-category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        .image-category-card img {
+            width: 100%;
+            aspect-ratio: 4 / 3; /* Maintains shape */
+            object-fit: cover; /* Prevents image distortion */
+            display: block;
+        }
+        .image-category-card h3 {
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 1.1em;
+            margin: 0;
+            padding: 20px 10px;
+        }
+        /* On larger screens, you can optionally make the grid wider */
+        @media (min-width: 1024px) {
+            .image-category-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -276,15 +321,33 @@ footer {
             <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
 
-        <section class="category-section" style="margin-top: 25px;">
+        <section class="image-category-section" style="margin-top: 25px;">
             <h2 class="section-title">Browse by Category</h2>
-            <div class="category-grid">
-                <a href="/?category=Electronics" class="category-item"><i class="fa-solid fa-mobile-screen-button"></i><span>Electronics</span></a>
-                <a href="/?category=Clothing+%26+Apparel" class="category-item"><i class="fa-solid fa-shirt"></i><span>Clothing</span></a>
-                <a href="/?category=Home+%26+Furniture" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
-                <a href="/rentals/" class="category-item"><i class="fa-solid fa-house"></i><span>Rentals</span></a>
-                <a href="https://gigs.kabaleonline.com" class="category-item service-link"><i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span></a>
-                <a href="/?category=Other" class="category-item"><i class="fa-solid fa-shapes"></i><span>Other</span></a>
+            <div class="image-category-grid">
+                <a href="/shop/?category=Electronics" class="image-category-card">
+                    <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="A collection of modern electronics like a laptop and phone.">
+                    <h3>Electronics</h3>
+                </a>
+                <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
+                    <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Stylish clothing hanging on a rack.">
+                    <h3>Clothing</h3>
+                </a>
+                <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
+                    <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="A modern green couch in a well-lit room.">
+                    <h3>Furniture</h3>
+                </a>
+                <a href="/rentals/" class="image-category-card">
+                    <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Exterior of a modern residential house.">
+                    <h3>Rentals</h3>
+                </a>
+                <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
+                    <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="People in a meeting discussing services.">
+                    <h3>Services</h3>
+                </a>
+                <a href="/shop/?category=Other" class="image-category-card">
+                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="A variety of fresh groceries representing other items.">
+                    <h3>Other</h3>
+                </a>
             </div>
         </section>
 
