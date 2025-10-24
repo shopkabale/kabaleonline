@@ -4,8 +4,10 @@
   functions = "netlify/functions/"
   publish = "."
 
-# This section fixes the function size error
+# This section tells Netlify how to handle your functions.
 [functions]
   node_bundler = "esbuild"
+  # This new line tells the bundler to NOT bundle the Dialogflow library.
+  external_node_modules = ["@google-cloud/dialogflow"]
 
-# The [[redirects]] block has been completely removed.
+# The [[redirects]] block is not needed for this fix.
