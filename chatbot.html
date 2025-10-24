@@ -82,7 +82,7 @@
             const chatMessages = document.getElementById('chat-messages');
             const chatForm = document.getElementById('chat-form');
             const messageInput = document.getElementById('message-input');
-            
+
             // --- TYPO-CORRECTION LOGIC ---
             function levenshteinDistance(a, b) {
                 if (a.length === 0) return b.length; if (b.length === 0) return a.length;
@@ -115,7 +115,7 @@
                 }
             }
 
-            // --- HYBRID BOT BRAIN (COMPLETE) ---
+            // --- ⭐ HYBRID BOT BRAIN (FINAL CORRECTED VERSION) ⭐ ---
             async function getBotReply(message) {
                 const text = message.toLowerCase().trim();
                 
@@ -128,7 +128,7 @@
                     }
                 }
 
-                // PRIORITY 2: Check for a product query starting with a trigger
+                // PRIORITY 2: Check for a product query starting with a trigger phrase
                 if (responses.product_query) {
                     for (const trigger of responses.product_query) {
                         if (text.startsWith(trigger)) {
@@ -146,6 +146,7 @@
                 }
                 let bestMatch = { key: null, score: 0 };
                 for (const key in responses) {
+                    // Skip online-only triggers in this check
                     if (key === 'product_query' || key === 'specific_products') continue;
                     for (const keyword of responses[key]) {
                         if (text.includes(keyword)) {
@@ -169,7 +170,7 @@
                     }
                 }
                 
-                return answers['help']; // Final fallback
+                return answers['help']; // Final fallback if nothing matches
             }
 
             // --- UI FUNCTIONS ---
@@ -215,7 +216,7 @@
             function scrollToBottom() {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-            
+
             // --- QUERY LOGGING FUNCTION ---
             async function logQueryToServer(message) {
               try {
@@ -236,7 +237,7 @@
 
                 const oldSuggestions = document.querySelector('.suggestions-container');
                 if (oldSuggestions) oldSuggestions.remove();
-                
+
                 appendMessage(text, 'sent');
                 messageInput.value = '';
 
@@ -244,21 +245,21 @@
 
                 const typingEl = showTyping();
                 await new Promise(resolve => setTimeout(resolve, 1200)); 
-                
+
                 const replyObject = await getBotReply(text); 
-                
+
                 typingEl.remove();
                 appendMessage(replyObject, 'received');
             }
-            
+
             // --- EVENT LISTENERS & INITIALIZATION ---
             chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
-            
+
             function initializeChat() {
                 appendMessage(answers['greetings'], 'received');
                 messageInput.focus();
             }
-            
+
             initializeChat();
         });
     </script>
