@@ -28,7 +28,7 @@ export async function handler(event, context) {
 
     // ✅ Replace with your own Google Apps Script Web App URL
     const GOOGLE_SHEET_WEB_APP_URL =
-      'https://script.google.com/macros/s/AKfycbyNHsHhhfvrk9FD-Xilg4H21tbb4E2QfMBHD4zZgqcqS50sERvWIfVMLnOfNYoENQmqTA/exec';
+      'https://script.google.com/macros/s/AKfycbzkFLLJY4kZGH2xidD_0oKZCNwCDlK0-O5yL86trlMU_ubWO4fKTe-aFgwD3bqTxvIlUA/exec';
 
     if (!GOOGLE_SHEET_WEB_APP_URL) {
       return {
