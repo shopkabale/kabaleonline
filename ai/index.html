@@ -6,8 +6,8 @@
   <title>KabaleOnline Assistant</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <script src="/bot/data/responses.js"></script>
-  <script src="/bot/data/answers.js"></script>
+  <script src="/ai/responses.js"></script>
+  <script src="/ai/answers.js"></script>
 
   <style>
     /* ==================================================== */
@@ -43,7 +43,6 @@
         overflow: hidden;
         position: relative;
     }
-    /* The .ko-header class is no longer used but can remain for future use */
     .ko-header {
         display: flex;
         align-items: center;
@@ -57,7 +56,7 @@
     .ko-title { font-weight: 600; font-size: 1.2em; }
     .ko-controls { display: flex; align-items: center; gap: 10px; }
     .ko-controls button { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.3em; }
-    #ko-open-admin { display: none; /* ⭐ HIDDEN BY DEFAULT FOR SECURITY ⭐ */ }
+    #ko-open-admin { display: none; }
 
     .ko-body {
         flex-grow: 1;
@@ -97,7 +96,7 @@
         justify-content: center;
     }
 
-    /* --- Message Styles (Avatar, Bubbles, etc.) --- */
+    /* --- Message Styles --- */
     .message-wrapper { display: flex; margin-bottom: 15px; max-width: 90%; animation: fadeIn 0.4s ease; }
     .sent-wrapper { justify-content: flex-end; margin-left: auto; }
     .received-wrapper { flex-direction: column; align-items: flex-start; margin-right: auto; }
