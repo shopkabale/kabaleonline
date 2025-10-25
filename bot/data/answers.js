@@ -17,24 +17,54 @@ const answers = {
   },
 
   "sell": {
-    text: `🛍️ Selling on KabaleOnline is easy, free, and a great way to make extra cash! Here's how to create a listing that gets noticed:
-    <ul>
-      <li>First, head over to the <a href='/upload/' target='_blank'>Upload Item Page</a>.</li>
-      <li><b>Photos are key!</b> Upload multiple, clear, well-lit photos of your item from different angles. Good photos sell much faster!</li>
-      <li>Write a descriptive title and a detailed description. Mention the condition, size, and any special features.</li>
-      <li>Set a fair price by checking what similar items are selling for on the site.</li>
-    </ul>`,
+    text: `🛍️ Absolutely! Selling on KabaleOnline is fast, free, and designed for our community. Here is your complete step-by-step guide to turning your items into cash:
+    <ol>
+      <li>
+        <strong>Create a Listing (in under 60 seconds):</strong> Go to the <a href='/upload/' target='_blank'>Upload Item Page</a>.
+        <ul>
+            <li>📸 <b>Add Great Photos:</b> Upload multiple, clear photos from different angles. Good lighting makes a huge difference!</li>
+            <li>✍️ <b>Write a Smart Title:</b> Be specific. "Slightly Used iPhone X 256GB" is much better than "iPhone for sale".</li>
+            <li>📋 <b>Be Honest:</b> In the description, mention the item's condition, any special features, and be upfront about any scratches or defects. Honesty builds trust!</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Get Notified:</strong> As soon as a buyer places an order, you'll receive a notification. You can view all the details in your <a href='/dashboard/' target='_blank'>Seller Dashboard</a>.
+      </li>
+      <li>
+        <strong>Contact the Buyer:</strong> Use the buyer's contact information to call or message them. Agree on a safe, public meeting place like the university campus, and a convenient time for both of you.
+      </li>
+      <li>
+        <strong>Get Paid & Deliver:</strong> Meet the buyer, let them inspect the item, and get paid. We strongly recommend using **cash or mobile money** upon exchange. Never send your item before you receive payment. Finally, mark the order as "Delivered" in your dashboard to complete the sale!</li>
+    </ol>`,
     suggestions: ["How do I buy safely?", "How do I manage my listings?", "Contact the admin"]
   },
 
   "buy": {
-    text: `💰 Ready to find a great deal? Here’s how to shop smart and safely on KabaleOnline:
-    <ul>
-      <li>Explore everything for sale on the <a href='/shop/' target='_blank'>All Items</a> page. Use the search bar for specifics!</li>
-      <li>See something you like? Add it to your <a href='/cart.html' target='_blank'>Cart</a> or save it for later in your <a href='/wishlist.html' target='_blank'>Wishlist</a>.</li>
-      <li><b>Safety First:</b> Always arrange to meet sellers in a safe, public place. Never send money before you have inspected the item and are happy with it.</li>
-    </ul>`,
-    suggestions: ["How do I track my orders?", "Tell me about safety", "I have a problem with a seller"]
+    text: `💰 Of course! Here’s how to find great deals and shop smart on KabaleOnline:
+    <ol>
+      <li>
+        <strong>Browse & Discover:</strong> Start by exploring the <a href='/shop/' target='_blank'>Shop Page</a>. Use the search bar for specific items (like "Airtel MiFi") or click on a category to see what's available.
+      </li>
+      <li>
+        <strong>Save Your Finds:</strong> Found something you like?
+        <ul>
+            <li>🛒 If you're ready to buy, add it to your <a href='/cart.html' target='_blank'>Shopping Cart</a>.</li>
+            <li>❤️ If you want to save it for later, add it to your <a href='/wishlist.html' target='_blank'>Wishlist</a>.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Confirm Your Order:</strong> When you're ready, proceed to checkout from your cart. This will notify the seller that you are interested and provide them with your contact details.
+      </li>
+      <li>
+        <strong>Arrange Delivery (Safety First!):</strong> The seller will contact you to arrange payment and a meetup.
+        <ul>
+            <li>🤝 Always agree to meet in a **safe, public place**.</li>
+            <li>🧐 **Inspect the item carefully** before you pay.</li>
+            <li>💸 **Never send money** before you have seen the item and are happy with it.</li>
+        </ul>
+      </li>
+    </ol>`,
+    suggestions: ["How do I track my orders?", "Tell me about safety", "How do I sell my own items?"]
   },
 
   "lost": {
@@ -50,7 +80,7 @@ const answers = {
   "jobs": {
     text: `💼 Whether you're hiring or looking for work, our platform connects local talent with opportunities.
     <ul>
-      <li><b>For Job Seekers:</b> Visit our <a href='/services/employment' target='_blank'>Employment Section</a> to find the latest part-time jobs, full-time positions, and internships in Kabale.</li>
+      <li><b>For Job Seekers:</b> Visit our <a href='/services/' target='_blank'>Employment Section</a> to find the latest part-time jobs, full-time positions, and internships in Kabale.</li>
       <li><b>For Employers:</b> You can post your job openings for free to reach hundreds of skilled students and residents.</li>
     </ul>`,
     suggestions: ["What kind of services can I find?", "Tell me about the founder", "I need general help"]
@@ -59,7 +89,7 @@ const answers = {
   "services": {
     text: `🧰 Need a professional? Our Services Hub connects you with skilled local experts for any task.
     <ul>
-      <li>Visit the <a href='https://gigs.kabaleonline.com' target='_blank'>Services Hub</a> to browse providers.</li>
+      <li>Visit the <a href='https://services.kabaleonline.com' target='_blank'>Services Hub</a> to browse providers.</li>
       <li>You can find Plumbers, Electricians, Tutors, Photographers, DJs, Mechanics, Boda Riders for errands, and many more.</li>
       <li>Support local freelancers and get your tasks done reliably.</li>
     </ul>`,
@@ -128,19 +158,19 @@ const answers = {
   // --- KABALE ONLINE INFO (EXPANDED) ---
 
   "about": {
-    text: `💡 **KabaleOnline** is a digital marketplace and community hub built specifically for the students and residents of Kabale. It's a one-stop platform to buy and sell goods, find housing, discover local services, and stay connected with community events.`,
+    text: `💡 <b>KabaleOnline </b>is a digital marketplace and community hub built specifically for the students and residents of Kabale. It's a one-stop platform to buy and sell goods, find housing, discover local services, and stay connected with community events.`,
     suggestions: ["What is your mission?", "Who is the founder?", "When was it founded?"]
   },
   "mission_vision": {
-    text: `🎯 Our mission is to **empower the Kabale community** by making local commerce and services simple, accessible, and safe. Our vision is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them through user-friendly technology.`,
+    text: `🎯 Our mission is to <b>empower the Kabale community</b> by making local commerce and services simple, accessible, and safe. Our vision is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them through user-friendly technology.`,
     suggestions: ["Who is the founder?", "How do I sell an item?", "I need to contact support"]
   },
   "founder": {
-    text: `👨‍💻 KabaleOnline was founded and is run by **AMPEIRE SAMUEL**, a student at Kabale University. The platform was born from a direct need to solve the challenges students face, making it a project built by a student, for the students and the entire community.`,
+    text: `👨‍💻 KabaleOnline was founded and is run by <b>AMPEIRE SAMUEL</b>, a student at Kabale University. The platform was born from a direct need to solve the challenges students face, making it a project built by a student, for the students and the entire community.`,
     suggestions: ["What is the mission?", "When was it founded?", "How can I help?"]
   },
   "history_founded": {
-    text: `📅 KabaleOnline was founded in **August 2025**. It started as a final year project to create a practical, real-world solution for the local community's needs and has been growing with user feedback ever since!`,
+    text: `📅 KabaleOnline was founded in <b>August 2025</b>. It started as a project to create a practical, real-world solution for the local community's needs and has been growing with user feedback ever since!`,
     suggestions: ["Who is the founder?", "What is the vision?", "Browse all items"]
   },
   "contact": {
