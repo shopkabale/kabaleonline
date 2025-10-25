@@ -41,10 +41,11 @@ document.addEventListener('DOMContentLoaded', function () {
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
 
   let pendingLearnings = load(PENDING_KEY);
-  let draftListings = load(DRAFTS_KEY);
 
   function scrollToBottom() {
-    chatBody.scrollTop = chatBody.scrollHeight;
+    if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
   }
 
   function appendMessage(content, type) {
@@ -102,83 +103,17 @@ document.addEventListener('DOMContentLoaded', function () {
     return wrapper;
   }
 
-  async function callProductLookupAPI(params) {
-    try {
-        const res = await fetch('/.netlify/functions/product-lookup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params)
-        });
-        if (!res.ok) throw new Error('Server error');
-        return await res.json();
-    } catch (err) {
-        console.error("Lookup API failed:", err);
-        return { text: "Sorry, I couldn't connect to the product database right now." };
-    }
-  }
-
-  async function sendToSheet(entry) {
-    try {
-      const res = await fetch(SHEET_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
-      if (!res.ok) { const txt = await res.text(); console.warn('sheet push failed', txt); return { ok: false }; }
-      return { ok: true, result: await res.json() };
-    } catch (e) { console.warn('sheet push error', e); return { ok: false, error: String(e) }; }
-  }
-
-  function addPending(item) { pendingLearnings.push(item); save(PENDING_KEY, pendingLearnings); renderPendingList(); }
-
-  async function trySyncPending() {
-    if (!pendingLearnings.length) { appendMessage({ text: 'No pending learnings to sync.' }, 'received'); return; }
-    appendMessage({ text: `Syncing ${pendingLearnings.length} learnings...` }, 'received');
-    const copy = [...pendingLearnings];
-    let successfulSyncs = 0;
-    for (const p of copy) {
-      const payload = { type: p.type || 'learning', timestamp: p.time || new Date().toISOString(), userMessage: p.question || (p.sample ? JSON.stringify(p.sample) : ''), detectedIntent: p.meta?.intent || p.type || '', responseGiven: p.answer || '', contextSummary: p.context || getRecentSummary(), isAdmin: sessionStorage.getItem('isAdmin') === 'true' ? 'true' : 'false' };
-      const r = await sendToSheet(payload);
-      if (r && r.ok) {
-        pendingLearnings = pendingLearnings.filter(x => x !== p);
-        successfulSyncs++;
-      } else {
-        appendMessage({ text: 'Could not sync some learnings. Will retry later.' }, 'received');
-        break;
-      }
-    }
-    save(PENDING_KEY, pendingLearnings);
-    renderPendingList();
-    appendMessage({ text: `Sync attempt finished. ${successfulSyncs} items synced.` }, 'received');
-  }
-
-  function renderPendingList() {
-    if (!pendingListEl) return;
-    pendingListEl.innerHTML = '';
-    if (!pendingLearnings.length) { pendingListEl.innerHTML = '<div style="padding:8px;color:var(--muted)">No pending learnings</div>'; return; }
-    pendingLearnings.forEach((p, idx) => {
-      const item = document.createElement('div'); item.className = 'pending-item';
-      const left = document.createElement('div'); left.style.flex = '1';
-      left.innerHTML = `<strong>${p.type || 'example'}</strong><div style="font-size:13px;color:var(--muted)">${p.question || (p.sample ? p.sample.title : '')}</div>`;
-      const right = document.createElement('div'); right.style.display = 'flex'; right.style.gap = '6px';
-      const btnSync = document.createElement('button'); btnSync.textContent = 'Sync';
-      const btnDel = document.createElement('button'); btnDel.textContent = 'Delete';
-      btnSync.onclick = async () => {
-        const payload = { type: p.type || 'learning', timestamp: p.time || new Date().toISOString(), userMessage: p.question || (p.sample ? JSON.stringify(p.sample) : ''), detectedIntent: p.meta?.intent || p.type || '', responseGiven: p.answer || '', contextSummary: p.context || getRecentSummary(), isAdmin: sessionStorage.getItem('isAdmin') === 'true' ? 'true' : 'false' };
-        const rr = await sendToSheet(payload);
-        if (rr && rr.ok) { pendingLearnings.splice(idx, 1); save(PENDING_KEY, pendingLearnings); renderPendingList(); appendMessage({ text: 'Synced one learning.' }, 'received'); }
-        else { appendMessage({ text: 'Could not sync. Check network or function.' }, 'received'); }
-      };
-      btnDel.onclick = () => { pendingLearnings.splice(idx, 1); save(PENDING_KEY, pendingLearnings); renderPendingList(); };
-      right.appendChild(btnSync); right.appendChild(btnDel);
-      item.appendChild(left); item.appendChild(right);
-      pendingListEl.appendChild(item);
-    });
-  }
-
   async function generateReply(userText) {
     if (isWaitingForName) {
       const userName = capitalize(userText.trim());
-      saveUserName(userName);
-      isWaitingForName = false;
-      let reply = { ...answers['confirm_name_set'] };
-      return reply;
+      if (userName) {
+        saveUserName(userName);
+        isWaitingForName = false;
+        let reply = { ...answers['confirm_name_set'] };
+        return reply;
+      } else {
+        return { text: "Please let me know what to call you!", suggestions: [] };
+      }
     }
 
     pushMemory('user', userText);
@@ -196,15 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (teachMatch) {
         const [q, a] = [teachMatch[1].trim(), teachMatch[2].trim()];
         addPending({ type: 'teach', question: q, answer: a });
-        return { text: 'Saved to pending learnings. Use ⚙️ or /sync to send.' };
+        return { text: 'Saved to pending learnings.' };
       }
-      if (lc === '/sync learnings') { trySyncPending(); return null; }
-      if (lc === '/show learnings') {
-        if (!pendingLearnings.length) return { text: 'No pending learnings.' };
-        const lines = pendingLearnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || (p.sample ? p.sample.title : '')}`).join('\n');
-        return { text: `<pre style="white-space:pre-wrap">${lines}</pre>` };
-      }
-      if (lc === '/clear memory') { localStorage.removeItem(MEMORY_KEY); return { text: 'Memory cleared.' }; }
       return { text: 'Unknown admin command.' };
     }
 
@@ -212,10 +140,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (lc.startsWith(phrase + ' ')) {
         const userName = capitalize(userText.substring(phrase.length).trim());
         saveUserName(userName);
-        let reply = { ...answers['confirm_name_set'] };
-        return reply;
+        return { ...answers['confirm_name_set'] };
       }
     }
+
     for (const phrase of (responses.prompt_for_name || [])) {
       if (lc.includes(phrase)) {
         isWaitingForName = true;
@@ -239,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return answers[bestMatch.key];
     }
 
-    const clar = { text: "I didn't quite get that. Could you ask in a different way?", suggestions: ["How to sell", "Find a hostel", "Contact admin"] };
+    const clar = { text: "I'm sorry, I didn't quite understand that. Could you try asking in a different way?", suggestions: ["How to sell", "Find a hostel", "Contact admin"] };
     addPending({ type: 'unknown', question: userText, answer: clar.text, time: new Date().toISOString() });
     return clar;
   }
@@ -269,11 +197,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  openAdminBtn && openAdminBtn.addEventListener('click', () => { adminModal.setAttribute('aria-hidden', 'false'); renderPendingList(); });
+  openAdminBtn && openAdminBtn.addEventListener('click', () => { adminModal.setAttribute('aria-hidden', 'false'); });
   closeAdminBtn && closeAdminBtn.addEventListener('click', () => adminModal.setAttribute('aria-hidden', 'true'));
-  approveAllBtn && approveAllBtn.addEventListener('click', async () => { await trySyncPending(); });
-  clearPendingBtn && clearPendingBtn.addEventListener('click', () => { pendingLearnings = []; save(PENDING_KEY, pendingLearnings); renderPendingList(); });
-
+  
   function initialize() {
     if (sessionStorage.getItem('isAdmin') === 'true') {
       if (openAdminBtn) openAdminBtn.style.display = 'block';
@@ -281,28 +207,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const mem = load(MEMORY_KEY);
     const userName = loadUserName();
 
-    if (!mem.length && !userName) {
-      appendMessage(answers['greetings'], 'received');
-      pushMemory('bot', answers['greetings'].text);
-
-      setTimeout(() => {
-        const typingEl = showTyping();
-        setTimeout(() => {
-          typingEl.remove();
-          isWaitingForName = true;
-          appendMessage(answers['prompt_for_name'], 'received');
-        }, 900);
-      }, 700);
+    if (!userName && !mem.length) {
+      isWaitingForName = true;
+      appendMessage(answers['first_visit_greeting'], 'received');
+      pushMemory('bot', answers['first_visit_greeting'].text);
     } else if (userName) {
-      let welcomeBackMessage = `👋 Welcome back, ${userName}! I'm Amara. How can I help you find today?`;
-      appendMessage({ text: welcomeBackMessage, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] }, 'received');
+      const welcomeBackMessage = {
+        text: `👋 Welcome back, ${userName}! I'm Amara. How can I help you today?`,
+        suggestions: ["How to sell", "Find a hostel", "Is selling free?"]
+      };
+      appendMessage(welcomeBackMessage, 'received');
     } else {
-      const recent = getRecentSummary(3) || 'previous topics';
-      let welcomeBackMessage = `Welcome back! I remember we talked about: ${recent}.`;
-      appendMessage({ text: welcomeBackMessage }, 'received');
+      appendMessage(answers['greetings'], 'received');
     }
-
-    if (adminModal) renderPendingList();
   }
 
   initialize();
