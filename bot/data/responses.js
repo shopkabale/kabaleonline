@@ -20,7 +20,7 @@ const responses = {
   "safety": ["safe", "safety", "secure", "scam", "fraud", "is it safe", "how to buy safely", "how to sell safely", "avoid scams", "report scam"],
 
   // --- KABALE ONLINE INFO (EXPANDED) ---
-  "about": ["about", "what is kabaleonline", "info", "what is this", "introduction", "tell me about you", "who are you" "who are you", "what are you", "are you a bot", "what's your name" ],
+  "about": ["about", "what is kabaleonline", "info", "what is this", "introduction", "tell me about you", "who are you", "what are you", "are you a bot", "what's your name"],
   "mission_vision": ["mission", "vision", "purpose", "goal", "objective", "what are you trying to do", "your mission"],
   "founder": ["founder", "creator", "who made", "who runs", "ceo", "owner", "who created", "who is behind this"],
   "history_founded": ["when were you founded", "history", "how old", "when did you start", "founded on", "your story"],
