@@ -97,7 +97,6 @@ const answers = {
   },
 
   // --- PLATFORM FEATURES ---
-
   "dashboard": {
     text: `⚙️ Your <a href='/dashboard/' target='_blank'>Dashboard</a> is your personal control center. From there, you can:
     <ul>
@@ -143,7 +142,7 @@ const answers = {
     text: `📚 Check out our <a href='/blog/' target='_blank'>Blog</a> for updates, stories from campus, safety tips for online shopping, and news about what's happening in and around Kabale.`,
     suggestions: ["Tell me about events", "Who is the founder?", "I need general help"]
   },
-  
+
   "safety": {
     text: `🛡️ Your safety is our top priority. Here are some key tips for transacting on KabaleOnline:
     <ul>
@@ -156,10 +155,7 @@ const answers = {
   },
 
   // --- KABALE ONLINE INFO (EXPANDED) ---
-
-  
-
-"about": {
+  "about": {
     text: `👋 I'm the <b>KabaleOnline AI Assistant</b>! I'm your personal, 24/7 guide to buying, selling, and discovering everything in our community.
     <ul>
         <li>I can answer your questions on how to use the site.</li>
@@ -168,22 +164,23 @@ const answers = {
     </ul>
     You can ask me questions like "How to sell an item?", "Show me electronics", or "Price of a laptop". What can I help you find today?`,
     suggestions: ["How do I sell an item?", "Show me electronics", "What is your mission?"]
-},
-
-
   },
+
   "mission_vision": {
     text: `🎯 Our mission is to <b>empower the Kabale community</b> by making local commerce and services simple, accessible, and safe. Our vision is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them through user-friendly technology.`,
     suggestions: ["Who is the founder?", "How do I sell an item?", "I need to contact support"]
   },
+
   "founder": {
     text: `👨‍💻 KabaleOnline was founded and is run by <b>AMPEIRE SAMUEL</b>, a student at Kabale University. The platform was born from a direct need to solve the challenges students face, making it a project built by a student, for the students and the entire community.`,
     suggestions: ["What is the mission?", "When was it founded?", "How can I help?"]
   },
+
   "history_founded": {
     text: `📅 KabaleOnline was founded in <b>August 2025</b>. It started as a project to create a practical, real-world solution for the local community's needs and has been growing with user feedback ever since!`,
     suggestions: ["Who is the founder?", "What is the vision?", "Browse all items"]
   },
+
   "contact": {
     text: `📞 For any technical problems, reporting a user, or complex issues that require direct help, please contact the admin. This is for when something is broken or you have a serious complaint.
     <ul>
@@ -194,7 +191,6 @@ const answers = {
   },
 
   // --- CATEGORIES ---
-
   "category_electronics": {
     text: `Great! Here are all the electronics listings. You can find phones, laptops, and more.
     <ul>
@@ -218,7 +214,6 @@ const answers = {
   },
 
   // --- OTHER INFO ---
-
   "deliveries": {
     text: `🚴‍♂️ We're excited to announce that **KabaleOnline Deliveries** is coming soon! This feature will allow you to request a verified and trusted boda rider for same-day pickups and drop-offs around town. Stay tuned!`,
     suggestions: ["What services are available now?", "Are there any events?", "How to sell an item"]
@@ -232,9 +227,8 @@ const answers = {
     </ul>`,
     suggestions: ["Read the campus blog", "How do I find a job?", "I need help"]
   },
-  
-  // --- THE "MASSIVELY HELPFUL" HELP SECTION ---
 
+  // --- THE "MASSIVELY HELPFUL" HELP SECTION ---
   "help": {
     text: `🆘 I can help with almost anything on KabaleOnline! Here’s a full guide to what I know. Just ask me a question about any of these topics:
     
