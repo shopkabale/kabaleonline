@@ -4,6 +4,13 @@ const responses = {
   "well_being": ["how are you", "how's it going", "are you ok", "how are you doing"],
   "bot_identity": ["who are you", "what are you", "are you a bot", "what's your name", "your name"], // Separated from "about"
 
+
+
+  // --- NEW: USER PERSONALIZATION ---
+  "prompt_for_name": ["remember my name", "save my name", "you can call me", "know my name"],
+  "user_set_name": ["my name is", "call me", "i am", "i'm"], // For direct commands like "call me Samuel"
+
+
   // --- CORE FEATURES (EXISTING & REFINED) ---
   "rent": ["rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging"],
   "sell": ["sell", "post an item", "listing", "advertise", "my product", "place ad", "upload", "upload item", "post an ad", "list an item", "put my stuff up", "how to sell", "sell my phone", "list my laptop"],
