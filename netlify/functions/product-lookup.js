@@ -21,25 +21,22 @@ exports.handler = async (event) => {
 
     try {
         const { productName, categoryName } = JSON.parse(event.body);
-
         let searchResult;
         let queryDescription;
 
-        // --- NEW: DUAL SEARCH LOGIC ---
+        const searchOptions = {
+            hitsPerPage: 6 // Default for category preview
+            // ⭐ FIX: The 'filters: isSold:false' line has been completely removed.
+        };
+
         if (categoryName) {
-            // If a category is provided, search within that category
             queryDescription = `the "${categoryName}" category`;
-            searchResult = await index.search("", { // Empty query string to browse
-                hitsPerPage: 6, // Fetch 6 items for the preview
-                filters: `category:"${categoryName}" AND isSold:false`
-            });
+            searchOptions.facetFilters = [`category:${categoryName}`];
+            searchResult = await index.search("", searchOptions);
         } else if (productName) {
-            // If a product name is provided, search for that product
             queryDescription = `"${productName}"`;
-            searchResult = await index.search(productName, {
-                hitsPerPage: 3,
-                filters: 'isSold:false'
-            });
+            searchOptions.hitsPerPage = 3;
+            searchResult = await index.search(productName, searchOptions);
         } else {
             return { statusCode: 400, body: 'A productName or categoryName is required.' };
         }
@@ -49,14 +46,14 @@ exports.handler = async (event) => {
             return {
                 statusCode: 200,
                 body: JSON.stringify({ 
-                    text: `🤔 I couldn't find any available items for ${queryDescription}. You can <a href="/shop/" target="_blank">browse all items</a> to see what's available.`
+                    text: `🤔 I couldn't find any items for ${queryDescription}. You can <a href="/shop/" target="_blank">browse all items</a> to see what's available.`
                 }),
             };
         }
 
         // --- Format the "Found" Response ---
         const products = searchResult.hits.map(hit => ({ id: hit.objectID, ...hit }));
-        let responseText = `Here are the first few items I found for ${queryDescription}:<ul>`;
+        let responseText = `Here are some items I found for ${queryDescription}:<ul>`;
         
         products.forEach(product => {
             const price = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price not set';
@@ -70,7 +67,6 @@ exports.handler = async (event) => {
         });
         responseText += `</ul>`;
         
-        // Add a "See More" button ONLY for category searches
         if (categoryName) {
             responseText += `<a href="/shop/?category=${encodeURIComponent(categoryName)}" target="_blank" class="see-more-btn">See More in ${categoryName}</a>`;
         }
