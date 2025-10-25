@@ -119,6 +119,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return { text: "Sorry, I'm having trouble connecting to the product database right now. Please try again in a moment." };
     }
   }
+  
+  function addPending(item) {
+    pendingLearnings.push(item);
+    save(PENDING_KEY, pendingLearnings);
+  }
 
   async function generateReply(userText) {
     if (isWaitingForName) {
@@ -135,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function () {
     pushMemory('user', userText);
     const lc = userText.toLowerCase();
 
-    // PRIORITY 1: Admin Commands
     if (lc.match(/\bi am admin\s+([^\s]+)/) || lc.startsWith('/') || lc.startsWith('teach:')) {
       const adminMatch = lc.match(/\bi am admin\s+([^\s]+)/);
       if (adminMatch && adminMatch[1] === ADMIN_KEYWORD) {
@@ -144,10 +148,15 @@ document.addEventListener('DOMContentLoaded', function () {
         return { text: '✅ Admin mode unlocked.' };
       }
       if (sessionStorage.getItem('isAdmin') !== 'true') return { text: 'Admin commands are for verified admins only.' };
+      const teachMatch = userText.match(/^\s*teach\s*:\s*(.+?)\s*=>\s*(.+)$/i);
+      if (teachMatch) {
+          const [q, a] = [teachMatch[1].trim(), teachMatch[2].trim()];
+          addPending({ type: 'teach', question: q, answer: a });
+          return { text: 'Saved to pending learnings.' };
+      }
       return { text: 'Unknown admin command.' };
     }
 
-    // PRIORITY 2: User Personalization
     for (const phrase of (responses.user_set_name || [])) {
       if (lc.startsWith(phrase + ' ')) {
         const userName = capitalize(userText.substring(phrase.length).trim());
@@ -162,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    // PRIORITY 3: Live Online Lookups (Logic from old bot)
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of responses[key]) {
@@ -188,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // PRIORITY 4: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
@@ -206,7 +213,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return answers[bestMatch.key];
     }
 
-    // PRIORITY 5: Final Fallback
     const clar = { text: "I'm sorry, I didn't quite understand that. Could you try asking in a different way?", suggestions: ["How to sell", "Find a hostel", "Contact admin"] };
     addPending({ type: 'unknown', question: userText, answer: clar.text, time: new Date().toISOString() });
     return clar;
@@ -238,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   openAdminBtn && openAdminBtn.addEventListener('click', () => { adminModal.setAttribute('aria-hidden', 'false'); });
-  closeAdminBtn && closeAdminBtn.addEventListener('click', () => adminModal.setAttribute('aria-hidden', 'true');
+  closeAdminBtn && closeAdminBtn.addEventListener('click', () => adminModal.setAttribute('aria-hidden', 'true'));
   
   function initialize() {
     if (sessionStorage.getItem('isAdmin') === 'true') {
