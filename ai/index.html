@@ -153,7 +153,7 @@
 <body class="light-mode">
   <div id="kob-chat-widget" class="ko-widget">
     <header class="ko-header">
-      <div class="ko-title">💬 KabaleOnline Assistant</div>
+      <div class="ko-title">KabaleOnline Assistant</div>
       <div class="ko-controls">
         <button id="ko-toggle-theme" title="Toggle theme"><i class="fa-solid fa-circle-half-stroke"></i></button>
         <button id="ko-open-admin" title="Admin Tools"><i class="fa-solid fa-shield-halved"></i></button>
@@ -186,5 +186,59 @@
   </div>
 
   <script src="/ai/chatbot.js" defer></script>
+<script>
+    // Get references to your chat elements
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    /**
+     * This function scrolls the chat container to the very bottom.
+     */
+    function scrollToBottom() {
+        // Sets the vertical scroll position to the total height of the content
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    /**
+     * An example function that adds a new message to the chat window.
+     * @param {string} text - The message content.
+     * @param {string} sender - 'sent' or 'received'.
+     */
+    function appendMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+        messageDiv.textContent = text;
+        
+        chatMessages.appendChild(messageDiv);
+        
+        // This is the crucial step: scroll down after the new message is added.
+        scrollToBottom();
+    }
+
+    // --- Example Usage ---
+    // This makes the form add a new message and scroll down on submit.
+    chatForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Stop the page from reloading
+        const userMessage = messageInput.value.trim();
+        
+        if (userMessage) {
+            // Display the user's message
+            appendMessage(userMessage, 'sent');
+            
+            // Clear the input field
+            messageInput.value = '';
+
+            // Here you would normally get the bot's reply.
+            // For this example, we'll simulate a bot reply.
+            setTimeout(() => {
+                appendMessage("This is a reply from the bot.", 'received');
+            }, 1000);
+        }
+    });
+
+    // Initial scroll to the bottom in case there are existing messages
+    scrollToBottom();
+</script>
 </body>
 </html>
