@@ -36,7 +36,7 @@
         .received-wrapper { flex-direction: column; align-items: flex-start; margin-right: auto; }
         .message-block { display: flex; align-items: flex-start; width: 100%; }
         .avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; background-color: var(--ko-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-        .message-content { display: flex; flex-direction: column; }
+        .message-content { display: flex; flex-direction: column; max-width: calc(100% - 42px); }
         .sent-wrapper .message-content { align-items: flex-end; }
         .message { padding: 10px 15px; border-radius: 18px; line-height: 1.6; word-wrap: break-word; max-width: 100%; }
         .sent { background-color: var(--ko-primary); color: white; border-bottom-right-radius: 5px; }
@@ -56,52 +56,48 @@
         }
 
         .received li {
-            display: flex; /* Use flexbox for clean alignment */
-            align-items: flex-start;
+            position: relative;
+            padding-left: 25px; /* Create space for the custom bullet/number */
             margin-bottom: 12px;
             line-height: 1.5;
         }
         
-        /* Custom bullets for unordered lists (UL) */
-        .received ul li::before {
-            content: '•';
+        /* Custom bullets for all lists (UL and OL) */
+        .received li::before {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: 600;
             color: var(--ko-primary);
-            font-weight: bold;
-            font-size: 1.2em; /* Make bullet slightly larger */
-            line-height: 1; /* Align bullet vertically */
-            margin-right: 10px;
         }
         
-        /* Custom numbers for ordered lists (OL) */
+        /* Specific style for unordered lists (UL) */
+        .received ul li::before {
+            content: '•';
+            font-size: 1.2em;
+            line-height: 1.2;
+        }
+        
+        /* Specific style for ordered lists (OL) */
         .received ol {
             counter-reset: item-counter;
         }
         .received ol li::before {
             counter-increment: item-counter;
             content: counter(item-counter) ".";
-            font-weight: 600;
-            color: var(--ko-primary);
-            margin-right: 10px;
-            min-width: 20px; /* Ensures numbers align nicely */
-            text-align: right;
         }
 
-        /* Styling for bolded text and nested lists */
+        /* Styling for bolded text to make it stand out */
         .received li strong, .received li b {
             display: block;
             margin-bottom: 4px;
             color: var(--text-main);
+            font-weight: 600;
         }
-        .received ol ul {
-            margin: 8px 0 0 15px; /* Indent nested list */
-            padding-left: 0;
-        }
-        .received ol ul li {
-            margin-bottom: 8px;
-        }
-        .received ol ul li::before {
-            content: '–'; /* Use a dash for nested items */
-            font-size: 1em;
+
+        /* IGNORE nested lists for a cleaner UI */
+        .received ul ul, .received ol ul {
+            display: none;
         }
         
         /* ==================================================== */
