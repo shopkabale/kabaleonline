@@ -157,9 +157,20 @@ const answers = {
 
   // --- KABALE ONLINE INFO (EXPANDED) ---
 
-  "about": {
-    text: `💡 <b>KabaleOnline </b>is a digital marketplace and community hub built specifically for the students and residents of Kabale. It's a one-stop platform to buy and sell goods, find housing, discover local services, and stay connected with community events.`,
-    suggestions: ["What is your mission?", "Who is the founder?", "When was it founded?"]
+  
+
+"about": {
+    text: `👋 I'm the <b>KabaleOnline AI Assistant</b>! I'm your personal, 24/7 guide to buying, selling, and discovering everything in our community.
+    <ul>
+        <li>I can answer your questions on how to use the site.</li>
+        <li>I can help you find specific categories of items.</li>
+        <li>I can even look up live product information from our database for you.</li>
+    </ul>
+    You can ask me questions like "How to sell an item?", "Show me electronics", or "Price of a laptop". What can I help you find today?`,
+    suggestions: ["How do I sell an item?", "Show me electronics", "What is your mission?"]
+},
+
+
   },
   "mission_vision": {
     text: `🎯 Our mission is to <b>empower the Kabale community</b> by making local commerce and services simple, accessible, and safe. Our vision is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them through user-friendly technology.`,
