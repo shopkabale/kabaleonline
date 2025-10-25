@@ -42,26 +42,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- HYBRID BOT BRAIN (COMPLETE) ---
+    // --- ⭐ HYBRID BOT BRAIN (FINAL UPGRADED VERSION) ⭐ ---
     async function getBotReply(message) {
         const text = message.toLowerCase().trim();
         
-        // PRIORITY 1: Check for specific category queries to go online
+        // --- PRIORITY 1: Handle specific "How-to" questions first ---
+        const howToActions = {
+            sell: ['how to sell', 'how do i sell'],
+            buy: ['how to buy', 'how do i buy'],
+            rent: ['how to rent', 'how do i rent']
+        };
+        for (const action in howToActions) {
+            for (const phrase of howToActions[action]) {
+                if (text.startsWith(phrase)) {
+                    return answers[action]; // Give the general "sell", "buy", or "rent" answer
+                }
+            }
+        }
+
+        // --- PRIORITY 2: Check for specific category queries to go online ---
         for (const key in responses) {
             if (key.startsWith("category_")) {
                 for (const keyword of responses[key]) {
                     if (text.includes(keyword)) {
                         let categoryName = key.replace("category_", "");
                         categoryName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
-                        if(categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
-                        if(categoryName === 'Furniture') categoryName = 'Home & Furniture';
+                        if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+                        if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
                         return await callProductLookupAPI({ categoryName: categoryName });
                     }
                 }
             }
         }
 
-        // PRIORITY 2: Check if the entire query is a specific product name
+        // --- PRIORITY 3: Check if the entire query is a specific product name ---
         if (responses.specific_products) {
             for (const productName of responses.specific_products) {
                 if (levenshteinDistance(text, productName) <= 1) {
@@ -70,11 +84,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // PRIORITY 3: Check for a product query starting with a trigger
+        // --- PRIORITY 4: Check for product search triggers ("price of...") ---
         if (responses.product_query) {
             for (const trigger of responses.product_query) {
                 if (text.startsWith(trigger)) {
-                    const productName = text.replace(trigger, '').trim();
+                    // Clean up the product name
+                    let productName = text.replace(trigger, '').trim();
+                    // ⭐ FIX: Remove common "stop words" like 'a', 'an', 'the'
+                    const stopWords = ['a ', 'an ', 'the ', 'some '];
+                    stopWords.forEach(word => {
+                        if (productName.startsWith(word)) {
+                            productName = productName.substring(word.length);
+                        }
+                    });
+
                     if (productName) {
                         return await callProductLookupAPI({ productName: productName });
                     }
@@ -82,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // PRIORITY 4: Handle general offline queries (exact/partial match)
+        // --- PRIORITY 5: Handle general offline queries (exact/partial match) ---
         let bestMatch = { key: null, score: 0 };
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
@@ -95,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (bestMatch.score > 2) { return answers[bestMatch.key]; }
         
-        // PRIORITY 5: Fuzzy matching for general queries
+        // --- PRIORITY 6: Fuzzy matching for general offline queries ---
         const words = text.split(/\s+/);
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
@@ -111,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return answers['help']; // Final fallback
     }
 
-    // --- UI FUNCTIONS ---
+    // --- UI FUNCTIONS (No changes needed) ---
     function appendMessage(content, type) {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const wrapper = document.createElement('div');
@@ -155,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
-    // --- QUERY LOGGING FUNCTION ---
+    // --- QUERY LOGGING FUNCTION (No changes needed) ---
     async function logQueryToServer(message) {
       try {
         await fetch('/.netlify/functions/log-query', {
@@ -168,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // --- MAIN HANDLER ---
+    // --- MAIN HANDLER (No changes needed) ---
     async function handleSend(query) {
         const text = query.trim();
         if (!text) return;
@@ -190,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
         appendMessage(replyObject, 'received');
     }
     
-    // --- EVENT LISTENERS & INITIALIZATION ---
+    // --- EVENT LISTENERS & INITIALIZATION (No changes needed) ---
     chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
     
     function initializeChat() {
