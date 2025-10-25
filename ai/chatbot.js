@@ -266,16 +266,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       appendMessage(reply, 'received');
       pushMemory('bot', typeof reply === 'object' ? reply.text : reply);
-
-      const mem = load(MEMORY_KEY);
-      const userName = loadUserName();
-      if (mem.filter(m => m.role === 'user').length === 1 && !userName && !isWaitingForName) {
-        isWaitingForName = true;
-        const typingEl2 = showTyping();
-        await new Promise(r => setTimeout(r, 900));
-        typingEl2.remove();
-        appendMessage(answers['prompt_for_name'], 'received');
-      }
     }
   }
 
@@ -291,23 +281,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const mem = load(MEMORY_KEY);
     const userName = loadUserName();
 
-    if (!mem.length) {
-      let greeting = { ...answers['greetings'] };
-      if (userName) {
-        greeting.text = `👋 Welcome back, ${userName}! I'm Amara, your guide to KabaleOnline. How can I help you today?`;
-      }
-      appendMessage(greeting, 'received');
-      pushMemory('bot', greeting.text);
+    if (!mem.length && !userName) {
+      appendMessage(answers['greetings'], 'received');
+      pushMemory('bot', answers['greetings'].text);
+
+      setTimeout(() => {
+        const typingEl = showTyping();
+        setTimeout(() => {
+          typingEl.remove();
+          isWaitingForName = true;
+          appendMessage(answers['prompt_for_name'], 'received');
+        }, 900);
+      }, 700);
+    } else if (userName) {
+      let welcomeBackMessage = `👋 Welcome back, ${userName}! I'm Amara. How can I help you find today?`;
+      appendMessage({ text: welcomeBackMessage, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] }, 'received');
     } else {
-      let welcomeBackMessage;
-      if (userName) {
-        welcomeBackMessage = `Welcome back, ${userName}! What can I help you find today?`;
-      } else {
-        const recent = getRecentSummary(3) || 'previous topics';
-        welcomeBackMessage = `Welcome back! I remember we talked about: ${recent}.`;
-      }
+      const recent = getRecentSummary(3) || 'previous topics';
+      let welcomeBackMessage = `Welcome back! I remember we talked about: ${recent}.`;
       appendMessage({ text: welcomeBackMessage }, 'received');
     }
+
     if (adminModal) renderPendingList();
   }
 
