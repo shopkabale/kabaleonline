@@ -1,0 +1,42 @@
+:root{
+  --bg:#f6f7fb; --card:#fff; --text:#111; --muted:#6b7280; --accent:#007aff;
+  --bubble-send:#e6f4ff; --bubble-recv:#ffffff; --shadow:0 6px 18px rgba(15,23,42,0.06);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+body.light-mode{background:var(--bg); color:var(--text)}
+body.dark-mode{
+  --bg:#071022; --card:#071225; --text:#e6eef8; --muted:#94a3b8; --bubble-send:#0b2b47; --bubble-recv:#092033;
+}
+.ko-widget{max-width:420px;margin:18px auto;border-radius:12px;overflow:hidden;background:var(--card);box-shadow:var(--shadow);display:flex;flex-direction:column}
+.ko-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(0,0,0,0.04)}
+.ko-title{font-weight:600}
+.ko-controls button{background:transparent;border:0;font-size:18px;cursor:pointer}
+.ko-body{padding:12px;height:380px;overflow-y:auto}
+.chat-messages{display:flex;flex-direction:column;gap:10px}
+.message-wrapper{display:flex;align-items:flex-end;gap:8px}
+.message-wrapper.sent-wrapper{justify-content:flex-end}
+.message-wrapper.received-wrapper{justify-content:flex-start}
+.message-content{max-width:78%;display:flex;flex-direction:column;gap:6px}
+.message{padding:10px 12px;border-radius:12px;line-height:1.35;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.message.sent{background:var(--bubble-send);color:var(--text);border-bottom-right-radius:4px}
+.message.received{background:var(--bubble-recv);color:var(--text);border-bottom-left-radius:4px}
+.timestamp{font-size:11px;color:var(--muted);align-self:flex-end;margin-top:-4px}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f5f7fa,#eef6ff);font-size:16px;color:var(--accent)}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:6px 8px}
+.typing-indicator span{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:0.7;animation:blink 1s infinite}
+.typing-indicator span:nth-child(2){animation-delay:.15s}
+.typing-indicator span:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%{transform:translateY(0);opacity:.25}50%{transform:translateY(-4px);opacity:1}100%{transform:translateY(0);opacity:.25}}
+.suggestions-container{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.suggestion-chip{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px 10px;border-radius:999px;cursor:pointer;font-size:13px}
+.chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid rgba(0,0,0,0.04)}
+.message-input{flex:1;padding:10px 12px;border-radius:999px;border:1px solid rgba(0,0,0,0.06);outline:none;font-size:14px}
+.send-btn{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:999px;cursor:pointer}
+.admin-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4)}
+.admin-modal[aria-hidden="false"]{display:flex}
+.admin-panel{background:var(--card);color:var(--text);padding:18px;border-radius:8px;min-width:320px;max-width:720px;box-shadow:var(--shadow)}
+#pending-list{max-height:300px;overflow-y:auto;padding:6px;border:1px dashed rgba(0,0,0,0.05);border-radius:6px}
+.pending-item{padding:8px;border-bottom:1px solid rgba(0,0,0,0.03);display:flex;justify-content:space-between;gap:8px}
+.admin-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.admin-actions button{padding:8px 10px;border-radius:6px;border:none;cursor:pointer}
+@media(max-width:480px){.ko-widget{max-width:96%;margin:8px}.ko-body{height:56vh}}
