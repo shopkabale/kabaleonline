@@ -1,12 +1,12 @@
 const responses = {
   // --- CORE FEATURES ---
   "greetings": ["hi", "hello", "hey", "good morning", "good afternoon", "how are you", "sup", "yo", "start", "what's up", "greetings"],
-  "rent": ["rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging", "a place to live"],
-  "sell": ["sell", "post", "listing", "item", "advertise", "my product", "place ad", "upload", "upload item", "post an ad", "list an item", "put my stuff up", "how to sell", "sell my phone", "list my laptop"],
+  "rent": ["rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging"],
+  "sell": ["sell", "post an item", "listing", "advertise", "my product", "place ad", "upload", "upload item", "post an ad", "list an item", "put my stuff up", "how to sell", "sell my phone", "list my laptop"],
   "buy": ["buy", "shop", "purchase", "looking for", "available", "i want", "browse items", "shopping", "find a product", "how to buy", "see items", "where can i find"],
-  "lost": ["lost", "found", "document", "id", "certificate", "keys", "wallet", "lost my", "found a", "lost item", "report lost", "misplaced", "lost my id", "found a phone", "missing"],
+  "lost": ["lost an item", "found an item", "lost my", "found a", "report lost", "misplaced", "lost my id", "found a phone", "missing document"],
   "jobs": ["job", "work", "employment", "hiring", "vacancy", "internship", "career", "job posting", "employment opportunities", "find work", "get a job", "are you hiring"],
-  "services": ["service", "plumber", "electrician", "mechanic", "freelancer", "photographer", "tutor", "dj", "boda boda", "offer service", "hire service", "find a plumber", "need a boda", "professional", "technician"],
+  "services": ["service", "plumber", "electrician", "mechanic", "freelancer", "photographer", "tutor", "dj", "boda boda", "offer service", "hire service", "find a plumber", "need a boda", "professional"],
 
   // --- PLATFORM FEATURES ---
   "dashboard": ["dashboard", "my account", "my profile", "account settings", "manage my listings", "my stuff", "my products", "my posts", "my dashboard"],
@@ -19,8 +19,8 @@ const responses = {
   "blog": ["blog", "read blog", "campus news", "updates", "stories", "articles", "news"],
   "safety": ["safe", "safety", "secure", "scam", "fraud", "is it safe", "how to buy safely", "how to sell safely", "avoid scams", "report scam"],
 
-  // --- KABALE ONLINE INFO (EXPANDED) ---
-  "about": ["about", "what is kabaleonline", "info", "what is this", "introduction", "tell me about you", "who are you", "what are you", "are you a bot", "what's your name"],
+  // --- KABALE ONLINE INFO ---
+  "about": ["about", "what is kabaleonline", "introduction", "tell me about you", "who are you", "what are you", "are you a bot", "what's your name"],
   "mission_vision": ["mission", "vision", "purpose", "goal", "objective", "what are you trying to do", "your mission"],
   "founder": ["founder", "creator", "who made", "who runs", "ceo", "owner", "who created", "who is behind this"],
   "history_founded": ["when were you founded", "history", "how old", "when did you start", "founded on", "your story"],
