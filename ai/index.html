@@ -148,6 +148,40 @@
     .admin-actions button { flex: 1; padding: 10px; font-weight: bold; border-radius: 8px; border: none; }
     #approve-all-btn { background-color: var(--ko-primary); color: white; }
     #clear-pending-btn { background-color: #dc3545; color: white; }
+/* --- Add these new animation styles --- */
+.thinking-indicator-wrapper { flex-direction: row !important; }
+.thinking-indicator {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    padding: 10px 15px;
+    border-radius: 18px;
+    border-bottom-left-radius: 5px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    font-style: italic;
+    color: var(--text-secondary);
+}
+.thinking-indicator i {
+    animation: spin 1.5s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* --- Optional: A better pure-CSS typing animation --- */
+.typing-indicator span.typing-dot {
+    height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary);
+    border-radius: 50%; display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-indicator span.typing-dot:nth-of-type(1) { animation-delay: -0.32s; }
+.typing-indicator span.typing-dot:nth-of-type(2) { animation-delay: -0.16s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); }
+}
   </style>
 </head>
 <body class="light-mode">
