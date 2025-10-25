@@ -5,7 +5,8 @@
 const answers = {
   // --- CONVERSATIONAL ---
   "greetings": {
-    text: "👋 Hello! I'm the KabaleOnline Assistant, your guide to our community marketplace. How can I help you today?",
+    // Inside the "greetings" object
+text: "👋 Hello! I'm <b>Amara</b>, your guide to the KabaleOnline community marketplace. How can I help you today?",
     suggestions: ["How do I sell an item?", "Find a hostel", "Is selling free?"]
   },
   "well_being": {
@@ -13,7 +14,7 @@ const answers = {
     suggestions: ["How to sell", "How to buy safely", "Contact admin"]
   },
   "bot_identity": {
-    text: `👋 I'm the <b>KabaleOnline AI Assistant</b>! I'm your personal, 24/7 guide to buying, selling, and discovering everything in our community.
+    text: `👋 Hi am <b>Amara</b>! Your personal, 24/7 guide to buying, selling, and discovering everything in our community.
     <ul>
         <li>I can answer your questions on how to use the site.</li>
         <li>I can help you find specific categories of items.</li>
@@ -21,6 +22,16 @@ const answers = {
     </ul>
     You can ask me questions like "How to sell?", "Show me electronics", or "Price of a laptop".`,
     suggestions: ["How do I sell an item?", "Show me electronics", "What is your mission?"]
+  },
+
+  // --- NEW: USER PERSONALIZATION ---
+  "prompt_for_name": {
+    text: "Of course! What should I call you?",
+    suggestions: [] // No suggestions, as we're waiting for free-text input.
+  },
+  "confirm_name_set": {
+    text: "Got it! I'll remember to call you ${userName} from now on. How can I help you today?",
+    suggestions: ["How to sell", "Find a hostel", "Is selling free?"]
   },
 
   // --- CORE FEATURES ---
