@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return answers[bestMatch.key];
     }
 
-    const clar = { text: "I'm sorry, I didn't quite understand that. Could you try asking in a different way?", suggestions: ["How to sell", "Find a hostel", "Contact admin"] };
+    const clar = { text: "My apologies, my knowledge base is still growing and I don't have an answer for that yet. Your question helps me learn! You could try asking differently, or explore one of these topics.", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
     addPending({ type: 'unknown', question: userText, answer: clar.text, time: new Date().toISOString() });
     return clar;
   }
