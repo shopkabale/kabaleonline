@@ -2,30 +2,32 @@
 
 const admin = require('firebase-admin');
 
-// --- INITIALIZE FIREBASE ADMIN (FINAL CORRECTED VERSION) ---
+// --- ⭐ FINAL CORRECTED INITIALIZATION (USING YOUR METHOD) ⭐ ---
 try {
-    // This check prevents the function from crashing on subsequent runs
+    // This check prevents the function from crashing on subsequent runs.
     if (!admin.apps.length) {
-        // This safely reads your three separate environment variables from Netlify
-        admin.initializeApp({
-          credential: admin.credential.cert({
+        
+        // This is the exact service account configuration from your working functions.
+        const serviceAccount = {
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            // ⭐ THIS IS THE CRUCIAL FIX ⭐
-            // This line correctly replaces the scrambled '\n' characters with real line breaks.
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-          })
+            // This line correctly decodes the Base64 private key.
+            privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+        };
+        
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount)
         });
     }
 } catch (e) {
     console.error("Firebase admin initialization error:", e);
-    // Throw an error to ensure the function stops if initialization fails
-    throw new Error("Could not initialize Firebase Admin SDK.");
+    throw new Error("Could not initialize Firebase Admin SDK. Check environment variables and Base64 encoding.");
 }
 
 const db = admin.firestore();
 
 // --- NETLIFY FUNCTION HANDLER ---
+// (The rest of this file remains the same and is correct)
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
@@ -37,10 +39,7 @@ exports.handler = async (event) => {
             return { statusCode: 400, body: 'Product name is required.' };
         }
 
-        // --- SEARCH LOGIC ---
-        // This query finds products where the name starts with the search term.
         const productsRef = db.collection('products');
-        // Capitalize first letter for better matching if your product names are capitalized
         const searchTerm = productName.charAt(0).toUpperCase() + productName.slice(1); 
         
         const snapshot = await productsRef
@@ -59,13 +58,11 @@ exports.handler = async (event) => {
             };
         }
 
-        // --- FORMAT THE RESPONSE ---
         let responseText = `Here's what I found for "${productName}":<ul>`;
         snapshot.forEach(doc => {
             const product = doc.data();
             const productId = doc.id;
             const price = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price not set';
-            
             responseText += `<li><b>${product.name}</b> - ${price}. <a href="/product.html?id=${productId}" target="_blank">View details</a>.</li>`;
         });
         responseText += `</ul>`;
