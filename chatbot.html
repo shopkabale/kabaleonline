@@ -52,7 +52,7 @@
         .received ul, .received ol {
             padding-left: 0;
             margin: 12px 0 5px;
-            list-style-type: none; /* Remove default bullets/numbers */
+            list-style-type: none;
         }
 
         .received li {
@@ -62,42 +62,52 @@
             line-height: 1.5;
         }
         
-        /* Custom bullets for all lists (UL and OL) */
+        /* Custom bullets/numbers for all lists */
         .received li::before {
             position: absolute;
             left: 0;
-            top: 0;
+            top: 2px;
             font-weight: 600;
             color: var(--ko-primary);
         }
         
-        /* Specific style for unordered lists (UL) */
+        /* Style for unordered lists (UL) */
         .received ul li::before {
             content: '•';
             font-size: 1.2em;
-            line-height: 1.2;
         }
         
-        /* Specific style for ordered lists (OL) */
+        /* Style for ordered lists (OL) */
         .received ol {
             counter-reset: item-counter;
         }
-        .received ol li::before {
+        .received ol > li::before {
             counter-increment: item-counter;
             content: counter(item-counter) ".";
         }
 
-        /* Styling for bolded text to make it stand out */
+        /* Styling for bolded text */
         .received li strong, .received li b {
-            display: block;
-            margin-bottom: 4px;
+            display: inline; /* Keep it on the same line */
             color: var(--text-main);
             font-weight: 600;
         }
-
-        /* IGNORE nested lists for a cleaner UI */
-        .received ul ul, .received ol ul {
-            display: none;
+        
+        /* Styling for the nested UL inside an OL */
+        .received ol > li > ul {
+            margin-top: 10px;
+            padding-left: 10px;
+        }
+        
+        .received ol > li > ul > li {
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .received ol > li > ul > li::before {
+            content: '–'; /* Use a dash for nested items */
+            font-size: 1em;
+            color: var(--text-secondary);
         }
         
         /* ==================================================== */
