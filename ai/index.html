@@ -30,8 +30,8 @@
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    body { 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         margin: 0; background-color: var(--bg-main); color: var(--text-main);
     }
 
@@ -43,6 +43,7 @@
         overflow: hidden;
         position: relative;
     }
+    /* The .ko-header class is no longer used but can remain for future use */
     .ko-header {
         display: flex;
         align-items: center;
@@ -53,25 +54,10 @@
         border-bottom: 1px solid var(--border-color);
         flex-shrink: 0;
     }
-    .ko-title {
-        font-weight: 600;
-        font-size: 1.2em;
-    }
-    .ko-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .ko-controls button {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        font-size: 1.3em;
-    }
-    #ko-open-admin {
-        display: none; /* ⭐ HIDDEN BY DEFAULT FOR SECURITY ⭐ */
-    }
+    .ko-title { font-weight: 600; font-size: 1.2em; }
+    .ko-controls { display: flex; align-items: center; gap: 10px; }
+    .ko-controls button { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.3em; }
+    #ko-open-admin { display: none; /* ⭐ HIDDEN BY DEFAULT FOR SECURITY ⭐ */ }
 
     .ko-body {
         flex-grow: 1;
@@ -127,13 +113,20 @@
     .received a { color: var(--ko-primary); font-weight: 500; }
     .received ul, .received ol { padding-left: 20px; margin: 12px 0 5px; }
     .received pre { white-space: pre-wrap; background-color: var(--bg-main); padding: 10px; border-radius: 8px; font-size: 0.9em; }
-    .typing-indicator-wrapper { flex-direction: row !important; }
+
+    /* --- Animation Styles --- */
+    .thinking-indicator-wrapper, .typing-indicator-wrapper { flex-direction: row !important; }
+    .thinking-indicator { align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 18px; border-bottom-left-radius: 5px; background-color: var(--bg-card); border: 1px solid var(--border-color); font-style: italic; color: var(--text-secondary); }
+    .thinking-indicator i { animation: spin 1.5s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .typing-indicator { align-self: flex-start; display: flex; align-items: center; padding: 10px 15px; border-radius: 18px; border-bottom-left-radius: 5px; background-color: var(--bg-card); border: 1px solid var(--border-color); }
-    .typing-indicator span { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+    .typing-indicator span.typing-dot { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary); border-radius: 50%; display: inline-block; animation: bounce 1.4s infinite ease-in-out both; }
+    .typing-indicator span.typing-dot:nth-of-type(1) { animation-delay: -0.32s; }
+    .typing-indicator span.typing-dot:nth-of-type(2) { animation-delay: -0.16s; }
     @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
     .suggestions-container { margin-top: 10px; margin-left: 42px; display: flex; flex-wrap: wrap; gap: 8px; }
     .suggestion-chip { background: none; border: 1px solid var(--border-color); color: var(--ko-primary); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; }
-    
+
     /* --- Admin Modal Styles --- */
     .admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1001; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0s 0.3s; }
     .admin-modal[aria-hidden="false"] { opacity: 1; visibility: visible; transition-delay: 0s; }
@@ -148,51 +141,10 @@
     .admin-actions button { flex: 1; padding: 10px; font-weight: bold; border-radius: 8px; border: none; }
     #approve-all-btn { background-color: var(--ko-primary); color: white; }
     #clear-pending-btn { background-color: #dc3545; color: white; }
-/* --- Add these new animation styles --- */
-.thinking-indicator-wrapper { flex-direction: row !important; }
-.thinking-indicator {
-    align-self: flex-start;
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between icon and text */
-    padding: 10px 15px;
-    border-radius: 18px;
-    border-bottom-left-radius: 5px;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    font-style: italic;
-    color: var(--text-secondary);
-}
-.thinking-indicator i {
-    animation: spin 1.5s linear infinite;
-}
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* --- Optional: A better pure-CSS typing animation --- */
-.typing-indicator span.typing-dot {
-    height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-secondary);
-    border-radius: 50%; display: inline-block;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
-.typing-indicator span.typing-dot:nth-of-type(1) { animation-delay: -0.32s; }
-.typing-indicator span.typing-dot:nth-of-type(2) { animation-delay: -0.16s; }
-@keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); }
-}
   </style>
 </head>
 <body class="light-mode">
   <div id="kob-chat-widget" class="ko-widget">
-    <header class="ko-header">
-      <div class="ko-title">KabaleOnline Assistant</div>
-      <div class="ko-controls">
-        <button id="ko-toggle-theme" title="Toggle theme"><i class="fa-solid fa-circle-half-stroke"></i></button>
-        <button id="ko-open-admin" title="Admin Tools"><i class="fa-solid fa-shield-halved"></i></button>
-      </div>
-    </header>
 
     <main id="ko-body" class="ko-body">
       <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
@@ -217,6 +169,10 @@
         <small style="margin-top: 10px; color: var(--text-secondary); font-size: 0.8em;">Pending learnings sync to your Google Sheet.</small>
       </div>
     </div>
+    
+    <button id="ko-toggle-theme" style="display: none;"></button>
+    <button id="ko-open-admin" style="display: none;"></button>
+
   </div>
 
   <script src="/ai/chatbot.js" defer></script>
