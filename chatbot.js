@@ -25,7 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return matrix[b.length][a.length];
     }
 
-    // --- ONLINE PRODUCT/CATEGORY LOOKUP FUNCTION ---
+    // --- ONLINE "TOOLS" ---
+    // Calls the Algolia product lookup function
     async function callProductLookupAPI(params) {
         try {
             const res = await fetch('/.netlify/functions/product-lookup', {
@@ -41,12 +42,24 @@ document.addEventListener('DOMContentLoaded', function() {
             return answers['help'];
         }
     }
+    // Calls the Google Sheet logging function
+    async function logQueryToServer(message) {
+      try {
+        await fetch('/.netlify/functions/log-query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message })
+        });
+      } catch (error) {
+        console.warn("Could not log query to the server.");
+      }
+    }
 
-    // --- ⭐ HYBRID BOT BRAIN (FINAL UPGRADED VERSION) ⭐ ---
+    // --- THE INTENT HANDLING FUNCTION ---
     async function getBotReply(message) {
         const text = message.toLowerCase().trim();
         
-        // --- PRIORITY 1: Handle specific "How-to" questions first ---
+        // PRIORITY 1: Handle specific "How-to" questions first (offline)
         const howToActions = {
             sell: ['how to sell', 'how do i sell'],
             buy: ['how to buy', 'how do i buy'],
@@ -54,13 +67,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         for (const action in howToActions) {
             for (const phrase of howToActions[action]) {
-                if (text.startsWith(phrase)) {
-                    return answers[action]; // Give the general "sell", "buy", or "rent" answer
-                }
+                if (text.startsWith(phrase)) { return answers[action]; }
             }
         }
 
-        // --- PRIORITY 2: Check for specific category queries to go online ---
+        // PRIORITY 2: Check for specific category queries (online)
         for (const key in responses) {
             if (key.startsWith("category_")) {
                 for (const keyword of responses[key]) {
@@ -75,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // --- PRIORITY 3: Check if the entire query is a specific product name ---
+        // PRIORITY 3: Check for specific product names (online)
         if (responses.specific_products) {
             for (const productName of responses.specific_products) {
                 if (levenshteinDistance(text, productName) <= 1) {
@@ -84,28 +95,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // --- PRIORITY 4: Check for product search triggers ("price of...") ---
+        // PRIORITY 4: Check for product search triggers like "price of..." (online)
         if (responses.product_query) {
             for (const trigger of responses.product_query) {
                 if (text.startsWith(trigger)) {
-                    // Clean up the product name
                     let productName = text.replace(trigger, '').trim();
-                    // ⭐ FIX: Remove common "stop words" like 'a', 'an', 'the'
                     const stopWords = ['a ', 'an ', 'the ', 'some '];
-                    stopWords.forEach(word => {
-                        if (productName.startsWith(word)) {
-                            productName = productName.substring(word.length);
-                        }
-                    });
-
-                    if (productName) {
-                        return await callProductLookupAPI({ productName: productName });
+                    for (const word of stopWords) {
+                        if (productName.startsWith(word)) { productName = productName.substring(word.length); break; }
                     }
+                    if (productName) { return await callProductLookupAPI({ productName: productName }); }
                 }
             }
         }
         
-        // --- PRIORITY 5: Handle general offline queries (exact/partial match) ---
+        // PRIORITY 5: Handle general offline queries (exact match)
         let bestMatch = { key: null, score: 0 };
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
@@ -118,15 +122,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (bestMatch.score > 2) { return answers[bestMatch.key]; }
         
-        // --- PRIORITY 6: Fuzzy matching for general offline queries ---
+        // PRIORITY 6: Fuzzy matching for general offline queries
         const words = text.split(/\s+/);
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
             for (const keyword of responses[key]) {
                 for (const word of words) {
-                    if (levenshteinDistance(word, keyword) <= (keyword.length > 5 ? 2 : 1)) {
-                        return answers[key];
-                    }
+                    if (levenshteinDistance(word, keyword) <= (keyword.length > 5 ? 2 : 1)) { return answers[key]; }
                 }
             }
         }
@@ -134,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return answers['help']; // Final fallback
     }
 
-    // --- UI FUNCTIONS (No changes needed) ---
+    // --- UI FUNCTIONS ---
     function appendMessage(content, type) {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const wrapper = document.createElement('div');
@@ -174,46 +176,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return wrapper;
     }
 
-    function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+    function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
     
-    // --- QUERY LOGGING FUNCTION (No changes needed) ---
-    async function logQueryToServer(message) {
-      try {
-        await fetch('/.netlify/functions/log-query', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: message })
-        });
-      } catch (error) {
-        console.warn("Could not log query to the server.");
-      }
-    }
-
-    // --- MAIN HANDLER (No changes needed) ---
+    // --- MAIN HANDLER ---
     async function handleSend(query) {
         const text = query.trim();
         if (!text) return;
-
         const oldSuggestions = document.querySelector('.suggestions-container');
         if (oldSuggestions) oldSuggestions.remove();
-        
         appendMessage(text, 'sent');
         messageInput.value = '';
-
-        logQueryToServer(text);
-
+        logQueryToServer(text); // Log the query
         const typingEl = showTyping();
         await new Promise(resolve => setTimeout(resolve, 1200)); 
-        
-        const replyObject = await getBotReply(text); 
-        
+        const replyObject = await getBotReply(text); // Get the hybrid response
         typingEl.remove();
         appendMessage(replyObject, 'received');
     }
     
-    // --- EVENT LISTENERS & INITIALIZATION (No changes needed) ---
+    // --- EVENT LISTENERS & INITIALIZATION ---
     chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
     
     function initializeChat() {
