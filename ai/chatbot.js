@@ -227,9 +227,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- ⭐ GENERATE REPLY (FINAL CORRECTED VERSION) ⭐ ---
   async function generateReply(userText){
     pushMemory('user', userText);
+    const lc = userText.toLowerCase();
 
     // PRIORITY 1: Check for Admin Commands FIRST
-    const adminMatch = userText.match(/\bI am admin\s+([^\s]+)/i);
+    const adminMatch = lc.match(/\bi am admin\s+([^\s]+)/);
     if (adminMatch && adminMatch[1] === ADMIN_KEYWORD) {
       sessionStorage.setItem('isAdmin','true');
       if (openAdminBtn) openAdminBtn.style.display = 'block'; // Show the admin button
@@ -245,9 +246,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const entry = { type:'teach', question: q, answer: a, time: new Date().toISOString(), meta:{confidence:1.0, source:'inline-teach'} };
         addPending(entry);
         return { text: 'Saved to pending learnings. Please use the Admin Panel (⚙️) or /sync learnings to send to Google Sheet.' };
-      } else {
-        // If not admin, do nothing special and let it fall through to be handled as a normal query.
-        // This prevents non-admins from discovering the 'teach:' command.
       }
     }
 
@@ -259,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const lines = pendingLearnings.map((p,i) => `${i+1}. ${p.type} — ${p.question || (p.sample ? p.sample.title : '')}`).join('\n');
         return { text: `<pre style="white-space:pre-wrap">${lines}</pre>` };
       }
-      if (cmd === '/sync learnings') { trySyncPending(); return null; /* Let trySyncPending handle messages */ }
+      if (cmd === '/sync learnings') { trySyncPending(); return null; }
       if (cmd === '/clear memory') { localStorage.removeItem(MEMORY_KEY); return { text: 'Memory cleared.' }; }
       if (cmd === '/show drafts') {
         if (!draftListings.length) return { text: 'No drafts saved.' };
@@ -269,59 +267,73 @@ document.addEventListener('DOMContentLoaded', function () {
       return { text: 'Unknown admin command.' };
     }
     
-    // PRIORITY 2: Normal conversation logic...
-    const intent = detectIntent(userText);
-    if (intent.intent === 'sell') { startSellingFlow(); return null; }
-    if (sellingFlow) { const done = await processSellingFlow(userText); if (done) return null; }
+    // PRIORITY 2: "How-To" Questions (High-priority offline answers)
+    const howToActions = {
+        sell: ['how to sell', 'how do i sell', 'guide to selling'],
+        buy: ['how to buy', 'how do i buy', 'guide to buying'],
+        rent: ['how to rent', 'how do i rent', 'guide to rentals']
+    };
+    for (const action in howToActions) {
+        for (const phrase of howToActions[action]) {
+            if (lc.startsWith(phrase)) {
+                return answers[action];
+            }
+        }
+    }
     
-    if (intent.intent === 'price_query' || (intent.entities && intent.entities.product)) {
-      const product = intent.entities.product || extractProductFromText(userText);
-      if (product) {
-        const answer = answers['help'] ? answers['help'].text : 'I found some info';
-        addPending({ type:'qa_example', question: userText, answer: answer, meta:{confidence: intent.confidence}, time:new Date().toISOString() });
-        try {
-          const res = await fetch('/.netlify/functions/product-lookup', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ productName: product }) });
-          if (res.ok) { return await res.json(); }
-        } catch(e){ /* Fallback on network error */ }
-        return answers['help'] || { text: 'Could not look up live info right now. Please try again.' };
-      }
+    // PRIORITY 3: Guided Selling Flow Trigger
+    const sellTriggers = ['sell something', 'post an item', 'upload a product', 'create a listing'];
+    if (sellTriggers.some(p => lc.includes(p))) {
+        startSellingFlow();
+        return null;
+    }
+    if (sellingFlow) {
+        const done = await processSellingFlow(userText);
+        if (done) return null;
     }
 
-    // PRIORITY 3: responses.js whole-word matching
-    let bestMatch = { key:null, score:0 };
+    // PRIORITY 4: Online Lookups (Category & Product)
     for (const key in responses) {
-      if (key.startsWith('category_') || key === 'specific_products' || key === 'product_query') continue;
-      for (const kw of responses[key]) {
-        const r = new RegExp(`\\b${safeRegex(kw.toLowerCase())}\\b`, 'i');
-        if (r.test(userText.toLowerCase())) {
-          const score = kw.length;
-          if (score > bestMatch.score) bestMatch = { key, score };
+        if (key.startsWith("category_")) {
+            for (const keyword of responses[key]) {
+                const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
+                if (regex.test(lc)) {
+                    let categoryName = key.replace("category_", "");
+                    categoryName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+                    if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+                    if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
+                    return await callProductLookupAPI({ categoryName: categoryName });
+                }
+            }
         }
-      }
     }
-    if (bestMatch.key && answers[bestMatch.key]) { return answers[bestMatch.key]; }
-    
-    // PRIORITY 4: Fuzzy fallback
+    const productTriggers = ["price of", "cost of", "how much is", "do you have"];
+    for (const trigger of productTriggers) {
+        if (lc.startsWith(trigger)) {
+            let productName = lc.replace(trigger, '').trim().replace(/^(a|an|the)\s/,'');
+            if(productName) return await callProductLookupAPI({ productName });
+        }
+    }
+
+    // PRIORITY 5: General Offline Queries (Whole Word Match)
+    let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
-      if (key.startsWith('category_') || key === 'specific_products' || key === 'product_query') continue;
-      for (const kw of responses[key]) {
-        const tokens = userText.toLowerCase().split(/\s+/);
-        for (const t of tokens) {
-          if (levenshteinDistance(t, kw.toLowerCase()) <= (kw.length > 5 ? 2 : 1)) {
-            const a = answers[key] || answers['help'];
-            addPending({ type:'fuzzy', question: userText, answer: a.text || '', meta:{confidence:0.6}, time:new Date().toISOString() });
-            return a;
-          }
+        for (const kw of responses[key]) {
+            const regex = new RegExp(`\\b${safeRegex(kw)}\\b`, 'i');
+            if (regex.test(lc)) {
+                const score = kw.length;
+                if (score > bestMatch.score) { bestMatch = { key, score }; }
+            }
         }
-      }
     }
-    
-    // Final fallback
+    if (bestMatch.key) { return answers[bestMatch.key]; }
+
+    // PRIORITY 6: Final Fallback
     const clar = { text: "I didn't quite get that. Could you ask in a different way?", suggestions: ["How to sell", "Find a hostel", "Contact admin"] };
-    addPending({ type:'unknown', question: userText, answer: clar.text, meta:{confidence:0.4}, time:new Date().toISOString() });
+    addPending({ type:'unknown', question: userText, answer: clar.text, time:new Date().toISOString() });
     return clar;
   }
-
+  
   function extractProductFromText(text){
     if (responses && responses.specific_products) {
       for (const p of responses.specific_products) {
@@ -365,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
       await trySyncPending();
     }
   });
-
+  
   // --- ⭐ CORRECTED INITIALIZATION ⭐ ---
   function initialize(){
     // Show admin button on load ONLY if the user is already an admin this session
@@ -376,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const mem = load(MEMORY_KEY);
     if (!mem.find(m=>m.role==='bot')) {
       appendMessage(answers['greetings'] || { text:'Hello!'}, 'received');
-      pushMemory('bot', (answers['greetings'] && answers['greetings'].text) || 'Hello!');
     } else {
       const recent = getRecentSummary(3) || 'no recent topics';
       appendMessage({ text: `Welcome back! I remember we talked about: ${recent}` }, 'received');
@@ -384,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if(adminModal) renderPendingList();
   }
   
-  initialize(); // Run initialization
+  initialize();
   
   window.kabaleAgent = {
     getMemory: ()=> load(MEMORY_KEY),
