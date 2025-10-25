@@ -1,5 +1,5 @@
-// File: /bot/chatbot.js
-// KabaleOnline Assistant v4.0 - offline-first, self-learning to Google Sheet, admin, guided listing
+// File: /ai/chatbot.js
+// KabaleOnline Assistant v4.1 - (Corrected Admin Priority & UI)
 // Requires responses.js and answers.js to be loaded before this script.
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -26,9 +26,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ------------- THEME -------------
   toggleThemeBtn && toggleThemeBtn.addEventListener('click', () => {
-    const dark = document.body.classList.contains('dark-mode');
-    if (dark) { document.body.classList.remove('dark-mode'); document.body.classList.add('light-mode'); localStorage.setItem('theme','light-mode'); }
-    else { document.body.classList.remove('light-mode'); document.body.classList.add('dark-mode'); localStorage.setItem('theme','dark-mode'); }
+    const isDark = document.body.classList.contains('dark-mode');
+    const newTheme = isDark ? 'light-mode' : 'dark-mode';
+    document.body.className = '';
+    document.body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
   });
 
   // ------------- UTILS -------------
@@ -112,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (lc.includes(ph)) return {intent, confidence:0.95, entities: extractEntities(lc)};
       }
     }
-    // product fuzzy check
     if (responses && responses.specific_products) {
       for (const prod of responses.specific_products) {
         const d = levenshteinDistance(lc, prod.toLowerCase());
@@ -125,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // ------------- GUIDED LISTING FLOW -------------
   let sellingFlow = null;
   function startSellingFlow(){ sellingFlow = { stage:'title', draft:{ title:'', price:'', description:'', contact:'' } }; appendMessage({ text: "Let's create your listing — what's the item title?" }, 'received'); }
-  function asyncWait(ms){ return new Promise(r=>setTimeout(r,ms)); }
   async function processSellingFlow(userText){
     if (!sellingFlow) return false;
     if (sellingFlow.stage === 'title') { sellingFlow.draft.title = userText; sellingFlow.stage = 'price'; appendMessage({ text: "Price? (e.g., 200000 or negotiable)"}, 'received'); return true; }
@@ -133,10 +133,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (sellingFlow.stage === 'description') { sellingFlow.draft.description = userText; sellingFlow.stage = 'contact'; appendMessage({ text: "Contact (WhatsApp number or 'via KabaleOnline inbox')." }, 'received'); return true; }
     if (sellingFlow.stage === 'contact') {
       sellingFlow.draft.contact = userText;
-      const draft = Object.assign({}, sellingFlow.draft, { created_at: new Date().toISOString() });
+      const draft = { ...sellingFlow.draft, created_at: new Date().toISOString() };
       draftListings.push(draft); save(DRAFTS_KEY, draftListings);
       appendMessage({ text: `Saved draft locally: "${draft.title}" — use /show drafts to view.` }, 'received');
-      // also add as pending learning (example listing)
       addPending({ type:'listing_example', sample: draft, meta:{confidence:0.9} });
       sellingFlow = null;
       return true;
@@ -146,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ------------- PENDING LEARNINGS to Google Sheet -------------
   async function sendToSheet(entry){
-    // The Netlify function you already have should accept POST JSON data and write to the sheet.
     try {
       const res = await fetch(SHEET_ENDPOINT, {
         method:'POST',
@@ -158,8 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.warn('sheet push failed', txt);
         return { ok:false, status: res.status, text: txt };
       }
-      const j = await res.json();
-      return { ok:true, result:j };
+      return { ok:true, result: await res.json() };
     } catch (e) {
       console.warn('sheet push error', e);
       return { ok:false, error:String(e) };
@@ -167,59 +164,52 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function addPending(item){
-    pendingLearnings.push(item); save(PENDING_KEY, pendingLearnings); renderPendingList(); // UI update
+    pendingLearnings.push(item); save(PENDING_KEY, pendingLearnings); renderPendingList();
   }
 
   async function trySyncPending(){
     if (!pendingLearnings.length) { appendMessage({ text: 'No pending learnings to sync.' }, 'received'); return; }
     appendMessage({ text: `Syncing ${pendingLearnings.length} learnings...` }, 'received');
-    const copy = pendingLearnings.slice();
+    const copy = [...pendingLearnings];
+    let successfulSyncs = 0;
     for (const p of copy) {
       const payload = {
         type: p.type || 'learning',
         timestamp: p.time || new Date().toISOString(),
         userMessage: p.question || (p.sample ? JSON.stringify(p.sample) : ''),
-        detectedIntent: p.meta && p.meta.intent ? p.meta.intent : (p.type || ''),
+        detectedIntent: p.meta?.intent || p.type || '',
         responseGiven: p.answer || '',
         contextSummary: p.context || getRecentSummary(),
         isAdmin: sessionStorage.getItem('isAdmin') === 'true' ? 'true' : 'false',
       };
       const r = await sendToSheet(payload);
       if (r && r.ok) {
-        // remove from pending
         pendingLearnings = pendingLearnings.filter(x => x !== p);
-        save(PENDING_KEY, pendingLearnings);
+        successfulSyncs++;
       } else {
-        // break early if offline or failing
         appendMessage({ text: 'Could not sync some learnings. Will retry later.' }, 'received');
         break;
       }
     }
+    save(PENDING_KEY, pendingLearnings);
     renderPendingList();
-    appendMessage({ text: 'Sync attempt finished.' }, 'received');
+    appendMessage({ text: `Sync attempt finished. ${successfulSyncs} items synced.` }, 'received');
   }
 
   // ------------- PENDING UI -------------
   function renderPendingList(){
+    if (!pendingListEl) return;
     pendingListEl.innerHTML = '';
     if (!pendingLearnings.length) { pendingListEl.innerHTML = '<div style="padding:8px;color:var(--muted)">No pending learnings</div>'; return; }
     pendingLearnings.forEach((p, idx) => {
       const item = document.createElement('div'); item.className = 'pending-item';
       const left = document.createElement('div'); left.style.flex='1';
-      left.innerHTML = `<strong>${p.type || 'example'}</strong><div style="font-size:13px;color:var(--muted)">${p.question ? p.question : (p.sample ? (p.sample.title || JSON.stringify(p.sample)) : '')}</div>`;
+      left.innerHTML = `<strong>${p.type || 'example'}</strong><div style="font-size:13px;color:var(--muted)">${p.question || (p.sample ? p.sample.title : '')}</div>`;
       const right = document.createElement('div'); right.style.display='flex'; right.style.gap='6px';
       const btnSync = document.createElement('button'); btnSync.textContent='Sync';
       const btnDel = document.createElement('button'); btnDel.textContent='Delete';
       btnSync.onclick = async () => {
-        const payload = {
-          type: p.type || 'learning',
-          timestamp: p.time || new Date().toISOString(),
-          userMessage: p.question || (p.sample ? JSON.stringify(p.sample) : ''),
-          detectedIntent: p.meta && p.meta.intent ? p.meta.intent : (p.type || ''),
-          responseGiven: p.answer || '',
-          contextSummary: p.context || getRecentSummary(),
-          isAdmin: sessionStorage.getItem('isAdmin') === 'true' ? 'true' : 'false',
-        };
+        const payload = { type: p.type || 'learning', timestamp: p.time || new Date().toISOString(), userMessage: p.question || (p.sample ? JSON.stringify(p.sample) : ''), detectedIntent: p.meta?.intent || p.type || '', responseGiven: p.answer || '', contextSummary: p.context || getRecentSummary(), isAdmin: sessionStorage.getItem('isAdmin') === 'true' ? 'true' : 'false' };
         const rr = await sendToSheet(payload);
         if (rr && rr.ok) {
           pendingLearnings.splice(idx,1); save(PENDING_KEY, pendingLearnings); renderPendingList(); appendMessage({ text:'Synced one learning.' }, 'received');
@@ -234,106 +224,90 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ------------- GENERATE REPLY -------------
+  // --- ⭐ GENERATE REPLY (FINAL CORRECTED VERSION) ⭐ ---
   async function generateReply(userText){
     pushMemory('user', userText);
 
-    // admin activation check: "I am admin <key>"
+    // PRIORITY 1: Check for Admin Commands FIRST
     const adminMatch = userText.match(/\bI am admin\s+([^\s]+)/i);
     if (adminMatch && adminMatch[1] === ADMIN_KEYWORD) {
       sessionStorage.setItem('isAdmin','true');
+      if (openAdminBtn) openAdminBtn.style.display = 'block'; // Show the admin button
       const msg = { text: '✅ Welcome back, Admin! Admin commands unlocked. Try /show learnings or /sync learnings.' };
       pushMemory('bot', msg.text, { admin:true });
       return msg;
     }
 
-    // handle admin inline teach: teach: question => answer (only admin)
     const teachMatch = userText.match(/^\s*teach\s*:\s*(.+?)\s*=>\s*(.+)$/i);
     if (teachMatch) {
       if (sessionStorage.getItem('isAdmin') === 'true') {
         const q = teachMatch[1].trim(); const a = teachMatch[2].trim();
         const entry = { type:'teach', question: q, answer: a, time: new Date().toISOString(), meta:{confidence:1.0, source:'inline-teach'} };
-        // attempt immediate push
-        const payload = { type:'teach', timestamp: entry.time, userMessage: q, detectedIntent: 'teach', responseGiven: a, contextSummary: getRecentSummary(), isAdmin:'true' };
-        const res = await sendToSheet(payload);
-        if (res && res.ok) { return { text: 'Teaching saved to sheet ✅' }; }
         addPending(entry);
-        return { text: 'Saved to pending learnings (offline or failed). Please /sync learnings later.' };
+        return { text: 'Saved to pending learnings. Please use the Admin Panel (⚙️) or /sync learnings to send to Google Sheet.' };
       } else {
-        return { text: 'Only Admins can use teach:. Become admin by sending "I am admin <key>"' };
+        // If not admin, do nothing special and let it fall through to be handled as a normal query.
+        // This prevents non-admins from discovering the 'teach:' command.
       }
     }
 
-    // admin commands
     if (userText.startsWith('/')) {
-      if (sessionStorage.getItem('isAdmin') !== 'true') return { text: 'Admin commands are for verified admins only. Send "I am admin <key>" to authenticate.' };
+      if (sessionStorage.getItem('isAdmin') !== 'true') return { text: 'Admin commands are for verified admins only.' };
       const cmd = userText.trim().toLowerCase();
       if (cmd === '/show learnings') {
         if (!pendingLearnings.length) return { text: 'No pending learnings.' };
-        const lines = pendingLearnings.map((p,i) => `${i+1}. ${p.type} — ${p.question ? p.question : (p.sample ? (p.sample.title || JSON.stringify(p.sample)) : '')}`).join('\n');
-        return { text: '<pre style="white-space:pre-wrap">'+lines+'</pre>' };
+        const lines = pendingLearnings.map((p,i) => `${i+1}. ${p.type} — ${p.question || (p.sample ? p.sample.title : '')}`).join('\n');
+        return { text: `<pre style="white-space:pre-wrap">${lines}</pre>` };
       }
-      if (cmd === '/sync learnings') { await trySyncPending(); return { text: 'Sync initiated (check messages).' }; }
+      if (cmd === '/sync learnings') { trySyncPending(); return null; /* Let trySyncPending handle messages */ }
       if (cmd === '/clear memory') { localStorage.removeItem(MEMORY_KEY); return { text: 'Memory cleared.' }; }
       if (cmd === '/show drafts') {
         if (!draftListings.length) return { text: 'No drafts saved.' };
         const lines = draftListings.map((d,i)=>`${i+1}. ${d.title} — ${d.price}`).join('\n');
-        return { text: '<pre style="white-space:pre-wrap">'+lines+'</pre>' };
+        return { text: `<pre style="white-space:pre-wrap">${lines}</pre>` };
       }
       return { text: 'Unknown admin command.' };
     }
-
-    // guided selling flow: trigger
+    
+    // PRIORITY 2: Normal conversation logic...
     const intent = detectIntent(userText);
     if (intent.intent === 'sell') { startSellingFlow(); return null; }
-
-    // if in selling flow, handle stages
     if (sellingFlow) { const done = await processSellingFlow(userText); if (done) return null; }
-
-    // price query handling
-    if (intent.intent === 'price_query' || intent.entities && intent.entities.product) {
+    
+    if (intent.intent === 'price_query' || (intent.entities && intent.entities.product)) {
       const product = intent.entities.product || extractProductFromText(userText);
       if (product) {
-        // create a learning entry about this QA attempt
         const answer = answers['help'] ? answers['help'].text : 'I found some info';
         addPending({ type:'qa_example', question: userText, answer: answer, meta:{confidence: intent.confidence}, time:new Date().toISOString() });
-        // try product lookup (if you have a product-lookup function; fallback to answers)
         try {
           const res = await fetch('/.netlify/functions/product-lookup', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ productName: product }) });
-          if (res.ok) {
-            const j = await res.json();
-            const obj = { text: j.text || 'Here are the results', suggestions: j.suggestions || [] };
-            return obj;
-          }
-        } catch(e){ /* ignore */ }
-        // fallback to local answer
-        return answers['help'] || { text: 'I can help but could not lookup live; try again later.' };
+          if (res.ok) { return await res.json(); }
+        } catch(e){ /* Fallback on network error */ }
+        return answers['help'] || { text: 'Could not look up live info right now. Please try again.' };
       }
     }
 
-    // responses.js whole-word matching (best match)
+    // PRIORITY 3: responses.js whole-word matching
     let bestMatch = { key:null, score:0 };
-    const txt = userText.toLowerCase();
     for (const key in responses) {
       if (key.startsWith('category_') || key === 'specific_products' || key === 'product_query') continue;
       for (const kw of responses[key]) {
-        const r = new RegExp('\\b'+safeRegex(kw.toLowerCase())+'\\b','i');
-        if (r.test(txt)) {
-          const score = (kw||'').length;
+        const r = new RegExp(`\\b${safeRegex(kw.toLowerCase())}\\b`, 'i');
+        if (r.test(userText.toLowerCase())) {
+          const score = kw.length;
           if (score > bestMatch.score) bestMatch = { key, score };
         }
       }
     }
     if (bestMatch.key && answers[bestMatch.key]) { return answers[bestMatch.key]; }
-
-    // fuzzy fallback
+    
+    // PRIORITY 4: Fuzzy fallback
     for (const key in responses) {
       if (key.startsWith('category_') || key === 'specific_products' || key === 'product_query') continue;
       for (const kw of responses[key]) {
-        const tokens = txt.split(/\s+/);
+        const tokens = userText.toLowerCase().split(/\s+/);
         for (const t of tokens) {
-          const limit = (kw.length > 5) ? 2 : 1;
-          if (levenshteinDistance(t, kw.toLowerCase()) <= limit) {
+          if (levenshteinDistance(t, kw.toLowerCase()) <= (kw.length > 5 ? 2 : 1)) {
             const a = answers[key] || answers['help'];
             addPending({ type:'fuzzy', question: userText, answer: a.text || '', meta:{confidence:0.6}, time:new Date().toISOString() });
             return a;
@@ -341,14 +315,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
     }
-
-    // nothing matched -> clarify + add to pending
-    const clar = { text: "I didn't get that — are you trying to *buy*, *sell*, ask about *a product*, or *contact admin*?", suggestions: ["I want to sell","I'm looking to buy","Contact admin","Find a service"] };
+    
+    // Final fallback
+    const clar = { text: "I didn't quite get that. Could you ask in a different way?", suggestions: ["How to sell", "Find a hostel", "Contact admin"] };
     addPending({ type:'unknown', question: userText, answer: clar.text, meta:{confidence:0.4}, time:new Date().toISOString() });
     return clar;
   }
 
-  // ------------- small helpers -------------
   function extractProductFromText(text){
     if (responses && responses.specific_products) {
       for (const p of responses.specific_products) {
@@ -370,15 +343,6 @@ document.addEventListener('DOMContentLoaded', function () {
     appendMessage(text, 'sent');
     messageInput.value = '';
     pushMemory('user', text);
-
-    // special quick commands allowed for admin presence check
-    if (/^show drafts$/i.test(text)) {
-      if (!draftListings.length) appendMessage({ text: 'No drafts saved.' }, 'received');
-      else appendMessage({ text: draftListings.map(d=>`• ${d.title} — ${d.price}`).join('<br>') }, 'received');
-      return;
-    }
-
-    // typing indicator
     const tEl = showTyping();
     const reply = await generateReply(text);
     tEl.remove();
@@ -399,30 +363,33 @@ document.addEventListener('DOMContentLoaded', function () {
     if (pendingLearnings.length) {
       appendMessage({ text: 'You are online — syncing pending learnings...' }, 'received');
       await trySyncPending();
-      appendMessage({ text: 'Sync finished (online event).' }, 'received');
     }
   });
 
-  // ------------- init -------------
+  // --- ⭐ CORRECTED INITIALIZATION ⭐ ---
   function initialize(){
-    // greet
+    // Show admin button on load ONLY if the user is already an admin this session
+    if (sessionStorage.getItem('isAdmin') === 'true') {
+        if (openAdminBtn) openAdminBtn.style.display = 'block';
+    }
+
     const mem = load(MEMORY_KEY);
     if (!mem.find(m=>m.role==='bot')) {
       appendMessage(answers['greetings'] || { text:'Hello!'}, 'received');
       pushMemory('bot', (answers['greetings'] && answers['greetings'].text) || 'Hello!');
     } else {
       const recent = getRecentSummary(3) || 'no recent topics';
-      appendMessage({ text: `Welcome back! I remember: ${recent}` }, 'received');
+      appendMessage({ text: `Welcome back! I remember we talked about: ${recent}` }, 'received');
     }
-    renderPendingList();
+    if(adminModal) renderPendingList();
   }
-  initialize();
-
-  // ------------- expose debug -------------
+  
+  initialize(); // Run initialization
+  
   window.kabaleAgent = {
     getMemory: ()=> load(MEMORY_KEY),
-    getPending: ()=> pendingLearnings.slice(),
-    getDrafts: ()=> draftListings.slice(),
+    getPending: ()=> pendingLearnings,
+    getDrafts: ()=> draftListings,
     clearMemory: ()=> { localStorage.removeItem(MEMORY_KEY); appendMessage({ text:'Memory cleared.'}, 'received'); }
   };
 
