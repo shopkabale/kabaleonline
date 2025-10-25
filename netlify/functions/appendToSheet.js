@@ -8,7 +8,7 @@ export async function handler(event) {
   try {
     const body = JSON.parse(event.body);
     // ⭐ PASTE YOUR GOOGLE WEB APP URL HERE
-    const GOOGLE_SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbybbHqOgGsr90y5LNkUnhy5dlfQWcL0eOP813Hm7hl48xagfRIsavzUK_p8-2_leAEKTw/exec';
+    const GOOGLE_SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwqi1FsF-_7utzbTGodBdZ6sfYrByWOOXJGPo0c47FPgkB_6gG3tRvVD4UdiFsWuH-1g/exec';
 
     const response = await fetch(GOOGLE_SHEET_WEB_APP_URL, {
       method: 'POST',
