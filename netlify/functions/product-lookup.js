@@ -2,21 +2,25 @@
 
 const admin = require('firebase-admin');
 
-// --- INITIALIZE FIREBASE ADMIN (Corrected for your setup) ---
-// This safely reads the three separate variables from your Netlify environment.
+// --- INITIALIZE FIREBASE ADMIN (FINAL CORRECTED VERSION) ---
 try {
+    // This check prevents the function from crashing on subsequent runs
     if (!admin.apps.length) {
+        // This safely reads your three separate environment variables from Netlify
         admin.initializeApp({
           credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            // This line correctly formats the private key
+            // ⭐ THIS IS THE CRUCIAL FIX ⭐
+            // This line correctly replaces the scrambled '\n' characters with real line breaks.
             privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
           })
         });
     }
 } catch (e) {
-    console.error("Firebase admin initialization error", e);
+    console.error("Firebase admin initialization error:", e);
+    // Throw an error to ensure the function stops if initialization fails
+    throw new Error("Could not initialize Firebase Admin SDK.");
 }
 
 const db = admin.firestore();
@@ -34,10 +38,10 @@ exports.handler = async (event) => {
         }
 
         // --- SEARCH LOGIC ---
-        // Firestore is not great at "contains" searches. This query finds products
-        // where the name starts with the search term. It is case-sensitive.
+        // This query finds products where the name starts with the search term.
         const productsRef = db.collection('products');
-        const searchTerm = productName.charAt(0).toUpperCase() + productName.slice(1); // Capitalize first letter
+        // Capitalize first letter for better matching if your product names are capitalized
+        const searchTerm = productName.charAt(0).toUpperCase() + productName.slice(1); 
         
         const snapshot = await productsRef
             .orderBy('name')
