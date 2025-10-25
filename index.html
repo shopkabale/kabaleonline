@@ -809,6 +809,115 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+/* ==================================================== */
+/* ⭐ 4-COLUMN FOOTER STYLES ⭐                      */
+/* ==================================================== */
+footer {
+    background-color: #0f172a; /* Your original dark background */
+    color: #e2e8f0;
+    padding: 60px 0 20px;
+    margin-top: 30px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 40px;
+    padding-bottom: 40px;
+}
+
+.footer-column {
+    text-align: left;
+}
+
+.footer-column h3 {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-column h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background-color: var(--ko-accent);
+}
+
+.footer-column a {
+    display: block;
+    color: #94a3b8; /* Light gray for links */
+    text-decoration: none;
+    margin-bottom: 12px;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+}
+
+.footer-column a:hover {
+    color: #ffffff;
+    padding-left: 5px;
+}
+
+.footer-logo {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-decoration: none;
+    color: #ffffff;
+    display: inline-block;
+}
+
+.footer-logo span {
+    color: var(--ko-accent);
+}
+
+.footer-tagline {
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.footer-socials a {
+    color: #e2e8f0;
+    font-size: 22px;
+    margin-right: 20px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-socials a:hover {
+    color: var(--ko-primary);
+}
+
+.footer-bottom {
+    border-top: 1px solid #334155; /* Your dark border color */
+    padding-top: 20px;
+    text-align: center;
+}
+
+.footer-copyright {
+    font-size: 0.9em;
+    color: #64748b; /* Darker gray for copyright */
+    margin: 0;
+}
+
+/* Responsive grid for tablets and desktops */
+@media (min-width: 768px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for tablets */
+    }
+}
+
+@media (min-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr; /* Four columns for desktop */
+    }
+}
     </style>
 </head>
 <body>
@@ -1059,23 +1168,7 @@
     </div>
 </section>
 
-        <section class="founder-section">
-            <div class="container">
-                <div class="founder-card">
-                    <img src="https://res.cloudinary.com/dwy9svlwf/image/upload/w_300,h_300,c_fill,g_face,r_max/v1760068302/20250922_065926_ir8pln.jpg" alt="AMPEIRE SAMUEL, Founder & CEO" class="founder-photo">
-                    <div class="founder-content">
-                        <h2>A Message from the Founder</h2>
-                       <p class="founder-quote">
-    "As a fellow student at Kabale University, I faced the same frustrations many of us do: trying to find affordable textbooks, furnishing a room on a tight budget, or figuring out how to sell items I no longer needed. The search was scattered and often difficult. That experience is why I created Kabale Online. It’s more than a website; it's a tool built by a student, for our student community, to make campus life easier and more connected. Welcome aboard."
-</p>
-<p class="founder-signature">
-    <strong>- AMPEIRE SAMUEL</strong><br>
-    Founder, Kabale Online
-</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        
 <section class="contact-section">
     <div class="container">
         <div class="contact-form">
@@ -1106,17 +1199,46 @@
     </main>
 
     <footer>
-        <div class="container">
-            <div class="footer-logo">Kabale <span>Online</span></div>
-            <div class="footer-links">
-                <a href="/about.html">About</a>
-                <a href="/blog/">Blog</a>
-                <a href="/terms.html">Terms</a>
-                <a href="/contact.html">Contact</a>
+    <div class="container footer-grid">
+        <div class="footer-column about-column">
+            <a href="/" class="footer-logo">Kabale <span>Online</span></a>
+            <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.</p>
+            <div class="footer-socials">
+                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
-            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
-    </footer>
+
+        <div class="footer-column">
+            <h3>Explore</h3>
+            <a href="/shop/">Shop Items</a>
+            <a href="/rentals/">Hostels & Rentals</a>
+            <a href="https://gigs.kabaleonline.com" class="service-link">Find Services</a>
+            <a href="/events/">Local Events</a>
+            <a href="/lost-and-found/">Lost & Found</a>
+        </div>
+
+        <div class="footer-column">
+            <h3>For Sellers</h3>
+            <a href="/upload/">Sell an Item</a>
+            <a href="/dashboard/">My Dashboard</a>
+            <a href="https://gigs.kabaleonline.com" class="service-link">Offer a Service</a>
+            <a href="/blog/">Seller Tips</a>
+        </div>
+
+        <div class="footer-column">
+            <h3>Company</h3>
+            <a href="/about.html">About Us</a>
+            <a href="/contact.html">Contact</a>
+            <a href="/terms.html">Terms of Service</a>
+            <a href="/blog/">Blog & News</a>
+        </div>
+    </div>
+    <div class="container footer-bottom">
+        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+    </div>
+</footer>
 
     <div id="nav-modal" class="nav-modal">
         <div class="nav-modal-content">
