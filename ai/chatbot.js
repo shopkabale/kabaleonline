@@ -145,15 +145,46 @@ document.addEventListener('DOMContentLoaded', function () {
       if (adminMatch && adminMatch[1] === ADMIN_KEYWORD) {
         sessionStorage.setItem('isAdmin', 'true');
         if (openAdminBtn) openAdminBtn.style.display = 'block';
-        return { text: '✅ Admin mode unlocked.' };
+        return { text: '✅ Admin mode unlocked. You can now use the shield icon or type /admin.' };
       }
       if (sessionStorage.getItem('isAdmin') !== 'true') return { text: 'Admin commands are for verified admins only.' };
+      
       const teachMatch = userText.match(/^\s*teach\s*:\s*(.+?)\s*=>\s*(.+)$/i);
       if (teachMatch) {
           const [q, a] = [teachMatch[1].trim(), teachMatch[2].trim()];
           addPending({ type: 'teach', question: q, answer: a });
           return { text: 'Saved to pending learnings.' };
       }
+      
+      if (lc === '/admin' || lc === '/panel') {
+          if(adminModal) adminModal.setAttribute('aria-hidden', 'false');
+          return null;
+      }
+      
+      if (lc === '/sync learnings') { 
+          // This should ideally call a function that shows messages in the chat
+          console.log("Syncing learnings..."); 
+          return { text: "Syncing... Check console for details." }; 
+      }
+      
+      if (lc === '/show learnings') {
+          if (!pendingLearnings.length) return { text: 'No pending learnings.' };
+          const lines = pendingLearnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || ''}`).join('\n');
+          return { text: `<pre>${lines}</pre>` };
+      }
+      
+      if (lc === '/show drafts') {
+          const drafts = load(DRAFTS_KEY);
+          if (!drafts.length) return { text: 'No drafts saved.' };
+          const lines = drafts.map((d,i)=>`${i+1}. ${d.title} — ${d.price}`).join('\n');
+          return { text: `<pre>${lines}</pre>` };
+      }
+
+      if (lc === '/clear memory') {
+          localStorage.removeItem(MEMORY_KEY);
+          return { text: 'Chat memory cleared.' };
+      }
+      
       return { text: 'Unknown admin command.' };
     }
 
@@ -243,8 +274,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  openAdminBtn && openAdminBtn.addEventListener('click', () => { adminModal.setAttribute('aria-hidden', 'false'); });
-  closeAdminBtn && closeAdminBtn.addEventListener('click', () => adminModal.setAttribute('aria-hidden', 'true'));
+  openAdminBtn && openAdminBtn.addEventListener('click', () => { if(adminModal) adminModal.setAttribute('aria-hidden', 'false'); });
+  closeAdminBtn && closeAdminBtn.addEventListener('click', () => { if(adminModal) adminModal.setAttribute('aria-hidden', 'true'); });
   
   function initialize() {
     if (sessionStorage.getItem('isAdmin') === 'true') {
