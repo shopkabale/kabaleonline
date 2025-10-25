@@ -4,7 +4,7 @@ const responses = {
   "rent": ["rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging"],
   "sell": ["sell", "post an item", "listing", "advertise", "my product", "place ad", "upload", "upload item", "post an ad", "list an item", "put my stuff up", "how to sell", "sell my phone", "list my laptop"],
   "buy": ["buy", "shop", "purchase", "looking for", "available", "i want", "browse items", "shopping", "find a product", "how to buy", "see items", "where can i find"],
-  "lost": ["lost an item", "found an item", "lost my", "found a", "report lost", "misplaced", "lost my id", "found a phone", "missing document"],
+  "lost": ["lost an item", "found an item", "lost my", "found a", "report lost", "misplaced", "lost my id", "found a phone", "missing document"], // "found" is no longer a standalone word
   "jobs": ["job", "work", "employment", "hiring", "vacancy", "internship", "career", "job posting", "employment opportunities", "find work", "get a job", "are you hiring"],
   "services": ["service", "plumber", "electrician", "mechanic", "freelancer", "photographer", "tutor", "dj", "boda boda", "offer service", "hire service", "find a plumber", "need a boda", "professional"],
 
@@ -20,10 +20,14 @@ const responses = {
   "safety": ["safe", "safety", "secure", "scam", "fraud", "is it safe", "how to buy safely", "how to sell safely", "avoid scams", "report scam"],
 
   // --- KABALE ONLINE INFO ---
-  "about": ["about", "what is kabaleonline", "introduction", "tell me about you", "who are you", "what are you", "are you a bot", "what's your name"],
+  "about": ["about", "what is kabaleonline", "info", "what is this", "introduction", "tell me about you", "who are you", "what are you", "are you a bot", "what's your name"],
   "mission_vision": ["mission", "vision", "purpose", "goal", "objective", "what are you trying to do", "your mission"],
   "founder": ["founder", "creator", "who made", "who runs", "ceo", "owner", "who created", "who is behind this"],
-  "history_founded": ["when were you founded", "history", "how old", "when did you start", "founded on", "your story"],
+  
+  // ⭐ THIS IS THE FIX ⭐
+  // The word "founded" is now included as a standalone keyword.
+  "history_founded": ["when were you founded", "history", "how old", "when did you start", "founded on","when was kabale online founded", "your story", "founded"],
+  
   "contact": ["admin", "contact", "support", "problem", "issue", "report", "sensitive", "manager", "stuck", "bug", "complaint", "talk to a person", "customer support", "report a user", "problem with seller"],
 
   // --- CATEGORIES & PRODUCT TRIGGERS ---
