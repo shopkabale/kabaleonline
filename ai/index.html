@@ -140,6 +140,23 @@
     .admin-actions button { flex: 1; padding: 10px; font-weight: bold; border-radius: 8px; border: none; }
     #approve-all-btn { background-color: var(--ko-primary); color: white; }
     #clear-pending-btn { background-color: #dc3545; color: white; }
+/* Add this new style for the floating button */
+.ko-floating-btn {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    z-index: 1000;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2em;
+    box-shadow: var(--shadow);
+}
   </style>
 </head>
 <body class="light-mode">
@@ -153,6 +170,8 @@
       <input id="message-input" class="message-input" placeholder="Ask me anything..." />
       <button type="submit" class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
     </form>
+
+    <button id="ko-open-admin" class="ko-floating-btn" title="Admin Tools"><i class="fa-solid fa-shield-halved"></i></button>
 
     <div id="admin-modal" class="admin-modal" aria-hidden="true">
       <div class="admin-panel">
