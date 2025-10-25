@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>KabaleOnline Assistant</title>
+  <link rel="stylesheet" href="/bot/chatbot.css">
+  <script src="/js/responses.js"></script>  <!-- your existing file -->
+  <script src="/js/answers.js"></script>    <!-- your existing file -->
+</head>
+<body>
+  <div id="kob-chat-widget" class="ko-widget">
+    <header class="ko-header">
+      <div class="ko-title">💬 KabaleOnline Assistant</div>
+      <div class="ko-controls">
+        <button id="ko-toggle-theme" title="Toggle theme">🌓</button>
+        <button id="ko-open-admin" title="Admin Tools">⚙️</button>
+      </div>
+    </header>
+
+    <main id="ko-body" class="ko-body">
+      <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+    </main>
+
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <input id="message-input" class="message-input" placeholder="Ask me about selling, buying, hostels, or type 'teach: question => answer' to teach (admin)..." />
+      <button type="submit" class="send-btn">Send</button>
+    </form>
+
+    <!-- Admin modal -->
+    <div id="admin-modal" class="admin-modal" aria-hidden="true">
+      <div class="admin-panel">
+        <h3>Admin / Learning Review</h3>
+        <div id="pending-list"></div>
+        <div class="admin-actions">
+          <button id="approve-all-btn">Sync All</button>
+          <button id="clear-pending-btn">Clear Pending</button>
+          <button id="close-admin-btn">Close</button>
+        </div>
+        <small>Pending learnings sync to your Google Sheet via your Netlify function <code>/.netlify/functions/appendToSheet</code>.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="/ai/chatbot.js" defer></script>
+</body>
+</html>
