@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- ONLINE "TOOLS" ---
-    // Calls the Algolia product lookup function
     async function callProductLookupAPI(params) {
         try {
             const res = await fetch('/.netlify/functions/product-lookup', {
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return answers['help'];
         }
     }
-    // Calls the Google Sheet logging function
     async function logQueryToServer(message) {
       try {
         await fetch('/.netlify/functions/log-query', {
@@ -55,11 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // --- THE INTENT HANDLING FUNCTION ---
+    // --- ⭐ HYBRID BOT BRAIN (FINAL UPGRADED VERSION) ⭐ ---
     async function getBotReply(message) {
         const text = message.toLowerCase().trim();
         
-        // PRIORITY 1: Handle specific "How-to" questions first (offline)
+        // --- PRIORITY 1: Handle specific "How-to" questions first (offline) ---
         const howToActions = {
             sell: ['how to sell', 'how do i sell'],
             buy: ['how to buy', 'how do i buy'],
@@ -71,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // PRIORITY 2: Check for specific category queries (online)
+        // --- PRIORITY 2: Check for specific category queries (online) ---
         for (const key in responses) {
             if (key.startsWith("category_")) {
                 for (const keyword of responses[key]) {
@@ -86,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // PRIORITY 3: Check for specific product names (online)
+        // --- PRIORITY 3: Check for specific product names (online) ---
         if (responses.specific_products) {
             for (const productName of responses.specific_products) {
                 if (levenshteinDistance(text, productName) <= 1) {
@@ -95,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // PRIORITY 4: Check for product search triggers like "price of..." (online)
+        // --- PRIORITY 4: Check for product search triggers like "price of..." (online) ---
         if (responses.product_query) {
             for (const trigger of responses.product_query) {
                 if (text.startsWith(trigger)) {
@@ -109,20 +107,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // PRIORITY 5: Handle general offline queries (exact match)
+        // --- PRIORITY 5: Handle general offline queries (WHOLE WORD MATCH) ---
+        // ⭐ THIS IS THE FIX. It now checks for whole words to prevent collisions.
         let bestMatch = { key: null, score: 0 };
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
             for (const keyword of responses[key]) {
-                if (text.includes(keyword)) {
+                // Use a regular expression with word boundaries (\b)
+                const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+                if (regex.test(text)) {
                     const score = keyword.length;
                     if (score > bestMatch.score) { bestMatch = { key: key, score: score }; }
                 }
             }
         }
-        if (bestMatch.score > 2) { return answers[bestMatch.key]; }
+        if (bestMatch.key) { return answers[bestMatch.key]; }
         
-        // PRIORITY 6: Fuzzy matching for general offline queries
+        // --- PRIORITY 6: Fuzzy matching for general offline queries (Fallback) ---
         const words = text.split(/\s+/);
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
@@ -136,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return answers['help']; // Final fallback
     }
 
-    // --- UI FUNCTIONS ---
+    // --- UI FUNCTIONS (No changes needed) ---
     function appendMessage(content, type) {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const wrapper = document.createElement('div');
@@ -178,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
     
-    // --- MAIN HANDLER ---
+    // --- MAIN HANDLER (No changes needed) ---
     async function handleSend(query) {
         const text = query.trim();
         if (!text) return;
@@ -186,15 +187,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (oldSuggestions) oldSuggestions.remove();
         appendMessage(text, 'sent');
         messageInput.value = '';
-        logQueryToServer(text); // Log the query
+        logQueryToServer(text);
         const typingEl = showTyping();
         await new Promise(resolve => setTimeout(resolve, 1200)); 
-        const replyObject = await getBotReply(text); // Get the hybrid response
+        const replyObject = await getBotReply(text);
         typingEl.remove();
         appendMessage(replyObject, 'received');
     }
     
-    // --- EVENT LISTENERS & INITIALIZATION ---
+    // --- EVENT LISTENERS & INITIALIZATION (No changes needed) ---
     chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
     
     function initializeChat() {
