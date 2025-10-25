@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function getBotReply(message) {
         const text = message.toLowerCase().trim();
         
-        // --- PRIORITY 1: Handle specific "How-to" questions first (offline) ---
+        // PRIORITY 1: Handle specific "How-to" questions first (offline)
         const howToActions = {
             sell: ['how to sell', 'how do i sell'],
             buy: ['how to buy', 'how do i buy'],
@@ -69,11 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // --- PRIORITY 2: Check for specific category queries (online) ---
+        // PRIORITY 2: Check for specific category queries (online)
         for (const key in responses) {
             if (key.startsWith("category_")) {
                 for (const keyword of responses[key]) {
-                    if (text.includes(keyword)) {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+                    if (regex.test(text)) {
                         let categoryName = key.replace("category_", "");
                         categoryName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
                         if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // --- PRIORITY 3: Check for specific product names (online) ---
+        // PRIORITY 3: Check for specific product names (online)
         if (responses.specific_products) {
             for (const productName of responses.specific_products) {
                 if (levenshteinDistance(text, productName) <= 1) {
@@ -93,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // --- PRIORITY 4: Check for product search triggers like "price of..." (online) ---
+        // PRIORITY 4: Check for product search triggers like "price of..." (online)
         if (responses.product_query) {
             for (const trigger of responses.product_query) {
                 if (text.startsWith(trigger)) {
@@ -107,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // --- PRIORITY 5: Handle general offline queries (WHOLE WORD MATCH) ---
+        // PRIORITY 5: Handle general offline queries (WHOLE WORD MATCH)
         // ⭐ THIS IS THE FIX. It now checks for whole words to prevent collisions.
         let bestMatch = { key: null, score: 0 };
         for (const key in responses) {
@@ -123,7 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (bestMatch.key) { return answers[bestMatch.key]; }
         
-        // --- PRIORITY 6: Fuzzy matching for general offline queries (Fallback) ---
+        // PRIORITY 6: Fuzzy matching for general offline queries (Fallback)
+        // This is intentionally left as a partial match for typos.
         const words = text.split(/\s+/);
         for (const key in responses) {
             if (key.startsWith("category_") || key === 'product_query' || key === 'specific_products') continue;
