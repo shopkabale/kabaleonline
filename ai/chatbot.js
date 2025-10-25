@@ -1,6 +1,5 @@
 // File: /ai/chatbot.js
-// KabaleOnline Assistant v4.3 - (FINAL CORRECTED VERSION + Auto-Scroll)
-// Fixes category name typo bug and all other priority issues.
+// KabaleOnline Assistant v4.4 - (With Thinking & Typing Animations)
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const MAX_MEMORY = 30;
 
   // ------------- ELEMENTS -------------
-  const chatBody = document.getElementById('ko-body'); // ⭐ ADDED for scrolling
+  const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
@@ -48,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
   let draftListings = load(DRAFTS_KEY);
 
   // ------------- UI HELPERS -------------
-  // ⭐ ADDED this function for auto-scrolling
   function scrollToBottom() {
     chatBody.scrollTop = chatBody.scrollHeight;
   }
@@ -76,17 +74,28 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       wrapper.appendChild(sc);
     }
-    scrollToBottom(); // ⭐ UPDATED
+    scrollToBottom();
   }
 
-  function showTyping(){
+  // --- MODIFIED SECTION: ANIMATION HELPERS ---
+  function showThinking() {
     const wrapper = document.createElement('div');
-    wrapper.classList.add('message-wrapper','received-wrapper','typing-indicator-wrapper');
-    wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span></span><span></span><span></span></div>`;
+    wrapper.classList.add('message-wrapper', 'received-wrapper', 'thinking-indicator-wrapper');
+    wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="thinking-indicator"><i class="fa-solid fa-gear"></i> Thinking...</div>`;
     chatMessages.appendChild(wrapper);
-    scrollToBottom(); // ⭐ UPDATED
+    scrollToBottom();
     return wrapper;
   }
+
+  function showTyping() {
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('message-wrapper', 'received-wrapper', 'typing-indicator-wrapper');
+    wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+    chatMessages.appendChild(wrapper);
+    scrollToBottom();
+    return wrapper;
+  }
+  // --- END MODIFIED SECTION ---
 
   // --- ONLINE "TOOLS" ---
   async function callProductLookupAPI(params) {
@@ -212,10 +221,8 @@ document.addEventListener('DOMContentLoaded', function () {
             for (const keyword of responses[key]) {
                 const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
                 if (regex.test(lc)) {
-                    // ⭐ THIS IS THE FIX. No more typos. ⭐
                     let categoryNameRaw = key.replace("category_", "");
                     let categoryName = categoryNameRaw.charAt(0).toUpperCase() + categoryNameRaw.slice(1);
-
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
                     if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
                     return await callProductLookupAPI({ categoryName: categoryName });
@@ -225,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     const productTriggers = ["price of", "cost of", "how much is", "do you have", "what's the price of"];
     for (const trigger of productTriggers) {
-        if (lc.includes(trigger)) { // Use .includes() for more flexibility
+        if (lc.includes(trigger)) {
             let productName = lc.split(trigger).pop().trim().replace(/^(a|an|the)\s/,'');
             if(productName) return await callProductLookupAPI({ productName });
         }
@@ -251,23 +258,38 @@ document.addEventListener('DOMContentLoaded', function () {
     return clar;
   }
 
-  // --- MAIN HANDLER ---
+  // --- MODIFIED SECTION: MAIN HANDLER ---
   chatForm.addEventListener('submit', async (e)=>{ e.preventDefault(); handleSend(messageInput.value); });
   async function handleSend(raw){
     const text = (raw||'').trim();
     if (!text) return;
-    const oldSuggestions = document.querySelector('.suggestions-container'); if (oldSuggestions) oldSuggestions.remove();
+    const oldSuggestions = document.querySelector('.suggestions-container');
+    if (oldSuggestions) oldSuggestions.remove();
+    
     appendMessage(text, 'sent');
     messageInput.value = '';
-    pushMemory('user', text);
-    const tEl = showTyping();
+
+    // 1. Show Thinking animation
+    const thinkingEl = showThinking();
+    
+    // 2. Generate the reply (this is where the "thinking" happens)
     const reply = await generateReply(text);
-    tEl.remove();
+
+    // 3. Remove Thinking animation
+    thinkingEl.remove();
+    
     if (reply) {
+      // 4. Show Typing animation for a brief moment for realism
+      const typingEl = showTyping();
+      await new Promise(r => setTimeout(r, 700)); // Wait for 0.7 seconds
+      typingEl.remove();
+
+      // 5. Show the final reply
       appendMessage(reply, 'received');
       pushMemory('bot', typeof reply === 'object' ? reply.text : reply);
     }
   }
+  // --- END MODIFIED SECTION ---
 
   // --- ADMIN MODAL & BUTTONS ---
   openAdminBtn && openAdminBtn.addEventListener('click', ()=>{ adminModal.setAttribute('aria-hidden','false'); renderPendingList(); });
