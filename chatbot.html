@@ -82,7 +82,7 @@
             const chatMessages = document.getElementById('chat-messages');
             const chatForm = document.getElementById('chat-form');
             const messageInput = document.getElementById('message-input');
-
+            
             // --- TYPO-CORRECTION LOGIC ---
             function levenshteinDistance(a, b) {
                 if (a.length === 0) return b.length; if (b.length === 0) return a.length;
@@ -170,7 +170,7 @@
                     }
                 }
                 
-                return answers['help']; // Final fallback if nothing matches
+                return answers['help']; // Final fallback
             }
 
             // --- UI FUNCTIONS ---
