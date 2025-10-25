@@ -1,6 +1,6 @@
 // File: /ai/chatbot.js
-// KabaleOnline Assistant v4.2 - (Final Version with All Features & Fixes, No Guided Flow)
-// Requires responses.js and answers.js to be loaded before this script.
+// KabaleOnline Assistant v4.3 - (FINAL CORRECTED VERSION)
+// Fixes category name typo bug and all other priority issues.
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   
-  // --- ⭐ GENERATE REPLY (FINAL UPGRADED VERSION) ⭐ ---
+  // --- ⭐ GENERATE REPLY (FINAL CORRECTED VERSION) ⭐ ---
   async function generateReply(userText){
     pushMemory('user', userText);
     const lc = userText.toLowerCase();
@@ -198,7 +198,10 @@ document.addEventListener('DOMContentLoaded', function () {
             for (const keyword of responses[key]) {
                 const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
                 if (regex.test(lc)) {
-                    let categoryName = key.replace("category_", "").charAt(0).toUpperCase() + key.slice(9);
+                    // ⭐ THIS IS THE FIX. No more typos. ⭐
+                    let categoryNameRaw = key.replace("category_", "");
+                    let categoryName = categoryNameRaw.charAt(0).toUpperCase() + categoryNameRaw.slice(1);
+                    
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
                     if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
                     return await callProductLookupAPI({ categoryName: categoryName });
@@ -208,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     const productTriggers = ["price of", "cost of", "how much is", "do you have", "what's the price of"];
     for (const trigger of productTriggers) {
-        if (lc.includes(trigger)) {
+        if (lc.includes(trigger)) { // Use .includes() for more flexibility
             let productName = lc.split(trigger).pop().trim().replace(/^(a|an|the)\s/,'');
             if(productName) return await callProductLookupAPI({ productName });
         }
