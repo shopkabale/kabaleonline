@@ -1,5 +1,5 @@
 // File: /ai/chatbot.js
-// KabaleOnline Assistant v4.3 - (FINAL CORRECTED VERSION)
+// KabaleOnline Assistant v4.3 - (FINAL CORRECTED VERSION + Auto-Scroll)
 // Fixes category name typo bug and all other priority issues.
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const MAX_MEMORY = 30;
 
   // ------------- ELEMENTS -------------
+  const chatBody = document.getElementById('ko-body'); // ⭐ ADDED for scrolling
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
@@ -47,6 +48,11 @@ document.addEventListener('DOMContentLoaded', function () {
   let draftListings = load(DRAFTS_KEY);
 
   // ------------- UI HELPERS -------------
+  // ⭐ ADDED this function for auto-scrolling
+  function scrollToBottom() {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
   function appendMessage(content, type){
     const time = nowTime();
     const wrapper = document.createElement('div'); wrapper.classList.add('message-wrapper', `${type}-wrapper`);
@@ -70,9 +76,17 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       wrapper.appendChild(sc);
     }
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    scrollToBottom(); // ⭐ UPDATED
   }
-  function showTyping(){ const wrapper = document.createElement('div'); wrapper.classList.add('message-wrapper','received-wrapper','typing-indicator-wrapper'); wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span></span><span></span><span></span></div>`; chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; return wrapper; }
+
+  function showTyping(){
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('message-wrapper','received-wrapper','typing-indicator-wrapper');
+    wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span></span><span></span><span></span></div>`;
+    chatMessages.appendChild(wrapper);
+    scrollToBottom(); // ⭐ UPDATED
+    return wrapper;
+  }
 
   // --- ONLINE "TOOLS" ---
   async function callProductLookupAPI(params) {
@@ -142,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
       pendingListEl.appendChild(item);
     });
   }
-  
+
   // --- ⭐ GENERATE REPLY (FINAL CORRECTED VERSION) ⭐ ---
   async function generateReply(userText){
     pushMemory('user', userText);
@@ -191,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-    
+
     // PRIORITY 3: Online Lookups (Category & Product)
     for (const key in responses) {
         if (key.startsWith("category_")) {
@@ -201,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // ⭐ THIS IS THE FIX. No more typos. ⭐
                     let categoryNameRaw = key.replace("category_", "");
                     let categoryName = categoryNameRaw.charAt(0).toUpperCase() + categoryNameRaw.slice(1);
-                    
+
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
                     if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
                     return await callProductLookupAPI({ categoryName: categoryName });
@@ -236,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
     addPending({ type:'unknown', question: userText, answer: clar.text, time:new Date().toISOString() });
     return clar;
   }
-  
+
   // --- MAIN HANDLER ---
   chatForm.addEventListener('submit', async (e)=>{ e.preventDefault(); handleSend(messageInput.value); });
   async function handleSend(raw){
@@ -260,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
   closeAdminBtn && closeAdminBtn.addEventListener('click', ()=> adminModal.setAttribute('aria-hidden','true'));
   approveAllBtn && approveAllBtn.addEventListener('click', async ()=> { await trySyncPending(); });
   clearPendingBtn && clearPendingBtn.addEventListener('click', ()=> { pendingLearnings=[]; save(PENDING_KEY, pendingLearnings); renderPendingList(); });
-  
+
   // --- INITIALIZATION ---
   function initialize(){
     if (sessionStorage.getItem('isAdmin') === 'true') {
@@ -276,6 +290,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if(adminModal) renderPendingList();
   }
-  
+
   initialize();
 });
