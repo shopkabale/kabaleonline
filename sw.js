@@ -1,6 +1,6 @@
 // sw.js (Fully Corrected)
 
-const CACHE_NAME = 'kabaleonline-cache-v21.5';
+const CACHE_NAME = 'kabaleonline-cache-v21.6';
 const IMAGE_CACHE = 'kabaleonline-images-v2.4';
 
 const APP_SHELL_FILES = [
@@ -9,7 +9,7 @@ const APP_SHELL_FILES = [
   '/auth.js', '/shared.js', '/ui.js', '/dashboard/', '/profile/', 
   '/referrals/', '/products/', '/upload/', '/settings/', '/login/', 
   '/signup/', '/admin/', '/cart.html', '/checkout.html', '/shop/',
-  '/order-success.html', '/my-orders.html', '/dashboard/orders/'
+  '/order-success.html','/chatbot.html' , '/my-orders.html', '/dashboard/orders/'
 ];
 
 self.addEventListener('install', event => {
