@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ------------- CONFIG -------------
   const MEMORY_KEY = 'kabale_memory_v4';
   const PENDING_KEY = 'kabale_pending_v4';
-  const DRAFTS_KEY = 'kabale_drafts_v4'; // Kept in case you want to use drafts differently later
+  const DRAFTS_KEY = 'kabale_drafts_v4';
   const SHEET_ENDPOINT = '/.netlify/functions/appendToSheet';
   const ADMIN_KEYWORD = 'kabale_admin_2025';
   const MAX_MEMORY = 30;
@@ -163,9 +163,19 @@ document.addEventListener('DOMContentLoaded', function () {
             addPending({ type:'teach', question: q, answer: a });
             return { text: 'Saved to pending learnings. Use ⚙️ or /sync to send.' };
         }
-        if(lc === '/sync learnings') { trySyncPending(); return null; }
-        // Add other admin command logic from v4.1 here if needed...
-        return { text: 'Admin command processed or unknown.' };
+        if (lc === '/sync learnings') { trySyncPending(); return null; }
+        if (lc === '/show learnings') {
+          if (!pendingLearnings.length) return { text: 'No pending learnings.' };
+          const lines = pendingLearnings.map((p,i) => `${i+1}. ${p.type} — ${p.question || (p.sample ? p.sample.title : '')}`).join('\n');
+          return { text: `<pre style="white-space:pre-wrap">${lines}</pre>` };
+        }
+        if (lc === '/show drafts') {
+            if (!draftListings.length) return { text: 'No drafts saved.' };
+            const lines = draftListings.map((d,i)=>`${i+1}. ${d.title} — ${d.price}`).join('\n');
+            return { text: `<pre style="white-space:pre-wrap">${lines}</pre>` };
+        }
+        if (lc === '/clear memory') { localStorage.removeItem(MEMORY_KEY); return { text: 'Memory cleared.' }; }
+        return { text: 'Unknown admin command.' };
     }
 
     // PRIORITY 2: "How-To" Questions (High-priority offline)
@@ -196,10 +206,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-    const productTriggers = ["price of", "cost of", "how much is", "do you have"];
+    const productTriggers = ["price of", "cost of", "how much is", "do you have", "what's the price of"];
     for (const trigger of productTriggers) {
-        if (lc.startsWith(trigger)) {
-            let productName = lc.replace(trigger, '').trim().replace(/^(a|an|the)\s/,'');
+        if (lc.includes(trigger)) {
+            let productName = lc.split(trigger).pop().trim().replace(/^(a|an|the)\s/,'');
             if(productName) return await callProductLookupAPI({ productName });
         }
     }
@@ -253,8 +263,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (sessionStorage.getItem('isAdmin') === 'true') {
         if (openAdminBtn) openAdminBtn.style.display = 'block';
     }
-    appendMessage(answers['greetings'] || { text:'Hello!'}, 'received');
-    pushMemory('bot', (answers['greetings'] && answers['greetings'].text) || 'Hello!');
+    const mem = load(MEMORY_KEY);
+    if (!mem.length) {
+      appendMessage(answers['greetings'] || { text:'Hello!'}, 'received');
+      pushMemory('bot', (answers['greetings'] && answers['greetings'].text) || 'Hello!');
+    } else {
+      const recent = getRecentSummary(3) || 'no recent topics';
+      appendMessage({ text: `Welcome back! I remember we talked about: ${recent}` }, 'received');
+    }
     if(adminModal) renderPendingList();
   }
   
