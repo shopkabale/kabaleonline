@@ -103,12 +103,20 @@
       <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
     </main>
 
+    <form name="learnings" netlify netlify-honeypot="bot-field" style="display:none;">
+      <p class="hidden">
+        <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
+      </p>
+      <input type="text" name="UserMessage" />
+      <input type="text" name="ResponseGiven" />
+    </form>
+
     <form id="chat-form" class="chat-form" autocomplete="off">
       <input id="message-input" class="message-input" placeholder="Ask me anything..." />
       <button type="submit" class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
     </form>
 
-    </div>
+  </div>
 
   <script src="/ai/chatbot.js" defer></script>
 
