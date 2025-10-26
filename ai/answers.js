@@ -67,6 +67,7 @@ text: "👋 Hello! I'm <b>Amara</b>, your guide to the KabaleOnline community ma
     text: "Of course! What should I call you?",
     suggestions: [] // No suggestions, as we're waiting for free-text input.
   },
+  
   "confirm_name_set": {
     text: "Got it! I'll remember to call you ${userName} from now on. How can I help you today?",
     suggestions: ["How to sell", "Find a hostel", "Is selling free?"]
