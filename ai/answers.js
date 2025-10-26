@@ -362,6 +362,7 @@ text: "👋 Hello! I'm <b>Amara</b>, your guide to the KabaleOnline community ma
     text: `🆘 I can help with almost anything on KabaleOnline! Here’s a full guide to what I know. Just ask me a question about any of these topics:
     <br><strong>🛒 Shopping & Selling</strong>
     <ul>
+<li><b>"How do I sell":</b> I'll guide you on creating listings and making purchases.</li>
       <li><b>"How to Buy / Sell":</b> I'll guide you on creating listings and making purchases.</li>
       <li><b>"Is selling free?":</b> I can explain our fee policy (spoiler: it's free!).</li>
       <li><b>"Safety Tips":</b> Ask me for advice on how to transact safely.</li>
