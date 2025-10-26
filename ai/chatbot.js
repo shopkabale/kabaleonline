@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (bestMatch.key && answers[bestMatch.key]) { return answers[bestMatch.key]; }
 
     // PRIORITY 3: Final Fallback & Logging
-    const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
+    const clar = { text: "I couldn't find an answer for that in my knowledge base. Your question has been noted to help me improve! You can try rephrasing, or ask about a main topic below.", suggestions: ["How to sell", "Contact support", "Safety tips"] };
     logUnknownQuery({ question: userText, answer: clar.text });
     return clar;
   }
