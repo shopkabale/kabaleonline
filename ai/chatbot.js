@@ -1,38 +1,51 @@
-// File: /ai/chatbot.js - FINAL FULL WORKING VERSION (Google Form Logging Fixed)
+// File: /ai/chatbot.js - FINAL VERIFIED VERSION with Working Google Form Logging
 
 document.addEventListener('DOMContentLoaded', function () {
 
+  // ---------------------------
+  // Memory + Constants
+  // ---------------------------
   const MEMORY_KEY = 'kabale_memory_v4';
   const MAX_MEMORY = 30;
 
-  // --- GOOGLE FORM SETTINGS (✅ Make sure entry IDs match your form inputs) ---
+  // ✅ Your working Google Form details
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
-  const USER_MESSAGE_ENTRY_ID = "entry.1084291811";  // user message field
-  const RESPONSE_GIVEN_ENTRY_ID = "entry.150499643"; // bot response field
-  // ---------------------------------------------------------------------------
+  const USER_MESSAGE_ENTRY_ID = "entry.779723602";      // User's question
+  const RESPONSE_GIVEN_ENTRY_ID = "entry.2015145894";   // Bot's reply
+  // ---------------------------
 
+  // DOM Elements
   const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
 
-  // ---------- Utility Functions ----------
-  function nowTime() { 
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); 
+  // ---------------------------
+  // Helper Functions
+  // ---------------------------
+  function nowTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  function safeRegex(s) { 
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
+  function safeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  function load(key) { 
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : []; } 
-    catch (e) { return []; } 
+  function load(key) {
+    try {
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : [];
+    } catch (e) {
+      return [];
+    }
   }
 
-  function save(key, data) { 
-    try { localStorage.setItem(key, JSON.stringify(data)); } 
-    catch (e) { console.warn('Save failed', e); } 
+  function save(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.warn('save failed', e);
+    }
   }
 
   function pushMemory(role, text) {
@@ -42,16 +55,18 @@ document.addEventListener('DOMContentLoaded', function () {
     save(MEMORY_KEY, mem);
   }
 
-  function capitalize(s) { 
-    if (!s) return ''; 
-    return s.charAt(0).toUpperCase() + s.slice(1); 
+  function capitalize(s) {
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
   function scrollToBottom() {
     if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
   }
 
-  // ---------- Message Rendering ----------
+  // ---------------------------
+  // Message Rendering
+  // ---------------------------
   function appendMessage(content, type) {
     const time = nowTime();
     const wrapper = document.createElement('div');
@@ -81,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
     wrapper.innerHTML = html;
     chatMessages.appendChild(wrapper);
 
-    // Optional suggestions
+    // Add suggestion buttons if any
     if (type === 'received' && typeof content === 'object' && content.suggestions && content.suggestions.length) {
       const sc = document.createElement('div');
       sc.className = 'suggestions-container';
@@ -115,14 +130,39 @@ document.addEventListener('DOMContentLoaded', function () {
     wrapper.innerHTML = `
       <div class="avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="typing-indicator">
-        <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
       </div>`;
     chatMessages.appendChild(wrapper);
     scrollToBottom();
     return wrapper;
   }
 
-  // ---------- Product Lookup ----------
+  // ---------------------------
+  // Google Form Logging
+  // ---------------------------
+  function logUnknownQuery(item) {
+    try {
+      const data = new URLSearchParams();
+      data.append(USER_MESSAGE_ENTRY_ID, item.question || '');
+      data.append(RESPONSE_GIVEN_ENTRY_ID, item.answer || '');
+
+      fetch(GOOGLE_FORM_ACTION_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: data
+      })
+      .then(() => console.log('✅ Logged to Google Form:', item))
+      .catch(err => console.error('❌ Error logging to Google Form:', err));
+    } catch (e) {
+      console.error('Logging exception:', e);
+    }
+  }
+
+  // ---------------------------
+  // Product Lookup
+  // ---------------------------
   async function callProductLookupAPI(params) {
     try {
       const res = await fetch('/.netlify/functions/product-lookup', {
@@ -138,28 +178,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ---------- LOG UNKNOWN QUERIES TO GOOGLE FORM ----------
-  function logUnknownQuery(item) {
-    // Safely encode message + response
-    const data = new URLSearchParams();
-    data.append(USER_MESSAGE_ENTRY_ID, item.question || '');
-    data.append(RESPONSE_GIVEN_ENTRY_ID, item.answer || '');
-
-    fetch(GOOGLE_FORM_ACTION_URL, {
-      method: 'POST',
-      mode: 'no-cors', // required for Google Forms
-      body: data
-    })
-    .then(() => console.log('✅ Logged unknown query to Google Form'))
-    .catch(err => console.error('❌ Log error:', err));
-  }
-
-  // ---------- Generate Reply ----------
+  // ---------------------------
+  // Generate Reply Logic
+  // ---------------------------
   async function generateReply(userText) {
     pushMemory('user', userText);
     const lc = userText.toLowerCase();
 
-    // Priority 1: Live Online Lookups
+    // Priority 1: Live product lookups
     for (const key in responses) {
       if (key.startsWith("category_")) {
         for (const keyword of responses[key]) {
@@ -169,22 +195,23 @@ document.addEventListener('DOMContentLoaded', function () {
             let categoryName = capitalize(categoryNameRaw);
             if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
             if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
-            return await callProductLookupAPI({ categoryName: categoryName });
+            return await callProductLookupAPI({ categoryName });
           }
         }
       }
     }
 
-    // Priority 2: Product-specific queries
     const productTriggers = responses.product_query || ["price of", "cost of", "how much is"];
     for (const trigger of productTriggers) {
       if (lc.startsWith(trigger)) {
         let productName = userText.substring(trigger.length).trim();
-        if (productName) return await callProductLookupAPI({ productName: productName });
+        if (productName) {
+          return await callProductLookupAPI({ productName });
+        }
       }
     }
 
-    // Priority 3: Offline keyword responses
+    // Priority 2: Offline keyword match
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
@@ -197,21 +224,25 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    if (bestMatch.key && answers[bestMatch.key]) return answers[bestMatch.key];
+    if (bestMatch.key && answers[bestMatch.key]) {
+      return answers[bestMatch.key];
+    }
 
-    // Priority 4: Fallback & logging
-    const clar = { 
-      text: "My apologies, my knowledge base is still growing...", 
-      suggestions: ["How to sell", "Find a hostel", "Is selling free?"] 
+    // Priority 3: Fallback and logging
+    const clar = {
+      text: "My apologies, my knowledge base is still growing...",
+      suggestions: ["How to sell", "Find a hostel", "Is selling free?"]
     };
     logUnknownQuery({ question: userText, answer: clar.text });
     return clar;
   }
 
-  // ---------- Message Sending ----------
-  chatForm.addEventListener('submit', async (e) => { 
-    e.preventDefault(); 
-    handleSend(messageInput.value); 
+  // ---------------------------
+  // Chat Send Handler
+  // ---------------------------
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    handleSend(messageInput.value);
   });
 
   async function handleSend(raw) {
@@ -237,11 +268,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ---------- Initialize ----------
+  // ---------------------------
+  // Initialize Chatbot
+  // ---------------------------
   function initialize() {
     appendMessage(answers['greetings'], 'received');
     pushMemory('bot', answers['greetings'].text);
   }
 
   initialize();
+
 });
