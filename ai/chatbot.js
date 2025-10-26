@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js - Final Streamlined Version (No Name-Asking)
+// File: /ai/chatbot.js - FINAL COMPLETE VERSION (with Live Lookups & Automatic Logging)
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -18,9 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
 
   function scrollToBottom() {
-    if (chatBody) {
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }
+    if (chatBody) { chatBody.scrollTop = chatBody.scrollHeight; }
   }
 
   function appendMessage(content, type) {
@@ -90,11 +88,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function logUnknownQuery(item) {
-    fetch('/.netlify/functions/log-learning', {
+    const formData = new FormData();
+    formData.append('form-name', 'learnings');
+    formData.append('UserMessage', item.question);
+    formData.append('ResponseGiven', item.answer);
+
+    fetch('/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item)
-    }).catch(err => console.warn("Failed to log learning to server:", err));
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData).toString()
+    }).catch(error => console.error('Error submitting Netlify form:', error));
   }
 
   async function generateReply(userText) {
@@ -129,24 +132,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // PRIORITY 2: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
+      // Make sure we don't accidentally match a category keyword here
       if (key.startsWith("category_") || key === 'product_query') continue;
+      
       for (const keyword of responses[key]) {
         const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
         if (regex.test(lc)) {
           const score = keyword.length;
-          if (score > bestMatch.score) {
-            bestMatch = { key, score };
-          }
+          if (score > bestMatch.score) { bestMatch = { key, score }; }
         }
       }
     }
-    if (bestMatch.key && answers[bestMatch.key]) {
-      return answers[bestMatch.key];
-    }
+    if (bestMatch.key && answers[bestMatch.key]) { return answers[bestMatch.key]; }
 
     // PRIORITY 3: Final Fallback & Logging
     const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
-    logUnknownQuery({ type: 'unknown', question: userText, answer: clar.text });
+    logUnknownQuery({ question: userText, answer: clar.text });
     return clar;
   }
 
