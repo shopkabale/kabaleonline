@@ -5,10 +5,7 @@
 const answers = {
   // --- CONVERSATIONAL ---
 
-  "first_visit_greeting": {
-    text: "👋 Hello! I'm Amara, your guide to the KabaleOnline community. To make our chat more personal, what should I call you?",
-    suggestions: [] // No suggestions here, we want their name.
-  },
+  
 
   "greetings": {
     // Inside the "greetings" object
