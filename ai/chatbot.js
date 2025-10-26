@@ -1,35 +1,32 @@
-// File: /ai/chatbot.js - "SMARTER AMARA" UPGRADE
+// File: /ai/chatbot.js - "SMARTER AMARA" FINAL CORRECTED VERSION
 
 document.addEventListener('DOMContentLoaded', function () {
 
   // --- Core State Management & Memory Keys ---
   const SESSION_STATE_KEY = 'kabale_session_state_v1';
-  const MAX_MEMORY = 30; // Still used for conversation logging, separate from state
+  const MAX_MEMORY = 30;
 
-  // --- Your unique Google Form codes (No change needed) ---
+  // --- Google Form codes ---
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
   const USER_MESSAGE_ENTRY_ID = "entry.779723602";
   const RESPONSE_GIVEN_ENTRY_ID = "entry.2015145894";
-  // ---------------------------------------------------------
 
   const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
   
-  // --- Session State: The heart of the new intelligence ---
   let sessionState = {
     userName: null,
-    currentContext: null, // e.g., { type: 'category', value: 'Laptops' }
+    currentContext: null,
     lastResponseKey: null,
   };
 
-  // --- Utility Functions (with additions) ---
+  // --- Utility Functions ---
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
-  function pushMemory(role, text) { /* This function remains for logging, but not for context */ }
-
+  
   function loadState() {
       try {
           const storedState = localStorage.getItem(SESSION_STATE_KEY);
@@ -37,21 +34,17 @@ document.addEventListener('DOMContentLoaded', function () {
               const parsedState = JSON.parse(storedState);
               sessionState.userName = parsedState.userName || null;
           }
-      } catch (e) {
-          console.warn('Could not load session state.', e);
-      }
+      } catch (e) { console.warn('Could not load session state.', e); }
   }
 
   function saveState() {
       try {
           const stateToSave = { userName: sessionState.userName };
           localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(stateToSave));
-      } catch (e) {
-          console.warn('Could not save session state.', e);
-      }
+      } catch (e) { console.warn('Could not save session state.', e); }
   }
 
-  // --- UI Functions (with personalization) ---
+  // --- UI Functions ---
   function scrollToBottom() {
     if (chatBody) { chatBody.scrollTop = chatBody.scrollHeight; }
   }
@@ -63,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let text = (type === 'received' && typeof content === 'object') ? content.text : content;
     if (text === undefined) text = "I didn't catch that. Can you say it differently?";
 
-    // ⭐ PERSONALIZATION: Inject user's name if available
     if (sessionState.userName) {
         text = text.replace(/\${userName}/g, sessionState.userName);
     }
@@ -110,9 +102,9 @@ document.addEventListener('DOMContentLoaded', function () {
     return wrapper;
   }
 
-  // --- API and Logging (No change needed) ---
+  // --- API and Logging ---
   async function callProductLookupAPI(params) {
-    // ⭐ CONTEXT: Set the context after a successful API call
+    // ⭐ CONTEXT FIX: Only set context on a SUCCESSFUL lookup.
     if (params.categoryName) {
         sessionState.currentContext = { type: 'category', value: params.categoryName };
     } else if (params.productName) {
@@ -144,20 +136,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   // --- ⭐ NEW: Intelligence Layer ---
-  function parseUserInput(text) {
-      const lc = text.toLowerCase();
-      const entities = {
-          product: null,
-          category: null,
-          modifiers: []
-      };
-      
-      // Simple modifier check
-      if (/\b(cheap|affordable|low price)\b/.test(lc)) entities.modifiers.push('cheap');
-      if (/\b(new|brand new)\b/.test(lc)) entities.modifiers.push('new');
-      if (/\b(used|second hand)\b/.test(lc)) entities.modifiers.push('used');
-      
-      return entities;
+  function cleanFollowUp(text) {
+      // Removes stop words to make the search query more effective
+      const stopWords = ['a', 'an', 'the', 'is', 'are', 'one', 'some'];
+      const regex = new RegExp(`\\b(${stopWords.join('|')})\\b`, 'gi');
+      return text.replace(regex, '').replace(/\s\s+/g, ' ').trim();
   }
 
 
@@ -165,35 +148,37 @@ document.addEventListener('DOMContentLoaded', function () {
   async function generateReply(userText) {
     const lc = userText.toLowerCase();
 
-    // PRIORITY 1: Personalization Commands
-    const nameMatch = lc.match(/^(?:my name is|call me)\s+([a-zA-Z]+)\s*$/);
+    // PRIORITY 1: Personalization Commands (⭐ FIX: Expanded Regex)
+    const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
     if (nameMatch && nameMatch[1]) {
         sessionState.userName = capitalize(nameMatch[1]);
         saveState();
-        return answers.confirm_name_set; // Assuming you add this to answers.js
+        return answers.confirm_name_set;
     }
     
     // PRIORITY 2: Contextual Follow-up Questions
-const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
-if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
-    // 1. Clean the follow-up phrase to get the new keywords.
-    // E.g., "what about a new one" becomes "a new one"
-    let newKeywords = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
+    const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
+    if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
+        let newKeywordsRaw = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
+        let newKeywords = cleanFollowUp(newKeywordsRaw); // ⭐ FIX: Clean the keywords
+        let combinedQuery = `${newKeywords} ${sessionState.currentContext.value}`;
+        
+        return await callProductLookupAPI({ productName: combinedQuery });
+    }
 
-    // 2. Combine the new keywords with the saved context.
-    // E.g., "a new one" + "phone" becomes "new phone"
-    let combinedQuery = `${newKeywords} ${sessionState.currentContext.value}`;
-
-    console.log(`Contextual Search Triggered: "${combinedQuery}"`); // For your debugging
-
-    // 3. Run a new live search with the combined query.
-    return await callProductLookupAPI({ productName: combinedQuery });
-}
-    
-    // Reset context if it's a new, unrelated query
+    // ⭐ FIX: Reset context for any new, non-follow-up query
     sessionState.currentContext = null;
 
-    // PRIORITY 3: Live Online Lookups (with Entity parsing)
+    // ⭐ FIX: PRIORITY 3 is now SPECIFIC product search
+    const productTriggers = responses.product_query || [];
+    for (const trigger of productTriggers) {
+        if (lc.startsWith(trigger)) {
+            let productName = userText.substring(trigger.length).trim();
+            if (productName) return await callProductLookupAPI({ productName: productName });
+        }
+    }
+
+    // PRIORITY 4: Live CATEGORY Lookups (Fallback)
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of responses[key]) {
@@ -207,15 +192,8 @@ if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) 
             }
         }
     }
-    const productTriggers = responses.product_query || [];
-    for (const trigger of productTriggers) {
-        if (lc.startsWith(trigger)) {
-            let productName = userText.substring(trigger.length).trim();
-            if (productName) return await callProductLookupAPI({ productName: productName });
-        }
-    }
 
-    // PRIORITY 4: General Offline Keyword Queries
+    // PRIORITY 5: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
@@ -227,7 +205,6 @@ if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) 
       }
     }
     if (bestMatch.key) {
-        // ⭐ REPETITION HANDLING: Check if we are about to repeat ourselves
         if (bestMatch.key === sessionState.lastResponseKey) {
             return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
         }
@@ -235,7 +212,7 @@ if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) 
         if (answers[bestMatch.key]) return answers[bestMatch.key];
     }
     
-    // PRIORITY 5: Final Fallback & Logging
+    // PRIORITY 6: Final Fallback
     sessionState.lastResponseKey = 'fallback';
     const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
     logUnknownQuery({ question: userText, answer: fallbackResponse.text });
@@ -264,10 +241,9 @@ if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) 
   }
 
   function initialize() {
-    loadState(); // Load the user's name
+    loadState();
     let initialGreeting = answers['greetings'];
     if (sessionState.userName) {
-        // Create a personalized welcome back message
         initialGreeting = {
             text: `👋 Welcome back, ${sessionState.userName}! How can I help you today?`,
             suggestions: answers['greetings'].suggestions
