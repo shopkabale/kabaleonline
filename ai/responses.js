@@ -16,7 +16,8 @@ const responses = {
   "gratitude": ["thanks", "thank you", "ok thanks", "nice", "great", "awesome", "cool", "good", "thank u"],
 
   // --- CORE PLATFORM ACTIONS ---
-  "sell": ["sell", "post an item", "listing", "advertise", "my product", "place ad", "upload", "upload item", "post an ad", "list an item", "put my stuff up", "how to sell", "sell my phone", "list my laptop", "how do i sell", "guide to selling", "how to post"],
+  
+  "sell": ["how do i sell", "guide to selling", "how to post", "sell an item", "post an item", "listing", "advertise", "place ad", "upload item", "post an ad", "list an item"],
   "buy": ["buy", "shop", "purchase", "looking for", "available", "i want", "browse items", "shopping", "find a product", "how to buy", "see items", "where can i find", "where can i get", "i need to buy", "guide to buying"],
   "rent": ["rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging", "need a room", "hostel around campus"],
 
