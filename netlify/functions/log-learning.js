@@ -3,7 +3,7 @@
 const fetch = require('node-fetch');
 
 // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
-const GOOGLE_SHEET_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbynhKbOtsRVTj39Shg116CYKzxJ8wn4Z-z_qzX7uWMb5601MYaSQLQ5gr9H7eH8C7U4xA/exec';
 
 exports.handler = async function(event, context) {
     // Only allow POST requests
