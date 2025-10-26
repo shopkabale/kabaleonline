@@ -1,48 +1,87 @@
-// File: /ai/chatbot.js - FINAL CORRECTED Version with Reliable Google Form Submission
+// File: /ai/chatbot.js - FINAL FULL WORKING VERSION (Google Form Logging Fixed)
 
 document.addEventListener('DOMContentLoaded', function () {
 
   const MEMORY_KEY = 'kabale_memory_v4';
   const MAX_MEMORY = 30;
 
-  // --- Your unique Google Form codes have been added here ---
+  // --- GOOGLE FORM SETTINGS (✅ Make sure entry IDs match your form inputs) ---
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
-  const USER_MESSAGE_ENTRY_ID = "entry.1084291811";
-  const RESPONSE_GIVEN_ENTRY_ID = "entry.150499643";
-  // ---------------------------------------------------------
+  const USER_MESSAGE_ENTRY_ID = "entry.1084291811";  // user message field
+  const RESPONSE_GIVEN_ENTRY_ID = "entry.150499643"; // bot response field
+  // ---------------------------------------------------------------------------
 
   const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
 
-  function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-  function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-  function load(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : []; } catch (e) { return []; } }
-  function save(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('save failed', e); } }
-  function pushMemory(role, text) { const mem = load(MEMORY_KEY); mem.push({ role, text, time: new Date().toISOString() }); if (mem.length > MAX_MEMORY) mem.splice(0, mem.length - MAX_MEMORY); save(MEMORY_KEY, mem); }
-  function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
-
-  function scrollToBottom() {
-    if (chatBody) { chatBody.scrollTop = chatBody.scrollHeight; }
+  // ---------- Utility Functions ----------
+  function nowTime() { 
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); 
   }
 
+  function safeRegex(s) { 
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
+  }
+
+  function load(key) { 
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : []; } 
+    catch (e) { return []; } 
+  }
+
+  function save(key, data) { 
+    try { localStorage.setItem(key, JSON.stringify(data)); } 
+    catch (e) { console.warn('Save failed', e); } 
+  }
+
+  function pushMemory(role, text) {
+    const mem = load(MEMORY_KEY);
+    mem.push({ role, text, time: new Date().toISOString() });
+    if (mem.length > MAX_MEMORY) mem.splice(0, mem.length - MAX_MEMORY);
+    save(MEMORY_KEY, mem);
+  }
+
+  function capitalize(s) { 
+    if (!s) return ''; 
+    return s.charAt(0).toUpperCase() + s.slice(1); 
+  }
+
+  function scrollToBottom() {
+    if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  // ---------- Message Rendering ----------
   function appendMessage(content, type) {
     const time = nowTime();
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', `${type}-wrapper`);
+
     let text = (type === 'received' && typeof content === 'object') ? content.text : content;
     if (text === undefined) text = "I didn't catch that. Can you say it differently?";
-    
+
     let html = '';
     if (type === 'received') {
-      html = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message received">${text}</div><div class="timestamp">${time}</div></div></div>`;
+      html = `
+        <div class="message-block">
+          <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="message-content">
+            <div class="message received">${text}</div>
+            <div class="timestamp">${time}</div>
+          </div>
+        </div>`;
     } else {
-      html = `<div class="message-content"><div class="message sent">${text}</div><div class="timestamp">${time}</div></div>`;
+      html = `
+        <div class="message-content">
+          <div class="message sent">${text}</div>
+          <div class="timestamp">${time}</div>
+        </div>`;
     }
+
     wrapper.innerHTML = html;
     chatMessages.appendChild(wrapper);
 
+    // Optional suggestions
     if (type === 'received' && typeof content === 'object' && content.suggestions && content.suggestions.length) {
       const sc = document.createElement('div');
       sc.className = 'suggestions-container';
@@ -55,13 +94,16 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       wrapper.appendChild(sc);
     }
+
     scrollToBottom();
   }
 
   function showThinking() {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', 'received-wrapper', 'thinking-indicator-wrapper');
-    wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="thinking-indicator"><i class="fa-solid fa-gear"></i> Thinking...</div>`;
+    wrapper.innerHTML = `
+      <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+      <div class="thinking-indicator"><i class="fa-solid fa-gear"></i> Thinking...</div>`;
     chatMessages.appendChild(wrapper);
     scrollToBottom();
     return wrapper;
@@ -70,76 +112,79 @@ document.addEventListener('DOMContentLoaded', function () {
   function showTyping() {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', 'received-wrapper', 'typing-indicator-wrapper');
-    wrapper.innerHTML = `<div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+    wrapper.innerHTML = `
+      <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+      <div class="typing-indicator">
+        <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+      </div>`;
     chatMessages.appendChild(wrapper);
     scrollToBottom();
     return wrapper;
   }
 
+  // ---------- Product Lookup ----------
   async function callProductLookupAPI(params) {
     try {
-        const res = await fetch('/.netlify/functions/product-lookup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params)
-        });
-        if (!res.ok) {
-            throw new Error('Server returned an error');
-        }
-        return await res.json();
+      const res = await fetch('/.netlify/functions/product-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      });
+      if (!res.ok) throw new Error('Server returned an error');
+      return await res.json();
     } catch (err) {
-        console.error("Fatal: Lookup API fetch failed.", err);
-        return { text: "Sorry, I'm having trouble connecting to the product database right now." };
+      console.error("Fatal: Lookup API fetch failed.", err);
+      return { text: "Sorry, I'm having trouble connecting to the product database right now." };
     }
   }
 
+  // ---------- LOG UNKNOWN QUERIES TO GOOGLE FORM ----------
   function logUnknownQuery(item) {
-    const formData = new FormData();
-    formData.append(USER_MESSAGE_ENTRY_ID, item.question);
-    formData.append(RESPONSE_GIVEN_ENTRY_ID, item.answer);
-    
-    const body = new URLSearchParams(formData);
+    // Safely encode message + response
+    const data = new URLSearchParams();
+    data.append(USER_MESSAGE_ENTRY_ID, item.question || '');
+    data.append(RESPONSE_GIVEN_ENTRY_ID, item.answer || '');
 
     fetch(GOOGLE_FORM_ACTION_URL, {
-        method: 'POST',
-        body: body,
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    }).catch(error => console.error('Error submitting to Google Form:', error));
+      method: 'POST',
+      mode: 'no-cors', // required for Google Forms
+      body: data
+    })
+    .then(() => console.log('✅ Logged unknown query to Google Form'))
+    .catch(err => console.error('❌ Log error:', err));
   }
 
+  // ---------- Generate Reply ----------
   async function generateReply(userText) {
     pushMemory('user', userText);
     const lc = userText.toLowerCase();
 
-    // PRIORITY 1: Live Online Lookups
+    // Priority 1: Live Online Lookups
     for (const key in responses) {
-        if (key.startsWith("category_")) {
-            for (const keyword of responses[key]) {
-                const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
-                if (regex.test(lc)) {
-                    let categoryNameRaw = key.replace("category_", "");
-                    let categoryName = capitalize(categoryNameRaw);
-                    if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
-                    if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
-                    return await callProductLookupAPI({ categoryName: categoryName });
-                }
-            }
+      if (key.startsWith("category_")) {
+        for (const keyword of responses[key]) {
+          const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
+          if (regex.test(lc)) {
+            let categoryNameRaw = key.replace("category_", "");
+            let categoryName = capitalize(categoryNameRaw);
+            if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+            if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
+            return await callProductLookupAPI({ categoryName: categoryName });
+          }
         }
-    }
-    const productTriggers = responses.product_query || ["price of", "cost of", "how much is"];
-    for (const trigger of productTriggers) {
-        if (lc.startsWith(trigger)) {
-            let productName = userText.substring(trigger.length).trim();
-            if (productName) {
-                return await callProductLookupAPI({ productName: productName });
-            }
-        }
+      }
     }
 
-    // PRIORITY 2: General Offline Keyword Queries
+    // Priority 2: Product-specific queries
+    const productTriggers = responses.product_query || ["price of", "cost of", "how much is"];
+    for (const trigger of productTriggers) {
+      if (lc.startsWith(trigger)) {
+        let productName = userText.substring(trigger.length).trim();
+        if (productName) return await callProductLookupAPI({ productName: productName });
+      }
+    }
+
+    // Priority 3: Offline keyword responses
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
@@ -147,30 +192,42 @@ document.addEventListener('DOMContentLoaded', function () {
         const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
         if (regex.test(lc)) {
           const score = keyword.length;
-          if (score > bestMatch.score) { bestMatch = { key, score }; }
+          if (score > bestMatch.score) bestMatch = { key, score };
         }
       }
     }
-    if (bestMatch.key && answers[bestMatch.key]) { return answers[bestMatch.key]; }
 
-    // PRIORITY 3: Final Fallback & Logging
-    const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
+    if (bestMatch.key && answers[bestMatch.key]) return answers[bestMatch.key];
+
+    // Priority 4: Fallback & logging
+    const clar = { 
+      text: "My apologies, my knowledge base is still growing...", 
+      suggestions: ["How to sell", "Find a hostel", "Is selling free?"] 
+    };
     logUnknownQuery({ question: userText, answer: clar.text });
     return clar;
   }
 
-  chatForm.addEventListener('submit', async (e) => { e.preventDefault(); handleSend(messageInput.value); });
+  // ---------- Message Sending ----------
+  chatForm.addEventListener('submit', async (e) => { 
+    e.preventDefault(); 
+    handleSend(messageInput.value); 
+  });
 
   async function handleSend(raw) {
     const text = (raw || '').trim();
     if (!text) return;
+
     const oldSuggestions = document.querySelector('.suggestions-container');
     if (oldSuggestions) oldSuggestions.remove();
+
     appendMessage(text, 'sent');
     messageInput.value = '';
+
     const thinkingEl = showThinking();
     const reply = await generateReply(text);
     thinkingEl.remove();
+
     if (reply) {
       const typingEl = showTyping();
       await new Promise(r => setTimeout(r, 700));
@@ -180,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // ---------- Initialize ----------
   function initialize() {
     appendMessage(answers['greetings'], 'received');
     pushMemory('bot', answers['greetings'].text);
