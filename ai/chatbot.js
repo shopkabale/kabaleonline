@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js - "SMARTER AMARA" PROFESSIONAL VERSION
+// File: /ai/chatbot.js - "SMARTER AMARA" 100% COMPLETE PROFESSIONAL VERSION
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Core State Management & Memory Keys ---
@@ -149,7 +149,6 @@ document.addEventListener('DOMContentLoaded', function () {
       for (const key of coreActionKeys) {
           const keywords = responses[key] || [];
           for (const keyword of keywords) {
-              // Using a regex with word boundaries ensures "how to" doesn't match "show"
               if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
                   return { intent: key };
               }
@@ -181,7 +180,6 @@ document.addEventListener('DOMContentLoaded', function () {
       // General Keyword Intents (Lowest Priority)
       let bestMatch = { key: null };
       for (const key in responses) {
-          // Skip keys already handled by higher priority checks
           if (coreActionKeys.includes(key) || key.startsWith("category_") || key === 'product_query') continue;
           for (const keyword of responses[key]) {
               if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
@@ -212,40 +210,36 @@ document.addEventListener('DOMContentLoaded', function () {
       sessionState.currentContext = null;
       const { intent, entities } = detectIntent(userText);
       
-      // The switch statement is the new, organized "brain" that acts on the detected intent.
-      switch (intent) {
-          case 'set_name':
-              sessionState.userName = entities.name;
-              saveState();
-              return answers.confirm_name_set;
+      // --- This is the final, flexible action logic ---
 
-          case 'search_product':
-              return await callProductLookupAPI({ productName: entities.productName });
-          
-          case 'search_category':
-              return await callProductLookupAPI({ categoryName: entities.categoryName });
-          
-          case 'sell':
-          case 'buy':
-          case 'rent':
-          case 'help':
-          case 'contact':
-          case 'greetings':
-          case 'gratitude': // Add any other simple keyword-based intent here
-              // Repetition handling for simple intents
-              if (intent === sessionState.lastResponseKey) {
-                  return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
-              }
-              sessionState.lastResponseKey = intent;
-              return answers[intent];
-          
-          case 'unknown':
-          default:
-              sessionState.lastResponseKey = 'fallback';
-              const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
-              logUnknownQuery({ question: userText, answer: fallbackResponse.text });
-              return fallbackResponse;
+      // 1. Handle special intents with unique actions first
+      if (intent === 'set_name') {
+          sessionState.userName = entities.name;
+          saveState();
+          return answers.confirm_name_set;
       }
+      if (intent === 'search_product') {
+          return await callProductLookupAPI({ productName: entities.productName });
+      }
+      if (intent === 'search_category') {
+          return await callProductLookupAPI({ categoryName: entities.categoryName });
+      }
+
+      // 2. Handle ANY other known intent from your responses.js file
+      if (intent !== 'unknown' && answers[intent]) {
+          // Repetition handling for all known intents
+          if (intent === sessionState.lastResponseKey) {
+              return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
+          }
+          sessionState.lastResponseKey = intent;
+          return answers[intent];
+      }
+
+      // 3. If the intent is still unknown, provide the fallback
+      sessionState.lastResponseKey = 'fallback';
+      const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
+      logUnknownQuery({ question: userText, answer: fallbackResponse.text });
+      return fallbackResponse;
   }
 
   // --- Event Handling and Initialization ---
