@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pushMemory('user', userText);
     const lc = userText.toLowerCase();
 
+    // PRIORITY 1: Admin Commands
     if (lc.match(/\bi am admin\s+([^\s]+)/) || lc.startsWith('/') || lc.startsWith('teach:')) {
       const adminMatch = lc.match(/\bi am admin\s+([^\s]+)/);
       if (adminMatch && adminMatch[1] === ADMIN_KEYWORD) {
@@ -185,9 +186,35 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           return null;
       }
+
+      if (lc === '/sync learnings') { 
+          // Placeholder for your sync logic function
+          console.log("Syncing learnings..."); 
+          return { text: "Syncing... Check admin panel for status." }; 
+      }
+      
+      if (lc === '/show learnings') {
+          if (!pendingLearnings.length) return { text: 'No pending learnings.' };
+          const lines = pendingLearnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || ''}`).join('\n');
+          return { text: `<pre>${lines}</pre>` };
+      }
+      
+      if (lc === '/show drafts') {
+          const drafts = load(DRAFTS_KEY);
+          if (!drafts.length) return { text: 'No drafts saved.' };
+          const lines = drafts.map((d,i)=>`${i+1}. ${d.title} — ${d.price}`).join('\n');
+          return { text: `<pre>${lines}</pre>` };
+      }
+
+      if (lc === '/clear memory') {
+          localStorage.removeItem(MEMORY_KEY);
+          return { text: 'Chat memory cleared.' };
+      }
+      
       return { text: 'Unknown admin command.' };
     }
 
+    // PRIORITY 2: User Personalization
     for (const phrase of (responses.user_set_name || [])) {
       if (lc.startsWith(phrase + ' ')) {
         const userName = capitalize(userText.substring(phrase.length).trim());
@@ -196,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    // PRIORITY 3: Live Online Lookups
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of responses[key]) {
@@ -221,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // PRIORITY 4: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
@@ -238,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return answers[bestMatch.key];
     }
 
+    // PRIORITY 5: Final Fallback
     const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
     addPending({ type: 'unknown', question: userText, answer: clar.text, time: new Date().toISOString() });
     return clar;
