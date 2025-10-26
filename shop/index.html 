@@ -485,7 +485,7 @@ footer {
                 <h3>KabaleOnline Assistant</h3>
                 <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <iframe id="chat-iframe" src="/ai/" title="KabaleOnline AI Assistant"></iframe>
+            <iframe id="chat-iframe" src="/ai/" title="Amara"></iframe>
         </div>
     </div>
     <footer>
