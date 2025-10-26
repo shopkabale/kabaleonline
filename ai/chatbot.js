@@ -1,10 +1,9 @@
-// File: /ai/chatbot.js - "SMARTER AMARA" FINAL CORRECTED VERSION
+// File: /ai/chatbot.js - "SMARTER AMARA" FINAL v2 (DEFINITIVE FIX)
 
 document.addEventListener('DOMContentLoaded', function () {
 
   // --- Core State Management & Memory Keys ---
   const SESSION_STATE_KEY = 'kabale_session_state_v1';
-  const MAX_MEMORY = 30;
 
   // --- Google Form codes ---
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
@@ -104,19 +103,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- API and Logging ---
   async function callProductLookupAPI(params) {
-    // ⭐ CONTEXT FIX: Only set context on a SUCCESSFUL lookup.
-    if (params.categoryName) {
-        sessionState.currentContext = { type: 'category', value: params.categoryName };
-    } else if (params.productName) {
-        sessionState.currentContext = { type: 'product', value: params.productName };
-    }
-
+    sessionState.currentContext = params.categoryName ? { type: 'category', value: params.categoryName } : { type: 'product', value: params.productName };
     try {
-        const res = await fetch('/.netlify/functions/product-lookup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params)
-        });
+        const res = await fetch('/.netlify/functions/product-lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
         if (!res.ok) throw new Error('Server returned an error');
         return await res.json();
     } catch (err) {
@@ -126,29 +115,38 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function logUnknownQuery(item) {
-    const queryParams = new URLSearchParams({
-        [USER_MESSAGE_ENTRY_ID]: item.question,
-        [RESPONSE_GIVEN_ENTRY_ID]: item.answer
-    });
+    const queryParams = new URLSearchParams({ [USER_MESSAGE_ENTRY_ID]: item.question, [RESPONSE_GIVEN_ENTRY_ID]: item.answer });
     const submitUrl = `${GOOGLE_FORM_ACTION_URL}?${queryParams.toString()}`;
     const img = new Image();
     img.src = submitUrl;
   }
   
-  // --- ⭐ NEW: Intelligence Layer ---
-  function cleanFollowUp(text) {
-      // Removes stop words to make the search query more effective
-      const stopWords = ['a', 'an', 'the', 'is', 'are', 'one', 'some'];
+  // --- Intelligence Layer ---
+  function cleanSearchQuery(text) {
+      const stopWords = ['a', 'an', 'the', 'is', 'are', 'one', 'some', 'for'];
       const regex = new RegExp(`\\b(${stopWords.join('|')})\\b`, 'gi');
       return text.replace(regex, '').replace(/\s\s+/g, ' ').trim();
   }
 
+  function isNewTopic(text) {
+      // Checks if the text contains a strong keyword, indicating a new topic.
+      for (const key in responses) {
+          if (key.startsWith("category_")) {
+              for (const keyword of responses[key]) {
+                  if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text)) {
+                      return true; // It's a new topic
+                  }
+              }
+          }
+      }
+      return false;
+  }
 
-  // --- ⭐ OVERHAULED: Main Reply Generation Logic ---
+  // --- OVERHAULED: Main Reply Generation Logic ---
   async function generateReply(userText) {
     const lc = userText.toLowerCase();
 
-    // PRIORITY 1: Personalization Commands (⭐ FIX: Expanded Regex)
+    // PRIORITY 1: Personalization Commands
     const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
     if (nameMatch && nameMatch[1]) {
         sessionState.userName = capitalize(nameMatch[1]);
@@ -160,25 +158,32 @@ document.addEventListener('DOMContentLoaded', function () {
     const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
     if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
         let newKeywordsRaw = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
-        let newKeywords = cleanFollowUp(newKeywordsRaw); // ⭐ FIX: Clean the keywords
-        let combinedQuery = `${newKeywords} ${sessionState.currentContext.value}`;
-        
-        return await callProductLookupAPI({ productName: combinedQuery });
+        // ⭐ FIX: If the follow-up contains a strong new topic, break context.
+        if (isNewTopic(newKeywordsRaw)) {
+            sessionState.currentContext = null; 
+        } else {
+            let newKeywords = cleanSearchQuery(newKeywordsRaw);
+            let contextValue = cleanSearchQuery(sessionState.currentContext.value);
+            let combinedQuery = `${newKeywords} ${contextValue}`;
+            return await callProductLookupAPI({ productName: combinedQuery });
+        }
+    }
+    
+    // Reset context if it's a new, unrelated query
+    if(!lc.startsWith(followUpPhrases.find(p => lc.startsWith(p)) || '')) {
+      sessionState.currentContext = null;
     }
 
-    // ⭐ FIX: Reset context for any new, non-follow-up query
-    sessionState.currentContext = null;
-
-    // ⭐ FIX: PRIORITY 3 is now SPECIFIC product search
+    // PRIORITY 3: Live Online Lookups
     const productTriggers = responses.product_query || [];
     for (const trigger of productTriggers) {
         if (lc.startsWith(trigger)) {
-            let productName = userText.substring(trigger.length).trim();
+            let productNameRaw = userText.substring(trigger.length).trim();
+            let productName = cleanSearchQuery(productNameRaw); // ⭐ FIX: Clean initial search
             if (productName) return await callProductLookupAPI({ productName: productName });
         }
     }
 
-    // PRIORITY 4: Live CATEGORY Lookups (Fallback)
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of responses[key]) {
@@ -193,14 +198,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // PRIORITY 5: General Offline Keyword Queries
+    // PRIORITY 4: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
       for (const keyword of responses[key]) {
         if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
-          const score = keyword.length;
-          if (score > bestMatch.score) { bestMatch = { key, score }; }
+          bestMatch = { key, score: keyword.length };
         }
       }
     }
@@ -212,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (answers[bestMatch.key]) return answers[bestMatch.key];
     }
     
-    // PRIORITY 6: Final Fallback
+    // PRIORITY 5: Final Fallback
     sessionState.lastResponseKey = 'fallback';
     const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
     logUnknownQuery({ question: userText, answer: fallbackResponse.text });
@@ -225,8 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
   async function handleSend(raw) {
     const text = (raw || '').trim();
     if (!text) return;
-    const oldSuggestions = document.querySelector('.suggestions-container');
-    if (oldSuggestions) oldSuggestions.remove();
+    document.querySelector('.suggestions-container')?.remove();
     appendMessage(text, 'sent');
     messageInput.value = '';
     const thinkingEl = showThinking();
