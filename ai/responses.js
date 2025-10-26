@@ -6,9 +6,7 @@ const responses = {
 
 
 
-  // --- NEW: USER PERSONALIZATION ---
-  "prompt_for_name": ["remember my name", "save my name", "you can call me", "know my name"],
-  "user_set_name": ["my name is", "call me", "i am", "i'm"], // For direct commands like "call me Samuel"
+  
 
 
   // --- CORE FEATURES (EXISTING & REFINED) ---
