@@ -94,19 +94,17 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function logUnknownQuery(item) {
-    // This is the new, more reliable method for sending data.
-    const body = new URLSearchParams();
-    body.append(USER_MESSAGE_ENTRY_ID, item.question);
-    body.append(RESPONSE_GIVEN_ENTRY_ID, item.answer);
+    const queryParams = new URLSearchParams({
+        [USER_MESSAGE_ENTRY_ID]: item.question,
+        [RESPONSE_GIVEN_ENTRY_ID]: item.answer
+    });
 
-    fetch(GOOGLE_FORM_ACTION_URL, {
-        method: 'POST',
-        body: body,
-        mode: 'no-cors', // This is still required
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    }).catch(error => console.error('Error submitting to Google Form:', error));
+    const submitUrl = `${GOOGLE_FORM_ACTION_URL}?${queryParams.toString()}`;
+
+    // Use the reliable "image pixel" trick to send the data.
+    // This avoids all CORS and POST body issues by sending a simple GET request.
+    const img = new Image();
+    img.src = submitUrl;
   }
 
   async function generateReply(userText) {
