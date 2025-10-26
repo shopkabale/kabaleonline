@@ -19,8 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const pendingListEl = document.getElementById('pending-list');
   const openAdminBtn = document.getElementById('ko-open-admin');
   const closeAdminBtn = document.getElementById('close-admin-btn');
-  const approveAllBtn = document.getElementById('approve-all-btn');
-  const clearPendingBtn = document.getElementById('clear-pending-btn');
 
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -114,11 +112,12 @@ document.addEventListener('DOMContentLoaded', function () {
   function renderPendingList() {
     if (!pendingListEl) return;
     pendingListEl.innerHTML = '';
-    if (!pendingLearnings.length) {
+    const currentLearnings = load(PENDING_KEY); // Load fresh data
+    if (!currentLearnings.length) {
       pendingListEl.innerHTML = '<div style="padding:8px; color:var(--muted)">No pending learnings on this device.</div>';
       return;
     }
-    pendingLearnings.forEach((p, idx) => {
+    currentLearnings.forEach((p, idx) => {
       const item = document.createElement('div');
       item.className = 'pending-item';
       const textContent = p.question || (p.sample ? p.sample.title : 'Unknown');
@@ -132,14 +131,17 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function addPending(item) {
-    // Save locally for the admin's personal review panel
-    if (sessionStorage.getItem('isAdmin') === 'true') {
-        pendingLearnings.push(item);
-        save(PENDING_KEY, pendingLearnings);
+    // ALWAYS save locally to the device's pending list.
+    // This ensures if an admin logs in later, they see their own past questions.
+    pendingLearnings.push(item);
+    save(PENDING_KEY, pendingLearnings);
+
+    // If the panel happens to be open, update it in real-time.
+    if (adminModal && adminModal.getAttribute('aria-hidden') === 'false') {
         renderPendingList();
     }
 
-    // Always send a copy to the central server log for all users
+    // ALSO, always send a copy to the central server log for all users.
     fetch('/.netlify/functions/log-learning', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -188,14 +190,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (lc === '/sync learnings') { 
-          // Placeholder for your sync logic function
           console.log("Syncing learnings..."); 
           return { text: "Syncing... Check admin panel for status." }; 
       }
       
       if (lc === '/show learnings') {
-          if (!pendingLearnings.length) return { text: 'No pending learnings.' };
-          const lines = pendingLearnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || ''}`).join('\n');
+          const learnings = load(PENDING_KEY);
+          if (!learnings.length) return { text: 'No pending learnings.' };
+          const lines = learnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || ''}`).join('\n');
           return { text: `<pre>${lines}</pre>` };
       }
       
