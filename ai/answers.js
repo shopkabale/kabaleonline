@@ -83,6 +83,8 @@ text: "👋 Hello! I'm <b>Amara</b>, your guide to the KabaleOnline community ma
     </ul>`,
     suggestions: ["How do I sell an item?", "Are there jobs available?", "Tell me about safety"]
   },
+  
+
   "sell": {
     text: `🛍️ Absolutely! Selling on KabaleOnline is fast, free, and designed for our community. Here is your complete step-by-step guide to turning your items into cash:
     <ol>
