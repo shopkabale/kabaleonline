@@ -1,11 +1,11 @@
-// File: /ai/chatbot.js - FINAL Free & Unlimited Version (with YOUR Google Form codes)
+// File: /ai/chatbot.js - FINAL CORRECTED Version with Reliable Google Form Submission
 
 document.addEventListener('DOMContentLoaded', function () {
 
   const MEMORY_KEY = 'kabale_memory_v4';
   const MAX_MEMORY = 30;
 
-  // --- Your unique Google Form codes have been added here ---
+  // --- Your unique Google Form codes ---
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
   const USER_MESSAGE_ENTRY_ID = "entry.1084291811";
   const RESPONSE_GIVEN_ENTRY_ID = "entry.150499643";
@@ -94,14 +94,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function logUnknownQuery(item) {
-    const formData = new FormData();
-    formData.append(USER_MESSAGE_ENTRY_ID, item.question);
-    formData.append(RESPONSE_GIVEN_ENTRY_ID, item.answer);
+    // This is the new, more reliable method for sending data.
+    const body = new URLSearchParams();
+    body.append(USER_MESSAGE_ENTRY_ID, item.question);
+    body.append(RESPONSE_GIVEN_ENTRY_ID, item.answer);
 
     fetch(GOOGLE_FORM_ACTION_URL, {
         method: 'POST',
-        body: formData,
-        mode: 'no-cors' // Important: This prevents errors
+        body: body,
+        mode: 'no-cors', // This is still required
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
     }).catch(error => console.error('Error submitting to Google Form:', error));
   }
 
