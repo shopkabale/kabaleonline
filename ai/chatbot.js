@@ -1,35 +1,21 @@
-// File: /ai/chatbot.js
+// File: /ai/chatbot.js - Final Streamlined Version (No Name-Asking)
 
 document.addEventListener('DOMContentLoaded', function () {
 
   const MEMORY_KEY = 'kabale_memory_v4';
-  const PENDING_KEY = 'kabale_pending_v4';
-  const DRAFTS_KEY = 'kabale_drafts_v4';
-  const ADMIN_KEYWORD = 'kabale_admin_2025';
   const MAX_MEMORY = 30;
-  const NAME_KEY = 'kabale_user_name_v1';
-
-  let isWaitingForName = false;
 
   const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
-  const adminModal = document.getElementById('admin-modal');
-  const pendingListEl = document.getElementById('pending-list');
-  const openAdminBtn = document.getElementById('ko-open-admin');
-  const closeAdminBtn = document.getElementById('close-admin-btn');
 
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function load(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : []; } catch (e) { return []; } }
   function save(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('save failed', e); } }
   function pushMemory(role, text) { const mem = load(MEMORY_KEY); mem.push({ role, text, time: new Date().toISOString() }); if (mem.length > MAX_MEMORY) mem.splice(0, mem.length - MAX_MEMORY); save(MEMORY_KEY, mem); }
-  function loadUserName() { return localStorage.getItem(NAME_KEY); }
-  function saveUserName(name) { localStorage.setItem(NAME_KEY, name); }
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
-
-  let pendingLearnings = load(PENDING_KEY);
 
   function scrollToBottom() {
     if (chatBody) {
@@ -43,16 +29,10 @@ document.addEventListener('DOMContentLoaded', function () {
     wrapper.classList.add('message-wrapper', `${type}-wrapper`);
     let text = (type === 'received' && typeof content === 'object') ? content.text : content;
     if (text === undefined) text = "I didn't catch that. Can you say it differently?";
-
-    const userName = loadUserName();
-    if (userName && typeof text === 'string') {
-      text = text.replace(/\$\{userName\}/g, userName);
-    }
-
+    
     let html = '';
     if (type === 'received') {
-      html = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div>
-              <div class="message-content"><div class="message received">${text}</div><div class="timestamp">${time}</div></div></div>`;
+      html = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message received">${text}</div><div class="timestamp">${time}</div></div></div>`;
     } else {
       html = `<div class="message-content"><div class="message sent">${text}</div><div class="timestamp">${time}</div></div>`;
     }
@@ -109,39 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function renderPendingList() {
-    if (!pendingListEl) return;
-    pendingListEl.innerHTML = '';
-    const currentLearnings = load(PENDING_KEY); // Load fresh data
-    if (!currentLearnings.length) {
-      pendingListEl.innerHTML = '<div style="padding:8px; color:var(--muted)">No pending learnings on this device.</div>';
-      return;
-    }
-    currentLearnings.forEach((p, idx) => {
-      const item = document.createElement('div');
-      item.className = 'pending-item';
-      const textContent = p.question || (p.sample ? p.sample.title : 'Unknown');
-      item.innerHTML = `
-        <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <strong>${p.type || 'unknown'}</strong>: ${textContent}
-        </div>
-      `;
-      pendingListEl.appendChild(item);
-    });
-  }
-  
-  function addPending(item) {
-    // ALWAYS save locally to the device's pending list.
-    // This ensures if an admin logs in later, they see their own past questions.
-    pendingLearnings.push(item);
-    save(PENDING_KEY, pendingLearnings);
-
-    // If the panel happens to be open, update it in real-time.
-    if (adminModal && adminModal.getAttribute('aria-hidden') === 'false') {
-        renderPendingList();
-    }
-
-    // ALSO, always send a copy to the central server log for all users.
+  function logUnknownQuery(item) {
     fetch('/.netlify/functions/log-learning', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -150,82 +98,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   async function generateReply(userText) {
-    if (isWaitingForName) {
-      const userName = capitalize(userText.trim());
-      if (userName) {
-        saveUserName(userName);
-        isWaitingForName = false;
-        return { ...answers['confirm_name_set'] };
-      } else {
-        return { text: "Please let me know what to call you!", suggestions: [] };
-      }
-    }
-
     pushMemory('user', userText);
     const lc = userText.toLowerCase();
 
-    // PRIORITY 1: Admin Commands
-    if (lc.match(/\bi am admin\s+([^\s]+)/) || lc.startsWith('/') || lc.startsWith('teach:')) {
-      const adminMatch = lc.match(/\bi am admin\s+([^\s]+)/);
-      if (adminMatch && adminMatch[1] === ADMIN_KEYWORD) {
-        sessionStorage.setItem('isAdmin', 'true');
-        if (openAdminBtn) openAdminBtn.style.display = 'block';
-        return { text: '✅ Admin mode unlocked. You can now use the shield icon or type /admin.' };
-      }
-      if (sessionStorage.getItem('isAdmin') !== 'true') return { text: 'Admin commands are for verified admins only.' };
-      
-      const teachMatch = userText.match(/^\s*teach\s*:\s*(.+?)\s*=>\s*(.+)$/i);
-      if (teachMatch) {
-          const [q, a] = [teachMatch[1].trim(), teachMatch[2].trim()];
-          addPending({ type: 'teach', question: q, answer: a });
-          return { text: 'Saved to pending learnings.' };
-      }
-      
-      if (lc === '/admin' || lc === '/panel') {
-          if(adminModal) {
-              renderPendingList();
-              adminModal.setAttribute('aria-hidden', 'false');
-          }
-          return null;
-      }
-
-      if (lc === '/sync learnings') { 
-          console.log("Syncing learnings..."); 
-          return { text: "Syncing... Check admin panel for status." }; 
-      }
-      
-      if (lc === '/show learnings') {
-          const learnings = load(PENDING_KEY);
-          if (!learnings.length) return { text: 'No pending learnings.' };
-          const lines = learnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || ''}`).join('\n');
-          return { text: `<pre>${lines}</pre>` };
-      }
-      
-      if (lc === '/show drafts') {
-          const drafts = load(DRAFTS_KEY);
-          if (!drafts.length) return { text: 'No drafts saved.' };
-          const lines = drafts.map((d,i)=>`${i+1}. ${d.title} — ${d.price}`).join('\n');
-          return { text: `<pre>${lines}</pre>` };
-      }
-
-      if (lc === '/clear memory') {
-          localStorage.removeItem(MEMORY_KEY);
-          return { text: 'Chat memory cleared.' };
-      }
-      
-      return { text: 'Unknown admin command.' };
-    }
-
-    // PRIORITY 2: User Personalization
-    for (const phrase of (responses.user_set_name || [])) {
-      if (lc.startsWith(phrase + ' ')) {
-        const userName = capitalize(userText.substring(phrase.length).trim());
-        saveUserName(userName);
-        return { ...answers['confirm_name_set'] };
-      }
-    }
-
-    // PRIORITY 3: Live Online Lookups
+    // PRIORITY 1: Live Online Lookups
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of responses[key]) {
@@ -240,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-
     const productTriggers = responses.product_query || ["price of", "cost of", "how much is"];
     for (const trigger of productTriggers) {
         if (lc.startsWith(trigger)) {
@@ -251,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // PRIORITY 4: General Offline Keyword Queries
+    // PRIORITY 2: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
@@ -269,9 +144,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return answers[bestMatch.key];
     }
 
-    // PRIORITY 5: Final Fallback
+    // PRIORITY 3: Final Fallback & Logging
     const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
-    addPending({ type: 'unknown', question: userText, answer: clar.text, time: new Date().toISOString() });
+    logUnknownQuery({ type: 'unknown', question: userText, answer: clar.text });
     return clar;
   }
 
@@ -282,52 +157,23 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!text) return;
     const oldSuggestions = document.querySelector('.suggestions-container');
     if (oldSuggestions) oldSuggestions.remove();
-
     appendMessage(text, 'sent');
     messageInput.value = '';
-
     const thinkingEl = showThinking();
     const reply = await generateReply(text);
     thinkingEl.remove();
-
     if (reply) {
       const typingEl = showTyping();
       await new Promise(r => setTimeout(r, 700));
       typingEl.remove();
-
       appendMessage(reply, 'received');
       pushMemory('bot', typeof reply === 'object' ? reply.text : reply);
     }
   }
 
-  openAdminBtn && openAdminBtn.addEventListener('click', () => { 
-      if(adminModal) {
-          renderPendingList();
-          adminModal.setAttribute('aria-hidden', 'false');
-      }
-  });
-  closeAdminBtn && closeAdminBtn.addEventListener('click', () => { if(adminModal) adminModal.setAttribute('aria-hidden', 'true'); });
-  
   function initialize() {
-    if (sessionStorage.getItem('isAdmin') === 'true') {
-      if (openAdminBtn) openAdminBtn.style.display = 'block';
-    }
-    const mem = load(MEMORY_KEY);
-    const userName = loadUserName();
-
-    if (!userName && !mem.length) {
-      isWaitingForName = true;
-      appendMessage(answers['first_visit_greeting'], 'received');
-      pushMemory('bot', answers['first_visit_greeting'].text);
-    } else if (userName) {
-      const welcomeBackMessage = {
-        text: `👋 Welcome back, ${userName}! I'm Amara. How can I help you today?`,
-        suggestions: ["How to sell", "Find a hostel", "Is selling free?"]
-      };
-      appendMessage(welcomeBackMessage, 'received');
-    } else {
-      appendMessage(answers['greetings'], 'received');
-    }
+    appendMessage(answers['greetings'], 'received');
+    pushMemory('bot', answers['greetings'].text);
   }
 
   initialize();
