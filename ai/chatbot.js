@@ -119,10 +119,35 @@ document.addEventListener('DOMContentLoaded', function () {
         return { text: "Sorry, I'm having trouble connecting to the product database right now. Please try again in a moment." };
     }
   }
+
+  function renderPendingList() {
+    if (!pendingListEl) return;
+    pendingListEl.innerHTML = '';
+    if (!pendingLearnings.length) {
+      pendingListEl.innerHTML = '<div style="padding:8px; color:var(--muted)">No pending learnings.</div>';
+      return;
+    }
+    pendingLearnings.forEach((p, idx) => {
+      const item = document.createElement('div');
+      item.className = 'pending-item';
+      const textContent = p.question || (p.sample ? p.sample.title : 'Unknown');
+      item.innerHTML = `
+        <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <strong>${p.type || 'unknown'}</strong>: ${textContent}
+        </div>
+        <div>
+          <button class="sync-one-btn" data-index="${idx}">Sync</button>
+          <button class="delete-one-btn" data-index="${idx}">Delete</button>
+        </div>
+      `;
+      pendingListEl.appendChild(item);
+    });
+  }
   
   function addPending(item) {
     pendingLearnings.push(item);
     save(PENDING_KEY, pendingLearnings);
+    renderPendingList(); // Instantly update the list if the panel is open
   }
 
   async function generateReply(userText) {
@@ -157,14 +182,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       
       if (lc === '/admin' || lc === '/panel') {
-          if(adminModal) adminModal.setAttribute('aria-hidden', 'false');
+          if(adminModal) {
+              renderPendingList(); // Load data before showing
+              adminModal.setAttribute('aria-hidden', 'false');
+          }
           return null;
-      }
-      
-      if (lc === '/sync learnings') { 
-          // This should ideally call a function that shows messages in the chat
-          console.log("Syncing learnings..."); 
-          return { text: "Syncing... Check console for details." }; 
       }
       
       if (lc === '/show learnings') {
@@ -274,7 +296,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  openAdminBtn && openAdminBtn.addEventListener('click', () => { if(adminModal) adminModal.setAttribute('aria-hidden', 'false'); });
+  openAdminBtn && openAdminBtn.addEventListener('click', () => { 
+      if(adminModal) {
+          renderPendingList(); // Load data before showing
+          adminModal.setAttribute('aria-hidden', 'false');
+      }
+  });
   closeAdminBtn && closeAdminBtn.addEventListener('click', () => { if(adminModal) adminModal.setAttribute('aria-hidden', 'true'); });
   
   function initialize() {
