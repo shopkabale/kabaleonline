@@ -1,9 +1,10 @@
+// File: /ai/chatbot.js
+
 document.addEventListener('DOMContentLoaded', function () {
 
   const MEMORY_KEY = 'kabale_memory_v4';
   const PENDING_KEY = 'kabale_pending_v4';
   const DRAFTS_KEY = 'kabale_drafts_v4';
-  const SHEET_ENDPOINT = '/.netlify/functions/appendToSheet';
   const ADMIN_KEYWORD = 'kabale_admin_2025';
   const MAX_MEMORY = 30;
   const NAME_KEY = 'kabale_user_name_v1';
@@ -20,22 +21,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const closeAdminBtn = document.getElementById('close-admin-btn');
   const approveAllBtn = document.getElementById('approve-all-btn');
   const clearPendingBtn = document.getElementById('clear-pending-btn');
-  const toggleThemeBtn = document.getElementById('ko-toggle-theme');
-
-  toggleThemeBtn && toggleThemeBtn.addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark-mode');
-    const newTheme = isDark ? 'light-mode' : 'dark-mode';
-    document.body.className = '';
-    document.body.classList.add(newTheme);
-    localStorage.setItem('theme', newTheme);
-  });
 
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function load(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : []; } catch (e) { return []; } }
   function save(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('save failed', e); } }
-  function pushMemory(role, text, meta = {}) { const mem = load(MEMORY_KEY); mem.push({ role, text, time: new Date().toISOString(), meta }); if (mem.length > MAX_MEMORY) mem.splice(0, mem.length - MAX_MEMORY); save(MEMORY_KEY, mem); }
-  function getRecentSummary(limit = 6) { const mem = load(MEMORY_KEY).filter(m => m.role === 'user'); return mem.slice(-limit).map(m => m.text).join(' • '); }
+  function pushMemory(role, text) { const mem = load(MEMORY_KEY); mem.push({ role, text, time: new Date().toISOString() }); if (mem.length > MAX_MEMORY) mem.splice(0, mem.length - MAX_MEMORY); save(MEMORY_KEY, mem); }
   function loadUserName() { return localStorage.getItem(NAME_KEY); }
   function saveUserName(name) { localStorage.setItem(NAME_KEY, name); }
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -116,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return await res.json();
     } catch (err) {
         console.error("Fatal: Lookup API fetch failed.", err);
-        return { text: "Sorry, I'm having trouble connecting to the product database right now. Please try again in a moment." };
+        return { text: "Sorry, I'm having trouble connecting to the product database right now." };
     }
   }
 
@@ -124,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!pendingListEl) return;
     pendingListEl.innerHTML = '';
     if (!pendingLearnings.length) {
-      pendingListEl.innerHTML = '<div style="padding:8px; color:var(--muted)">No pending learnings.</div>';
+      pendingListEl.innerHTML = '<div style="padding:8px; color:var(--muted)">No pending learnings on this device.</div>';
       return;
     }
     pendingLearnings.forEach((p, idx) => {
@@ -135,19 +126,25 @@ document.addEventListener('DOMContentLoaded', function () {
         <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           <strong>${p.type || 'unknown'}</strong>: ${textContent}
         </div>
-        <div>
-          <button class="sync-one-btn" data-index="${idx}">Sync</button>
-          <button class="delete-one-btn" data-index="${idx}">Delete</button>
-        </div>
       `;
       pendingListEl.appendChild(item);
     });
   }
   
   function addPending(item) {
-    pendingLearnings.push(item);
-    save(PENDING_KEY, pendingLearnings);
-    renderPendingList(); // Instantly update the list if the panel is open
+    // Save locally for the admin's personal review panel
+    if (sessionStorage.getItem('isAdmin') === 'true') {
+        pendingLearnings.push(item);
+        save(PENDING_KEY, pendingLearnings);
+        renderPendingList();
+    }
+
+    // Always send a copy to the central server log for all users
+    fetch('/.netlify/functions/log-learning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+    }).catch(err => console.warn("Failed to log learning to server:", err));
   }
 
   async function generateReply(userText) {
@@ -183,30 +180,11 @@ document.addEventListener('DOMContentLoaded', function () {
       
       if (lc === '/admin' || lc === '/panel') {
           if(adminModal) {
-              renderPendingList(); // Load data before showing
+              renderPendingList();
               adminModal.setAttribute('aria-hidden', 'false');
           }
           return null;
       }
-      
-      if (lc === '/show learnings') {
-          if (!pendingLearnings.length) return { text: 'No pending learnings.' };
-          const lines = pendingLearnings.map((p, i) => `${i + 1}. ${p.type} — ${p.question || ''}`).join('\n');
-          return { text: `<pre>${lines}</pre>` };
-      }
-      
-      if (lc === '/show drafts') {
-          const drafts = load(DRAFTS_KEY);
-          if (!drafts.length) return { text: 'No drafts saved.' };
-          const lines = drafts.map((d,i)=>`${i+1}. ${d.title} — ${d.price}`).join('\n');
-          return { text: `<pre>${lines}</pre>` };
-      }
-
-      if (lc === '/clear memory') {
-          localStorage.removeItem(MEMORY_KEY);
-          return { text: 'Chat memory cleared.' };
-      }
-      
       return { text: 'Unknown admin command.' };
     }
 
@@ -215,12 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const userName = capitalize(userText.substring(phrase.length).trim());
         saveUserName(userName);
         return { ...answers['confirm_name_set'] };
-      }
-    }
-    for (const phrase of (responses.prompt_for_name || [])) {
-      if (lc.includes(phrase)) {
-        isWaitingForName = true;
-        return answers['prompt_for_name'];
       }
     }
 
@@ -239,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    const productTriggers = responses.product_query || ["price of", "cost of", "how much is", "do you have"];
+    const productTriggers = responses.product_query || ["price of", "cost of", "how much is"];
     for (const trigger of productTriggers) {
         if (lc.startsWith(trigger)) {
             let productName = userText.substring(trigger.length).trim();
@@ -266,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return answers[bestMatch.key];
     }
 
-    const clar = { text: "My apologies, my knowledge base is still growing and I don't have an answer for that yet. Your question helps me learn! You could try asking differently, or explore one of these topics.", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
+    const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
     addPending({ type: 'unknown', question: userText, answer: clar.text, time: new Date().toISOString() });
     return clar;
   }
@@ -298,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   openAdminBtn && openAdminBtn.addEventListener('click', () => { 
       if(adminModal) {
-          renderPendingList(); // Load data before showing
+          renderPendingList();
           adminModal.setAttribute('aria-hidden', 'false');
       }
   });
