@@ -1,9 +1,15 @@
-// File: /ai/chatbot.js - FINAL COMPLETE VERSION (with Live Lookups & Automatic Logging)
+// File: /ai/chatbot.js - FINAL Free & Unlimited Version (with YOUR Google Form codes)
 
 document.addEventListener('DOMContentLoaded', function () {
 
   const MEMORY_KEY = 'kabale_memory_v4';
   const MAX_MEMORY = 30;
+
+  // --- Your unique Google Form codes have been added here ---
+  const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
+  const USER_MESSAGE_ENTRY_ID = "entry.1084291811";
+  const RESPONSE_GIVEN_ENTRY_ID = "entry.150499643";
+  // ---------------------------------------------------------
 
   const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
@@ -89,15 +95,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function logUnknownQuery(item) {
     const formData = new FormData();
-    formData.append('form-name', 'learnings');
-    formData.append('UserMessage', item.question);
-    formData.append('ResponseGiven', item.answer);
+    formData.append(USER_MESSAGE_ENTRY_ID, item.question);
+    formData.append(RESPONSE_GIVEN_ENTRY_ID, item.answer);
 
-    fetch('/', {
+    fetch(GOOGLE_FORM_ACTION_URL, {
         method: 'POST',
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(formData).toString()
-    }).catch(error => console.error('Error submitting Netlify form:', error));
+        body: formData,
+        mode: 'no-cors' // Important: This prevents errors
+    }).catch(error => console.error('Error submitting to Google Form:', error));
   }
 
   async function generateReply(userText) {
@@ -132,9 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // PRIORITY 2: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
-      // Make sure we don't accidentally match a category keyword here
       if (key.startsWith("category_") || key === 'product_query') continue;
-      
       for (const keyword of responses[key]) {
         const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
         if (regex.test(lc)) {
