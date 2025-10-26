@@ -1,4 +1,4 @@
-// File: /ai/responses.js - FINAL EXPANDED VERSION (To match your answers.js)
+// Replace your entire /ai/responses.js file with this content
 
 const responses = {
   // --- LIVE LOOKUP TRIGGERS (HIGHEST PRIORITY) ---
@@ -15,11 +15,10 @@ const responses = {
   "bot_identity": ["who are you", "what are you", "are you a bot", "what's your name", "your name", "about yourself"],
   "gratitude": ["thanks", "thank you", "ok thanks", "nice", "great", "awesome", "cool", "good", "thank u"],
 
-  // --- CORE PLATFORM ACTIONS ---
-  
-  "sell": ["how do i sell", "guide to selling", "how to post", "sell an item", "post an item", "listing", "advertise", "place ad", "upload item", "post an ad", "list an item"],
-  "buy": ["buy", "shop", "purchase", "looking for", "available", "i want", "browse items", "shopping", "find a product", "how to buy", "see items", "where can i find", "where can i get", "i need to buy", "guide to buying"],
-  "rent": ["rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging", "need a room", "hostel around campus"],
+  // --- CORE PLATFORM ACTIONS (Specific phrases have high priority) ---
+  "sell": ["how do i sell", "guide to selling", "how to post", "i want to sell", "i would like to sell", "sell an item", "post an item", "listing", "advertise", "place ad", "upload item", "post an ad", "list an item"],
+  "buy": ["how do i buy", "guide to buying", "buy", "shop", "purchase", "looking for", "available", "i want", "browse items", "shopping", "find a product", "see items", "where can i find", "where can i get", "i need to buy"],
+  "rent": ["how do i rent", "find a rental", "rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging", "need a room", "hostel around campus"],
 
   // --- TRANSACTION DETAILS ---
   "cost_of_selling": ["is selling free", "is it free to sell", "fees", "commission", "cost to sell", "does it cost to sell", "is kabaleonline free", "is selling on kabaleonline free", "charges", "listing fee"],
@@ -29,9 +28,9 @@ const responses = {
 
   // --- ACCOUNT & LISTING MANAGEMENT ---
   "account_management": ["dashboard", "my account", "my profile", "account settings", "manage my listings", "my stuff", "my products", "my posts", "my dashboard", "change password", "delete account"],
-  "how_to_edit": ["edit my item", "update my listing", "change my ad", "modify my post", "how to edit"],
-  "how_to_delete": ["delete my item", "remove my listing", "take down my ad", "how to delete"],
-  "mark_as_sold": ["mark as sold", "item is sold", "how to mark sold", "sold my item"],
+  "how_to_edit": ["how do i edit", "edit my item", "update my listing", "change my ad", "modify my post", "how to edit"],
+  "how_to_delete": ["how do i delete", "delete my item", "remove my listing", "take down my ad", "how to delete"],
+  "mark_as_sold": ["how do i mark as sold", "mark as sold", "item is sold", "how to mark sold", "sold my item"],
   "photo_tips": ["photo tips", "better pictures", "how to take photos", "image advice", "good photos"],
   "pricing_advice": ["how much should I sell for", "pricing guide", "value my item", "what's the worth of", "set a price", "how to price"],
 
@@ -50,7 +49,7 @@ const responses = {
   "inbox": ["inbox", "my inbox", "messages", "notifications", "check messages", "my messages"],
   "requests": ["requests", "user requests", "request an item", "can't find", "looking for something", "i need a"],
   "feedback": ["feedback", "testimonial", "leave a review", "share feedback", "rate my experience", "suggestion", "compliment"],
-  
+
   // --- COMMUNITY & PLATFORM INFO ---
   "about_platform": ["about", "what is kabaleonline", "info", "what is this", "introduction", "tell me about kabaleonline"],
   "mission_vision": ["mission", "vision", "purpose", "goal", "objective", "what are you trying to do", "your mission"],
@@ -63,6 +62,6 @@ const responses = {
   "jobs": ["job", "work", "employment", "hiring", "vacancy", "internship", "career", "job posting", "employment opportunities", "find work", "get a job", "are you hiring"],
   "services": ["service", "plumber", "electrician", "mechanic", "freelancer", "photographer", "tutor", "dj", "boda boda", "offer service", "hire service", "find a plumber", "need a boda", "professional"],
 
-  // --- GENERAL HELP ---
-  "help": ["help", "guide", "how to", "assistance", "tutorial", "how do i", "where can i", "navigation", "site guide", "steps", "directions", "instructions", "how does this work", "i'm lost"]
+  // --- GENERAL HELP (No longer contains "how to" or "how do I") ---
+  "help": ["help", "guide", "assistance", "tutorial", "where can i find", "site navigation", "site guide", "general steps", "directions", "instructions", "how does this work", "i'm lost"]
 };
