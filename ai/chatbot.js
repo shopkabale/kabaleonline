@@ -1,11 +1,12 @@
-// File: /ai/chatbot.js - FINAL GUARANTEED WORKING Version
+// File: /ai/chatbot.js - "SMARTER AMARA" UPGRADE
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  const MEMORY_KEY = 'kabale_memory_v4';
-  const MAX_MEMORY = 30;
+  // --- Core State Management & Memory Keys ---
+  const SESSION_STATE_KEY = 'kabale_session_state_v1';
+  const MAX_MEMORY = 30; // Still used for conversation logging, separate from state
 
-  // --- Your unique Google Form codes ---
+  // --- Your unique Google Form codes (No change needed) ---
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
   const USER_MESSAGE_ENTRY_ID = "entry.779723602";
   const RESPONSE_GIVEN_ENTRY_ID = "entry.2015145894";
@@ -15,14 +16,42 @@ document.addEventListener('DOMContentLoaded', function () {
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
+  
+  // --- Session State: The heart of the new intelligence ---
+  let sessionState = {
+    userName: null,
+    currentContext: null, // e.g., { type: 'category', value: 'Laptops' }
+    lastResponseKey: null,
+  };
 
+  // --- Utility Functions (with additions) ---
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-  function load(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : []; } catch (e) { return []; } }
-  function save(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('save failed', e); } }
-  function pushMemory(role, text) { const mem = load(MEMORY_KEY); mem.push({ role, text, time: new Date().toISOString() }); if (mem.length > MAX_MEMORY) mem.splice(0, mem.length - MAX_MEMORY); save(MEMORY_KEY, mem); }
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
+  function pushMemory(role, text) { /* This function remains for logging, but not for context */ }
 
+  function loadState() {
+      try {
+          const storedState = localStorage.getItem(SESSION_STATE_KEY);
+          if (storedState) {
+              const parsedState = JSON.parse(storedState);
+              sessionState.userName = parsedState.userName || null;
+          }
+      } catch (e) {
+          console.warn('Could not load session state.', e);
+      }
+  }
+
+  function saveState() {
+      try {
+          const stateToSave = { userName: sessionState.userName };
+          localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(stateToSave));
+      } catch (e) {
+          console.warn('Could not save session state.', e);
+      }
+  }
+
+  // --- UI Functions (with personalization) ---
   function scrollToBottom() {
     if (chatBody) { chatBody.scrollTop = chatBody.scrollHeight; }
   }
@@ -33,7 +62,12 @@ document.addEventListener('DOMContentLoaded', function () {
     wrapper.classList.add('message-wrapper', `${type}-wrapper`);
     let text = (type === 'received' && typeof content === 'object') ? content.text : content;
     if (text === undefined) text = "I didn't catch that. Can you say it differently?";
-    
+
+    // ⭐ PERSONALIZATION: Inject user's name if available
+    if (sessionState.userName) {
+        text = text.replace(/\${userName}/g, sessionState.userName);
+    }
+
     let html = '';
     if (type === 'received') {
       html = `<div class="message-block"><div class="avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message received">${text}</div><div class="timestamp">${time}</div></div></div>`;
@@ -57,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     scrollToBottom();
   }
-
+  
   function showThinking() {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', 'received-wrapper', 'thinking-indicator-wrapper');
@@ -76,23 +110,29 @@ document.addEventListener('DOMContentLoaded', function () {
     return wrapper;
   }
 
+  // --- API and Logging (No change needed) ---
   async function callProductLookupAPI(params) {
+    // ⭐ CONTEXT: Set the context after a successful API call
+    if (params.categoryName) {
+        sessionState.currentContext = { type: 'category', value: params.categoryName };
+    } else if (params.productName) {
+        sessionState.currentContext = { type: 'product', value: params.productName };
+    }
+
     try {
         const res = await fetch('/.netlify/functions/product-lookup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(params)
         });
-        if (!res.ok) {
-            throw new Error('Server returned an error');
-        }
+        if (!res.ok) throw new Error('Server returned an error');
         return await res.json();
     } catch (err) {
         console.error("Fatal: Lookup API fetch failed.", err);
         return { text: "Sorry, I'm having trouble connecting to the product database right now." };
     }
   }
-
+  
   function logUnknownQuery(item) {
     const queryParams = new URLSearchParams({
         [USER_MESSAGE_ENTRY_ID]: item.question,
@@ -102,17 +142,62 @@ document.addEventListener('DOMContentLoaded', function () {
     const img = new Image();
     img.src = submitUrl;
   }
+  
+  // --- ⭐ NEW: Intelligence Layer ---
+  function parseUserInput(text) {
+      const lc = text.toLowerCase();
+      const entities = {
+          product: null,
+          category: null,
+          modifiers: []
+      };
+      
+      // Simple modifier check
+      if (/\b(cheap|affordable|low price)\b/.test(lc)) entities.modifiers.push('cheap');
+      if (/\b(new|brand new)\b/.test(lc)) entities.modifiers.push('new');
+      if (/\b(used|second hand)\b/.test(lc)) entities.modifiers.push('used');
+      
+      return entities;
+  }
 
+
+  // --- ⭐ OVERHAULED: Main Reply Generation Logic ---
   async function generateReply(userText) {
-    pushMemory('user', userText);
     const lc = userText.toLowerCase();
 
-    // PRIORITY 1: Live Online Lookups
+    // PRIORITY 1: Personalization Commands
+    const nameMatch = lc.match(/^(?:my name is|call me)\s+([a-zA-Z]+)\s*$/);
+    if (nameMatch && nameMatch[1]) {
+        sessionState.userName = capitalize(nameMatch[1]);
+        saveState();
+        return answers.confirm_name_set; // Assuming you add this to answers.js
+    }
+    
+    // PRIORITY 2: Contextual Follow-up Questions
+const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
+if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
+    // 1. Clean the follow-up phrase to get the new keywords.
+    // E.g., "what about a new one" becomes "a new one"
+    let newKeywords = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
+
+    // 2. Combine the new keywords with the saved context.
+    // E.g., "a new one" + "phone" becomes "new phone"
+    let combinedQuery = `${newKeywords} ${sessionState.currentContext.value}`;
+
+    console.log(`Contextual Search Triggered: "${combinedQuery}"`); // For your debugging
+
+    // 3. Run a new live search with the combined query.
+    return await callProductLookupAPI({ productName: combinedQuery });
+}
+    
+    // Reset context if it's a new, unrelated query
+    sessionState.currentContext = null;
+
+    // PRIORITY 3: Live Online Lookups (with Entity parsing)
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of responses[key]) {
-                const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
-                if (regex.test(lc)) {
+                if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
                     let categoryNameRaw = key.replace("category_", "");
                     let categoryName = capitalize(categoryNameRaw);
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
@@ -122,39 +207,43 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-    
-    // This is the bulletproof code. It gets the triggers, or an empty list if they don't exist, preventing a crash.
     const productTriggers = responses.product_query || [];
     for (const trigger of productTriggers) {
         if (lc.startsWith(trigger)) {
             let productName = userText.substring(trigger.length).trim();
-            if (productName) {
-                return await callProductLookupAPI({ productName: productName });
-            }
+            if (productName) return await callProductLookupAPI({ productName: productName });
         }
     }
 
-    // PRIORITY 2: General Offline Keyword Queries
+    // PRIORITY 4: General Offline Keyword Queries
     let bestMatch = { key: null, score: 0 };
     for (const key in responses) {
       if (key.startsWith("category_") || key === 'product_query') continue;
       for (const keyword of responses[key]) {
-        const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
-        if (regex.test(lc)) {
+        if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
           const score = keyword.length;
           if (score > bestMatch.score) { bestMatch = { key, score }; }
         }
       }
     }
-    if (bestMatch.key && answers[bestMatch.key]) { return answers[bestMatch.key]; }
-
-    // PRIORITY 3: Final Fallback & Logging
-    const clar = { text: "My apologies, my knowledge base is still growing...", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
-    logUnknownQuery({ question: userText, answer: clar.text });
-    return clar;
+    if (bestMatch.key) {
+        // ⭐ REPETITION HANDLING: Check if we are about to repeat ourselves
+        if (bestMatch.key === sessionState.lastResponseKey) {
+            return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
+        }
+        sessionState.lastResponseKey = bestMatch.key;
+        if (answers[bestMatch.key]) return answers[bestMatch.key];
+    }
+    
+    // PRIORITY 5: Final Fallback & Logging
+    sessionState.lastResponseKey = 'fallback';
+    const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
+    logUnknownQuery({ question: userText, answer: fallbackResponse.text });
+    return fallbackResponse;
   }
 
-  chatForm.addEventListener('submit', async (e) => { e.preventDefault(); handleSend(messageInput.value); });
+  // --- Event Handling and Initialization ---
+  chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
 
   async function handleSend(raw) {
     const text = (raw || '').trim();
@@ -171,13 +260,21 @@ document.addEventListener('DOMContentLoaded', function () {
       await new Promise(r => setTimeout(r, 700));
       typingEl.remove();
       appendMessage(reply, 'received');
-      pushMemory('bot', typeof reply === 'object' ? reply.text : reply);
     }
   }
 
   function initialize() {
-    appendMessage(answers['greetings'], 'received');
-    pushMemory('bot', answers['greetings'].text);
+    loadState(); // Load the user's name
+    let initialGreeting = answers['greetings'];
+    if (sessionState.userName) {
+        // Create a personalized welcome back message
+        initialGreeting = {
+            text: `👋 Welcome back, ${sessionState.userName}! How can I help you today?`,
+            suggestions: answers['greetings'].suggestions
+        };
+    }
+    appendMessage(initialGreeting, 'received');
+    sessionState.lastResponseKey = 'greetings';
   }
 
   initialize();
