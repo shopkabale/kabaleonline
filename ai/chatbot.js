@@ -1,24 +1,25 @@
-// File: /ai/chatbot.js - "SMARTER AMARA" FINAL v2 (DEFINITIVE FIX)
+// File: /ai/chatbot.js - "SMARTER AMARA" PROFESSIONAL VERSION
 
 document.addEventListener('DOMContentLoaded', function () {
-
   // --- Core State Management & Memory Keys ---
   const SESSION_STATE_KEY = 'kabale_session_state_v1';
 
-  // --- Google Form codes ---
+  // --- Google Form codes for logging unknown queries ---
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
   const USER_MESSAGE_ENTRY_ID = "entry.779723602";
   const RESPONSE_GIVEN_ENTRY_ID = "entry.2015145894";
 
+  // --- DOM Element References ---
   const chatBody = document.getElementById('ko-body');
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
   
+  // --- The bot's "brain" or memory ---
   let sessionState = {
     userName: null,
-    currentContext: null,
-    lastResponseKey: null,
+    currentContext: null, // Stores the last topic for follow-ups
+    lastResponseKey: null, // Used for repetition handling
   };
 
   // --- Utility Functions ---
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
       } catch (e) { console.warn('Could not save session state.', e); }
   }
 
-  // --- UI Functions ---
+  // --- UI Rendering Functions ---
   function scrollToBottom() {
     if (chatBody) { chatBody.scrollTop = chatBody.scrollHeight; }
   }
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let text = (type === 'received' && typeof content === 'object') ? content.text : content;
     if (text === undefined) text = "I didn't catch that. Can you say it differently?";
 
+    // Personalization: Inject user's name if the placeholder exists
     if (sessionState.userName) {
         text = text.replace(/\${userName}/g, sessionState.userName);
     }
@@ -68,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
     wrapper.innerHTML = html;
     chatMessages.appendChild(wrapper);
 
+    // Render suggestion chips if they exist in the response
     if (type === 'received' && typeof content === 'object' && content.suggestions && content.suggestions.length) {
       const sc = document.createElement('div');
       sc.className = 'suggestions-container';
@@ -101,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return wrapper;
   }
 
-  // --- API and Logging ---
+  // --- Backend API and Logging ---
   async function callProductLookupAPI(params) {
     sessionState.currentContext = params.categoryName ? { type: 'category', value: params.categoryName } : { type: 'product', value: params.productName };
     try {
@@ -120,112 +123,134 @@ document.addEventListener('DOMContentLoaded', function () {
     const img = new Image();
     img.src = submitUrl;
   }
-  
+
   // --- Intelligence Layer ---
   function cleanSearchQuery(text) {
+      // Removes common, unhelpful words to improve search accuracy
       const stopWords = ['a', 'an', 'the', 'is', 'are', 'one', 'some', 'for'];
       const regex = new RegExp(`\\b(${stopWords.join('|')})\\b`, 'gi');
       return text.replace(regex, '').replace(/\s\s+/g, ' ').trim();
   }
 
-  function isNewTopic(text) {
-      // Checks if the text contains a strong keyword, indicating a new topic.
+  // STEP 1: THE INTENT DETECTOR
+  function detectIntent(userText) {
+      const lc = userText.toLowerCase();
+
+      // This function determines the user's primary goal (their "intent").
+      
+      // Personalization Intent
+      const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
+      if (nameMatch && nameMatch[1]) {
+          return { intent: 'set_name', entities: { name: capitalize(nameMatch[1]) } };
+      }
+      
+      // Core Action Intents (Highest Priority)
+      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact'];
+      for (const key of coreActionKeys) {
+          const keywords = responses[key] || [];
+          for (const keyword of keywords) {
+              // Using a regex with word boundaries ensures "how to" doesn't match "show"
+              if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
+                  return { intent: key };
+              }
+          }
+      }
+
+      // Live Search Intents
+      const productTriggers = responses.product_query || [];
+      for (const trigger of productTriggers) {
+          if (lc.startsWith(trigger)) {
+              let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
+              if (productName) return { intent: 'search_product', entities: { productName } };
+          }
+      }
+
       for (const key in responses) {
           if (key.startsWith("category_")) {
               for (const keyword of responses[key]) {
-                  if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text)) {
-                      return true; // It's a new topic
+                  if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
+                      let categoryName = capitalize(key.replace("category_", ""));
+                      if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+                      if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
+                      return { intent: 'search_category', entities: { categoryName } };
                   }
               }
           }
       }
-      return false;
+      
+      // General Keyword Intents (Lowest Priority)
+      let bestMatch = { key: null };
+      for (const key in responses) {
+          // Skip keys already handled by higher priority checks
+          if (coreActionKeys.includes(key) || key.startsWith("category_") || key === 'product_query') continue;
+          for (const keyword of responses[key]) {
+              if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
+                  bestMatch.key = key;
+              }
+          }
+      }
+      if (bestMatch.key) return { intent: bestMatch.key };
+
+      // Fallback if no intent is detected
+      return { intent: 'unknown' };
   }
 
-  // --- OVERHAULED: Main Reply Generation Logic ---
+  // STEP 2: THE MAIN REPLY GENERATOR
   async function generateReply(userText) {
-    const lc = userText.toLowerCase();
-
-    // PRIORITY 1: Personalization Commands
-    const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
-    if (nameMatch && nameMatch[1]) {
-        sessionState.userName = capitalize(nameMatch[1]);
-        saveState();
-        return answers.confirm_name_set;
-    }
-    
-    // PRIORITY 2: Contextual Follow-up Questions
-    const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
-    if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
-        let newKeywordsRaw = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
-        // ⭐ FIX: If the follow-up contains a strong new topic, break context.
-        if (isNewTopic(newKeywordsRaw)) {
-            sessionState.currentContext = null; 
-        } else {
-            let newKeywords = cleanSearchQuery(newKeywordsRaw);
-            let contextValue = cleanSearchQuery(sessionState.currentContext.value);
-            let combinedQuery = `${newKeywords} ${contextValue}`;
-            return await callProductLookupAPI({ productName: combinedQuery });
-        }
-    }
-    
-    // Reset context if it's a new, unrelated query
-    if(!lc.startsWith(followUpPhrases.find(p => lc.startsWith(p)) || '')) {
-      sessionState.currentContext = null;
-    }
-
-    // PRIORITY 3: Live Online Lookups
-    const productTriggers = responses.product_query || [];
-    for (const trigger of productTriggers) {
-        if (lc.startsWith(trigger)) {
-            let productNameRaw = userText.substring(trigger.length).trim();
-            let productName = cleanSearchQuery(productNameRaw); // ⭐ FIX: Clean initial search
-            if (productName) return await callProductLookupAPI({ productName: productName });
-        }
-    }
-
-    for (const key in responses) {
-        if (key.startsWith("category_")) {
-            for (const keyword of responses[key]) {
-                if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
-                    let categoryNameRaw = key.replace("category_", "");
-                    let categoryName = capitalize(categoryNameRaw);
-                    if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
-                    if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
-                    return await callProductLookupAPI({ categoryName: categoryName });
-                }
-            }
-        }
-    }
-
-    // PRIORITY 4: General Offline Keyword Queries
-    let bestMatch = { key: null, score: 0 };
-    for (const key in responses) {
-      if (key.startsWith("category_") || key === 'product_query') continue;
-      for (const keyword of responses[key]) {
-        if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
-          bestMatch = { key, score: keyword.length };
-        }
+      // PRIORITY 1: Handle contextual follow-ups BEFORE detecting a new intent.
+      const lc = userText.toLowerCase();
+      const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
+      if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
+          let newKeywordsRaw = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
+          let newKeywords = cleanSearchQuery(newKeywordsRaw);
+          let contextValue = cleanSearchQuery(sessionState.currentContext.value);
+          let combinedQuery = `${newKeywords} ${contextValue}`;
+          return await callProductLookupAPI({ productName: combinedQuery });
       }
-    }
-    if (bestMatch.key) {
-        if (bestMatch.key === sessionState.lastResponseKey) {
-            return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
-        }
-        sessionState.lastResponseKey = bestMatch.key;
-        if (answers[bestMatch.key]) return answers[bestMatch.key];
-    }
-    
-    // PRIORITY 5: Final Fallback
-    sessionState.lastResponseKey = 'fallback';
-    const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
-    logUnknownQuery({ question: userText, answer: fallbackResponse.text });
-    return fallbackResponse;
+
+      // If it's not a follow-up, reset context and detect a new intent.
+      sessionState.currentContext = null;
+      const { intent, entities } = detectIntent(userText);
+      
+      // The switch statement is the new, organized "brain" that acts on the detected intent.
+      switch (intent) {
+          case 'set_name':
+              sessionState.userName = entities.name;
+              saveState();
+              return answers.confirm_name_set;
+
+          case 'search_product':
+              return await callProductLookupAPI({ productName: entities.productName });
+          
+          case 'search_category':
+              return await callProductLookupAPI({ categoryName: entities.categoryName });
+          
+          case 'sell':
+          case 'buy':
+          case 'rent':
+          case 'help':
+          case 'contact':
+          case 'greetings':
+          case 'gratitude': // Add any other simple keyword-based intent here
+              // Repetition handling for simple intents
+              if (intent === sessionState.lastResponseKey) {
+                  return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
+              }
+              sessionState.lastResponseKey = intent;
+              return answers[intent];
+          
+          case 'unknown':
+          default:
+              sessionState.lastResponseKey = 'fallback';
+              const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
+              logUnknownQuery({ question: userText, answer: fallbackResponse.text });
+              return fallbackResponse;
+      }
   }
 
   // --- Event Handling and Initialization ---
   chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
-
+  
   async function handleSend(raw) {
     const text = (raw || '').trim();
     if (!text) return;
