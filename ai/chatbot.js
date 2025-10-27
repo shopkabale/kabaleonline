@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 2.1 - Logic Corrected)
+// File: /ai/chatbot.js (Version 3.0 - Final Logic Corrected)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
@@ -209,10 +209,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const lc = userText.toLowerCase();
     if (sessionState.conversationState) { return { intent: 'continue_conversation' }; }
 
-    for (const keyword of (responses.start_upload || [])) {
-        if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: 'start_upload' };
-    }
-
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
     if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
@@ -232,17 +228,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
     if (nameMatch && nameMatch[1]) { return { intent: 'set_name', entities: { name: capitalize(nameMatch[1]) } }; }
     
-    const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact', 'after_upload', 'after_delivery', 'manage_listings'];
-    const markSoldMatch = lc.match(/mark my\s+([a-zA-Z0-9\s]+)\s+as sold/);
-    if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
+    const coreActionKeys = ['start_upload', 'buy', 'rent', 'help', 'contact', 'after_upload', 'after_delivery', 'manage_listings'];
     for (const key of coreActionKeys) {
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: key }; }
     }
+
+    const markSoldMatch = lc.match(/mark my\s+([a-zA-Z0-9\s]+)\s+as sold/);
+    if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
+
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'start_upload'].includes(key);
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
+
     for (const trigger of (responses.product_query || [])) {
         if (lc.startsWith(trigger)) {
             let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
@@ -266,6 +265,9 @@ document.addEventListener('DOMContentLoaded', function () {
             for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
         }
     }
+    
+    if (responses.sell.some(k => lc.includes(k))) return { intent: 'sell' };
+
     return { intent: 'unknown' };
   }
 
@@ -319,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
         case 'chitchat_time': return { text: `${answers.chitchat_time[Math.floor(Math.random()*answers.chitchat_time.length)].text} <b>${nowTime()}</b>.` };
         default:
             if (intent !== 'unknown' && answers[intent]) {
-                if (intent === sessionState.lastResponseKey && !Array.isArray(answers[intent])) { 
+                if (intent === sessionState.lastResponseKey && !intent.startsWith('chitchat_')) { 
                     return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] }; 
                 }
                 sessionState.lastResponseKey = intent;
