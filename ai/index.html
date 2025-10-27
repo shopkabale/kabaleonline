@@ -6,9 +6,6 @@
   <title>Amara - KabaleOnline Assistant</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <script src="/ai/responses.js"></script>
-  <script src="/ai/answers.js"></script>
-
   <style>
     :root {
         --ko-primary: #007aff; --ko-primary-rgb: 0, 122, 255; --ko-accent: #ffc107;
@@ -109,6 +106,26 @@
     </form>
 
   </div>
+
+  <script type="module" src="/firebase.js"></script>
+
+  <script type="module">
+    // Import all exported functions/variables from your firebase.js module
+    import * as firebase from '/firebase.js';
+
+    // Attach them to the global window object so chatbot.js can access them
+    window.auth = firebase.auth;
+    window.db = firebase.db;
+    window.doc = firebase.doc;
+    window.getDoc = firebase.getDoc;
+    window.addDoc = firebase.addDoc;
+    window.updateDoc = firebase.updateDoc;
+    window.collection = firebase.collection;
+    window.serverTimestamp = firebase.serverTimestamp;
+  </script>
+
+  <script src="/ai/responses.js"></script>
+  <script src="/ai/answers.js"></script>
 
   <script src="/ai/chatbot.js" defer></script>
 
