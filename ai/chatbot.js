@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js - "SMARTER AMARA" 100% COMPLETE PROFESSIONAL VERSION
+// File: /ai/chatbot.js - "SMARTER AMARA" FINAL VERSION WITH ALL FEATURES
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Core State Management & Memory Keys ---
@@ -14,19 +14,20 @@ document.addEventListener('DOMContentLoaded', function () {
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
-  
+
   // --- The bot's "brain" or memory ---
   let sessionState = {
     userName: null,
-    currentContext: null, // Stores the last topic for follow-ups
-    lastResponseKey: null, // Used for repetition handling
+    currentContext: null,
+    lastResponseKey: null,
+    pendingQuestion: false // ⭐ NEW: Tracks if Amara just asked a yes/no question
   };
 
   // --- Utility Functions ---
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
-  
+
   function loadState() {
       try {
           const storedState = localStorage.getItem(SESSION_STATE_KEY);
@@ -34,14 +35,14 @@ document.addEventListener('DOMContentLoaded', function () {
               const parsedState = JSON.parse(storedState);
               sessionState.userName = parsedState.userName || null;
           }
-      } catch (e) { console.warn('Could not load session state.', e); }
+      } catch (e) { console.warn('Could not load state.', e); }
   }
 
   function saveState() {
       try {
           const stateToSave = { userName: sessionState.userName };
           localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(stateToSave));
-      } catch (e) { console.warn('Could not save session state.', e); }
+      } catch (e) { console.warn('Could not save state.', e); }
   }
 
   // --- UI Rendering Functions ---
@@ -56,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let text = (type === 'received' && typeof content === 'object') ? content.text : content;
     if (text === undefined) text = "I didn't catch that. Can you say it differently?";
 
-    // Personalization: Inject user's name if the placeholder exists
     if (sessionState.userName) {
         text = text.replace(/\${userName}/g, sessionState.userName);
     }
@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
     wrapper.innerHTML = html;
     chatMessages.appendChild(wrapper);
 
-    // Render suggestion chips if they exist in the response
     if (type === 'received' && typeof content === 'object' && content.suggestions && content.suggestions.length) {
       const sc = document.createElement('div');
       sc.className = 'suggestions-container';
@@ -85,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     scrollToBottom();
   }
-  
+
   function showThinking() {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', 'received-wrapper', 'thinking-indicator-wrapper');
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return { text: "Sorry, I'm having trouble connecting to the product database right now." };
     }
   }
-  
+
   function logUnknownQuery(item) {
     const queryParams = new URLSearchParams({ [USER_MESSAGE_ENTRY_ID]: item.question, [RESPONSE_GIVEN_ENTRY_ID]: item.answer });
     const submitUrl = `${GOOGLE_FORM_ACTION_URL}?${queryParams.toString()}`;
@@ -126,26 +125,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- Intelligence Layer ---
   function cleanSearchQuery(text) {
-      // Removes common, unhelpful words to improve search accuracy
       const stopWords = ['a', 'an', 'the', 'is', 'are', 'one', 'some', 'for'];
       const regex = new RegExp(`\\b(${stopWords.join('|')})\\b`, 'gi');
       return text.replace(regex, '').replace(/\s\s+/g, ' ').trim();
   }
 
-  // STEP 1: THE INTENT DETECTOR
   function detectIntent(userText) {
       const lc = userText.toLowerCase();
 
-      // This function determines the user's primary goal (their "intent").
+      // ⭐ NEW: Price Check Reasoning Regex
+      const priceMatch = lc.match(/(?:is|price of)\s+([\d,]+(?:,\d{3})*)\s+(too high|too low|a good price|fair)/);
+      if (priceMatch && priceMatch[1]) {
+          const price = parseInt(priceMatch[1].replace(/,/g, ''));
+          return { intent: 'price_check', entities: { price } };
+      }
       
-      // Personalization Intent
       const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
       if (nameMatch && nameMatch[1]) {
           return { intent: 'set_name', entities: { name: capitalize(nameMatch[1]) } };
       }
-      
-      // Core Action Intents (Highest Priority)
-      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact'];
+
+      // ⭐ NEW: Expanded Core Actions
+      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact', 'after_upload', 'after_delivery'];
       for (const key of coreActionKeys) {
           const keywords = responses[key] || [];
           for (const keyword of keywords) {
@@ -155,7 +156,6 @@ document.addEventListener('DOMContentLoaded', function () {
           }
       }
 
-      // Live Search Intents
       const productTriggers = responses.product_query || [];
       for (const trigger of productTriggers) {
           if (lc.startsWith(trigger)) {
@@ -176,8 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
               }
           }
       }
-      
-      // General Keyword Intents (Lowest Priority)
+
       let bestMatch = { key: null };
       for (const key in responses) {
           if (coreActionKeys.includes(key) || key.startsWith("category_") || key === 'product_query') continue;
@@ -188,14 +187,29 @@ document.addEventListener('DOMContentLoaded', function () {
           }
       }
       if (bestMatch.key) return { intent: bestMatch.key };
-
-      // Fallback if no intent is detected
+      
       return { intent: 'unknown' };
   }
 
-  // STEP 2: THE MAIN REPLY GENERATOR
+  // --- Main Reply Generator ---
   async function generateReply(userText) {
-      // PRIORITY 1: Handle contextual follow-ups BEFORE detecting a new intent.
+      const { intent, entities } = detectIntent(userText);
+
+      // ⭐ NEW: PRIORITY 1: Handle direct replies to pending questions
+      if (sessionState.pendingQuestion) {
+          if (intent === 'affirmation') {
+              sessionState.pendingQuestion = false;
+              return answers.affirmation;
+          }
+          if (intent === 'negation') {
+              sessionState.pendingQuestion = false;
+              return answers.negation;
+          }
+      }
+      // If it's not a direct yes/no, reset the flag
+      sessionState.pendingQuestion = false;
+      
+      // PRIORITY 2: Handle contextual follow-ups
       const lc = userText.toLowerCase();
       const followUpPhrases = ["what about", "how about", "and for", "are there any", "do you have any"];
       if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
@@ -205,13 +219,9 @@ document.addEventListener('DOMContentLoaded', function () {
           let combinedQuery = `${newKeywords} ${contextValue}`;
           return await callProductLookupAPI({ productName: combinedQuery });
       }
-
-      // If it's not a follow-up, reset context and detect a new intent.
       sessionState.currentContext = null;
-      const { intent, entities } = detectIntent(userText);
-      
-      // --- This is the final, flexible action logic ---
 
+      // PRIORITY 3: Handle all other intents
       // 1. Handle special intents with unique actions first
       if (intent === 'set_name') {
           sessionState.userName = entities.name;
@@ -224,15 +234,45 @@ document.addEventListener('DOMContentLoaded', function () {
       if (intent === 'search_category') {
           return await callProductLookupAPI({ categoryName: entities.categoryName });
       }
+      if (intent === 'price_check') {
+          const price = entities.price; 
+          let responseText = `Regarding a price of UGX ${price.toLocaleString()}:<br>`; 
+          if (price > 1000000) { 
+              responseText += "That's a high-ticket item! For this value, I'd recommend meeting the seller in a very public place and verifying everything carefully before paying."; 
+          } else if (price > 200000) { 
+              responseText += "That's a significant amount, likely for a quality item like a smartphone or laptop. Be sure to inspect it thoroughly."; 
+          } else if (price < 20000) { 
+              responseText += "That seems like a great deal! Just make sure the item's condition matches the description."; 
+          } else { 
+              responseText += "That seems like a pretty standard price for many items here. The value depends on the item's condition and brand."; 
+          } 
+          return { text: responseText, suggestions: ["Safety tips", "How do I buy?", "Find me a laptop"] };
+      }
 
       // 2. Handle ANY other known intent from your responses.js file
       if (intent !== 'unknown' && answers[intent]) {
-          // Repetition handling for all known intents
           if (intent === sessionState.lastResponseKey) {
               return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] };
           }
           sessionState.lastResponseKey = intent;
-          return answers[intent];
+          
+          // ⭐ NEW: Hyper-Varied Response Logic
+          const potentialReplies = answers[intent];
+          let reply;
+          if (Array.isArray(potentialReplies)) {
+              // If the response is an array, pick a random one.
+              const randomIndex = Math.floor(Math.random() * potentialReplies.length);
+              reply = potentialReplies[randomIndex];
+          } else {
+              // Otherwise, return the single response object.
+              reply = potentialReplies;
+          }
+
+          // ⭐ NEW: Check if the chosen reply is a question to set the pending state
+          if (reply.text && reply.text.includes('?')) {
+              sessionState.pendingQuestion = true;
+          }
+          return reply;
       }
 
       // 3. If the intent is still unknown, provide the fallback
@@ -244,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- Event Handling and Initialization ---
   chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
-  
+
   async function handleSend(raw) {
     const text = (raw || '').trim();
     if (!text) return;
@@ -264,16 +304,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function initialize() {
     loadState();
-    let initialGreeting = answers['greetings'];
-    if (sessionState.userName) {
-        initialGreeting = {
-            text: `👋 Welcome back, ${sessionState.userName}! How can I help you today?`,
-            suggestions: answers['greetings'].suggestions
-        };
+    let initialGreeting;
+    
+    // ⭐ NEW: Time-Aware Greeting Logic
+    const hour = new Date().getHours();
+    let timeBasedText;
+    if (hour < 12) { 
+        timeBasedText = "☀️ Good morning! I'm Amara. How can I help you get a great start to your day?"; 
+    } else if (hour < 18) { 
+        timeBasedText = "👋 Good afternoon! I'm Amara, ready to help you find what you need."; 
+    } else { 
+        timeBasedText = "🌙 Good evening! Doing some late-night browsing? I'm Amara, and I can help with that!"; 
     }
+    
+    const greetingOptions = Array.isArray(answers.greetings) ? answers.greetings[0] : answers.greetings;
+    
+    if (sessionState.userName) { 
+        initialGreeting = { text: `👋 Welcome back, ${sessionState.userName}! How can I help you today?`, suggestions: greetingOptions.suggestions }; 
+    } else { 
+        initialGreeting = { text: timeBasedText, suggestions: greetingOptions.suggestions }; 
+    }
+
     appendMessage(initialGreeting, 'received');
     sessionState.lastResponseKey = 'greetings';
+    if (initialGreeting.text.includes('?')) {
+        sessionState.pendingQuestion = true;
+    }
   }
-
+  
   initialize();
 });
