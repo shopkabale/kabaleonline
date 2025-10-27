@@ -34,7 +34,7 @@ const answers = {
       "finish_success": { text: "Success! Your item is now live on the marketplace. You can view and manage it from your dashboard.", suggestions: ["Go to my dashboard", "Sell another item"] },
       "finish_error": { text: "I'm sorry, there was an error while trying to create your listing. Please try again using the <a href='/upload/'>Upload Page</a>, or contact support if the problem continues.", suggestions: ["Contact support"] }
   },
-
+ 
   // ⭐ NEW: PLATFORM ACTION RESPONSES ⭐
   "user_not_logged_in": { text: "You need to be logged in to do that. Please <a href='/login.html'>log in</a> or <a href='/register.html'>create an account</a> first.", suggestions: ["How to sell", "How to buy"] },
   "contact_seller_info": { text: "To contact the seller, please visit the product's page and use the contact details provided there. This ensures all communication is direct and secure." },
