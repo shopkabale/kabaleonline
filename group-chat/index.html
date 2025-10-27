@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Chat | KabaleOnline</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* All your existing CSS is preserved */
+        :root { --bg-primary: #0d2857; --bg-secondary: #10336d; --text-primary: #ffffff; --text-secondary: #a7c0e8; --accent-primary: #007bff; --border-color: #1f4287; --font-family: 'Poppins', sans-serif; }
+        body.light-mode { --bg-primary: #f0f4f9; --bg-secondary: #ffffff; --text-primary: #0d2857; --text-secondary: #6c757d; --border-color: #e9ecef; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: var(--font-family); background-color: var(--bg-primary); color: var(--text-secondary); display: flex; flex-direction: column; }
+        .header { background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 10px 15px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; }
+        .back-button { background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; }
+        .header-title { font-size: 1.2rem; font-weight: 600; color: var(--text-primary); }
+        .message-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 95px 15px 90px; /* Increased bottom padding to 90px */
+}
+        .message { display: flex; gap: 10px; margin-bottom: 15px; max-width: 85%; }
+        /* NEW: Style for the profile link */
+        .message-profile-link { text-decoration: none; }
+        .message-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .message-content { display: flex; flex-direction: column; }
+        .message-sender { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; margin-bottom: 3px; }
+        .message-bubble { padding: 10px 15px; border-radius: 18px; line-height: 1.5; background-color: var(--bg-secondary); }
+        .message.own-message { margin-left: auto; flex-direction: row-reverse; }
+        .message.own-message .message-bubble { background-color: var(--accent-primary); color: #fff; }
+        .message.own-message .message-sender { display: none; }
+        /* Don't make your own avatar/name clickable */
+        .message.own-message .message-profile-link { pointer-events: none; }
+/*
+ * ===============================================
+ * NEW STYLES FOR THE CHAT INPUT AREA
+ * ===============================================
+*/
+
+.chat-input-area {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 10px 15px; /* Adjusted padding */
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 10px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* This is the form that wraps the input and button */
+#chat-form {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    background-color: var(--bg-primary); /* Darker background for the input group */
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+    padding: 5px; /* Add some padding around the input and button */
+    transition: border-color 0.3s ease;
+}
+
+/* Add a focus effect to the entire form */
+#chat-form:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.chat-input {
+    flex-grow: 1;
+    background: transparent; /* Make background fully transparent */
+    border: none; /* Remove the border from the input itself */
+    color: var(--text-primary);
+    font-size: 1rem;
+    padding: 10px 15px; /* Adjust padding */
+}
+
+/* Remove the default focus outline since we have a custom one on the form */
+.chat-input:focus {
+    outline: none;
+}
+
+.btn-send {
+    background-color: var(--accent-primary);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px; /* Slightly smaller button */
+    height: 44px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.btn-send:hover {
+    background-color: #0056b3; /* A slightly darker shade for hover */
+}
+/* --- Style for the Reply Button on each message --- */
+
+.reply-btn {
+
+    background: none;
+
+    border: none;
+
+    color: var(--text-secondary);
+
+    cursor: pointer;
+
+    font-size: 0.9rem;
+
+    opacity: 0; /* Hidden by default */
+
+    transition: opacity 0.2s;
+
+    padding: 5px;
+
+}
+
+/* Show reply button on hover */
+
+.message:hover .reply-btn {
+
+    opacity: 0.7;
+
+}
+
+.message.own-message:hover .reply-btn {
+
+    display: none; /* Don't show reply button on your own messages */
+
+}
+
+.message-content {
+
+    display: flex; /* This helps position the reply button */
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+}
+
+
+
+/* --- Style for the "Replying to..." Banner --- */
+
+.reply-banner {
+
+    background-color: var(--bg-primary);
+
+    border-top: 1px solid var(--border-color);
+
+    padding: 0 15px;
+
+    flex-shrink: 0;
+
+}
+
+.reply-banner-content {
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 10px 0;
+
+}
+
+.reply-banner-text {
+
+    flex-grow: 1;
+
+    overflow: hidden;
+
+    border-left: 3px solid var(--accent-primary);
+
+    padding-left: 10px;
+
+}
+
+.reply-banner-title {
+
+    font-weight: 600;
+
+    color: var(--text-primary);
+
+    font-size: 0.9rem;
+
+}
+
+.reply-banner-preview {
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    font-size: 0.9rem;
+
+    color: var(--text-secondary);
+
+}
+
+.reply-banner-close {
+
+    background: none;
+
+    border: none;
+
+    font-size: 1.8rem;
+
+    color: var(--text-secondary);
+
+    cursor: pointer;
+
+    padding: 0 10px;
+
+}
+
+
+
+/* --- Style for the Quoted Message in a bubble --- */
+
+.reply-quote {
+
+    background-color: rgba(0,0,0,0.2);
+
+    border-left: 3px solid var(--accent-primary);
+
+    padding: 8px 12px;
+
+    border-radius: 6px;
+
+    margin-bottom: 8px;
+
+    font-size: 0.9rem;
+
+}
+
+.reply-quote-sender {
+
+    font-weight: 600;
+
+    color: var(--text-primary);
+
+}
+
+.reply-quote-text {
+
+    color: var(--text-secondary);
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    display: block;
+
+}
+    </style>
+</head>
+<body class="dark-mode">
+
+    <header class="header">
+        <a href="dashboard.html" class="back-button" id="back-button" aria-label="Back to Dashboard">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1 class="header-title">Community Chat</h1>
+    </header>
+
+    <main class="message-area" id="message-area">
+        </main>
+
+    <footer class="chat-input-area">
+        <form id="chat-form" style="display: flex; flex-grow: 1; gap: 15px;">
+            <input type="text" class="chat-input" id="message-input" placeholder="Type a message..." autocomplete="off" required>
+            <button type="submit" class="btn-send" aria-label="Send Message"><i class="fas fa-paper-plane"></i></button>
+        </form>
+<div class="reply-banner" id="reply-banner" style="display: none;">
+
+        <div class="reply-banner-content">
+
+            <div class="reply-banner-text">
+
+                <div class="reply-banner-title">Replying to <strong id="reply-to-name"></strong></div>
+
+                <p id="reply-to-preview"></p>
+
+            </div>
+
+            <button class="reply-banner-close" id="cancel-reply-btn" aria-label="Cancel reply">&times;</button>
+
+        </div>
+
+    </div>
+    </footer>
+
+    <script src="group-chat/group-chat.js" type="module"></script>
+</body>
+</html>
