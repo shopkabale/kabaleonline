@@ -1,4 +1,4 @@
-// --- CORRECTED: Import EVERYTHING from your local firebase.js setup file ---
+// --- Import EVERYTHING from your local firebase.js setup file ---
 import {
   auth,
   db,
@@ -14,8 +14,7 @@ import {
   limit
 } from './firebase.js'; // Make sure this path is correct
 
-// --- REMOVED: Redundant getAuth() and getFirestore() calls ---
-
+// --- Get DOM Elements ---
 const messageArea = document.getElementById('message-area');
 const chatForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('message-input');
@@ -26,34 +25,60 @@ const replyToNameEl = document.getElementById('reply-to-name');
 const replyToPreviewEl = document.getElementById('reply-to-preview');
 const cancelReplyBtn = document.getElementById('cancel-reply-btn');
 
+// --- State variables ---
 let currentUser = null;
 let unsubscribe = null;
 let replyingToMessage = null;
 
-// This function will handle the entire page logic
-async function initializeChat() {
-  onAuthStateChanged(auth, async (user) => {
-    if (user && user.emailVerified) {
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists()) {
-        currentUser = {
-          uid: user.uid,
-          name: userDoc.data().name,
-          profilePicUrl: userDoc.data().profilePicUrl
-        };
-        backButton.href = 'dashboard.html';
-        listenForMessages();
-      } else {
-        // User is authenticated but has no user profile document
-        console.error("User document not found in Firestore.");
-        window.location.href = '/login/'; // Or a profile setup page
-      }
-    } else {
-      // User is not logged in or email is not verified
+
+// ===================================================================
+// NEW AUTHENTICATION LOGIC (Implemented from your chat.js file)
+// This runs as soon as the page loads.
+// ===================================================================
+onAuthStateChanged(auth, async (user) => {
+  // 1. First, check if a user is logged in at all.
+  if (!user) {
+    // If not, redirect immediately and stop running any more code.
+    console.log("No user is signed in. Redirecting to auth page.");
+    window.location.href = '/login/';
+    return;
+  }
+
+  // 2. Next, check if the user's email is verified.
+  if (!user.emailVerified) {
+      // If email is not verified, redirect.
+      console.log("User's email is not verified. Redirecting.");
       window.location.href = '/login/';
+      return;
+  }
+
+  // 3. If the user is logged in and verified, try to get their profile.
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+    if (userDoc.exists()) {
+      // SUCCESS: The user has a profile. Set the current user and load the chat.
+      currentUser = {
+        uid: user.uid,
+        name: userDoc.data().name,
+        profilePicUrl: userDoc.data().profilePicUrl
+      };
+      backButton.href = '/dashboard/';
+      listenForMessages(); // Start the chat listener
+    } else {
+      // The user is authenticated but has no profile document in Firestore.
+      console.error("User document not found in Firestore. Redirecting.");
+      window.location.href = 'auth.html';
     }
-  });
-}
+  } catch (error) {
+    console.error("Error fetching user document:", error);
+    window.location.href = 'auth.html';
+  }
+});
+// ===================================================================
+// END OF NEW AUTHENTICATION LOGIC
+// ===================================================================
+
 
 function listenForMessages() {
   const messagesRef = collection(db, "group-chat");
@@ -66,7 +91,6 @@ function listenForMessages() {
         renderMessage(messageData);
       }
     });
-    // Scroll to the bottom after messages are rendered
     setTimeout(() => {
       messageArea.scrollTop = messageArea.scrollHeight;
     }, 100);
@@ -180,6 +204,3 @@ window.addEventListener('beforeunload', () => {
     unsubscribe();
   }
 });
-
-// Run the main function
-initializeChat();
