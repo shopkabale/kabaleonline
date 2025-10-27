@@ -1,11 +1,8 @@
-// File: /ai/chatbot.js (Version 2.0 - Correct v9 Firebase Syntax)
+// File: /ai/chatbot.js (Version 2.1 - Logic Corrected)
 
 document.addEventListener('DOMContentLoaded', function () {
-  // --- Firebase v9 Globals Check ---
-  // This script assumes 'auth', 'db', and all v9 functions (doc, getDoc, etc.)
-  // are made globally available by your /firebase.js script.
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
-    console.error("Amara AI FATAL ERROR: Firebase v9 objects (auth, db, doc, getDoc, addDoc, collection) are not globally available. The script cannot run.");
+    console.error("Amara AI FATAL ERROR: Firebase v9 objects are not globally available. The script cannot run.");
     return;
   }
 
@@ -211,6 +208,11 @@ document.addEventListener('DOMContentLoaded', function () {
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
     if (sessionState.conversationState) { return { intent: 'continue_conversation' }; }
+
+    for (const keyword of (responses.start_upload || [])) {
+        if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: 'start_upload' };
+    }
+
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
     if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
@@ -229,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (priceMatch && priceMatch[1]) { return { intent: 'price_check', entities: { price: parseInt(priceMatch[1].replace(/,/g, '')) } }; }
     const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
     if (nameMatch && nameMatch[1]) { return { intent: 'set_name', entities: { name: capitalize(nameMatch[1]) } }; }
+    
     const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact', 'after_upload', 'after_delivery', 'manage_listings'];
     const markSoldMatch = lc.match(/mark my\s+([a-zA-Z0-9\s]+)\s+as sold/);
     if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
@@ -236,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: key }; }
     }
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings'].includes(key);
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'start_upload'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
@@ -303,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     sessionState.pendingQuestion = false;
     switch (intent) {
-        case 'sell': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} }; return answers.upload_flow.start;
+        case 'start_upload': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} }; return answers.upload_flow.start;
         case 'manage_listings': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: "Please visit your <a href='/dashboard/'>Dashboard</a> to manage your listings. This feature is coming to chat soon!" };
         case 'mark_as_sold': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: `To mark your '${entities.item}' as sold, please use the controls in your <a href='/dashboard/'>Dashboard</a>.` };
         case 'calculate': const result = solveMathExpression(entities.expression); return { text: `The result is <b>${result.toLocaleString()}</b>.` };
@@ -316,7 +319,9 @@ document.addEventListener('DOMContentLoaded', function () {
         case 'chitchat_time': return { text: `${answers.chitchat_time[Math.floor(Math.random()*answers.chitchat_time.length)].text} <b>${nowTime()}</b>.` };
         default:
             if (intent !== 'unknown' && answers[intent]) {
-                if (intent === sessionState.lastResponseKey) { return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] }; }
+                if (intent === sessionState.lastResponseKey && !Array.isArray(answers[intent])) { 
+                    return { text: "We just talked about that. Is there something specific I can clarify?", suggestions: ["Help", "Contact support"] }; 
+                }
                 sessionState.lastResponseKey = intent;
                 const potentialReplies = answers[intent];
                 let reply = Array.isArray(potentialReplies) ? potentialReplies[Math.floor(Math.random() * potentialReplies.length)] : potentialReplies;
