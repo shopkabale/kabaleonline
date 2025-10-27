@@ -1,11 +1,13 @@
-// File: /ai/chatbot.js (Version 1.1 - Final & Corrected)
+// File: /ai/chatbot.js (Version 2.0 - Correct v9 Firebase Syntax)
 
 document.addEventListener('DOMContentLoaded', function () {
-  if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
-    console.error("Amara AI FATAL ERROR: Firebase 'auth', 'db', or 'firestore' objects not found. Make sure your Firebase scripts are loaded before this chatbot script.");
+  // --- Firebase v9 Globals Check ---
+  // This script assumes 'auth', 'db', and all v9 functions (doc, getDoc, etc.)
+  // are made globally available by your /firebase.js script.
+  if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
+    console.error("Amara AI FATAL ERROR: Firebase v9 objects (auth, db, doc, getDoc, addDoc, collection) are not globally available. The script cannot run.");
     return;
   }
-  const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
 
   const SESSION_STATE_KEY = 'kabale_session_state_v1';
   const SEARCH_HISTORY_KEY = 'kabale_search_history_v1';
@@ -124,17 +126,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!user) throw new Error("User not authenticated.");
     try {
         const imageUrl = await uploadImageToCloudinary(data.file);
-        const userDocRef = db.collection('users').doc(user.uid);
-        const userDoc = await userDocRef.get();
-        const userData = userDoc.exists ? userDoc.data() : {};
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const userData = userDoc.exists() ? userDoc.data() : {};
         const productData = {
             listing_type: 'item', name: data.title, name_lowercase: data.title.toLowerCase(), price: Number(data.price), quantity: 1, category: data.category, description: data.description, story: "", whatsapp: normalizeWhatsAppNumber(data.whatsapp), sellerId: user.uid, sellerEmail: user.email, sellerName: userData.name || user.email, sellerIsVerified: userData.isVerified || false, sellerBadges: userData.badges || [], imageUrls: [imageUrl], createdAt: serverTimestamp(), isDeal: false, isSold: false
         };
-        await db.collection('products').add(productData);
+        await addDoc(collection(db, 'products'), productData);
         if (userData.referrerId && !userData.referralValidationRequested) {
-            const referrerDoc = await db.collection('users').doc(userData.referrerId).get();
-            await db.collection("referralValidationRequests").add({ referrerId: userData.referrerId, referrerEmail: referrerDoc.exists ? referrerDoc.data().email : 'N/A', referredUserId: user.uid, referredUserName: userData.name, status: "pending", createdAt: serverTimestamp() });
-            await userDocRef.update({ referralValidationRequested: true });
+            const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
+            await addDoc(collection(db, "referralValidationRequests"), { referrerId: userData.referrerId, referrerEmail: referrerDoc.exists() ? referrerDoc.data().email : 'N/A', referredUserId: user.uid, referredUserName: userData.name, status: "pending", createdAt: serverTimestamp() });
+            await updateDoc(userDocRef, { referralValidationRequested: true });
         }
         fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
         return true;
