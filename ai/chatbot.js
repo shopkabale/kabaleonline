@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 3.0 - Final Logic Corrected)
+// File: /ai/chatbot.js (Version 5.0 - Final, All Logic Corrected)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function estimateDeliveryCost(from, to) {
       from = from.toLowerCase().trim();
       to = to.toLowerCase().trim();
-      if (delivery_zones[from] && delivery_zones[from][to]) { return delivery_zones[from][to]; }
+      if (answers.delivery_zones && answers.delivery_zones[from] && answers.delivery_zones[from][to]) { return answers.delivery_zones[from][to]; }
       return null;
   }
   
@@ -193,14 +193,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function isNewTopic(text) {
-      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact','objectives' ,  'after_upload', 'after_delivery'];
+      const newTopicStarters = ['how do', 'what is', 'who is', 'when', 'where', 'why', 'is it', 'can i', 'do you'];
+      if (newTopicStarters.some(starter => text.toLowerCase().startsWith(starter))) return true;
+      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact'];
       for (const key of coreActionKeys) {
-          for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text)) return true; }
-      }
-      for (const key in responses) {
-          if (key.startsWith("category_")) {
-              for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text)) return true; }
-          }
+          if ((responses[key] || []).some(keyword => new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text))) return true;
       }
       return false;
   }
@@ -208,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
     if (sessionState.conversationState) { return { intent: 'continue_conversation' }; }
-
+    
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
     if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
@@ -237,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
 
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell'].includes(key);
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
@@ -266,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    if (responses.sell.some(k => lc.includes(k))) return { intent: 'sell' };
+    if ((responses.sell || []).some(k => lc.includes(k))) return { intent: 'sell' };
 
     return { intent: 'unknown' };
   }
@@ -284,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 'get_description': data.description = userText; sessionState.conversationState.step = 'get_price'; return answers.upload_flow.get_description;
                 case 'get_price':       const price = parseInt(userText.replace(/,/g, '')); if (isNaN(price)) return { text: "That doesn't look like a valid price. Please enter a number, like 50000." }; data.price = price; sessionState.conversationState.step = 'get_category'; return answers.upload_flow.get_price;
                 case 'get_category':    data.category = userText; sessionState.conversationState.step = 'get_whatsapp'; return answers.upload_flow.get_category;
-                case 'get_whatsapp':    data.whatsapp = userText; sessionState.conversationState.step = 'get_photo'; setTimeout(() => createActionButton("Click to Upload Photo", () => fileInput.click()), 100); return answers.upload_flow.get_whatsapp;
+                case 'get_whatsapp':    data.whatsapp = userText; sessionState.conversationState.step = 'get_photo'; return { ...answers.upload_flow.get_whatsapp, action: 'prompt_upload' };
             }
         }
         return;
@@ -312,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
         case 'manage_listings': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: "Please visit your <a href='/dashboard/'>Dashboard</a> to manage your listings. This feature is coming to chat soon!" };
         case 'mark_as_sold': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: `To mark your '${entities.item}' as sold, please use the controls in your <a href='/dashboard/'>Dashboard</a>.` };
         case 'calculate': const result = solveMathExpression(entities.expression); return { text: `The result is <b>${result.toLocaleString()}</b>.` };
-        case 'ask_glossary': const definition = glossary[entities.term]; return definition ? { text: `<b>${capitalize(entities.term)}:</b> ${definition}` } : answers.glossary_not_found;
+        case 'ask_glossary': const definition = answers.glossary[entities.term]; return definition ? { text: `<b>${capitalize(entities.term)}:</b> ${definition}` } : answers.glossary_not_found;
         case 'estimate_delivery': const cost = estimateDeliveryCost(entities.from, entities.to); return cost ? { text: `The estimated boda boda cost from ${capitalize(entities.from)} to ${capitalize(entities.to)} is around <b>UGX ${cost.toLocaleString()}</b>.` } : answers.delivery_estimate_error;
         case 'search_product': return await callProductLookupAPI({ productName: entities.productName });
         case 'search_category': return await callProductLookupAPI({ categoryName: entities.categoryName });
@@ -393,6 +390,9 @@ document.addEventListener('DOMContentLoaded', function () {
       await new Promise(r => setTimeout(r, 700));
       typingEl.remove();
       appendMessage(reply, 'received');
+      if (reply.action === 'prompt_upload') {
+        createActionButton("Click to Upload Photo", () => fileInput.click());
+      }
     }
   }
   
