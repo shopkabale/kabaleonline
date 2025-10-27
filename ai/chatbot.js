@@ -1,3 +1,5 @@
+// File: /ai/chatbot.js (TRULY FINAL AND CORRECTED)
+
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
     console.error("Amara AI FATAL ERROR: Firebase 'auth', 'db', or 'firestore' objects not found. Make sure your Firebase scripts are loaded before this chatbot script.");
@@ -212,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
     }
     const deliveryMatch = lc.match(/(?:from)\s+([a-zA-Z]+)\s+(?:to)\s+([a-zA-Z]+)/);
-    if (deliveryMatch && responses.delivery_estimate.some(k => lc.includes(k))) {
+    if (deliveryMatch && (responses.delivery_estimate || []).some(k => lc.includes(k))) {
         return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
     }
     for (const trigger of (responses.glossary_query || [])) {
@@ -299,13 +301,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     sessionState.pendingQuestion = false;
     switch (intent) {
-        case 'start_product_upload': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} }; return answers.upload_flow.start;
+        case 'sell': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} }; return answers.upload_flow.start;
         case 'manage_listings': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: "Please visit your <a href='/dashboard/'>Dashboard</a> to manage your listings. This feature is coming to chat soon!" };
         case 'mark_as_sold': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: `To mark your '${entities.item}' as sold, please use the controls in your <a href='/dashboard/'>Dashboard</a>.` };
         case 'calculate': const result = solveMathExpression(entities.expression); return { text: `The result is <b>${result.toLocaleString()}</b>.` };
         case 'ask_glossary': const definition = glossary[entities.term]; return definition ? { text: `<b>${capitalize(entities.term)}:</b> ${definition}` } : answers.glossary_not_found;
         case 'estimate_delivery': const cost = estimateDeliveryCost(entities.from, entities.to); return cost ? { text: `The estimated boda boda cost from ${capitalize(entities.from)} to ${capitalize(entities.to)} is around <b>UGX ${cost.toLocaleString()}</b>.` } : answers.delivery_estimate_error;
-        case 'sell': sessionState.lastResponseKey = intent; return answers.sell;
         case 'search_product': return await callProductLookupAPI({ productName: entities.productName });
         case 'search_category': return await callProductLookupAPI({ categoryName: entities.categoryName });
         case 'set_name': sessionState.userName = entities.name; saveState(); return answers.confirm_name_set;
@@ -386,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
   
-  chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
+  chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(raw); });
 
   initialize();
 });
