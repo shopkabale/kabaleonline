@@ -25,6 +25,8 @@ const responses = {
   "buy": ["how do i buy", "how to buy", "how can i buy", "guide to buying", "buy", "shop", "purchase", "looking to buy", "i want to buy", "browse items", "shopping", "find a product", "see items", "where can i find", "where can i get", "i need to buy"],
   "rent": ["how do i rent", "find a rental", "rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging", "need a room", "hostel around campus"],
 
+  "objectives": ["what are your objectives", "your objectives", "platform objectives", "goals", "aims", "what is your main goal"],
+
   // --- PROCESS-BASED "WHAT'S NEXT?" INTENTS ---
   "after_upload": ["after uploading my product", "after my ad is live", "i posted my item what next", "what should i do after posting", "i have listed my item now what", "my product is online what next"],
   "after_delivery": ["after making a delivery", "i delivered the item what now", "what should i do after a sale", "after a successful delivery", "i sold my item what's the next step", "how to complete a sale"],
