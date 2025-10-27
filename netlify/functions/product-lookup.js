@@ -21,26 +21,12 @@ exports.handler = async (event) => {
 
     try {
         const { productName, categoryName } = JSON.parse(event.body);
-
-        // ⭐ NEW: REASONING & DECISION-MAKING LOGIC ⭐
-        // This block adds a layer of reasoning. If the user's query is too vague,
-        // Amara "decides" it's not a good search and asks for clarification.
-        const genericTerms = ['anything', 'something', 'stuff', 'item', 'items', 'an item'];
-        if (productName && genericTerms.includes(productName.toLowerCase().trim())) {
-            return {
-                statusCode: 200,
-                body: JSON.stringify({
-                    text: "Haha, you'll have to be a bit more specific! 😉 What kind of item are you looking for? Try something like 'laptops' or 'shoes'."
-                })
-            };
-        }
-        // ⭐ END OF NEW LOGIC ⭐
-
         let searchResult;
         let queryDescription;
 
         const searchOptions = {
             hitsPerPage: 6 // Default for category preview
+            // ⭐ FIX: The 'filters: isSold:false' line has been completely removed.
         };
 
         if (categoryName) {
@@ -68,7 +54,7 @@ exports.handler = async (event) => {
         // --- Format the "Found" Response ---
         const products = searchResult.hits.map(hit => ({ id: hit.objectID, ...hit }));
         let responseText = `Here are some items I found for ${queryDescription}:<ul>`;
-
+        
         products.forEach(product => {
             const price = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price not set';
             const imageUrl = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : null;
@@ -80,7 +66,7 @@ exports.handler = async (event) => {
             }
         });
         responseText += `</ul>`;
-
+        
         if (categoryName) {
             responseText += `<a href="/shop/?category=${encodeURIComponent(categoryName)}" target="_blank" class="see-more-btn">See More in ${categoryName}</a>`;
         }
