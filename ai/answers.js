@@ -391,6 +391,14 @@ const answers = {
     </ul>`,
     suggestions: ["Read the campus blog", "How do I find a job?", "I need help"]
   },
+// Add this new entry to /ai/answers.js
+
+  "chitchat_time": [
+    { text: "I can certainly help with that!" },
+    { text: "Of course, the current time is:" },
+    { text: "No problem, the time is:" }
+  ],
+
   
   // --- HELP (Updated to be non-conflicting) ---
   "help": {
