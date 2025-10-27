@@ -1,4 +1,4 @@
-// File: /ai/responses.js (Definitive, Expanded Version)
+// File: /ai/responses.js (Definitive, Expanded, Collision-Free Version)
 
 const responses = {
   // --- LIVE LOOKUP & REASONING TRIGGERS ---
@@ -6,22 +6,22 @@ const responses = {
   "price_check": ["is the price of", "is a price of", "isn't a price of", "is", "too high", "too low", "a good price", "is that price fair"],
 
   // --- CATEGORIES (Many keywords for natural language) ---
-  "category_electronics": ["electronics", "phone", "phones", "laptop", "laptops", "gadgets", "charger", "chargers", "speaker", "speakers", "computer", "tech", "power bank", "headphone", "headphones", "earphones", "earbuds", "smartwatch", "blender", "flat iron", "kettle", "television", "tv", "camera", "gaming console", "ps5", "xbox"],
-  "category_clothing": ["clothing", "clothes", "fashion", "apparel", "shoe", "shoes", "dress", "dresses", "shirt", "shirts", "jean", "jeans", "sneakers", "t-shirt", "footwear", "jacket", "hoodie", "sandals", "bag", "handbag", "suit", "trousers", "skirt", "blouse", "sweater", "coat", "boots"],
-  "category_furniture": ["furniture", "home decor", "decor", "table", "tables", "chair", "chairs", "sofa", "sofas", "bed", "beds", "mattress", "furnishings", "desk", "wardrobe", "shelf", "cupboard", "couch", "bookcase", "cabinet", "stool"],
-  "category_books": ["book", "books", "textbook", "textbooks", "novel", "novels", "revision materials", "past papers", "handout", "fiction", "non-fiction", "magazine", "comic"],
-  "category_kitchen": ["kitchen", "kitchenware", "utensils", "saucepan", "plate", "plates", "cup", "cups", "hot plate", "gas cooker", "cutlery", "forks", "spoons", "knives", "blender", "microwave"],
+  "category_electronics": ["electronics", "phone", "phones", "laptop", "laptops", "gadgets", "charger", "chargers", "speaker", "speakers", "computer", "tech", "power bank", "headphone", "headphones", "earphones", "earbuds", "smartwatch", "blender", "flat iron", "kettle", "television", "tv", "camera", "gaming console", "ps5", "xbox", "router", "modem"],
+  "category_clothing": ["clothing", "clothes", "fashion", "apparel", "shoe", "shoes", "dress", "dresses", "shirt", "shirts", "jean", "jeans", "sneakers", "t-shirt", "footwear", "jacket", "hoodie", "sandals", "bag", "handbag", "suit", "trousers", "skirt", "blouse", "sweater", "coat", "boots", "heels", "official wear"],
+  "category_furniture": ["furniture", "home decor", "decor", "table", "tables", "chair", "chairs", "sofa", "sofas", "bed", "beds", "mattress", "furnishings", "desk", "wardrobe", "shelf", "cupboard", "couch", "bookcase", "cabinet", "stool", "office chair"],
+  "category_books": ["book", "books", "textbook", "textbooks", "novel", "novels", "revision materials", "past papers", "handout", "fiction", "non-fiction", "magazine", "comic", "university handout", "lecture notes"],
+  "category_kitchen": ["kitchen", "kitchenware", "utensils", "saucepan", "plate", "plates", "cup", "cups", "hot plate", "gas cooker", "cutlery", "forks", "spoons", "knives", "blender", "microwave", "fridge", "refrigerator"],
 
   // --- CORE CONVERSATIONAL ---
   "greetings": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "sup", "yo", "start", "what's up", "greetings", "how far", "howdy", "hiya"],
   "well_being": ["how are you", "how's it going", "are you ok", "how are you doing", "how's everything", "you good?"],
   "bot_identity": ["who are you", "what are you", "are you a bot", "what's your name", "your name is", "about yourself", "tell me about you"],
   "gratitude": ["thanks", "thank you", "ok thanks", "nice", "great", "awesome", "cool", "good", "thank u", "much appreciated", "thanks a lot", "i appreciate it"],
-  "affirmation": ["yes", "yep", "yeah", "sure", "ok", "okay", "correct", "of course", "y", "affirmative", "absolutely", "exactly", "deal"],
-  "negation": ["no", "nope", "nah", "not really", "no thanks", "n", "negative", "i don't think so"],
+  "affirmation": ["yes", "yep", "yeah", "sure", "ok", "okay", "correct", "of course", "y", "affirmative", "absolutely", "exactly", "deal", "do it"],
+  "negation": ["no", "nope", "nah", "not really", "no thanks", "n", "negative", "i don't think so", "don't"],
 
   // --- CORE PLATFORM ACTIONS (High Priority, Specific Phrases) ---
-  "sell": ["how do i sell", "guide to selling", "how can i sell", "how to post", "how to sell", "i want to sell", "i would like to sell", "sell an item", "post an item", "create a listing", "listing", "advertise", "place ad", "upload item", "post an ad", "list an item"],
+  "sell": ["how do i sell", "guide to selling", "how can i sell", "how to post", "how to sell", "i want to sell", "i would like to sell", "sell an item", "post an item", "create a listing", "listing", "advertise", "place ad", "upload item", "post an ad", "list an item", "i need to sell"],
   "buy": ["how do i buy", "how to buy", "how can i buy", "guide to buying", "buy", "shop", "purchase", "looking to buy", "i want to buy", "browse items", "shopping", "find a product", "see items", "where can i find", "where can i get", "i need to buy"],
   "rent": ["how do i rent", "find a rental", "rent", "room", "house", "hostel", "apartment", "single room", "for rent", "rental", "shop space", "accommodation", "hostels", "find a hostel", "room to rent", "house for rent", "where to stay", "lodging", "need a room", "hostel around campus"],
 
@@ -31,7 +31,8 @@ const responses = {
 
   // --- CHITCHAT & PERSONALITY ---
   "chitchat_joke": ["tell me a joke", "make me laugh", "say something funny", "got any jokes?", "can you be funny"],
-  "chitchat_weather": ["what's the weather like", "how is the weather", "weather in kabale", "is it raining", "forecast"],
+  "chitchat_weather": ["what's the weather like", "what's the weather", "how is the weather", "weather in kabale", "is it raining", "forecast"],
+  "chitchat_time": ["what's the time", "what is the time", "do you have the time", "time now", "current time"],
 
   // --- TRANSACTION DETAILS ---
   "cost_of_selling": ["is selling free", "is it free to sell", "fees", "commission", "cost to sell", "does it cost to sell", "is kabaleonline free", "is selling on kabaleonline free", "charges", "listing fee", "are there charges"],
