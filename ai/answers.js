@@ -323,6 +323,19 @@ const answers = {
     suggestions: ["What is your mission?", "Who is the founder?", "Is selling free?"]
   },
   
+// Add this new object to your /ai/answers.js file
+
+  "objectives": {
+    text: `🎯 Our main objectives are to:
+    <ul>
+      <li>Provide a 100% free and accessible platform for students and local residents to trade goods.</li>
+      <li>Create a centralized hub for discovering local services and job opportunities in the Kabale community.</li>
+      <li>Promote safety and build trust in peer-to-peer transactions through user awareness and support.</li>
+      <li>Foster a strong sense of community by connecting people's needs with local solutions.</li>
+    </ul>`,
+    suggestions: ["What is your mission?", "Who is the founder?", "How do I sell?"]
+  },
+
   // --- EXPANDED: MISSION & OBJECTIVES ---
   "mission_vision": {
     text: `🎯 Our <b>Mission</b> is to empower the Kabale community by making local commerce and services simple, accessible, and safe.
