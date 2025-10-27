@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (BULLETPROOF, FINAL, AND CORRECTED)
+// File: /ai/chatbot.js (Version 1.1 - Final & Corrected)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
