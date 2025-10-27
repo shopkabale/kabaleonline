@@ -1,4 +1,15 @@
-// --- Import EVERYTHING from your local firebase.js setup file ---
+/*
+ * =================================================================
+ * NEW GROUP CHAT SCRIPT
+ * * Features:
+ * - All features from your original 'group-chat.js' (replies, etc.)
+ * - Authentication logic from your 'chat.js' (checks !user first)
+ * - All imports consolidated from './firebase.js'
+ * =================================================================
+ */
+
+// --- 1. CONSOLIDATED IMPORTS ---
+// Import all necessary services and functions from your central firebase.js file
 import {
   auth,
   db,
@@ -12,74 +23,77 @@ import {
   doc,
   getDoc,
   limit
-} from './firebase.js'; // Make sure this path is correct
+} from './firebase.js';
 
-// --- Get DOM Elements ---
+// --- 2. DOM ELEMENT SELECTION ---
 const messageArea = document.getElementById('message-area');
 const chatForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('message-input');
 const backButton = document.getElementById('back-button');
 
+// Reply-to-message elements
 const replyBanner = document.getElementById('reply-banner');
 const replyToNameEl = document.getElementById('reply-to-name');
 const replyToPreviewEl = document.getElementById('reply-to-preview');
 const cancelReplyBtn = document.getElementById('cancel-reply-btn');
 
-// --- State variables ---
-let currentUser = null;
-let unsubscribe = null;
-let replyingToMessage = null;
+// --- 3. GLOBAL STATE VARIABLES ---
+let currentUser = null; // Will be populated with { uid, name, profilePicUrl }
+let unsubscribe = null; // To stop the message listener on unload
+let replyingToMessage = null; // Will be populated with { id, sender, text }
 
-
-// ===================================================================
-// NEW AUTHENTICATION LOGIC (Implemented from your chat.js file)
-// This runs as soon as the page loads.
-// ===================================================================
+// --- 4. AUTHENTICATION & INITIALIZATION ---
+// This is the main entry point for the application, using the logic from chat.js
 onAuthStateChanged(auth, async (user) => {
-  // 1. First, check if a user is logged in at all.
+
+  // Step 1: Check for a logged-in user (from chat.js logic)
   if (!user) {
-    // If not, redirect immediately and stop running any more code.
-    console.log("No user is signed in. Redirecting to auth page.");
+    console.warn('No user logged in. Redirecting to login...');
     window.location.href = '/login/';
-    return;
+    return; // Stop all execution
   }
 
-  // 2. Next, check if the user's email is verified.
+  // Step 2: Check for email verification (required by your original logic)
   if (!user.emailVerified) {
-      // If email is not verified, redirect.
-      console.log("User's email is not verified. Redirecting.");
-      window.location.href = '/login/';
-      return;
+    console.warn('User email is not verified. Redirecting to login ...');
+    window.location.href = '/login/';
+    return; // Stop all execution
   }
 
-  // 3. If the user is logged in and verified, try to get their profile.
+  // Step 3: Fetch the user's profile document (required for name/avatar)
   try {
     const userDoc = await getDoc(doc(db, "users", user.uid));
 
     if (userDoc.exists()) {
-      // SUCCESS: The user has a profile. Set the current user and load the chat.
+      // SUCCESS: User is logged in, verified, and has a profile.
       currentUser = {
         uid: user.uid,
         name: userDoc.data().name,
         profilePicUrl: userDoc.data().profilePicUrl
       };
-      backButton.href = '/dashboard/';
-      listenForMessages(); // Start the chat listener
+      
+      backButton.href = '/dashboard/'; // Set back button link
+
+      // Start the application by listening for messages
+      listenForMessages();
+
     } else {
-      // The user is authenticated but has no profile document in Firestore.
-      console.error("User document not found in Firestore. Redirecting.");
-      window.location.href = 'auth.html';
+      // User is authenticated but has no profile in Firestore.
+      console.error('User profile document not found in Firestore. Redirecting...');
+      window.location.href = '/login/';
     }
   } catch (error) {
-    console.error("Error fetching user document:", error);
-    window.location.href = 'auth.html';
+    console.error('Error fetching user document:', error);
+    // If we can't get the profile, the chat can't function.
+    window.location.href = '/login/';
   }
 });
-// ===================================================================
-// END OF NEW AUTHENTICATION LOGIC
-// ===================================================================
 
+// --- 5. CORE CHAT FUNCTIONS ---
 
+/**
+ * Sets up the real-time listener for new messages in the group chat.
+ */
 function listenForMessages() {
   const messagesRef = collection(db, "group-chat");
   const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
@@ -91,26 +105,22 @@ function listenForMessages() {
         renderMessage(messageData);
       }
     });
+
+    // Scroll to the bottom after new messages are added
     setTimeout(() => {
       messageArea.scrollTop = messageArea.scrollHeight;
     }, 100);
+
   }, (error) => {
     console.error("Error fetching messages:", error);
     messageArea.innerHTML = `<p style="padding: 20px; text-align: center;">Error: Could not load messages.</p>`;
   });
 }
 
-function updateReplyUI() {
-  if (replyingToMessage) {
-    replyToNameEl.textContent = replyingToMessage.sender;
-    replyToPreviewEl.textContent = replyingToMessage.text;
-    replyBanner.style.display = 'block';
-    messageInput.focus();
-  } else {
-    replyBanner.style.display = 'none';
-  }
-}
-
+/**
+ * Creates and appends a new message bubble to the chat window.
+ * @param {object} data - The message data from Firestore.
+ */
 function renderMessage(data) {
   const messageDiv = document.createElement('div');
   messageDiv.className = 'message';
@@ -120,18 +130,21 @@ function renderMessage(data) {
     messageDiv.classList.add('own-message');
   }
 
+  // Use a placeholder if avatar is missing
   const avatar = data.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(data.userName || 'U').charAt(0)}`;
 
+  // Build the HTML for a quoted reply, if one exists
   let replyQuoteHTML = '';
   if (data.repliedToMessageId) {
     replyQuoteHTML = `
       <div class="reply-quote">
-        <div class="reply-quote-sender">${data.repliedToSender}</div>
-        <div class="reply-quote-text">${data.repliedToText}</div>
+        <div class="reply-quote-sender">${data.repliedToSender || 'User'}</div>
+        <div class="reply-quote-text">${data.repliedToText || '...'}</div>
       </div>
     `;
   }
 
+  // Create the final message HTML
   messageDiv.innerHTML = `
     <a href="profile.html?id=${data.userId}" class="message-profile-link">
         <img src="${avatar}" alt="${data.userName}" class="message-avatar">
@@ -152,11 +165,41 @@ function renderMessage(data) {
   messageArea.appendChild(messageDiv);
 }
 
+/**
+ * Shows or hides the "Replying to..." banner based on state.
+ */
+function updateReplyUI() {
+  if (replyingToMessage) {
+    replyToNameEl.textContent = replyingToMessage.sender;
+    replyToPreviewEl.textContent = replyingToMessage.text;
+    replyBanner.style.display = 'block';
+    messageInput.focus();
+  } else {
+    replyBanner.style.display = 'none';
+  }
+}
+
+/**
+ * Resets the reply state and hides the banner.
+ */
+function cancelReply() {
+    replyingToMessage = null;
+    updateReplyUI();
+}
+
+// --- 6. EVENT LISTENERS ---
+
+/**
+ * Handles the chat form submission to send a new message.
+ */
 chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const messageText = messageInput.value.trim();
 
+  // Ensure message is not empty and user is fully loaded
   if (messageText && currentUser) {
+    
+    // Create the new message object
     const newMessage = {
       text: messageText,
       userId: currentUser.uid,
@@ -165,6 +208,7 @@ chatForm.addEventListener('submit', async (e) => {
       createdAt: serverTimestamp()
     };
 
+    // Add reply information if we are in reply-mode
     if (replyingToMessage) {
       newMessage.repliedToMessageId = replyingToMessage.id;
       newMessage.repliedToSender = replyingToMessage.sender;
@@ -172,33 +216,43 @@ chatForm.addEventListener('submit', async (e) => {
     }
 
     try {
+      // Send the message to Firestore
       await addDoc(collection(db, "group-chat"), newMessage);
-      messageInput.value = '';
-      replyingToMessage = null;
-      updateReplyUI();
+      messageInput.value = ''; // Clear the input
+      cancelReply(); // Reset the reply state
     } catch (error) {
       console.error("Error sending message: ", error);
+      // You could show an error to the user here
     }
   }
 });
 
+/**
+ * Uses event delegation to listen for clicks on all reply buttons.
+ */
 messageArea.addEventListener('click', (e) => {
   const replyButton = e.target.closest('.reply-btn');
   if (replyButton) {
+    // A reply button was clicked. Store its data.
     replyingToMessage = {
       id: replyButton.dataset.id,
       sender: replyButton.dataset.sender,
       text: replyButton.dataset.text
     };
-    updateReplyUI();
+    updateReplyUI(); // Show the banner
   }
 });
 
+/**
+ * Handles clicking the "cancel" button on the reply banner.
+ */
 cancelReplyBtn.addEventListener('click', () => {
-  replyingToMessage = null;
-  updateReplyUI();
+  cancelReply();
 });
 
+/**
+ * Cleans up the Firestore listener when the user leaves the page.
+ */
 window.addEventListener('beforeunload', () => {
   if (unsubscribe) {
     unsubscribe();
