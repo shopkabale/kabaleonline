@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function isNewTopic(text) {
-      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact', 'after_upload', 'after_delivery'];
+      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact','objectives' ,  'after_upload', 'after_delivery'];
       for (const key of coreActionKeys) {
           for (const keyword of (responses[key] || [])) {
               if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text)) return true;
