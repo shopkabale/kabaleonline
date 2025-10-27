@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- The bot's "brain" or memory ---
   let sessionState = {
     userName: null,
-    currentContext: null, // Stores the last topic for follow-ups
-    lastResponseKey: null, // Used for repetition handling
-    pendingQuestion: false // ⭐ NEW: Tracks if Amara just asked a yes/no question
+    currentContext: null,
+    lastResponseKey: null,
+    pendingQuestion: false
   };
 
   // --- Utility Functions ---
@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return false;
   }
 
+  // ⭐ REWRITTEN: This function now has a perfect priority order
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
     
@@ -168,7 +169,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    // PRIORITY 3: Live Product Search
+    // ⭐ NEW: PRIORITY 3: All other knowledge base questions (FIXES "is selling free" bug)
+    for (const key in responses) {
+        // Skip keys that are handled elsewhere to avoid collisions
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || 
+                          ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings'].includes(key);
+        if (isHandled) continue;
+
+        for (const keyword of (responses[key] || [])) {
+            if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
+                return { intent: key };
+            }
+        }
+    }
+    
+    // PRIORITY 4: Live Product Search
     for (const trigger of (responses.product_query || [])) {
         if (lc.startsWith(trigger)) {
             let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
@@ -176,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // PRIORITY 4: Live Category Search
+    // PRIORITY 5: Live Category Search
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of (responses[key] || [])) {
@@ -190,9 +205,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    // PRIORITY 5: General Chitchat and other simple keywords
+    // PRIORITY 6: General Conversational Keywords
     for (const key in responses) {
-        if (key.startsWith("chitchat_") || ['gratitude', 'affirmation', 'negation', 'well_being', 'bot_identity'].includes(key)) {
+        if (key.startsWith("chitchat_") || ['gratitude', 'affirmation', 'negation', 'well_being', 'bot_identity', 'greetings'].includes(key)) {
             for (const keyword of (responses[key] || [])) {
                 if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
                     return { intent: key };
@@ -220,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return await callProductLookupAPI({ productName: combinedQuery });
         }
     }
-    
     if (sessionState.currentContext) {
         sessionState.currentContext = null;
     }
@@ -243,21 +257,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // PRIORITY 3: Handle all other intents
     switch (intent) {
         case 'set_name':
-            sessionState.userName = entities.name; 
-            saveState(); 
-            return answers.confirm_name_set;
+            sessionState.userName = entities.name; saveState(); return answers.confirm_name_set;
         case 'search_product':
             return await callProductLookupAPI({ productName: entities.productName });
         case 'search_category':
             return await callProductLookupAPI({ categoryName: entities.categoryName });
         case 'price_check':
-            const price = entities.price; 
-            let responseText = `Regarding a price of UGX ${price.toLocaleString()}:<br>`; 
-            if (price > 1000000) { responseText += "That's a high-ticket item! For this value, I'd recommend meeting the seller in a very public place and verifying everything carefully before paying."; } 
-            else if (price > 200000) { responseText += "That's a significant amount, likely for a quality item like a smartphone or laptop. Be sure to inspect it thoroughly."; } 
-            else if (price < 20000) { responseText += "That seems like a great deal! Just make sure the item's condition matches the description."; } 
-            else { responseText += "That seems like a pretty standard price for many items here. The value depends on the item's condition and brand."; } 
-            return { text: responseText, suggestions: ["Safety tips", "How do I buy?", "Find me a laptop"] };
+            const price = entities.price; let responseText = `Regarding a price of UGX ${price.toLocaleString()}:<br>`; if (price > 1000000) { responseText += "That's a high-ticket item! For this value, I'd recommend meeting the seller in a very public place and verifying everything carefully before paying."; } else if (price > 200000) { responseText += "That's a significant amount, likely for a quality item like a smartphone or laptop. Be sure to inspect it thoroughly."; } else if (price < 20000) { responseText += "That seems like a great deal! Just make sure the item's condition matches the description."; } else { responseText += "That seems like a pretty standard price for many items here. The value depends on the item's condition and brand."; } return { text: responseText, suggestions: ["Safety tips", "How do I buy?", "Find me a laptop"] };
         case 'chitchat_time':
             const timePrefixes = answers.chitchat_time;
             const randomPrefix = timePrefixes[Math.floor(Math.random() * timePrefixes.length)].text;
