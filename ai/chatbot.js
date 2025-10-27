@@ -1,11 +1,11 @@
-// File: /ai/chatbot.js (TRULY FINAL AND CORRECTED)
+// File: /ai/chatbot.js (BULLETPROOF, FINAL, AND CORRECTED)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
     console.error("Amara AI FATAL ERROR: Firebase 'auth', 'db', or 'firestore' objects not found. Make sure your Firebase scripts are loaded before this chatbot script.");
     return;
   }
-  const { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } = firebase.firestore;
+  const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
 
   const SESSION_STATE_KEY = 'kabale_session_state_v1';
   const SEARCH_HISTORY_KEY = 'kabale_search_history_v1';
@@ -124,17 +124,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!user) throw new Error("User not authenticated.");
     try {
         const imageUrl = await uploadImageToCloudinary(data.file);
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        const userData = userDoc.exists() ? userDoc.data() : {};
+        const userDocRef = db.collection('users').doc(user.uid);
+        const userDoc = await userDocRef.get();
+        const userData = userDoc.exists ? userDoc.data() : {};
         const productData = {
             listing_type: 'item', name: data.title, name_lowercase: data.title.toLowerCase(), price: Number(data.price), quantity: 1, category: data.category, description: data.description, story: "", whatsapp: normalizeWhatsAppNumber(data.whatsapp), sellerId: user.uid, sellerEmail: user.email, sellerName: userData.name || user.email, sellerIsVerified: userData.isVerified || false, sellerBadges: userData.badges || [], imageUrls: [imageUrl], createdAt: serverTimestamp(), isDeal: false, isSold: false
         };
-        await addDoc(collection(db, 'products'), productData);
+        await db.collection('products').add(productData);
         if (userData.referrerId && !userData.referralValidationRequested) {
-            const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
-            await addDoc(collection(db, "referralValidationRequests"), { referrerId: userData.referrerId, referrerEmail: referrerDoc.exists() ? referrerDoc.data().email : 'N/A', referredUserId: user.uid, referredUserName: userData.name, status: "pending", createdAt: serverTimestamp() });
-            await updateDoc(userDocRef, { referralValidationRequested: true });
+            const referrerDoc = await db.collection('users').doc(userData.referrerId).get();
+            await db.collection("referralValidationRequests").add({ referrerId: userData.referrerId, referrerEmail: referrerDoc.exists ? referrerDoc.data().email : 'N/A', referredUserId: user.uid, referredUserName: userData.name, status: "pending", createdAt: serverTimestamp() });
+            await userDocRef.update({ referralValidationRequested: true });
         }
         fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
         return true;
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
   
-  chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(raw); });
+  chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(messageInput.value); });
 
   initialize();
 });
