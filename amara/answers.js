@@ -1,4 +1,4 @@
-const answers = {
+export const answers = {
   "glossary": {
     "retake": "In university, a 'retake' is when a student has to take an exam again after not passing it the first time.",
     "kazi": "'Kazi' is a Swahili word for 'work' or 'job'. It's often used to ask what's up, as in 'Kazi gani?' - 'What's the work?'",
