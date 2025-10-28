@@ -4,7 +4,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut
+  signOut,
+  sendSignInLinkToEmail // ⭐ THIS LINE IS THE FIX
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import {
   getFirestore,
@@ -53,6 +54,7 @@ export {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  sendSignInLinkToEmail, // ⭐ THIS LINE IS THE FIX
   collection,
   doc,
   setDoc,
