@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (The Definitive Version with Longest Match Logic)
+// File: /ai/chatbot.js (The Definitive Version with Word Boundary Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
@@ -170,11 +170,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- Core Logic: NLP & Intent Detection ---
   const cleanSearchQuery = (text) => text.replace(/\b(a|an|the|is|are|one|some|for)\b/gi, '').replace(/\s\s+/g, ' ').trim();
-
+  
   /**
-   * **THE DEFINITIVE FIX: LONGEST MATCH LOGIC**
-   * This function now finds the LONGEST, most specific keyword match in the user's sentence,
-   * which permanently solves the keyword collision and punctuation bugs.
+   * **THE DEFINITIVE FIX: WORD BOUNDARY LOGIC**
+   * This function now uses a regular expression with word boundaries (\b) on cleaned text.
+   * This is the most robust way to match whole words and prevent the substring bug.
    */
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
@@ -183,47 +183,46 @@ document.addEventListener('DOMContentLoaded', function () {
     if (sessionState.conversationState) return { intent: 'continue_conversation' };
 
     let bestMatch = { intent: 'unknown', length: 0 };
-
-    // Iterate through ALL intents and keywords to find the longest match
+    
+    // Find the longest, most specific keyword match from the entire responses list.
     for (const intent in responses) {
-      for (const keyword of (responses[intent] || [])) {
-        if (cleanText.includes(keyword) && keyword.length > bestMatch.length) {
-          bestMatch = { intent, length: keyword.length };
-        }
-      }
-    }
-    
-    // Handle special trigger-based intents IF no strong keyword match was found
-    if (bestMatch.length < 4) { // Heuristic: if best match is a short word, triggers might be better
-        for (const trigger of (responses.product_query || [])) {
-            if (cleanText.startsWith(trigger)) {
-                const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
-                if (productName) {
-                    saveSearchHistory(productName);
-                    return { intent: 'search_product', entities: { productName } };
-                }
-            }
-        }
-        for (const trigger of (responses.glossary_query || [])) {
-            if (cleanText.startsWith(trigger)) {
-                const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
-                if (term) return { intent: 'ask_glossary', entities: { term } };
+        for (const keyword of (responses[intent] || [])) {
+            // Use a regex with word boundaries to ensure we match whole words only.
+            const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
+            if (regex.test(cleanText) && keyword.length > bestMatch.length) {
+                bestMatch = { intent, length: keyword.length };
             }
         }
     }
     
-    // If a good match was found, use it. Otherwise, it remains 'unknown'.
-    if (bestMatch.intent !== 'unknown') {
-      // Re-map category intents to a single, dynamic intent
-      if (bestMatch.intent.startsWith("category_")) {
-        let categoryName = capitalize(bestMatch.intent.replace("category_", ""));
-        if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
-        if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
-        return { intent: 'search_category', entities: { categoryName } };
-      }
-      return { intent: bestMatch.intent };
+    // If a strong keyword match was found, use it.
+    if (bestMatch.length > 0) {
+        if (bestMatch.intent.startsWith("category_")) {
+            let categoryName = capitalize(bestMatch.intent.replace("category_", ""));
+            if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+            if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
+            return { intent: 'search_category', entities: { categoryName } };
+        }
+        return { intent: bestMatch.intent };
     }
 
+    // Fallback to trigger-based intents if no strong keyword match was found.
+    for (const trigger of (responses.product_query || [])) {
+        if (cleanText.startsWith(trigger)) {
+            const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
+            if (productName) {
+                saveSearchHistory(productName);
+                return { intent: 'search_product', entities: { productName } };
+            }
+        }
+    }
+    for (const trigger of (responses.glossary_query || [])) {
+        if (cleanText.startsWith(trigger)) {
+            const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
+            if (term) return { intent: 'ask_glossary', entities: { term } };
+        }
+    }
+    
     return { intent: 'unknown' };
   }
 
@@ -275,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (action === 'confirm_upload') {
             const cleanText = userText.toLowerCase().replace(/[^\w\s]/gi, '');
-            if (responses.affirmation.some(k => cleanText.includes(k))) {
+            if (responses.affirmation.some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(cleanText))) {
                 if (!isUserLoggedIn()) return answers.user_not_logged_in;
                 sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} };
                 return answers.upload_flow.start; 
