@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Definitive Version with Punctuation Bug Fix)
+// File: /ai/chatbot.js (The Definitive Version with Punctuation Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
@@ -173,19 +173,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
+    
+    // **THE FIX: Clean the user's input by removing all punctuation.**
+    // We will use this cleanText for all checks to avoid the punctuation bug.
+    const cleanText = lc.replace(/[^\w\s]/gi, '');
 
     if (sessionState.conversationState) return { intent: 'continue_conversation' };
     
     const priorityIntents = ['contact', 'user_safety', 'help', 'start_upload'];
     for (const intent of priorityIntents) {
         for (const keyword of (responses[intent] || [])) {
-            // **THE FIX**: Using lc.includes(keyword) is more forgiving of punctuation.
-            if (lc.includes(keyword)) return { intent };
+            if (cleanText.includes(keyword)) return { intent };
         }
     }
     
     for (const trigger of (responses.product_query || [])) {
-        if (lc.startsWith(trigger)) {
+        if (cleanText.startsWith(trigger)) { // Check startsWith on clean text
             const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
             if (productName) { 
                 saveSearchHistory(productName); 
@@ -197,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
     for (const intent in responses) {
         if (intent.startsWith("category_")) {
             for (const keyword of (responses[intent] || [])) {
-                if (lc.includes(keyword)) {
+                if (cleanText.includes(keyword)) {
                     let categoryName = capitalize(intent.replace("category_", ""));
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
                     if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
@@ -210,13 +213,12 @@ document.addEventListener('DOMContentLoaded', function () {
     for (const intent in responses) {
         if (priorityIntents.includes(intent) || intent.startsWith("category_") || ['product_query', 'glossary_query'].includes(intent)) continue;
         for (const keyword of (responses[intent] || [])) {
-            // **THE FIX**: Using lc.includes(keyword) here as well for robustness.
-            if (lc.includes(keyword)) return { intent };
+            if (cleanText.includes(keyword)) return { intent };
         }
     }
     
     for (const trigger of (responses.glossary_query || [])) {
-        if (lc.startsWith(trigger)) {
+        if (cleanText.startsWith(trigger)) { // Check startsWith on clean text
             const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
             if (term) return { intent: 'ask_glossary', entities: { term } };
         }
@@ -228,7 +230,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- Core Logic: Conversation Handlers ---
   async function handleUploadConversation(userText) {
     const lc = userText.toLowerCase();
-    if (responses.cancel.some(k => lc.includes(k))) {
+    const cleanText = lc.replace(/[^\w\s]/gi, '');
+    if (responses.cancel.some(k => cleanText.includes(k))) {
         sessionState.conversationState = null;
         return answers.conversation_cancelled;
     }
@@ -271,8 +274,8 @@ document.addEventListener('DOMContentLoaded', function () {
         sessionState.pendingAction = null; 
 
         if (action === 'confirm_upload') {
-            const lc = userText.toLowerCase();
-            if (responses.affirmation.some(k => lc.includes(k))) {
+            const cleanText = userText.toLowerCase().replace(/[^\w\s]/gi, '');
+            if (responses.affirmation.some(k => cleanText.includes(k))) {
                 if (!isUserLoggedIn()) return answers.user_not_logged_in;
                 sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} };
                 return answers.upload_flow.start; 
