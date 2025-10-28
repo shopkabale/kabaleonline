@@ -95,25 +95,19 @@
 </head>
 <body class="light-mode">
   <div id="kob-chat-widget" class="ko-widget">
-
     <main id="ko-body" class="ko-body">
       <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
     </main>
-
     <form id="chat-form" class="chat-form" autocomplete="off">
       <input id="message-input" class="message-input" placeholder="Ask me anything..." />
       <button type="submit" class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
     </form>
-
   </div>
 
   <script type="module" src="/firebase.js"></script>
 
   <script type="module">
-    // Import all exported functions/variables from your firebase.js module
     import * as firebase from '/firebase.js';
-
-    // Attach them to the global window object so chatbot.js can access them
     window.auth = firebase.auth;
     window.db = firebase.db;
     window.doc = firebase.doc;
@@ -122,6 +116,7 @@
     window.updateDoc = firebase.updateDoc;
     window.collection = firebase.collection;
     window.serverTimestamp = firebase.serverTimestamp;
+    window.sendSignInLinkToEmail = firebase.sendSignInLinkToEmail;
   </script>
 
   <script src="/amara/responses.js" defer></script>
