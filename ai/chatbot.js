@@ -1,9 +1,9 @@
-// File: /ai/chatbot.js (Definitive Version with Original Logic Restored)
+// File: /ai/chatbot.js (Definitive Version with Loop Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
-    console.error("Amara AI FATAL ERROR: Firebase objects are not globally available. The script cannot run.");
+    console.error("Amara AI FATAL ERROR: Firebase v9 objects are not globally available. The script cannot run.");
     return;
   }
 
@@ -171,10 +171,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- Core Logic: NLP & Intent Detection ---
   const cleanSearchQuery = (text) => text.replace(/\b(a|an|the|is|are|one|some|for)\b/gi, '').replace(/\s\s+/g, ' ').trim();
 
-  /**
-   * **ORIGINAL LOGIC RESTORED & ENHANCED**
-   * This function now correctly distinguishes between a specific product search and browsing a category.
-   */
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
 
@@ -187,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    // **Path 1: Check for specific search queries first (e.g., "find me a phone").**
     for (const trigger of (responses.product_query || [])) {
         if (lc.startsWith(trigger)) {
             const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
@@ -198,12 +193,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // **Path 2: If no specific query, check for broad category keywords (e.g., "laptops").**
     for (const intent in responses) {
         if (intent.startsWith("category_")) {
             for (const keyword of (responses[intent] || [])) {
                 if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
-                    // This is a category request. We'll map it to a search_category intent.
                     let categoryName = capitalize(intent.replace("category_", ""));
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
                     if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
@@ -213,7 +206,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Check for other general intents.
     for (const intent in responses) {
         if (priorityIntents.includes(intent) || intent.startsWith("category_") || ['product_query', 'glossary_query'].includes(intent)) continue;
         for (const keyword of (responses[intent] || [])) {
@@ -260,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionState.conversationState.step = 'get_whatsapp';
             return answers.upload_flow.get_category;
         case 'get_whatsapp':
-            if (!/^07[0-9]{8}$/.test(userText)) return { text: "That doesn't look like a valid WhatsApp number. Please use the format 07..." };
+            if (!/^07[0-log9]{8}$/.test(userText)) return { text: "That doesn't look like a valid WhatsApp number. Please use the format 07..." };
             data.whatsapp = userText;
             sessionState.conversationState.step = 'get_photo';
             return { ...answers.upload_flow.get_whatsapp, action: 'prompt_upload' };
@@ -272,21 +264,30 @@ document.addEventListener('DOMContentLoaded', function () {
         return handleUploadConversation(userText);
     }
     
-    const { intent, entities } = detectIntent(userText);
-
+    /**
+     * **THE FIX: This block now handles the pending action directly and robustly.**
+     * It checks for affirmation keywords in the raw text, preventing other intents
+     * from interfering and causing a loop.
+     */
     if (sessionState.pendingAction) {
         const action = sessionState.pendingAction;
-        sessionState.pendingAction = null;
+        sessionState.pendingAction = null; // Clear the action immediately
+
         if (action === 'confirm_upload') {
-            if (intent === 'affirmation') {
+            const lc = userText.toLowerCase();
+            // Directly check for "yes", "sure", "ok", etc. in the user's response.
+            if (responses.affirmation.some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) {
                 if (!isUserLoggedIn()) return answers.user_not_logged_in;
                 sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} };
-                return answers.upload_flow.start;
+                return answers.upload_flow.start; // Correctly start the flow
             } else {
+                // If the user didn't say yes, assume no and give the general sell info.
                 return answers.sell;
             }
         }
     }
+    
+    const { intent, entities } = detectIntent(userText);
 
     if (sessionState.currentContext?.type === 'search' && isSimpleNounQuery(userText.toLowerCase())) {
         const followUpIntent = detectIntent(userText);
@@ -302,7 +303,6 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionState.pendingAction = 'confirm_upload';
             return answers.prompt_upload_conversation;
         
-        // **ORIGINAL LOGIC RESTORED**: These two cases now correctly call your backend function.
         case 'search_product':
             sessionState.currentContext = { type: 'search', value: entities.productName };
             return await callAPIFunction('product-lookup', { body: { productName: entities.productName } });
