@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (The Simple & Reliable Version)
+// File: /ai/chatbot.js (The Final, Simple, and Corrected Version)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
@@ -201,11 +201,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function isNewTopic(text) {
-      const newTopicStarters = ['how do', 'what is', 'who is', 'when', 'where', 'why', 'is it', 'can i', 'do you'];
-      if (newTopicStarters.some(starter => text.toLowerCase().startsWith(starter))) return true;
-      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact'];
-      for (const key of coreActionKeys) {
-          if ((responses[key] || []).some(keyword => new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text))) return true;
+      const lc = text.toLowerCase();
+      const newTopicKeywords = ['how', 'what', 'who', 'when', 'where', 'why', 'is', 'can', 'do', 'tell', 'show', 'sell', 'buy', 'rent'];
+      if (newTopicKeywords.some(keyword => lc.startsWith(keyword))) {
+          return true;
       }
       return false;
   }
@@ -219,23 +218,24 @@ document.addEventListener('DOMContentLoaded', function () {
         if ((responses.negation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'negation' };
     }
 
-    // PRIORITY 1: High-specificity actions and questions
+    // PRIORITY 1: High-specificity questions and actions that override everything else.
     if ((responses.user_safety || []).some(k => lc.includes(k))) return { intent: 'user_safety' };
-    
+    if ((responses.founder || []).some(k => lc.includes(k))) return { intent: 'founder' };
+    if ((responses.mission_vision || []).some(k => lc.includes(k))) return { intent: 'mission_vision' };
+
     const deliveryMatch = lc.match(/delivery from\s+([a-zA-Z]+)\s+to\s+([a-zA-Z]+)/);
     if (deliveryMatch) return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
     
-    // PRIORITY 2: Core actions and utilities
+    // PRIORITY 2: Core platform actions and utilities.
     for (const key of ['start_upload', 'manage_listings']) {
         if ((responses[key] || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: key };
     }
-
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
-    if ((lc.startsWith("calculate") || mathRegex.test(lc)) && !lc.includes("what is")) {
+    if ((lc.startsWith("calculate") || mathRegex.test(lc)) && !lc.startsWith("what is")) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
     }
 
-    // PRIORITY 3: Live searches
+    // PRIORITY 3: Live searches.
     for (const trigger of (responses.product_query || [])) {
         if (lc.startsWith(trigger)) {
             let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
@@ -243,23 +243,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    // PRIORITY 4: General knowledge and chitchat
+    // PRIORITY 4: General knowledge and chitchat.
     for (const trigger of (responses.glossary_query || [])) {
         if (lc.startsWith(trigger)) {
             let term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
             if (term) return { intent: 'ask_glossary', entities: { term } };
         }
     }
-
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || ['product_query', 'start_upload', 'user_safety', 'glossary_query', 'calculate', 'delivery_estimate'].includes(key);
+        const isHandled = key.startsWith("category_") || ['product_query', 'start_upload', 'user_safety', 'glossary_query', 'calculate', 'delivery_estimate', 'founder', 'mission_vision'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) {
             if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: key };
         }
     }
 
-    // PRIORITY 5: Last resort matches
+    // PRIORITY 5: Last resort matches.
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of (responses[key] || [])) {
@@ -272,7 +271,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-
     return { intent: 'unknown' };
   }
 
