@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 9.0 - The Definitive Logic Fix)
+// File: /ai/chatbot.js (Version 10.0 - The Definitive Logic Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
         }
     }
-
+    
     for (const trigger of (responses.glossary_query || [])) {
         if (lc.startsWith(trigger)) {
             let term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
