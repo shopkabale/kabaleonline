@@ -1,5 +1,3 @@
-// File: /ai/chatbot.js (Version 5.0 - Final, All Logic Corrected)
-
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
     console.error("Amara AI FATAL ERROR: Firebase v9 objects are not globally available. The script cannot run.");
@@ -26,7 +24,8 @@ document.addEventListener('DOMContentLoaded', function () {
     userName: null,
     currentContext: null,
     lastResponseKey: null,
-    pendingQuestion: false,
+    lastResponseIndex: null,
+    pendingAction: null,
     conversationState: null
   };
 
@@ -205,6 +204,10 @@ document.addEventListener('DOMContentLoaded', function () {
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
     if (sessionState.conversationState) { return { intent: 'continue_conversation' }; }
+    if (sessionState.pendingAction) {
+        if ((responses.affirmation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'affirmation' };
+        if ((responses.negation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'negation' };
+    }
     
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
     if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
@@ -214,12 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (deliveryMatch && (responses.delivery_estimate || []).some(k => lc.includes(k))) {
         return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
     }
-    for (const trigger of (responses.glossary_query || [])) {
-        if (lc.startsWith(trigger)) {
-            let term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
-            if (term) return { intent: 'ask_glossary', entities: { term } };
-        }
-    }
+    
     const priceMatch = lc.match(/(?:is|price of)\s+([\d,]+(?:,\d{3})*)\s+(too high|too low|a good price|fair)/);
     if (priceMatch && priceMatch[1]) { return { intent: 'price_check', entities: { price: parseInt(priceMatch[1].replace(/,/g, '')) } }; }
     const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
@@ -234,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
 
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload'].includes(key);
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
@@ -245,6 +243,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
         }
     }
+    
+    for (const trigger of (responses.glossary_query || [])) {
+        if (lc.startsWith(trigger)) {
+            let term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
+            if (term) return { intent: 'ask_glossary', entities: { term } };
+        }
+    }
+    
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of (responses[key] || [])) {
@@ -258,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     for (const key in responses) {
-        if (key.startsWith("chitchat_") || ['gratitude', 'affirmation', 'negation', 'well_being', 'bot_identity', 'greetings'].includes(key)) {
+        if (key.startsWith("chitchat_") || ['gratitude', 'well_being', 'bot_identity', 'greetings'].includes(key)) {
             for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
         }
     }
@@ -286,6 +292,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return;
     }
+    
+    const { intent, entities } = detectIntent(userText);
+
+    if (sessionState.pendingAction) {
+        const action = sessionState.pendingAction;
+        sessionState.pendingAction = null;
+        if (action === 'confirm_upload') {
+            if (intent === 'affirmation') {
+                if (!isUserLoggedIn()) return answers.user_not_logged_in;
+                sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} };
+                return answers.upload_flow.start;
+            } else {
+                return answers.sell;
+            }
+        }
+    }
+
     const followUpPhrases = ["what about", "what of", "how about", "and for", "are there any"];
     if (sessionState.currentContext && followUpPhrases.some(p => lc.startsWith(p))) {
         let newKeywordsRaw = userText.replace(new RegExp(`^(${followUpPhrases.join('|')})\\s*`, 'i'), '').trim();
@@ -297,15 +320,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return await callProductLookupAPI({ productName: combinedQuery });
         }
     }
-    if (sessionState.currentContext) { sessionState.currentContext = null; }
-    const { intent, entities } = detectIntent(userText);
-    if (sessionState.pendingQuestion) {
-        if (intent === 'affirmation') { sessionState.pendingQuestion = false; return answers.affirmation; }
-        if (intent === 'negation') { sessionState.pendingQuestion = false; return answers.negation; }
+    
+    if (!followUpPhrases.some(p => lc.startsWith(p))) {
+        sessionState.currentContext = null;
     }
-    sessionState.pendingQuestion = false;
+    
     switch (intent) {
-        case 'start_upload': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} }; return answers.upload_flow.start;
+        case 'start_upload': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.pendingAction = 'confirm_upload'; return answers.prompt_upload_conversation;
         case 'manage_listings': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: "Please visit your <a href='/dashboard/'>Dashboard</a> to manage your listings. This feature is coming to chat soon!" };
         case 'mark_as_sold': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: `To mark your '${entities.item}' as sold, please use the controls in your <a href='/dashboard/'>Dashboard</a>.` };
         case 'calculate': const result = solveMathExpression(entities.expression); return { text: `The result is <b>${result.toLocaleString()}</b>.` };
@@ -323,9 +344,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 sessionState.lastResponseKey = intent;
                 const potentialReplies = answers[intent];
-                let reply = Array.isArray(potentialReplies) ? potentialReplies[Math.floor(Math.random() * potentialReplies.length)] : potentialReplies;
-                if (reply.text && reply.text.includes('?')) { sessionState.pendingQuestion = true; }
-                return reply;
+                if (Array.isArray(potentialReplies)) {
+                    let nextIndex = Math.floor(Math.random() * potentialReplies.length);
+                    if (potentialReplies.length > 1 && nextIndex === sessionState.lastResponseIndex) {
+                        nextIndex = (nextIndex + 1) % potentialReplies.length;
+                    }
+                    sessionState.lastResponseIndex = nextIndex;
+                    return potentialReplies[nextIndex];
+                } else {
+                    sessionState.lastResponseIndex = null;
+                    return potentialReplies;
+                }
             }
             sessionState.lastResponseKey = 'fallback';
             const fallbackResponse = { text: `I'm still learning and don't have information on that yet. You can try asking differently.`, suggestions: ["How to sell", "Find a hostel", "Is selling free?"] };
