@@ -1,4 +1,4 @@
-const responses = {
+export const responses = {
   "product_query": ["price of", "cost of", "how much is", "what's the price of", "search for", "find me", "i'm looking for", "show me", "can i see", "look up"],
   "price_check": ["is the price of", "is a price of", "isn't a price of", "is", "too high", "too low", "a good price", "is that price fair"],
   "glossary_query": ["what is a", "what is an", "what's a", "what is", "what's", "what does", "define", "meaning of"],
@@ -8,6 +8,9 @@ const responses = {
   "mark_as_sold": ["mark as sold", "mark my item as sold", "mark my phone as sold", "mark my laptop as sold"],
   "signup": ["sign up", "signup", "create an account", "register"],
   "login": ["log in", "login", "log me in", "sign in", "signin"],
+  "user_safety": ["safe", "safety", "secure", "scam", "fraud", "is it safe", "how to buy safely", "how to sell safely", "avoid scams", "report scam", "safety tips"],
+  "founder": ["founder", "creator", "who made", "who runs", "ceo", "owner", "who created", "who is behind this"],
+  "mission_vision": ["mission", "vision", "purpose", "goal", "your mission"],
   "category_electronics": ["electronics", "phone", "phones", "laptop", "laptops", "gadgets", "charger", "chargers", "speaker", "speakers", "computer", "tech", "power bank", "headphone", "headphones", "earphones", "earbuds", "smartwatch", "blender", "flat iron", "kettle", "television", "tv", "camera", "gaming console", "ps5", "xbox", "router", "modem"],
   "category_clothing": ["clothing", "clothes", "fashion", "apparel", "shoe", "shoes", "dress", "dresses", "shirt", "shirts", "jean", "jeans", "sneakers", "t-shirt", "footwear", "jacket", "hoodie", "sandals", "bag", "handbag", "suit", "trousers", "skirt", "blouse", "sweater", "coat", "boots", "heels", "official wear"],
   "category_furniture": ["furniture", "home decor", "decor", "table", "tables", "chair", "chairs", "sofa", "sofas", "bed", "beds", "mattress", "furnishings", "desk", "wardrobe", "shelf", "cupboard", "couch", "bookcase", "cabinet", "stool", "office chair"],
@@ -37,7 +40,6 @@ const responses = {
   "how_to_delete": ["how do i delete", "delete my item", "remove my listing", "take down my ad", "how to delete"],
   "photo_tips": ["photo tips", "better pictures", "how to take photos", "image advice", "good photos", "tips for photos"],
   "pricing_advice": ["how much should I sell for", "pricing guide", "value my item", "what's the worth of", "set a price", "how to price"],
-  "user_safety": ["safe", "safety", "secure", "scam", "fraud", "is it safe", "how to buy safely", "how to sell safely", "avoid scams", "report scam", "safety tips"],
   "disputes_returns": ["return policy", "can i return", "what if it's broken", "refund", "get my money back", "problem with seller", "item not as described", "complaint", "dispute"],
   "contact": ["admin", "contact", "support", "problem", "issue", "report", "sensitive", "manager", "stuck", "bug", "talk to a person", "customer support", "report a user", "need human help"],
   "technical_support": ["not working", "bug", "error", "website down", "can't upload", "login problem", "forgot password", "password reset", "technical issue", "upload issues", "login issues", "site is broken"],
@@ -50,8 +52,6 @@ const responses = {
   "requests": ["requests", "user requests", "request an item", "can't find", "looking for something", "i need a"],
   "feedback": ["feedback", "testimonial", "leave a review", "share feedback", "rate my experience", "suggestion", "compliment"],
   "about_platform": ["about", "what is kabaleonline", "info", "what is this", "introduction", "tell me about kabaleonline", "what does this site do"],
-  "mission_vision": ["mission", "vision", "purpose", "goal", "your mission"],
-  "founder": ["founder", "creator", "who made", "who runs", "ceo", "owner", "who created", "who is behind this"],
   "history_founded": ["when were you founded", "history", "how old", "when did you start", "founded on", "when was kabale online founded", "your story", "founded"],
   "events": ["event", "concert", "promotion", "show", "party", "what's happening", "gigs", "promote event", "sell tickets", "upcoming events"],
   "blog": ["blog", "read blog", "campus news", "updates", "stories", "articles", "news"],
