@@ -18,7 +18,7 @@ const responses = {
   // =======================================================================================
 
   "product_query": ["price of", "cost of", "how much is", "what's the price of", "search for", "find me", "i'm looking for", "show me", "can i see", "look up", "i want to find", "get me a"],
-  "price_check": ["is the price of", "is a price of", "isn't a price of", "is", "too high", "too low", "a good price", "is that price fair"],
+  "price_check": ["is the price of", "is a price of", "isn't a price of" , "too high", "too low", "a good price", "is that price fair"],
   "glossary_query": ["what is a", "what is an", "what's a", "what is", "what's", "what does", "define", "meaning of"],
   "delivery_estimate": ["how much to deliver", "delivery cost", "boda cost", "how much is delivery", "estimate delivery", "cost to send"],
   "category_electronics": ["electronics", "phone", "phones", "laptop", "laptops", "gadgets", "charger", "chargers", "speaker", "speakers", "computer", "tech", "power bank", "headphone", "headphones", "earphones", "earbuds", "smartwatch", "blender", "flat iron", "kettle", "television", "tv", "camera", "gaming console", "ps5", "xbox", "router", "modem"],
