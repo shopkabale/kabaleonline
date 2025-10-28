@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (The Upgraded & Refactored Version)
+// File: /ai/chatbot.js (Upgraded Version with Original Upload Logic Restored)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
@@ -15,9 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const RESPONSE_GIVEN_ENTRY_ID = "entry.2015145894";
   const PROMOTIONAL_MESSAGE = "This week, enjoy featured listings for all hostel rooms!";
   
-  /**
-   * UPGRADE: Proactive suggestions map. When Amara answers an intent, she can suggest a related topic.
-   */
   const proactiveSuggestions = {
     'sell': { text: 'Tips for good photos', intent: 'photo_tips' },
     'buy': { text: 'How to buy safely', intent: 'user_safety' },
@@ -36,11 +33,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- Session State Management ---
   let sessionState = {
     userName: null,
-    currentContext: null, // Tracks the last major action (e.g., {type: 'search', value: 'laptops'})
+    currentContext: null,
     lastResponseKey: null,
     lastResponseIndex: null,
     pendingAction: null,
-    conversationState: null // For multi-step flows like product uploads
+    conversationState: null
   };
   let exitIntentTriggered = false;
 
@@ -55,6 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const getSearchHistory = () => { try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY)) || []; } catch { return []; } };
   const saveSearchHistory = (term) => { let h = getSearchHistory(); if (!h.includes(term)) { h.unshift(term); localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(h.slice(0, 3))); } };
   const isSimpleNounQuery = (text) => text.split(' ').length <= 2 && !['what', 'how', 'who', 'when', 'is', 'can'].includes(text.split(' ')[0]);
+  // --- UPLOAD LOGIC RESTORED FROM ORIGINAL ---
+  const normalizeWhatsAppNumber = (number) => { let cleaned = number.replace(/\s+/g, ''); if (cleaned.startsWith('0')) cleaned = '256' + cleaned.substring(1); if (!cleaned.startsWith('256')) cleaned = '256' + cleaned; return cleaned; };
 
 
   // --- UI Functions ---
@@ -124,55 +123,92 @@ document.addEventListener('DOMContentLoaded', function () {
     navigator.sendBeacon(`${GOOGLE_FORM_ACTION_URL}?${queryParams.toString()}`);
   }
 
+  // --- UPLOAD LOGIC RESTORED FROM ORIGINAL ---
+  async function uploadImageToCloudinary(file) {
+    try {
+        const response = await fetch('/.netlify/functions/generate-signature');
+        if (!response.ok) throw new Error('Failed to get signature.');
+        const { signature, timestamp, cloudname, apikey } = await response.json();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', apikey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+        const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+        if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
+        const uploadData = await uploadResponse.json();
+        return uploadData.secure_url;
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        throw error;
+    }
+  }
+
+  async function uploadProductFromConversation(data) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated.");
+    try {
+        const imageUrl = await uploadImageToCloudinary(data.file);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const userData = userDoc.exists() ? userDoc.data() : {};
+        const productData = {
+            listing_type: 'item', name: data.title, name_lowercase: data.title.toLowerCase(), price: Number(data.price), quantity: 1, category: data.category, description: data.description, story: "", whatsapp: normalizeWhatsAppNumber(data.whatsapp), sellerId: user.uid, sellerEmail: user.email, sellerName: userData.name || user.email, sellerIsVerified: userData.isVerified || false, sellerBadges: userData.badges || [], imageUrls: [imageUrl], createdAt: serverTimestamp(), isDeal: false, isSold: false
+        };
+        await addDoc(collection(db, 'products'), productData);
+        if (userData.referrerId && !userData.referralValidationRequested) {
+            const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
+            await addDoc(collection(db, "referralValidationRequests"), { referrerId: userData.referrerId, referrerEmail: referrerDoc.exists() ? referrerDoc.data().email : 'N/A', referredUserId: user.uid, referredUserName: userData.name, status: "pending", createdAt: serverTimestamp() });
+            await updateDoc(userDocRef, { referralValidationRequested: true });
+        }
+        fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
+        return true;
+    } catch (error) {
+        console.error("Error in uploadProductFromConversation:", error);
+        return false;
+    }
+  }
+
   // --- Core Logic: NLP & Intent Detection ---
   const cleanSearchQuery = (text) => text.replace(/\b(a|an|the|is|are|one|some|for)\b/gi, '').replace(/\s\s+/g, ' ').trim();
 
-  /**
-   * UPGRADE: This function is now more accurate. It prioritizes exact matches over keyword matches.
-   */
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
 
-    // Priority 0: Active multi-step conversation
     if (sessionState.conversationState) return { intent: 'continue_conversation' };
 
-    // Priority 1: High-specificity, exact phrase matching
-    for (const intent in responses) {
-      for (const keyword of responses[intent]) {
-        if (lc === keyword) return { intent };
-      }
-    }
-
-    // Priority 2: Keyword-based intent matching
-    for (const intent in responses) {
-      if (['product_query', 'glossary_query'].includes(intent)) continue; // Handled separately
-      for (const keyword of responses[intent]) {
-        if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
-      }
+    const priorityIntents = ['contact', 'user_safety', 'help', 'start_upload'];
+    for (const intent of priorityIntents) {
+        for (const keyword of (responses[intent] || [])) {
+            if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
+        }
     }
     
-    // Priority 3: Trigger-based intents (search, glossary, etc.)
-    for (const trigger of responses.product_query) {
-      if (lc.startsWith(trigger)) {
-        const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
-        if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
-      }
+    for (const intent in responses) {
+        if (priorityIntents.includes(intent) || ['product_query', 'glossary_query'].includes(intent)) continue;
+        for (const keyword of (responses[intent] || [])) {
+            if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
+        }
     }
-    for (const trigger of responses.glossary_query) {
-      if (lc.startsWith(trigger)) {
-        const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
-        if (term) return { intent: 'ask_glossary', entities: { term } };
-      }
+    
+    for (const trigger of (responses.product_query || [])) {
+        if (lc.startsWith(trigger)) {
+            const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
+            if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
+        }
+    }
+    for (const trigger of (responses.glossary_query || [])) {
+        if (lc.startsWith(trigger)) {
+            const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
+            if (term) return { intent: 'ask_glossary', entities: { term } };
+        }
     }
 
     return { intent: 'unknown' };
   }
 
-
-  /**
-   * UPGRADE: The entire product upload flow is now self-contained in this function.
-   * This cleans up the main generateReply function significantly.
-   */
+  // --- Core Logic: Conversation Handlers ---
   async function handleUploadConversation(userText) {
     const lc = userText.toLowerCase();
     if (responses.cancel.some(k => lc.includes(k))) {
@@ -201,7 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionState.conversationState.step = 'get_whatsapp';
             return answers.upload_flow.get_category;
         case 'get_whatsapp':
-            // Basic validation for a Ugandan number
             if (!/^07[0-9]{8}$/.test(userText)) return { text: "That doesn't look like a valid WhatsApp number. Please use the format 07..." };
             data.whatsapp = userText;
             sessionState.conversationState.step = 'get_photo';
@@ -209,19 +244,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-
-  /**
-   * Main function to process user input and generate a response.
-   */
   async function generateReply(userText) {
-    // If a multi-step conversation is active, delegate to its handler.
     if (sessionState.conversationState) {
         return handleUploadConversation(userText);
     }
     
     const { intent, entities } = detectIntent(userText);
 
-    // Handle pending actions (like confirming the conversational upload)
     if (sessionState.pendingAction) {
         const action = sessionState.pendingAction;
         sessionState.pendingAction = null;
@@ -236,10 +265,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    /**
-     * UPGRADE: Smarter contextual follow-up. If the last action was a search,
-     * a simple noun query is treated as a new search.
-     */
     if (sessionState.currentContext?.type === 'search' && isSimpleNounQuery(userText.toLowerCase())) {
         sessionState.currentContext = { type: 'search', value: userText };
         return await callAPIFunction('product-lookup', { body: { productName: userText } });
@@ -257,30 +282,33 @@ document.addEventListener('DOMContentLoaded', function () {
         
         case 'ask_glossary':
             const definition = answers.glossary[entities.term];
-            return definition ? { text: `<b>${capitalize(entities.term)}:</b> ${definition}` } : answers.glossary_not_found;
+            if (definition) {
+                return { text: `<b>${capitalize(entities.term)}:</b> ${definition}` };
+            } else {
+                return await callAPIFunction('web-search', { body: { query: userText } });
+            }
         
         default:
-            // Standard reply from answers.js
             if (intent !== 'unknown' && answers[intent]) {
                 sessionState.lastResponseKey = intent;
                 const potentialReplies = answers[intent];
                 let reply;
                 if (Array.isArray(potentialReplies)) {
                     let nextIndex = Math.floor(Math.random() * potentialReplies.length);
-                    reply = potentialReplies[nextIndex];
+                    reply = { ...potentialReplies[nextIndex] };
                 } else {
-                    reply = potentialReplies;
+                    reply = { ...potentialReplies };
                 }
 
-                // UPGRADE: Add proactive suggestions if one exists for this intent
                 if (proactiveSuggestions[intent]) {
-                    reply.suggestions = reply.suggestions || [];
-                    reply.suggestions.push(proactiveSuggestions[intent].text);
+                    reply.suggestions = reply.suggestions ? [...reply.suggestions] : [];
+                    if (!reply.suggestions.includes(proactiveSuggestions[intent].text)) {
+                      reply.suggestions.push(proactiveSuggestions[intent].text);
+                    }
                 }
                 return reply;
             }
 
-            // --- Smart Fallback: Log and search the web ---
             logUnknownQuery({ question: userText, answer: 'Internal knowledge not found. Attempting web search.' });
             const isWorthSearching = userText.split(' ').length > 1 || userText.length > 8;
 
@@ -312,26 +340,24 @@ document.addEventListener('DOMContentLoaded', function () {
     appendMessage(initialGreeting, 'received');
   }
 
+  // --- UPLOAD LOGIC RESTORED FROM ORIGINAL ---
   fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file && sessionState.conversationState?.type === 'product_upload') {
-        appendMessage(`<i>Uploading ${file.name}... this may take a moment.</i>`, 'sent');
-        const finalData = { ...sessionState.conversationState.data, file };
-        sessionState.conversationState = null; // Clear state early
-
-        const thinkingEl = showThinking();
-        try {
-            const imageUrl = await uploadImageToCloudinary(file); // Assume this function exists and is robust
-            const productData = { ...finalData, imageUrls: [imageUrl] }; // Re-structure as needed
-            const success = await saveProductToFirebase(productData); // Assume this function exists
-            thinkingEl.remove();
-            appendMessage(success ? answers.upload_flow.finish_success : answers.upload_flow.finish_error, 'received');
-        } catch (error) {
-            console.error("Upload process failed:", error);
-            thinkingEl.remove();
-            appendMessage(answers.upload_flow.finish_error, 'received');
-        }
-    }
+      const file = e.target.files[0];
+      if (file && sessionState.conversationState && sessionState.conversationState.type === 'product_upload') {
+          appendMessage(`<i>Uploading ${file.name}...</i>`, 'sent');
+          sessionState.conversationState.data.file = file;
+          const finalData = sessionState.conversationState.data;
+          sessionState.conversationState = null; // Clear state early
+          
+          const thinkingEl = showThinking();
+          // Prepend the "Photo received!" message so the user sees it before the final result
+          appendMessage(answers.upload_flow.get_photo, 'received');
+          
+          const success = await uploadProductFromConversation(finalData);
+          
+          thinkingEl.remove();
+          appendMessage(success ? answers.upload_flow.finish_success : answers.upload_flow.finish_error, 'received');
+      }
   });
 
   document.addEventListener('mouseleave', (e) => {
@@ -352,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
     thinkingEl.remove();
     if (reply) {
       const typingEl = showTyping();
-      await new Promise(r => setTimeout(r, 600)); // Simulate typing delay
+      await new Promise(r => setTimeout(r, 600));
       typingEl.remove();
       appendMessage(reply, 'received');
       if (reply.action === 'prompt_upload') {
