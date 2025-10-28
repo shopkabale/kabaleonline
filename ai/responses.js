@@ -9,6 +9,7 @@ const responses = {
   "manage_listings": ["show my listings", "my active listings", "what am i selling", "manage my items", "my posts", "show my products", "my products"],
   "contact_seller": ["contact the seller", "message the seller", "ask the seller a question", "how do i contact the seller"],
   "mark_as_sold": ["mark my item as sold", "mark my phone as sold", "mark my laptop as sold"],
+"go_to_dashboard": ["go to my dashboard", "my dashboard", "show me my dashboard", "open dashboard"],
   "category_electronics": ["electronics", "phone", "phones", "laptop", "laptops", "gadgets", "charger", "chargers", "speaker", "speakers", "computer", "tech", "power bank", "headphone", "headphones", "earphones", "earbuds", "smartwatch", "blender", "flat iron", "kettle", "television", "tv", "camera", "gaming console", "ps5", "xbox", "router", "modem"],
   "category_clothing": ["clothing", "clothes", "fashion", "apparel", "shoe", "shoes", "dress", "dresses", "shirt", "shirts", "jean", "jeans", "sneakers", "t-shirt", "footwear", "jacket", "hoodie", "sandals", "bag", "handbag", "suit", "trousers", "skirt", "blouse", "sweater", "coat", "boots", "heels", "official wear"],
   "category_furniture": ["furniture", "home decor", "decor", "table", "tables", "chair", "chairs", "sofa", "sofas", "bed", "beds", "mattress", "furnishings", "desk", "wardrobe", "shelf", "cupboard", "couch", "bookcase", "cabinet", "stool", "office chair"],
