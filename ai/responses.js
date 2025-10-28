@@ -17,7 +17,9 @@ const responses = {
   "greetings": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "sup", "yo", "start", "what's up", "greetings", "how far", "howdy", "hiya"],
   "well_being": ["how are you", "how's it going", "are you ok", "how are you doing", "how's everything", "you good?"],
   "bot_identity": ["who are you", "what are you", "are you a bot", "what's your name", "your name is", "about yourself", "tell me about you"],
-  "gratitude": ["thanks", "thank you", "ok thanks", "nice", "great", "awesome", "cool", "good", "thank u", "much appreciated", "thanks a lot", "i appreciate it"],
+
+  "gratitude": ["thanks", "thank you", "ok thanks", "nice", "great", "awesome", "cool", "thank u", "much appreciated", "thanks a lot", "i appreciate it"],
+
   "affirmation": ["yes", "yep", "yeah", "sure", "ok", "okay", "correct", "of course", "y", "affirmative", "absolutely", "exactly", "deal", "do it"],
   "negation": ["no", "nope", "nah", "not really", "no thanks", "n", "negative", "i don't think so", "don't"],
   "cancel": ["cancel", "stop", "nevermind", "forget it", "quit", "exit"],
