@@ -1,9 +1,9 @@
-// File: /ai/chatbot.js (Final Version with Original Lookup Logic Restored)
+// File: /ai/chatbot.js (Definitive Version with Original Logic Restored)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
-    console.error("Amara AI FATAL ERROR: Firebase v9 objects are not globally available. The script cannot run.");
+    console.error("Amara AI FATAL ERROR: Firebase objects are not globally available. The script cannot run.");
     return;
   }
 
@@ -171,6 +171,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- Core Logic: NLP & Intent Detection ---
   const cleanSearchQuery = (text) => text.replace(/\b(a|an|the|is|are|one|some|for)\b/gi, '').replace(/\s\s+/g, ' ').trim();
 
+  /**
+   * **ORIGINAL LOGIC RESTORED & ENHANCED**
+   * This function now correctly distinguishes between a specific product search and browsing a category.
+   */
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
 
@@ -183,15 +187,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    // **LOGIC RESTORED**: Check for category keywords first to show static category info.
-    for (const intent in responses) {
-        if (intent.startsWith("category_")) {
-            for (const keyword of (responses[intent] || [])) {
-                if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
+    // **Path 1: Check for specific search queries first (e.g., "find me a phone").**
+    for (const trigger of (responses.product_query || [])) {
+        if (lc.startsWith(trigger)) {
+            const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
+            if (productName) { 
+                saveSearchHistory(productName); 
+                return { intent: 'search_product', entities: { productName } }; 
             }
         }
     }
 
+    // **Path 2: If no specific query, check for broad category keywords (e.g., "laptops").**
+    for (const intent in responses) {
+        if (intent.startsWith("category_")) {
+            for (const keyword of (responses[intent] || [])) {
+                if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
+                    // This is a category request. We'll map it to a search_category intent.
+                    let categoryName = capitalize(intent.replace("category_", ""));
+                    if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+                    if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
+                    return { intent: 'search_category', entities: { categoryName } };
+                }
+            }
+        }
+    }
+
+    // Check for other general intents.
     for (const intent in responses) {
         if (priorityIntents.includes(intent) || intent.startsWith("category_") || ['product_query', 'glossary_query'].includes(intent)) continue;
         for (const keyword of (responses[intent] || [])) {
@@ -199,14 +221,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
-    for (const trigger of (responses.product_query || [])) {
-        if (lc.startsWith(trigger)) {
-            const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
-            // This now acts as a fallback for more specific searches that don't match a category.
-            if (productName) { saveSearchHistory(productName); return { intent: 'search_product_live', entities: { productName } }; }
-        }
-    }
-
     for (const trigger of (responses.glossary_query || [])) {
         if (lc.startsWith(trigger)) {
             const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
@@ -275,11 +289,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (sessionState.currentContext?.type === 'search' && isSimpleNounQuery(userText.toLowerCase())) {
-        // **LOGIC RESTORED**: A simple follow-up triggers a category search first.
-        const followUpIntent = detectIntent(userText).intent;
-        if (followUpIntent.startsWith("category_")) {
-             sessionState.currentContext = { type: 'search', value: userText };
-             return answers[followUpIntent];
+        const followUpIntent = detectIntent(userText);
+        if (followUpIntent.intent === 'search_category') {
+             sessionState.currentContext = { type: 'search', value: followUpIntent.entities.categoryName };
+             return await callAPIFunction('product-lookup', { body: { categoryName: followUpIntent.entities.categoryName } });
         }
     }
 
@@ -289,10 +302,14 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionState.pendingAction = 'confirm_upload';
             return answers.prompt_upload_conversation;
         
-        // **LOGIC RESTORED**: Renamed to avoid conflict. This handles specific LIVE searches.
-        case 'search_product_live':
+        // **ORIGINAL LOGIC RESTORED**: These two cases now correctly call your backend function.
+        case 'search_product':
             sessionState.currentContext = { type: 'search', value: entities.productName };
             return await callAPIFunction('product-lookup', { body: { productName: entities.productName } });
+
+        case 'search_category':
+            sessionState.currentContext = { type: 'search', value: entities.categoryName };
+            return await callAPIFunction('product-lookup', { body: { categoryName: entities.categoryName } });
         
         case 'ask_glossary':
             const definition = answers.glossary[entities.term];
@@ -304,10 +321,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         default:
             if (intent !== 'unknown' && answers[intent]) {
-                // **LOGIC RESTORED**: This now correctly handles all category intents (e.g., "category_electronics")
-                if (intent.startsWith('category_')) {
-                    sessionState.currentContext = { type: 'search', value: intent };
-                }
                 sessionState.lastResponseKey = intent;
                 const potentialReplies = answers[intent];
                 let reply;
