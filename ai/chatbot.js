@@ -216,14 +216,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
-    if ((lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) && !lc.includes("boda boda")) {
+    if ((lc.startsWith("calculate") || mathRegex.test(lc)) && !lc.startsWith("what is")) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
     }
-    const deliveryMatch = lc.match(/(?:from)\s+([a-zA-Z]+)\s+(?:to)\s+([a-zA-Z]+)/);
-    if (deliveryMatch && (responses.delivery_estimate || []).some(k => lc.includes(k))) {
-        return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
-    }
+    const deliveryMatch = lc.match(/delivery from\s+([a-zA-Z]+)\s+to\s+([a-zA-Z]+)/);
+    if (deliveryMatch) return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
     
+    if ((responses.user_safety || []).some(k => lc.includes(k))) return { intent: 'user_safety' };
+
     const priceMatch = lc.match(/(?:is|price of)\s+([\d,]+(?:,\d{3})*)\s+(too high|too low|a good price|fair)/);
     if (priceMatch && priceMatch[1]) { return { intent: 'price_check', entities: { price: parseInt(priceMatch[1].replace(/,/g, '')) } }; }
     const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
 
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query', 'delivery_options'].includes(key);
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query', 'delivery_options', 'user_safety', 'calculate', 'delivery_estimate'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
