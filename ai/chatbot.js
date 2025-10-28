@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Definitive Version with Loop Fix)
+// File: /ai/chatbot.js (Definitive Version with Punctuation Bug Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
@@ -175,11 +175,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const lc = userText.toLowerCase();
 
     if (sessionState.conversationState) return { intent: 'continue_conversation' };
-
+    
     const priorityIntents = ['contact', 'user_safety', 'help', 'start_upload'];
     for (const intent of priorityIntents) {
         for (const keyword of (responses[intent] || [])) {
-            if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
+            // **THE FIX**: Using lc.includes(keyword) is more forgiving of punctuation.
+            if (lc.includes(keyword)) return { intent };
         }
     }
     
@@ -196,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
     for (const intent in responses) {
         if (intent.startsWith("category_")) {
             for (const keyword of (responses[intent] || [])) {
-                if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) {
+                if (lc.includes(keyword)) {
                     let categoryName = capitalize(intent.replace("category_", ""));
                     if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
                     if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
@@ -209,7 +210,8 @@ document.addEventListener('DOMContentLoaded', function () {
     for (const intent in responses) {
         if (priorityIntents.includes(intent) || intent.startsWith("category_") || ['product_query', 'glossary_query'].includes(intent)) continue;
         for (const keyword of (responses[intent] || [])) {
-            if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
+            // **THE FIX**: Using lc.includes(keyword) here as well for robustness.
+            if (lc.includes(keyword)) return { intent };
         }
     }
     
@@ -252,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionState.conversationState.step = 'get_whatsapp';
             return answers.upload_flow.get_category;
         case 'get_whatsapp':
-            if (!/^07[0-log9]{8}$/.test(userText)) return { text: "That doesn't look like a valid WhatsApp number. Please use the format 07..." };
+            if (!/^07[0-9]{8}$/.test(userText)) return { text: "That doesn't look like a valid WhatsApp number. Please use the format 07..." };
             data.whatsapp = userText;
             sessionState.conversationState.step = 'get_photo';
             return { ...answers.upload_flow.get_whatsapp, action: 'prompt_upload' };
@@ -264,24 +266,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return handleUploadConversation(userText);
     }
     
-    /**
-     * **THE FIX: This block now handles the pending action directly and robustly.**
-     * It checks for affirmation keywords in the raw text, preventing other intents
-     * from interfering and causing a loop.
-     */
     if (sessionState.pendingAction) {
         const action = sessionState.pendingAction;
-        sessionState.pendingAction = null; // Clear the action immediately
+        sessionState.pendingAction = null; 
 
         if (action === 'confirm_upload') {
             const lc = userText.toLowerCase();
-            // Directly check for "yes", "sure", "ok", etc. in the user's response.
-            if (responses.affirmation.some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) {
+            if (responses.affirmation.some(k => lc.includes(k))) {
                 if (!isUserLoggedIn()) return answers.user_not_logged_in;
                 sessionState.conversationState = { type: 'product_upload', step: 'get_title', data: {} };
-                return answers.upload_flow.start; // Correctly start the flow
+                return answers.upload_flow.start; 
             } else {
-                // If the user didn't say yes, assume no and give the general sell info.
                 return answers.sell;
             }
         }
