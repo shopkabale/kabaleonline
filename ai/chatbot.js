@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Upgraded Version with Original Upload Logic Restored)
+// File: /ai/chatbot.js (Final Version with Original Lookup Logic Restored)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const getSearchHistory = () => { try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY)) || []; } catch { return []; } };
   const saveSearchHistory = (term) => { let h = getSearchHistory(); if (!h.includes(term)) { h.unshift(term); localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(h.slice(0, 3))); } };
   const isSimpleNounQuery = (text) => text.split(' ').length <= 2 && !['what', 'how', 'who', 'when', 'is', 'can'].includes(text.split(' ')[0]);
-  // --- UPLOAD LOGIC RESTORED FROM ORIGINAL ---
   const normalizeWhatsAppNumber = (number) => { let cleaned = number.replace(/\s+/g, ''); if (cleaned.startsWith('0')) cleaned = '256' + cleaned.substring(1); if (!cleaned.startsWith('256')) cleaned = '256' + cleaned; return cleaned; };
 
 
@@ -123,7 +122,6 @@ document.addEventListener('DOMContentLoaded', function () {
     navigator.sendBeacon(`${GOOGLE_FORM_ACTION_URL}?${queryParams.toString()}`);
   }
 
-  // --- UPLOAD LOGIC RESTORED FROM ORIGINAL ---
   async function uploadImageToCloudinary(file) {
     try {
         const response = await fetch('/.netlify/functions/generate-signature');
@@ -185,8 +183,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
+    // **LOGIC RESTORED**: Check for category keywords first to show static category info.
     for (const intent in responses) {
-        if (priorityIntents.includes(intent) || ['product_query', 'glossary_query'].includes(intent)) continue;
+        if (intent.startsWith("category_")) {
+            for (const keyword of (responses[intent] || [])) {
+                if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
+            }
+        }
+    }
+
+    for (const intent in responses) {
+        if (priorityIntents.includes(intent) || intent.startsWith("category_") || ['product_query', 'glossary_query'].includes(intent)) continue;
         for (const keyword of (responses[intent] || [])) {
             if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent };
         }
@@ -195,9 +202,11 @@ document.addEventListener('DOMContentLoaded', function () {
     for (const trigger of (responses.product_query || [])) {
         if (lc.startsWith(trigger)) {
             const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
-            if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
+            // This now acts as a fallback for more specific searches that don't match a category.
+            if (productName) { saveSearchHistory(productName); return { intent: 'search_product_live', entities: { productName } }; }
         }
     }
+
     for (const trigger of (responses.glossary_query || [])) {
         if (lc.startsWith(trigger)) {
             const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
@@ -266,8 +275,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (sessionState.currentContext?.type === 'search' && isSimpleNounQuery(userText.toLowerCase())) {
-        sessionState.currentContext = { type: 'search', value: userText };
-        return await callAPIFunction('product-lookup', { body: { productName: userText } });
+        // **LOGIC RESTORED**: A simple follow-up triggers a category search first.
+        const followUpIntent = detectIntent(userText).intent;
+        if (followUpIntent.startsWith("category_")) {
+             sessionState.currentContext = { type: 'search', value: userText };
+             return answers[followUpIntent];
+        }
     }
 
     switch (intent) {
@@ -276,7 +289,8 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionState.pendingAction = 'confirm_upload';
             return answers.prompt_upload_conversation;
         
-        case 'search_product':
+        // **LOGIC RESTORED**: Renamed to avoid conflict. This handles specific LIVE searches.
+        case 'search_product_live':
             sessionState.currentContext = { type: 'search', value: entities.productName };
             return await callAPIFunction('product-lookup', { body: { productName: entities.productName } });
         
@@ -290,6 +304,10 @@ document.addEventListener('DOMContentLoaded', function () {
         
         default:
             if (intent !== 'unknown' && answers[intent]) {
+                // **LOGIC RESTORED**: This now correctly handles all category intents (e.g., "category_electronics")
+                if (intent.startsWith('category_')) {
+                    sessionState.currentContext = { type: 'search', value: intent };
+                }
                 sessionState.lastResponseKey = intent;
                 const potentialReplies = answers[intent];
                 let reply;
@@ -340,17 +358,15 @@ document.addEventListener('DOMContentLoaded', function () {
     appendMessage(initialGreeting, 'received');
   }
 
-  // --- UPLOAD LOGIC RESTORED FROM ORIGINAL ---
   fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file && sessionState.conversationState && sessionState.conversationState.type === 'product_upload') {
           appendMessage(`<i>Uploading ${file.name}...</i>`, 'sent');
           sessionState.conversationState.data.file = file;
           const finalData = sessionState.conversationState.data;
-          sessionState.conversationState = null; // Clear state early
+          sessionState.conversationState = null;
           
           const thinkingEl = showThinking();
-          // Prepend the "Photo received!" message so the user sees it before the final result
           appendMessage(answers.upload_flow.get_photo, 'received');
           
           const success = await uploadProductFromConversation(finalData);
