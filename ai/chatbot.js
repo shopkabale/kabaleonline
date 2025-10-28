@@ -1,3 +1,5 @@
+// File: /ai/chatbot.js (Version 7.0 - The Final Logic Fix)
+
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
     console.error("Amara AI FATAL ERROR: Firebase v9 objects are not globally available. The script cannot run.");
