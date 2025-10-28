@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 10.0 - The Definitive Logic Fix)
+// File: /ai/chatbot.js (Version 10.0 - The Final Logic Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
