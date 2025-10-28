@@ -1,6 +1,23 @@
+// File: /ai/answers.js (The Definitive, Complete & Enriched Version)
+
+/**
+ * =======================================================================================
+ * AMARA AI KNOWLEDGE BASE
+ * =======================================================================================
+ * This file is Amara's "brain." It contains all the pre-written responses for the chatbot.
+ * Each key (e.g., "sell", "buy") corresponds to an intent defined in responses.js.
+ * - 'text': The HTML-formatted response Amara will display.
+ * - 'suggestions': An array of clickable follow-up prompts for the user.
+ * =======================================================================================
+ */
+
 const answers = {
 
-  // --- NEW KNOWLEDGE BASES (SAFELY INSIDE THE MAIN OBJECT) ---
+  // =======================================================================================
+  // KNOWLEDGE BASES & UTILITIES
+  // These are special data objects and error messages Amara uses for specific tasks.
+  // =======================================================================================
+
   "glossary": {
     "retake": "In university, a 'retake' is when a student has to take an exam again after not passing it the first time.",
     "kazi": "'Kazi' is a Swahili word for 'work' or 'job'. It's often used to ask what's up, as in 'Kazi gani?' - 'What's the work?'",
@@ -12,23 +29,26 @@ const answers = {
     "campus": { "kabeho": 2000, "nyabikoni": 2500, "mbarara road": 3000, "town": 2000, "rushoroza": 2000, "kigere": 3000 },
     "town": { "campus": 2000, "nyabikoni": 1500, "kabeho": 2000, "mbarara road": 2500, "rushoroza": 1500, "kigere": 2500 }
   },
-
-  // --- UTILITY RESPONSES ---
   "calculation_error": { text: "I'm sorry, I couldn't understand that calculation. Please try a simple format like '15000 + 500' or '20% of 50000'.", suggestions: ["How to sell", "Help"] },
   "glossary_not_found": { text: "I don't have a definition for that term right now, but I'm always learning!", suggestions: ["What is a 'boda boda'?", "Help"] },
   "delivery_estimate_error": { text: "I can only estimate delivery costs between major zones like 'Campus' and 'Town'. Please ask in the format: 'delivery cost from campus to town'.", suggestions: ["Delivery from Campus to Town"] },
   "conversation_cancelled": { text: "Okay, I've cancelled that process. What would you like to do next?", suggestions: ["Help", "Find a laptop"] },
+  "platform_action_error": { text: "I'm sorry, there was an error while trying to complete that action. Please try again using the website, or contact support if the problem continues.", suggestions: ["Contact support"] },
+  "user_not_logged_in": { text: "You need to be logged in to do that. Please <a href='/login.html'>log in</a> or <a href='/register.html'>create an account</a> first.", suggestions: ["How to sell", "How to buy"] },
+  "contact_seller_info": { text: "To contact the seller, please visit the product's page and use the contact details provided there. This ensures all communication is direct and secure." },
+  "exit_intent": { text: "👋 Before you go, did you find what you were looking for? I'm here to help if you have any questions!", suggestions: ["How to sell", "Find a hostel"] },
 
-  // --- CONVERSATIONAL UPLOAD FLOW ---
-
+  // =======================================================================================
+  // CONVERSATIONAL UPLOAD FLOW
+  // This structured object guides the user step-by-step through listing an item.
+  // =======================================================================================
 
   "prompt_upload_conversation": {
     text: "I can help with that. Should I guide you through creating the listing step-by-step in this conversation?",
     suggestions: ["Yes, guide me", "No, just give instructions"]
   },
-
   "upload_flow": {
-      "start": { text: "Awesome! I can help with that. Let's create your listing step-by-step. First, what is the title of the item you are selling?", suggestions: ["Cancel"] },
+      "start": { text: "Awesome! Let's create your listing step-by-step. First, what is the title of the item you are selling?", suggestions: ["Cancel"] },
       "get_title": { text: "Got it. Now, please write a short description for your item. Mention its condition and any special features.", suggestions: ["Cancel"] },
       "get_description": { text: "Perfect. What price are you asking for? Just type the number, for example: 50000", suggestions: ["Cancel"] },
       "get_price": { text: "Great price! Which category does this belong in?", suggestions: ["Electronics", "Clothing", "Furniture", "Books", "Kitchen", "Other"] },
@@ -39,19 +59,18 @@ const answers = {
       "finish_error": { text: "I'm sorry, there was an error while trying to create your listing. Please try again using the <a href='/upload/'>Upload Page</a>, or contact support if the problem continues.", suggestions: ["Contact support"] }
   },
 
-  // --- PLATFORM ACTION RESPONSES ---
-  "user_not_logged_in": { text: "You need to be logged in to do that. Please <a href='/login.html'>log in</a> or <a href='/register.html'>create an account</a> first.", suggestions: ["How to sell", "How to buy"] },
-  "contact_seller_info": { text: "To contact the seller, please visit the product's page and use the contact details provided there. This ensures all communication is direct and secure." },
-  "exit_intent": { text: "👋 Before you go, did you find what you were looking for? I'm here to help if you have any questions!", suggestions: ["How to sell", "Find a hostel"] },
+  // =======================================================================================
+  // GENERAL CHITCHAT & GREETINGS
+  // These make Amara feel more personable and handle common conversational fillers.
+  // =======================================================================================
 
-  // --- CORE CONVERSATIONAL (FROM YOUR ORIGINAL FILE) ---
   "greetings": [
     { text: "👋 Hello! I'm <b>Amara</b>, your guide to the KabaleOnline community marketplace. How can I help you today?", suggestions: ["How do I sell?", "Find a hostel", "Is selling free?"] },
     { text: "Hi there! Amara at your service. What can I help you find or list today?", suggestions: ["Show me electronics", "How to buy safely", "Contact admin"] },
     { text: "Welcome! I'm Amara. Ask me anything about buying, selling, or our community.", suggestions: ["Who is the founder?", "What is your mission?", "Find me a laptop"] }
   ],
   "well_being": {
-    text: "I'm doing great, thanks for asking! As an AI, I'm always ready to help. What can I assist you with?",
+    text: "I'm doing great, thanks for asking! As an AI, I'm always online and ready to help. What can I assist you with?",
     suggestions: ["How to sell", "How to buy safely", "Contact admin"]
   },
   "bot_identity": {
@@ -68,65 +87,75 @@ const answers = {
     { text: "You're most welcome! Is there anything else I can help with?", suggestions: ["How to sell", "Find a hostel"] },
     { text: "No problem at all! What's next on the list?", suggestions: ["Show me electronics", "Contact support"] },
     { text: "You got it! Anything else I can assist with?", suggestions: ["How do I buy?", "Is selling free?"] },
-    { text: "My pleasure. I'm here 24/7 if you need me!", suggestions: ["Tell me about safety", "Who is the founder?"] },
-    { text: "Anytime! That's what I'm here for.", suggestions: ["Find me a laptop", "What is your mission?"] },
-    { text: "Glad I could help out!", suggestions: ["How do I edit my item?", "Are there jobs?"] },
-    { text: "Of course! Don't hesitate to ask if anything else comes up.", suggestions: ["How to sell safely", "Read the blog"] },
-    { text: "Happy to be of service!", suggestions: ["How to rent a room", "Show me clothing"] },
-    { text: "It was nothing! Seriously, I'm an AI, I don't get tired.", suggestions: ["Find me a phone", "I want to sell"] },
-    { text: "You're welcome. Your success is my success!", suggestions: ["Go to my dashboard", "Help"] }
+    { text: "My pleasure. I'm here 24/7 if you need me!", suggestions: ["Tell me about safety", "Who is the founder?"] }
   ],
   "affirmation": { text: "Great! What can I help you with?", suggestions: ["How to sell", "How to buy", "Help"] },
   "negation": { text: "Okay, sounds good! I'll be right here if you need anything else.", suggestions: [] },
   "prompt_for_name": { text: "Of course! What should I call you?", suggestions: [] },
   "confirm_name_set": { text: "Got it! I'll remember to call you ${userName} from now on. How can I help you today?", suggestions: ["How to sell", "Find a hostel", "Is selling free?"] },
-
-  // --- PROCESS-BASED (FROM YOUR ORIGINAL FILE) ---
-  "after_upload": { text: "Great question! After your product is live, keep an eye on your <a href='/dashboard/'>Dashboard</a> for any new orders. You'll receive a notification when someone wants to buy it. Good luck!", suggestions: ["Go to my dashboard", "How to sell safely"] },
-  "after_delivery": { text: "Congratulations on your sale! The final and most important step is to go to your <a href='/dashboard/'>Dashboard</a> and mark the item as 'Sold'. This keeps the marketplace tidy for everyone.", suggestions: ["Go to my dashboard", "Sell another item"] },
-
-  // --- CHITCHAT & PERSONALITY (FROM YOUR ORIGINAL FILE) ---
   "chitchat_joke": [
     { text: "Why don't scientists trust atoms? Because they make up everything!", suggestions: ["Tell me another joke", "Help"] },
-    { text: "What do you call a fake noodle? An Impasta!", suggestions: ["Tell me another joke", "Help"] },
-    { text: "I told my computer I needed a break, and now it won’t stop sending me Kit-Kat ads.", suggestions: ["Tell me another joke", "Help"] }
+    { text: "What do you call a fake noodle? An Impasta!", suggestions: ["Tell me another joke", "Help"] }
   ],
-  "chitchat_weather": [
-    { text: "I don't have windows, but my forecast says it's a 100% chance of finding great deals on KabaleOnline! I hope your day is off to a great start. ☀️", suggestions: ["Find me a deal", "Help"] }
-  ],
+  "chitchat_weather": [ { text: "I don't have windows, but my forecast says it's a 100% chance of finding great deals on KabaleOnline! I hope your day is off to a great start. ☀️", suggestions: ["Find me a deal", "Help"] } ],
   "chitchat_time": [ { text: "I can certainly help with that!" }, { text: "Of course, the current time is:" }, { text: "No problem, the time is:" } ],
 
-  // --- CORE FEATURES (FROM YOUR ORIGINAL FILE) ---
-  "rent": {
-    text: `🏠 Looking for a place to stay in Kabale? You're in the right place. Here's how to find your next home:
-    <ul>
-      <li>Start by browsing all listings in our <a href='/rentals/' target='_blank'>Hostels & Rentals</a> section.</li>
-      <li>Use the filters to narrow your search by type: Single Rooms, Full Houses, Hostels, or even Shop Spaces.</li>
-      <li><b>Pro Tip:</b> Always visit a place in person before making any payment. Your safety is our top priority.</li>
-    </ul>`,
-    suggestions: ["How do I sell an item?", "Are there jobs available?", "Tell me about safety"]
-  },
+  // =======================================================================================
+  // CORE PLATFORM ACTIONS
+  // These answers explain the primary functions of the KabaleOnline platform.
+  // =======================================================================================
+
   "sell": {
-    text: `🛍️ Absolutely! Selling on KabaleOnline is fast, free, and designed for our community. You can use the traditional <a href='/upload/' target='_blank'>Upload Item Page</a>, or just tell me "I want to sell an item" and I can guide you through it!`,
+    text: `🛍️ Absolutely! Selling on KabaleOnline is fast, free, and designed for our community.
+    <br><br>You have two great options:
+    <ul>
+      <li><b>Guided Conversation:</b> Just tell me <strong>"I want to sell an item"</strong> and I can guide you through creating a listing step-by-step, right here in the chat.</li>
+      <li><b>Traditional Form:</b> If you prefer, you can use the standard <a href='/upload/' target='_blank'>Upload Item Page</a> to fill out all the details at once.</li>
+    </ul>`,
     suggestions: ["I want to sell an item", "Is selling free?", "Tips for good photos"]
   },
   "buy": {
-    text: `💰 Of course! Here’s how to find great deals and shop smart on KabaleOnline:
+    text: `💰 Of course! Here’s the complete guide to finding great deals and shopping smart on KabaleOnline:
     <ol>
       <li>
-        <strong>Browse & Discover:</strong> Start by exploring the <a href='/shop/' target='_blank'>Shop Page</a>. Use the search bar for specific items or click on a category.
+        <strong>Browse & Discover:</strong> Start by exploring the <a href='/shop/' target='_blank'>Shop Page</a>. Use the search bar for specific items or click on a category to see what's available.
       </li>
       <li>
-        <strong>Save Your Finds:</strong> Add items to your <a href='/cart.html' target='_blank'>Shopping Cart</a> to buy, or to your <a href='/wishlist.html' target='_blank'>Wishlist</a> to save for later.
+        <strong>Save Your Finds:</strong> See something you like? Add it to your <a href='/cart.html' target='_blank'>Shopping Cart</a> to buy, or to your <a href='/wishlist.html' target='_blank'>Wishlist</a> to save it for later.
       </li>
       <li>
-        <strong>Confirm Your Order:</strong> Checkout from your cart to notify the seller and get their contact details.
+        <strong>Contact the Seller:</strong> When you're ready, check out from your cart. This will provide you with the seller's contact details so you can arrange a meetup.
       </li>
       <li>
-        <strong>Arrange Delivery (Safety First!):</strong> The seller will contact you. Always agree to meet in a **safe, public place** and **inspect the item carefully** before you pay.
+        <strong>Meet & Inspect (Safety First!):</strong> Always agree to meet in a <strong>safe, public place</strong> like the university campus. **Crucially, inspect the item carefully** before you pay to ensure it matches the description.
       </li>
     </ol>`,
     suggestions: ["How do I track my orders?", "Tell me about safety", "How do I sell my own items?"]
+  },
+  "rent": {
+    text: `🏠 Looking for a place to stay in Kabale? You're in the right place. Our platform is the central hub for local rentals.
+    <ul>
+      <li>Start by browsing all listings in our <a href='/rentals/' target='_blank'>Hostels & Rentals</a> section.</li>
+      <li>Use the filters on that page to narrow your search by type: Single Rooms, Full Houses, Hostels, or even Shop Spaces for your business.</li>
+      <li><b>Pro Tip:</b> Your safety is our top priority. Always make sure to visit a rental property in person and meet the landlord before making any payment.</li>
+    </ul>`,
+    suggestions: ["How do I sell an item?", "Are there jobs available?", "Tell me about safety"]
+  },
+  "jobs": {
+    text: `💼 Whether you're hiring for your business or looking for work, our platform connects local talent with opportunities right here in Kabale.
+    <ul>
+      <li><b>For Job Seekers:</b> Visit our <a href='/services/' target='_blank'>Employment Section</a> to find the latest jobs, internships, and part-time gigs.</li>
+      <li><b>For Employers:</b> You can post your job openings for free to reach hundreds of skilled students and residents in our community.</li>
+    </ul>`,
+    suggestions: ["What kind of services can I find?", "Tell me about the founder", "I need general help"]
+  },
+  "services": {
+    text: `🧰 Need a professional? Our Services Hub is your go-to directory for skilled local experts for any task.
+    <ul>
+      <li>Visit the <a href='https://services.kabaleonline.com' target='_blank'>Services Hub</a> to browse providers by their skill.</li>
+      <li>You can find trusted Plumbers, Electricians, Tutors, Photographers, DJs, Mechanics, Boda Riders, and many more.</li>
+    </ul>`,
+    suggestions: ["How do deliveries work?", "How can I post my service?", "I need to report an issue"]
   },
   "lost": {
     text: `📄 We can help reconnect lost and found items in the community. It's a vital service.
@@ -137,68 +166,39 @@ const answers = {
     </ul>`,
     suggestions: ["How do I post an item?", "Read the campus blog", "Are there any events?"]
   },
-  "jobs": {
-    text: `💼 Whether you're hiring or looking for work, our platform connects local talent with opportunities.
-    <ul>
-      <li><b>For Job Seekers:</b> Visit our <a href='/services/' target='_blank'>Employment Section</a> to find the latest jobs and internships in Kabale.</li>
-      <li><b>For Employers:</b> You can post your job openings for free to reach hundreds of skilled students and residents.</li>
-    </ul>`,
-    suggestions: ["What kind of services can I find?", "Tell me about the founder", "I need general help"]
-  },
-  "services": {
-    text: `🧰 Need a professional? Our Services Hub connects you with skilled local experts for any task.
-    <ul>
-      <li>Visit the <a href='https://services.kabaleonline.com' target='_blank'>Services Hub</a> to browse providers.</li>
-      <li>You can find Plumbers, Electricians, Tutors, Photographers, DJs, Mechanics, Boda Riders, and more.</li>
-    </ul>`,
-    suggestions: ["How do deliveries work?", "How can I post my service?", "I need to report an issue"]
-  },
 
-"go_to_dashboard": {
+  // =======================================================================================
+  // SELLING & TRANSACTION DETAILS
+  // These answers provide specific details about the selling and payment process.
+  // =======================================================================================
 
-    text: `Sure thing! Your <a href='/dashboard/'>Dashboard</a> is your personal control center. From there you can manage all your listings and track your sales.`,
-
-    suggestions: ["Sell another item", "How do I edit my item?"]
-
-  },
-
-  // --- SELLING DETAILS (FROM YOUR ORIGINAL FILE) ---
+  "after_upload": { text: "Great question! After your product is live, keep an eye on your <a href='/dashboard/'>Dashboard</a> for any new orders. You'll receive a notification when someone wants to buy it. Good luck!", suggestions: ["Go to my dashboard", "How to sell safely"] },
+  "after_delivery": { text: "Congratulations on your sale! The final and most important step is to go to your <a href='/dashboard/'>Dashboard</a> and mark the item as 'Sold'. This keeps the marketplace tidy for everyone.", suggestions: ["Go to my dashboard", "Sell another item"] },
   "cost_of_selling": {
     text: `✅ Yes, selling on KabaleOnline is <strong>100% FREE</strong> for everyone in the community!
     <ul>
-      <li>There are <b>no listing fees</b>.</li>
-      <li>There are <b>no commissions</b> on your sales.</li>
+      <li>There are <b>no listing fees</b> to post an item.</li>
+      <li>There are <b>no commissions</b> taken from your sales.</li>
     </ul>
-    Our goal is to empower students and residents. The full amount you sell your item for is the amount you keep.`,
+    Our core mission is to empower students and local residents. The full amount you sell your item for is the amount you keep.`,
     suggestions: ["How do I sell an item?", "What items are prohibited?", "How to take good photos"]
   },
-  "how_to_edit": {
-    text: `✍️ It's easy to update your listing.
-    <ol>
-      <li>Go to your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
-      <li>Find the item you wish to edit and click the 'Edit' button next to it.</li>
-      <li>You can change the title, description, price, and upload new photos.</li>
-      <li>Click 'Save Changes' when you're done!</li>
-    </ol>`,
-    suggestions: ["How do I delete an item?", "Go to my Dashboard", "Tips for good photos"]
-  },
-  "how_to_delete": {
-    text: `🗑️ If you want to permanently remove your listing:
-    <ol>
-      <li>Go to your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
-      <li>Find the listing you want to remove.</li>
-      <li>Click the 'Delete' button. Please be sure, as this action cannot be undone.</li>
-    </ol>`,
-    suggestions: ["How do I mark an item as sold?", "Go to my Dashboard", "Help me sell"]
-  },
-  "mark_as_sold": {
-    text: `🎉 Congratulations on your sale! To keep the marketplace up-to-date, please mark your item as sold.
+  "payment_methods": {
+    text: `💸 All payments are handled directly between the buyer and the seller to ensure transparency and safety. We strongly recommend using:
     <ul>
-      <li>Go to your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
-      <li>Find the item and use the toggle or button to mark it as "Sold Out".</li>
-      <li>This hides it from the shop so you won't get any more inquiries.</li>
-    </ul>`,
-    suggestions: ["How do I sell another item?", "Go to my Dashboard", "Leave feedback"]
+      <li><b>Mobile Money</b> (MTN or Airtel) once you have met up.</li>
+      <li><b>Cash</b> upon meetup.</li>
+    </ul>
+    For your safety, <b>never send money to anyone</b> before you have received and thoroughly inspected the item in person.`,
+    suggestions: ["How do I buy safely?", "Can I bargain?"]
+  },
+  "delivery_options": {
+    text: `🚴‍♂️ Currently, all deliveries are arranged directly between the buyer and seller. We recommend agreeing on a safe, well-lit, public place to meet for the exchange. For smaller items, a trusted Boda Boda can also be used for delivery once payment has been confirmed.`,
+    suggestions: ["Safety tips", "What payment methods are used?"]
+  },
+  "bargaining": {
+    text: `🤝 Yes, some sellers may be open to negotiation! You can contact the seller directly using the details on the product page to discuss the price. Always be respectful in your negotiations to get the best outcome.`,
+    suggestions: ["How to contact a seller?", "How to buy an item"]
   },
   "photo_tips": {
     text: `📸 Great photos can make your item sell 3x faster! Here are some pro tips:
@@ -215,88 +215,46 @@ const answers = {
     suggestions: ["Can I bargain?", "How to sell an item"]
   },
 
-  // --- TRANSACTION & SAFETY (FROM YOUR ORIGINAL FILE) ---
-  "payment_methods": {
-    text: `💸 All payments are handled directly between the buyer and the seller. We strongly recommend using:
-    <ul>
-      <li><b>Mobile Money</b> (MTN or Airtel) upon meetup.</li>
-      <li><b>Cash</b> upon meetup.</li>
-    </ul>
-    For your safety, <b>never send money</b> before you have received and inspected the item.`,
-    suggestions: ["How do I buy safely?", "Can I bargain?"]
-  },
-  "delivery_options": {
-    text: `🚴‍♂️ Currently, all deliveries are arranged directly between the buyer and seller. We recommend agreeing on a safe, public place to meet for the exchange. A trusted Boda Boda can also be used for small items once payment is confirmed.`,
-    suggestions: ["Safety tips", "What payment methods are used?"]
-  },
-  "bargaining": {
-    text: `🤝 Yes, some sellers may be open to negotiation! You can contact the seller directly using the details on the product page to discuss the price. Always be respectful in your negotiations.`,
-    suggestions: ["How to contact a seller?", "How to buy an item"]
-  },
-  "prohibited_items": {
-    text: `🚫 To keep our community safe, certain items are not allowed. This includes, but is not limited to:
-    <ul>
-      <li>Illegal items or substances.</li>
-      <li>Weapons and hazardous materials.</li>
-      <li>Stolen goods.</li>
-      <li>Counterfeit or fake products.</li>
-    </ul>
-    Please only list items you legally own.`,
-    suggestions: ["How to sell safely", "Contact admin", "How do I sell an item?"]
-  },
-  "disputes_returns": {
-    text: `All transactions are directly between the buyer and seller, so all sales are considered final. This is why it is critical to <b>inspect items thoroughly before paying</b>. If you have a serious issue with a user (like fraud or a scam), please contact the admin immediately with all the details.`,
-    suggestions: ["How do I contact support?", "Safety tips"]
-  },
-  "user_safety": {
-    text: `🛡️ Your safety is our top priority. Here are key tips for transacting on KabaleOnline:
-    <ul>
-      <li><b>Meet in Public:</b> Always meet sellers/buyers in well-lit, public places. The university campus is a great option.</li>
-      <li><b>Inspect Before Paying:</b> Never send money before you have inspected the item in person and are happy with it.</li>
-      <li><b>Trust Your Gut:</b> If a deal feels too good to be true or a user seems suspicious, walk away.</li>
-      <li><b>Report Issues:</b> If you have a problem with a user, please <a href="https://wa.me/256784655792" target="_blank">contact the admin</a> immediately.</li>
-    </ul>`,
-    suggestions: ["How do I buy an item?", "How do I sell an item?", "Contact the admin"]
-  },
+  // =======================================================================================
+  // USER ACCOUNT & MANAGEMENT
+  // These answers relate to a user's personal account and listings.
+  // =======================================================================================
 
-  // --- TROUBLESHOOTING (FROM YOUR ORIGINAL FILE) ---
-  "technical_support": {
-    text: `I'm sorry you're facing a technical issue. For problems like login errors, password resets, or upload failures, please try refreshing the page first. If the problem continues, please <a href="https://wa.me/256784655792" target="_blank">contact support</a> with a screenshot of the error.`,
-    suggestions: ["Contact support", "How to use the dashboard"]
+  "go_to_dashboard": {
+    text: `Sure thing! Your <a href='/dashboard/'>Dashboard</a> is your personal control center. From there you can manage all your listings and track your sales.`,
+    suggestions: ["Sell another item", "How do I edit my item?"]
   },
-  "seller_unresponsive": {
-    text: `We're sorry to hear that. Most sellers reply within a day.
-    <ul>
-      <li>First, please double-check that you used the correct contact number.</li>
-      <li>If you've waited more than 48 hours, they may no longer have the item. We recommend you cancel the order and look for another one.</li>
-      <li>If a seller is consistently unresponsive or suspicious, please <a href="https://wa.me/256784655792" target="_blank">contact the admin</a> with their details.</li>
-    </ul>`,
-    suggestions: ["How do I find my orders?", "How do I buy safely?", "Browse all items"]
-  },
-  "login_issues": {
-    text: `🔑 Having trouble signing in?
-    <ul>
-      <li>If you've forgotten your password, use the <a href='/forgot-password.html' target='_blank'>'Forgot Password'</a> link on the login page to reset it.</li>
-      <li>Make sure you are using the correct email or username you signed up with.</li>
-      <li>If you still can't get in, please <a href="httpsa://wa.me/256784655792" target="_blank">contact admin</a> for assistance.</li>
-    </ul>`,
-    suggestions: ["Go to my dashboard", "Help me sell an item", "Contact admin"]
-  },
-  "upload_issues": {
-    text: `🖼️ Sorry you're having trouble with photos. Here are some common fixes:
-    <ul>
-      <li><b>Check File Size:</b> Images that are too large might fail. Try using a smaller photo (under 2MB is best).</li>
-      <li><b>Check File Type:</b> We accept standard formats like JPG, PNG, and WEBP.</li>
-      <li><b>Check Your Connection:</b> A weak internet connection can interrupt the upload.</li>
-    </ul>
-    If it still doesn't work, let the admin know!`,
-    suggestions: ["How to take good photos", "Contact admin", "How do I edit my listing?"]
-  },
-
-  // --- PLATFORM FEATURES (FROM YOUR ORIGINAL FILE) ---
   "dashboard": {
     text: `⚙️ Your <a href='/dashboard/' target='_blank'>Dashboard</a> is your personal control center. From there, you can manage your listings, track orders, update your profile, and check your <a href='/inbox.html' target='_blank'>Inbox</a>.`,
     suggestions: ["How do I track my orders?", "What is the Wishlist?", "I want to sell something"]
+  },
+  "how_to_edit": {
+    text: `✍️ It's easy to update your listing if you need to change the price or description.
+    <ol>
+      <li>Go to your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
+      <li>Find the item you wish to edit and click the 'Edit' button next to it.</li>
+      <li>You can change the title, description, price, and upload new photos.</li>
+      <li>Click 'Save Changes' when you're done!</li>
+    </ol>`,
+    suggestions: ["How do I delete an item?", "Go to my Dashboard", "Tips for good photos"]
+  },
+  "how_to_delete": {
+    text: `🗑️ If you want to permanently remove your listing from the marketplace:
+    <ol>
+      <li>Go to your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
+      <li>Find the listing you want to remove.</li>
+      <li>Click the 'Delete' button. Please be sure, as this action cannot be undone.</li>
+    </ol>`,
+    suggestions: ["How do I mark an item as sold?", "Go to my Dashboard", "Help me sell"]
+  },
+  "mark_as_sold": {
+    text: `🎉 Congratulations on your sale! To keep the marketplace up-to-date for everyone, please mark your item as sold.
+    <ul>
+      <li>Go to your <a href='/dashboard/' target='_blank'>Dashboard</a>.</li>
+      <li>Find the item and use the toggle or button to mark it as "Sold Out".</li>
+      <li>This hides it from the shop so you won't get any more inquiries about it.</li>
+    </ul>`,
+    suggestions: ["How do I sell another item?", "Go to my Dashboard", "Leave feedback"]
   },
   "orders": {
     text: `📦 You can keep track of all your purchases in the <a href='/my-orders.html' target='_blank'>My Orders</a> section. It helps you see the status of each delivery and review your purchase history.`,
@@ -314,20 +272,83 @@ const answers = {
     text: `📥 Your <a href='/inbox.html' target='_blank'>Inbox</a> is where you can find all your private messages from sellers, buyers, or the site admin. It's important to check it regularly.`,
     suggestions: ["How do I contact the admin?", "Go to my Dashboard", "Help me sell an item"]
   },
-  "requests": {
-    text: `🙏 Can't find what you're looking for? Post a public request in the <a href='/requests/view.html' target='_blank'>User Requests</a> section! Sellers might see your request and have exactly what you need.`,
-    suggestions: ["How do I search for items?", "Tell me about services", "Read the blog"]
+
+  // =======================================================================================
+  // SAFETY & SUPPORT
+  // These answers focus on user safety, rules, and getting help.
+  // =======================================================================================
+  
+  "user_safety": {
+    text: `🛡️ Your safety is our #1 priority. Here are the golden rules for transacting securely on KabaleOnline:
+    <ul>
+      <li><strong>Meet in Public:</strong> Always arrange to meet sellers or buyers in well-lit, public places where there are other people around. The university campus is a great option.</li>
+      <li><strong>Inspect Before Paying:</strong> Never, ever send money before you have seen and inspected the item in person and are happy with its condition.</li>
+      <li><strong>Trust Your Gut:</strong> If a deal feels too good to be true or a user seems suspicious, it's okay to walk away. Your safety is more important than any deal.</li>
+      <li><strong>Report Issues:</strong> If you have a problem with a user or suspect a scam, please <a href="https://wa.me/256784655792" target="_blank">contact the admin</a> immediately with all the details.</li>
+    </ul>`,
+    suggestions: ["How do I buy an item?", "How do I sell an item?", "Contact the admin"]
   },
-  "feedback": {
-    text: `⭐ Your feedback helps our community grow stronger! You can <a href='/submit-testimonial.html' target='_blank'>Share Feedback</a> to leave a testimonial or report any issues. We read every submission!`,
-    suggestions: ["Contact the admin directly", "What is KabaleOnline about?", "How to rent a hostel"]
+  "contact": {
+    text: `📞 For any technical problems, reporting a suspicious user, or complex issues that require direct help, please contact the admin. This is for when something is broken or you have a serious complaint.
+    <ul>
+      <li><b>WhatsApp (Fastest Response):</b> <a href="https://wa.me/256784655792" target="_blank">0784655792</a></li>
+      <li><b>Email/Form:</b> For less urgent issues, you can send a detailed message via our <a href='/contact.html' target='_blank'>Contact Form</a>.</li>
+    </ul>`,
+    suggestions: ["How to sell safely", "How to buy safely"]
   },
-  "blog": {
-    text: `📚 Check out our <a href='/blog/' target='_blank'>Blog</a> for updates, stories from campus, safety tips for online shopping, and news about what's happening in Kabale.`,
-    suggestions: ["Tell me about events", "Who is the founder?", "I need general help"]
+  "prohibited_items": {
+    text: `🚫 To keep our community safe and trustworthy, certain items are not allowed. This includes, but is not limited to:
+    <ul>
+      <li>Illegal items or substances.</li>
+      <li>Weapons and hazardous materials.</li>
+      <li>Stolen goods.</li>
+      <li>Counterfeit or fake products.</li>
+    </ul>
+    Please only list items that you legally own and have the right to sell.`,
+    suggestions: ["How to sell safely", "Contact admin", "How do I sell an item?"]
+  },
+  "disputes_returns": {
+    text: `All transactions are directly between the buyer and seller, so all sales are considered final. This is why it is critical to <b>inspect items thoroughly before paying</b>. If you have a serious issue with a user (like fraud or a scam), please contact the admin immediately with all the details.`,
+    suggestions: ["How do I contact support?", "Safety tips"]
+  },
+  "technical_support": {
+    text: `I'm sorry you're facing a technical issue. For problems like login errors, password resets, or upload failures, please try refreshing the page first. If the problem continues, please <a href="https://wa.me/256784655792" target="_blank">contact support</a> with a screenshot of the error.`,
+    suggestions: ["Contact support", "How to use the dashboard"]
+  },
+  "seller_unresponsive": {
+    text: `We're sorry to hear that. Most sellers reply within a day.
+    <ul>
+      <li>First, please double-check that you used the correct contact number.</li>
+      <li>If you've waited more than 48 hours, they may no longer have the item. We recommend you cancel the order and look for another one.</li>
+      <li>If a seller is consistently unresponsive or suspicious, please <a href="https://wa.me/256784655792" target="_blank">contact the admin</a> with their details.</li>
+    </ul>`,
+    suggestions: ["How do I find my orders?", "How do I buy safely?", "Browse all items"]
+  },
+  "login_issues": {
+    text: `🔑 Having trouble signing in? Here are the most common solutions:
+    <ul>
+      <li>If you've forgotten your password, use the <a href='/forgot-password.html' target='_blank'>'Forgot Password'</a> link on the login page to reset it via email.</li>
+      <li>Make sure you are using the correct email or username you signed up with. Check for any typos.</li>
+      <li>If you still can't get in, please <a href="https://wa.me/256784655792" target="_blank">contact the admin</a> for direct assistance.</li>
+    </ul>`,
+    suggestions: ["Go to my dashboard", "Help me sell an item", "Contact admin"]
+  },
+  "upload_issues": {
+    text: `🖼️ Sorry you're having trouble with photos. Here are some common fixes:
+    <ul>
+      <li><b>Check File Size:</b> Images that are too large might fail. Try using a smaller photo (under 2MB is best).</li>
+      <li><b>Check File Type:</b> We accept standard formats like JPG, PNG, and WEBP.</li>
+      <li><b>Check Your Connection:</b> A weak internet connection can interrupt the upload.</li>
+    </ul>
+    If it still doesn't work, let the admin know!`,
+    suggestions: ["How to take good photos", "Contact admin", "How do I edit my listing?"]
   },
 
-  // --- KABALE ONLINE INFO (FROM YOUR ORIGINAL FILE) ---
+  // =======================================================================================
+  // PLATFORM INFORMATION & FEATURES
+  // These answers are about KabaleOnline itself and its other features.
+  // =======================================================================================
+
   "about_platform": {
     text: `KabaleOnline is a free community marketplace built for the students and residents of Kabale. Our platform makes it easy and safe for you to buy and sell goods, find rentals, discover local services, and stay connected with what's happening in town.`,
     suggestions: ["What is your mission?", "Who is the founder?", "Is selling free?"]
@@ -345,15 +366,7 @@ const answers = {
   "mission_vision": {
     text: `🎯 Our <b>Mission</b> is to empower the Kabale community by making local commerce and services simple, accessible, and safe.
     <br><br>
-    Our <b>Vision</b> is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them.
-    <br><br>
-    Our <b>Objectives</b> are to:
-    <ul>
-      <li>Provide a 100% free platform for students to trade.</li>
-      <li>Create a centralized hub for local services and job opportunities.</li>
-      <li>Promote safety and trust in peer-to-peer transactions.</li>
-      <li>Foster a strong sense of community by connecting people's needs with local solutions.</li>
-    </ul>`,
+    Our <b>Vision</b> is to be the digital heartbeat of Kabale, connecting every student and resident to the opportunities around them, from finding a place to live to starting a small business.`,
     suggestions: ["Who is the founder?", "How do I sell an item?", "I need to contact support"]
   },
   "founder": {
@@ -364,16 +377,36 @@ const answers = {
     text: `📅 KabaleOnline was founded in <b>August 2025</b>. It started as a project to create a practical, real-world solution for the local community's needs and has been growing with user feedback ever since!`,
     suggestions: ["Who is the founder?", "What is the vision?", "Browse all items"]
   },
-  "contact": {
-    text: `📞 For any technical problems, reporting a user, or complex issues that require direct help, please contact the admin. This is for when something is broken or you have a serious complaint.
+  "requests": {
+    text: `🙏 Can't find what you're looking for? Post a public request in the <a href='/requests/view.html' target='_blank'>User Requests</a> section! Sellers might see your request and have exactly what you need.`,
+    suggestions: ["How do I search for items?", "Tell me about services", "Read the blog"]
+  },
+  "feedback": {
+    text: `⭐ Your feedback helps our community grow stronger! You can <a href='/submit-testimonial.html' target='_blank'>Share Feedback</a> to leave a testimonial or report any issues. We read every submission!`,
+    suggestions: ["Contact the admin directly", "What is KabaleOnline about?", "How to rent a hostel"]
+  },
+  "blog": {
+    text: `📚 Check out our <a href='/blog/' target='_blank'>Blog</a> for updates, stories from campus, safety tips for online shopping, and news about what's happening in Kabale.`,
+    suggestions: ["Tell me about events", "Who is the founder?", "I need general help"]
+  },
+  "deliveries": {
+    text: `🚴‍♂️ We're excited to announce that **KabaleOnline Deliveries** is coming soon! This feature will allow you to request a verified and trusted boda rider for same-day pickups and drop-offs around town. Stay tuned!`,
+    suggestions: ["What services are available now?", "Are there any events?", "How to sell an item"]
+  },
+  "events": {
+    text: `🎟️ Find out what's happening in Kabale or promote your own event!
     <ul>
-      <li><b>WhatsApp (Fastest Response):</b> <a href="httpsa://wa.me/256784655792" target="_blank">0784655792</a></li>
-      <li><b>Email/Form:</b> Send a detailed message via our <a href='/contact.html' target='_blank'>Contact Form</a>.</li>
+      <li>Check the <a href='/events/' target='_blank'>Events Page</a> for local concerts, promotions, and community gatherings.</li>
+      <li>As a promoter, you can post your event for free to reach a huge local audience.</li>
     </ul>`,
-    suggestions: ["How to sell safely", "How to buy safely"]
+    suggestions: ["Read the campus blog", "How do I find a job?", "I need help"]
   },
 
-  // --- CATEGORIES (FROM YOUR ORIGINAL FILE) ---
+  // =======================================================================================
+  // STATIC CATEGORY RESPONSES
+  // These are fallback responses when a user mentions a category without a specific search query.
+  // =======================================================================================
+  
   "category_electronics": {
     text: `Great! Here are all the electronics listings. You can find phones, laptops, and more.
     <ul>
@@ -396,21 +429,11 @@ const answers = {
     suggestions: ["Show me electronics", "I need help"]
   },
 
-  // --- OTHER (FROM YOUR ORIGINAL FILE) ---
-  "deliveries": {
-    text: `🚴‍♂️ We're excited to announce that **KabaleOnline Deliveries** is coming soon! This feature will allow you to request a verified and trusted boda rider for same-day pickups and drop-offs around town. Stay tuned!`,
-    suggestions: ["What services are available now?", "Are there any events?", "How to sell an item"]
-  },
-  "events": {
-    text: `🎟️ Find out what's happening in Kabale or promote your own event!
-    <ul>
-      <li>Check the <a href='/events/' target='_blank'>Events Page</a> for local concerts, promotions, and community gatherings.</li>
-      <li>As a promoter, you can post your event for free to reach a huge local audience.</li>
-    </ul>`,
-    suggestions: ["Read the campus blog", "How do I find a job?", "I need help"]
-  },
-  
-  // --- HELP (FROM YOUR ORIGINAL FILE) ---
+  // =======================================================================================
+  // HELP & GUIDANCE
+  // The main help command that explains Amara's capabilities.
+  // =======================================================================================
+
   "help": {
     text: `🆘 I can help with almost anything on KabaleOnline! Here’s a full guide to what I know. Just ask me a question about any of these topics:
     <br><strong>🛒 Shopping & Selling</strong>
