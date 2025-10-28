@@ -1,11 +1,10 @@
-// File: /ai/chatbot.js (The Definitive, Final, and Corrected Version)
+import { responses } from './responses.js';
+import { answers } from './answers.js';
+import { 
+    auth, db, doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, sendSignInLinkToEmail 
+} from '/firebase.js';
 
 document.addEventListener('DOMContentLoaded', function () {
-  if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined' || typeof sendSignInLinkToEmail === 'undefined') {
-    console.error("Amara AI FATAL ERROR: Firebase v9 objects are not globally available. The script cannot run.");
-    return;
-  }
-
   const SESSION_STATE_KEY = 'kabale_session_state_v1';
   const SEARCH_HISTORY_KEY = 'kabale_search_history_v1';
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
