@@ -20,6 +20,13 @@ const answers = {
   "conversation_cancelled": { text: "Okay, I've cancelled that process. What would you like to do next?", suggestions: ["Help", "Find a laptop"] },
 
   // --- CONVERSATIONAL UPLOAD FLOW ---
+
+
+  "prompt_upload_conversation": {
+    text: "I can help with that. Should I guide you through creating the listing step-by-step in this conversation?",
+    suggestions: ["Yes, guide me", "No, just give instructions"]
+  },
+
   "upload_flow": {
       "start": { text: "Awesome! I can help with that. Let's create your listing step-by-step. First, what is the title of the item you are selling?", suggestions: ["Cancel"] },
       "get_title": { text: "Got it. Now, please write a short description for your item. Mention its condition and any special features.", suggestions: ["Cancel"] },
