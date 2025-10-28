@@ -200,15 +200,21 @@ document.addEventListener('DOMContentLoaded', function () {
     return text.replace(regex, '').replace(/\s\s+/g, ' ').trim();
   }
   
-  function isNewTopic(text) {
-      const newTopicStarters = ['how do', 'what is', 'who is', 'when', 'where', 'why', 'is it', 'can i', 'do you'];
-      if (newTopicStarters.some(starter => text.toLowerCase().startsWith(starter))) return true;
-      const coreActionKeys = ['sell', 'buy', 'rent', 'help', 'contact'];
-      for (const key of coreActionKeys) {
-          if ((responses[key] || []).some(keyword => new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(text))) return true;
-      }
-      return false;
-  }
+  // --- THIS IS THE NEW, CORRECTED FUNCTION ---
+function isNewTopic(text) {
+    const lc = text.toLowerCase();
+    const newTopicStarters = ['how do', 'what is', 'who is', 'when', 'where', 'why', 'is it', 'can i', 'do you', 'tell me', 'show me'];
+    // If the text starts with a clear question, it's a new topic.
+    if (newTopicStarters.some(starter => lc.startsWith(starter))) {
+        return true;
+    }
+    // If the text is very short and doesn't start with a question, it's a follow-up.
+    if (text.split(' ').length <= 3) {
+        return false;
+    }
+    // Otherwise, assume it's a new topic.
+    return true;
+}
 
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
