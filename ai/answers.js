@@ -154,6 +154,14 @@ const answers = {
     suggestions: ["How do deliveries work?", "How can I post my service?", "I need to report an issue"]
   },
 
+"go_to_dashboard": {
+
+    text: `Sure thing! Your <a href='/dashboard/'>Dashboard</a> is your personal control center. From there you can manage all your listings and track your sales.`,
+
+    suggestions: ["Sell another item", "How do I edit my item?"]
+
+  },
+
   // --- SELLING DETAILS (FROM YOUR ORIGINAL FILE) ---
   "cost_of_selling": {
     text: `✅ Yes, selling on KabaleOnline is <strong>100% FREE</strong> for everyone in the community!
