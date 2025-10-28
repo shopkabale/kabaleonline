@@ -2,7 +2,7 @@
 
 const responses = {
   "product_query": ["price of", "cost of", "how much is", "what's the price of", "search for", "find me", "i'm looking for", "show me", "can i see", "look up"],
-  "price_check": ["is the price of", "is a price of", "isn't a price of", "is", "too high", "too low", "a good price", "is that price fair"],
+  "price_check": ["is the price of", "is a price of", "isn't a price of" , "too high", "too low", "a good price", "is that price fair"],
   "glossary_query": ["what is a", "what is an", "what's a", "what is", "what's", "what does", "define", "meaning of"],
   "delivery_estimate": ["how much to deliver", "delivery cost", "boda cost", "how much is delivery", "estimate delivery", "cost to send"],
   "start_upload": ["i want to sell", "i would like to sell", "sell my phone", "sell my laptop", "post an item for sale", "create a listing", "upload an item", "how to upload an item"],
