@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 8.0 - The Final Logic Fix)
+// File: /ai/chatbot.js (Version 9.0 - The Definitive Logic Fix)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
@@ -218,13 +218,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if ((responses.negation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'negation' };
     }
     
-    for (const trigger of (responses.product_query || [])) {
-        if (lc.startsWith(trigger)) {
-            let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
-            if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
-        }
-    }
-    
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
     if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
@@ -253,6 +246,13 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
     
+    for (const trigger of (responses.product_query || [])) {
+        if (lc.startsWith(trigger)) {
+            let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
+            if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
+        }
+    }
+
     for (const trigger of (responses.glossary_query || [])) {
         if (lc.startsWith(trigger)) {
             let term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
