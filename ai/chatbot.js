@@ -142,14 +142,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  async function callProductLookupAPI(params) {
-    sessionState.currentContext = params.categoryName ? { type: 'category', value: params.categoryName } : { type: 'product', value: params.productName };
+  async function callAPIFunction(endpoint, { body, token } = {}) {
     try {
-        const res = await fetch(`/.netlify/functions/product-lookup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
-        if (!res.ok) throw new Error('Server returned an error');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const res = await fetch(`/.netlify/functions/${endpoint}`, { 
+            method: 'POST', 
+            headers: headers,
+            body: body ? JSON.stringify(body) : null
+        });
+        if (!res.ok) throw new Error(`Server returned an error for ${endpoint}`);
         return await res.json();
     } catch (err) {
-        console.error(`Fatal: product-lookup API fetch failed.`, err);
+        console.error(`Fatal: ${endpoint} API fetch failed.`, err);
         return { text: "Sorry, I'm having trouble connecting to the database right now." };
     }
   }
@@ -209,6 +216,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if ((responses.negation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'negation' };
     }
     
+    for (const trigger of (responses.product_query || [])) {
+        if (lc.startsWith(trigger)) {
+            let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
+            if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
+        }
+    }
+    
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
     if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
@@ -235,13 +249,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
-    }
-
-    for (const trigger of (responses.product_query || [])) {
-        if (lc.startsWith(trigger)) {
-            let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
-            if (productName) { saveSearchHistory(productName); return { intent: 'search_product', entities: { productName } }; }
-        }
     }
     
     for (const trigger of (responses.glossary_query || [])) {
@@ -317,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             let newKeywords = cleanSearchQuery(newKeywordsRaw);
             let combinedQuery = `${newKeywords} ${sessionState.currentContext.value}`;
-            return await callProductLookupAPI({ productName: combinedQuery });
+            return await callAPIFunction('product-lookup', { body: { productName: combinedQuery } });
         }
     }
     
@@ -327,13 +334,13 @@ document.addEventListener('DOMContentLoaded', function () {
     
     switch (intent) {
         case 'start_upload': if (!isUserLoggedIn()) return answers.user_not_logged_in; sessionState.pendingAction = 'confirm_upload'; return answers.prompt_upload_conversation;
-        case 'manage_listings': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: "Please visit your <a href='/dashboard/'>Dashboard</a> to manage your listings. This feature is coming to chat soon!" };
+        case 'manage_listings': const user = isUserLoggedIn(); if (!user) return answers.user_not_logged_in; const token = await user.getIdToken(); return await callAPIFunction('user-listings', { token });
         case 'mark_as_sold': if (!isUserLoggedIn()) return answers.user_not_logged_in; return { text: `To mark your '${entities.item}' as sold, please use the controls in your <a href='/dashboard/'>Dashboard</a>.` };
         case 'calculate': const result = solveMathExpression(entities.expression); return { text: `The result is <b>${result.toLocaleString()}</b>.` };
         case 'ask_glossary': const definition = answers.glossary[entities.term]; return definition ? { text: `<b>${capitalize(entities.term)}:</b> ${definition}` } : answers.glossary_not_found;
         case 'estimate_delivery': const cost = estimateDeliveryCost(entities.from, entities.to); return cost ? { text: `The estimated boda boda cost from ${capitalize(entities.from)} to ${capitalize(entities.to)} is around <b>UGX ${cost.toLocaleString()}</b>.` } : answers.delivery_estimate_error;
-        case 'search_product': return await callProductLookupAPI({ productName: entities.productName });
-        case 'search_category': return await callProductLookupAPI({ categoryName: entities.categoryName });
+        case 'search_product': return await callAPIFunction('product-lookup', { body: { productName: entities.productName } });
+        case 'search_category': return await callAPIFunction('product-lookup', { body: { categoryName: entities.categoryName } });
         case 'set_name': sessionState.userName = entities.name; saveState(); return answers.confirm_name_set;
         case 'price_check': const price = entities.price; let responseText = `Regarding a price of UGX ${price.toLocaleString()}:<br>`; if (price > 1000000) { responseText += "That's a high-ticket item! I'd recommend meeting the seller in a very public place and verifying everything carefully before paying."; } else if (price > 200000) { responseText += "That's a significant amount. Be sure to inspect it thoroughly."; } else if (price < 20000) { responseText += "That seems like a great deal! Just make sure the item's condition matches the description."; } else { responseText += "That seems like a pretty standard price for many items here."; } return { text: responseText, suggestions: ["Safety tips", "How do I buy?", "Find me a laptop"] };
         case 'chitchat_time': return { text: `${answers.chitchat_time[Math.floor(Math.random()*answers.chitchat_time.length)].text} <b>${nowTime()}</b>.` };
