@@ -32,7 +32,7 @@ const responses = {
   "chitchat_time": ["what's the time", "what is the time", "do you have the time", "time now", "current time"],
   "cost_of_selling": ["is selling free", "is it free to sell", "fees", "commission", "cost to sell", "does it cost to sell", "is kabaleonline free", "is selling on kabaleonline free", "charges", "listing fee", "are there charges"],
   "payment_methods": ["payment", "pay", "mobile money", "mtn", "airtel", "cash", "how do i pay", "payment options", "can i pay with card"],
-  "delivery_options": ["delivery", "deliveries", "boda", "pickup", "drop", "send package", "courier", "parcel", "shipping", "how to get my item", "meet up", "do you deliver"],
+  "delivery_options": ["delivery", "deliveries", "boda", "boda boda", "pickup", "drop", "send package", "courier", "parcel", "shipping", "how to get my item", "meet up", "do you deliver"],
   "bargaining": ["negotiate", "bargain", "discount", "last price", "can i negotiate", "is the price final", "can i get a discount", "is it negotiable"],
   "account_management": ["dashboard", "my account", "my profile", "account settings", "manage my listings", "my stuff", "my products", "my posts", "my dashboard", "change password", "delete account"],
   "how_to_edit": ["how do i edit", "edit my item", "update my listing", "change my ad", "modify my post", "how to edit"],
