@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 12.0 - Definitive Final Version)
+// File: /ai/chatbot.js (The Definitive, Final, and Corrected Version)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined' || typeof sendSignInLinkToEmail === 'undefined') {
@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
     conversationState: null
   };
 
+  const actionCodeSettings = {
+    url: `${window.location.origin}/dashboard/`,
+    handleCodeInApp: true,
+  };
+
   function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function safeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -40,11 +45,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function saveSearchHistory(term) { let h=getSearchHistory(); if(!h.includes(term)){h.unshift(term);localStorage.setItem(SEARCH_HISTORY_KEY,JSON.stringify(h.slice(0,3)));}}
   
   function isUserLoggedIn() { return auth.currentUser; }
-
-  const actionCodeSettings = {
-    url: `${window.location.origin}/dashboard/`,
-    handleCodeInApp: true,
-  };
 
   function scrollToBottom() { if(chatBody) chatBody.scrollTop = chatBody.scrollHeight; }
   
@@ -223,7 +223,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     if ((responses.user_safety || []).some(k => lc.includes(k))) return { intent: 'user_safety' };
-
+    if ((responses.founder || []).some(k => lc.includes(k))) return { intent: 'founder' };
+    if ((responses.mission_vision || []).some(k => lc.includes(k))) return { intent: 'mission_vision' };
+    
     const deliveryMatch = lc.match(/delivery from\s+([a-zA-Z]+)\s+to\s+([a-zA-Z]+)/);
     if (deliveryMatch) return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
     
@@ -253,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
 
     for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query', 'delivery_options', 'user_safety', 'calculate', 'delivery_estimate'].includes(key);
+        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query', 'delivery_options', 'user_safety', 'calculate', 'delivery_estimate', 'founder', 'mission_vision'].includes(key);
         if (isHandled) continue;
         for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
     }
