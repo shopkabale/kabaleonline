@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (Version 11.0 - The Definitive Logic Fix)
+// File: /ai/chatbot.js (The Simple & Reliable Version)
 
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof auth === 'undefined' || typeof db === 'undefined' || typeof doc === 'undefined' || typeof getDoc === 'undefined' || typeof addDoc === 'undefined' || typeof collection === 'undefined' || typeof serverTimestamp === 'undefined' || typeof updateDoc === 'undefined') {
@@ -212,40 +212,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
+
     if (sessionState.conversationState) { return { intent: 'continue_conversation' }; }
     if (sessionState.pendingAction) {
         if ((responses.affirmation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'affirmation' };
         if ((responses.negation || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: 'negation' };
     }
+
+    // PRIORITY 1: High-specificity actions and questions
+    if ((responses.user_safety || []).some(k => lc.includes(k))) return { intent: 'user_safety' };
     
+    const deliveryMatch = lc.match(/delivery from\s+([a-zA-Z]+)\s+to\s+([a-zA-Z]+)/);
+    if (deliveryMatch) return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
+    
+    // PRIORITY 2: Core actions and utilities
+    for (const key of ['start_upload', 'manage_listings']) {
+        if ((responses[key] || []).some(k => new RegExp(`\\b${safeRegex(k)}\\b`, 'i').test(lc))) return { intent: key };
+    }
+
     const mathRegex = /(([\d,.]+)\s*(?:percent|%)\s*of\s*([\d,.]+))|([\d,.\s]+[\+\-\*\/x][\d,.\s]+)/;
-    if (lc.startsWith("what is") || lc.startsWith("calculate") || mathRegex.test(lc)) {
+    if ((lc.startsWith("calculate") || mathRegex.test(lc)) && !lc.includes("what is")) {
         if (solveMathExpression(lc) !== null) return { intent: 'calculate', entities: { expression: lc } };
     }
-    const deliveryMatch = lc.match(/(?:from)\s+([a-zA-Z]+)\s+(?:to)\s+([a-zA-Z]+)/);
-    if (deliveryMatch && (responses.delivery_estimate || []).some(k => lc.includes(k))) {
-        return { intent: 'estimate_delivery', entities: { from: deliveryMatch[1], to: deliveryMatch[2] } };
-    }
-    
-    const priceMatch = lc.match(/(?:is|price of)\s+([\d,]+(?:,\d{3})*)\s+(too high|too low|a good price|fair)/);
-    if (priceMatch && priceMatch[1]) { return { intent: 'price_check', entities: { price: parseInt(priceMatch[1].replace(/,/g, '')) } }; }
-    const nameMatch = lc.match(/^(?:my name is|call me|i'm|i am|am)\s+([a-zA-Z]+)\s*$/);
-    if (nameMatch && nameMatch[1]) { return { intent: 'set_name', entities: { name: capitalize(nameMatch[1]) } }; }
-    
-    const coreActionKeys = ['start_upload', 'buy', 'rent', 'help', 'contact', 'after_upload', 'after_delivery', 'manage_listings'];
-    for (const key of coreActionKeys) {
-        for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: key }; }
-    }
 
-    const markSoldMatch = lc.match(/mark my\s+([a-zA-Z0-9\s]+)\s+as sold/);
-    if (markSoldMatch) return { intent: 'mark_as_sold', entities: { item: markSoldMatch[1] } };
-
-    for (const key in responses) {
-        const isHandled = key.startsWith("category_") || key.startsWith("chitchat_") || coreActionKeys.includes(key) || ['product_query', 'price_check', 'affirmation', 'negation', 'gratitude', 'greetings', 'sell', 'start_upload', 'glossary_query'].includes(key);
-        if (isHandled) continue;
-        for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
-    }
-    
+    // PRIORITY 3: Live searches
     for (const trigger of (responses.product_query || [])) {
         if (lc.startsWith(trigger)) {
             let productName = cleanSearchQuery(userText.substring(trigger.length).trim());
@@ -253,13 +243,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
+    // PRIORITY 4: General knowledge and chitchat
     for (const trigger of (responses.glossary_query || [])) {
         if (lc.startsWith(trigger)) {
             let term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
             if (term) return { intent: 'ask_glossary', entities: { term } };
         }
     }
-    
+
+    for (const key in responses) {
+        const isHandled = key.startsWith("category_") || ['product_query', 'start_upload', 'user_safety', 'glossary_query', 'calculate', 'delivery_estimate'].includes(key);
+        if (isHandled) continue;
+        for (const keyword of (responses[key] || [])) {
+            if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) return { intent: key };
+        }
+    }
+
+    // PRIORITY 5: Last resort matches
     for (const key in responses) {
         if (key.startsWith("category_")) {
             for (const keyword of (responses[key] || [])) {
@@ -272,13 +272,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-    for (const key in responses) {
-        if (key.startsWith("chitchat_") || ['gratitude', 'well_being', 'bot_identity', 'greetings'].includes(key)) {
-            for (const keyword of (responses[key] || [])) { if (new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i').test(lc)) { return { intent: key }; } }
-        }
-    }
-    
-    if ((responses.sell || []).some(k => lc.includes(k))) return { intent: 'sell' };
 
     return { intent: 'unknown' };
   }
@@ -344,8 +337,7 @@ document.addEventListener('DOMContentLoaded', function () {
         case 'search_product': return await callAPIFunction('product-lookup', { body: { productName: entities.productName } });
         case 'search_category': return await callAPIFunction('product-lookup', { body: { categoryName: entities.categoryName } });
         case 'set_name': sessionState.userName = entities.name; saveState(); return answers.confirm_name_set;
-        case 'price_check': const price = entities.price; let responseText = `Regarding a price of UGX ${price.toLocaleString()}:<br>`; if (price > 1000000) { responseText += "That's a high-ticket item! I'd recommend meeting the seller in a very public place and verifying everything carefully before paying."; } else if (price > 200000) { responseText += "That's a significant amount. Be sure to inspect it thoroughly."; } else if (price < 20000) { responseText += "That seems like a great deal! Just make sure the item's condition matches the description."; } else { responseText += "That seems like a pretty standard price for many items here."; } return { text: responseText, suggestions: ["Safety tips", "How do I buy?", "Find me a laptop"] };
-        case 'chitchat_time': return { text: `${answers.chitchat_time[Math.floor(Math.random()*answers.chitchat_time.length)].text} <b>${nowTime()}</b>.` };
+        case 'price_check': const priceVal = entities.price; let responseText = `Regarding a price of UGX ${priceVal.toLocaleString()}:<br>`; if (priceVal > 1000000) { responseText += "That's a high-ticket item! I'd recommend meeting the seller in a very public place and verifying everything carefully before paying."; } else if (priceVal > 200000) { responseText += "That's a significant amount. Be sure to inspect it thoroughly."; } else if (priceVal < 20000) { responseText += "That seems like a great deal! Just make sure the item's condition matches the description."; } else { responseText += "That seems like a pretty standard price for many items here."; } return { text: responseText, suggestions: ["Safety tips", "How do I buy?", "Find me a laptop"] };
         default:
             if (intent !== 'unknown' && answers[intent]) {
                 if (intent === sessionState.lastResponseKey && !intent.startsWith('chitchat_')) { 
