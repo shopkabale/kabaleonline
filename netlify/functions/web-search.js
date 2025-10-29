@@ -24,7 +24,8 @@ exports.handler = async function (event, context) {
     const $ = cheerio.load(data);
     const results = [];
 
-    $('.result').slice(0, 3).each((index, element) => { // Reduced to top 3 for cleaner look
+    // We'll grab the top 3 results for a clean, detailed look.
+    $('.result').slice(0, 3).each((index, element) => {
       const titleElement = $(element).find('.result__title a');
       const snippetElement = $(element).find('.result__snippet');
       const linkElement = $(element).find('.result__url');
@@ -47,7 +48,7 @@ exports.handler = async function (event, context) {
 
     // --- UPGRADE: New Detailed Formatting Logic ---
     // Instead of a simple list, we build "result cards" for a richer look.
-    // This removes the raw links and focuses on the explanation.
+    // This removes the raw links from the main text and focuses on the explanation.
 
     let responseText = `Here are the best summaries I found on the web for "<b>${query}</b>":<br><br>`;
     
@@ -55,12 +56,12 @@ exports.handler = async function (event, context) {
         // The main content is the snippet (the explanation).
         responseText += `<p>${res.snippet}</p>`;
         
-        // We provide the source discreetly at the end.
+        // We provide the source discreetly at the end of each summary.
         responseText += `<small><em>Source: <a href="${res.link}" target="_blank">${res.title}</a></em></small>`;
 
         // Add a separator between results, but not after the last one.
         if (index < results.length - 1) {
-            responseText += '<hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">';
+            responseText += '<hr style="border: none; border-top: 1px solid #e9ecef; margin: 15px 0;">';
         }
     });
 
