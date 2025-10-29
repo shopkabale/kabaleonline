@@ -1,4 +1,4 @@
-// File: /ai/chatbot.js (The Definitive Version with Word Boundary Fix)
+// File: /ai/chatbot.js (The Definitive Version with "Action First" Logic)
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Firebase Sanity Check ---
@@ -172,9 +172,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const cleanSearchQuery = (text) => text.replace(/\b(a|an|the|is|are|one|some|for)\b/gi, '').replace(/\s\s+/g, ' ').trim();
   
   /**
-   * **THE DEFINITIVE FIX: WORD BOUNDARY LOGIC**
-   * This function now uses a regular expression with word boundaries (\b) on cleaned text.
-   * This is the most robust way to match whole words and prevent the substring bug.
+   * **THE DEFINITIVE FIX: ACTION FIRST LOGIC**
+   * This function now follows a strict hierarchy to prevent conflicts:
+   * 1. Check for specific ACTION triggers first (e.g., "find me," "price of").
+   * 2. If none, find the BEST keyword match for all other intents.
+   * This restores the fetching logic and fixes all previous bugs.
    */
   function detectIntent(userText) {
     const lc = userText.toLowerCase();
@@ -182,31 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (sessionState.conversationState) return { intent: 'continue_conversation' };
 
-    let bestMatch = { intent: 'unknown', length: 0 };
-    
-    // Find the longest, most specific keyword match from the entire responses list.
-    for (const intent in responses) {
-        for (const keyword of (responses[intent] || [])) {
-            // Use a regex with word boundaries to ensure we match whole words only.
-            const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
-            if (regex.test(cleanText) && keyword.length > bestMatch.length) {
-                bestMatch = { intent, length: keyword.length };
-            }
-        }
-    }
-    
-    // If a strong keyword match was found, use it.
-    if (bestMatch.length > 0) {
-        if (bestMatch.intent.startsWith("category_")) {
-            let categoryName = capitalize(bestMatch.intent.replace("category_", ""));
-            if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
-            if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
-            return { intent: 'search_category', entities: { categoryName } };
-        }
-        return { intent: bestMatch.intent };
-    }
-
-    // Fallback to trigger-based intents if no strong keyword match was found.
+    // --- Step 1: Check for high-priority ACTION triggers first ---
     for (const trigger of (responses.product_query || [])) {
         if (cleanText.startsWith(trigger)) {
             const productName = cleanSearchQuery(userText.substring(trigger.length).trim());
@@ -216,11 +194,37 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-    for (const trigger of (responses.glossary_query || [])) {
+     for (const trigger of (responses.glossary_query || [])) {
         if (cleanText.startsWith(trigger)) {
             const term = userText.substring(trigger.length).trim().replace(/['"`]/g, '').toLowerCase();
             if (term) return { intent: 'ask_glossary', entities: { term } };
         }
+    }
+
+    // --- Step 2: If no action trigger was found, find the best keyword match ---
+    let bestMatch = { intent: 'unknown', length: 0 };
+    
+    for (const intent in responses) {
+        // Skip triggers, as they were already checked
+        if (['product_query', 'glossary_query'].includes(intent)) continue;
+
+        for (const keyword of (responses[intent] || [])) {
+            const regex = new RegExp(`\\b${safeRegex(keyword)}\\b`, 'i');
+            if (regex.test(cleanText) && keyword.length > bestMatch.length) {
+                bestMatch = { intent, length: keyword.length };
+            }
+        }
+    }
+    
+    // If a keyword match was found, use it.
+    if (bestMatch.length > 0) {
+        if (bestMatch.intent.startsWith("category_")) {
+            let categoryName = capitalize(bestMatch.intent.replace("category_", ""));
+            if (categoryName === 'Clothing') categoryName = 'Clothing & Apparel';
+            if (categoryName === 'Furniture') categoryName = 'Home & Furniture';
+            return { intent: 'search_category', entities: { categoryName } };
+        }
+        return { intent: bestMatch.intent };
     }
     
     return { intent: 'unknown' };
