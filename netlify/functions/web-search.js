@@ -1,4 +1,4 @@
-// File: /.netlify/functions/web-search.js (Upgraded with Detailed Formatting)
+// File: /.netlify/functions/web-search.js (Upgraded with Expert Summary Formatting)
 
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -28,14 +28,12 @@ exports.handler = async function (event, context) {
     $('.result').slice(0, 3).each((index, element) => {
       const titleElement = $(element).find('.result__title a');
       const snippetElement = $(element).find('.result__snippet');
-      const linkElement = $(element).find('.result__url');
       
       const title = titleElement.text().trim();
       const snippet = snippetElement.text().trim();
-      const link = 'https:' + linkElement.attr('href').trim();
 
-      if (title && snippet && link) {
-        results.push({ title, snippet, link });
+      if (title && snippet) {
+        results.push({ title, snippet });
       }
     });
 
@@ -46,24 +44,23 @@ exports.handler = async function (event, context) {
         };
     }
 
-    // --- UPGRADE: New Detailed Formatting Logic ---
-    // Instead of a simple list, we build "result cards" for a richer look.
-    // This removes the raw links from the main text and focuses on the explanation.
+    // --- UPGRADE: Expert Summary with Single Credit ---
+    // This provides a clean explanation with a single, trustworthy credit at the end.
 
-    let responseText = `Here are the best summaries I found on the web for "<b>${query}</b>":<br><br>`;
+    let responseText = `Here is a detailed explanation I found for "<b>${query}</b>":<br><br>`;
     
     results.forEach((res, index) => {
         // The main content is the snippet (the explanation).
         responseText += `<p>${res.snippet}</p>`;
-        
-        // We provide the source discreetly at the end of each summary.
-        responseText += `<small><em>Source: <a href="${res.link}" target="_blank">${res.title}</a></em></small>`;
 
         // Add a separator between results, but not after the last one.
         if (index < results.length - 1) {
             responseText += '<hr style="border: none; border-top: 1px solid #e9ecef; margin: 15px 0;">';
         }
     });
+
+    // Add a single, unobtrusive credit line at the very end of the entire message.
+    responseText += `<br><small><em>Summarized from top web results.</em></small>`;
 
     return {
       statusCode: 200,
