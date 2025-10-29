@@ -1,4 +1,4 @@
-// File: /.netlify/functions/web-search.js (Upgraded with Icon Link Formatting)
+// File: /.netlify/functions/web-search.js (Upgraded with Smart Summary Logic)
 
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -14,6 +14,31 @@ exports.handler = async function (event, context) {
       return { statusCode: 400, body: 'Query is required' };
     }
 
+    // --- UPGRADE: "SMART SUMMARY" LOGIC ---
+
+    // Step 1: Try the DuckDuckGo Instant Answer API for a high-quality summary.
+    const instantAnswerUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`;
+    const apiResponse = await axios.get(instantAnswerUrl);
+    
+    // Check if the API gave us a good abstract (summary).
+    if (apiResponse.data.AbstractText) {
+      let responseText = `<p>${apiResponse.data.AbstractText}</p>`;
+      
+      // If there's a source, add it with a link icon.
+      if(apiResponse.data.AbstractSource && apiResponse.data.AbstractURL) {
+        responseText += `<a href="${apiResponse.data.AbstractURL}" target="_blank" title="Source: ${apiResponse.data.AbstractSource}" style="text-decoration:none; font-size:1.2em;">🔗</a>`;
+      }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          text: responseText,
+          suggestions: ["Ask another question", "Help"]
+        })
+      };
+    }
+
+    // --- Step 2: If no instant answer, fall back to scraping the single best result. ---
     const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
     const { data } = await axios.get(searchUrl, {
       headers: {
@@ -22,58 +47,32 @@ exports.handler = async function (event, context) {
     });
 
     const $ = cheerio.load(data);
-    const results = [];
+    
+    // Find only the very first result.
+    const firstResult = $('.result').first();
+    const snippet = firstResult.find('.result__snippet').text().trim();
+    const title = firstResult.find('.result__title a').text().trim();
+    const link = 'https:' + firstResult.find('.result__url').attr('href').trim();
 
-    // We'll grab the top 3 results for a clean, detailed look.
-    $('.result').slice(0, 3).each((index, element) => {
-      const titleElement = $(element).find('.result__title a');
-      const snippetElement = $(element).find('.result__snippet');
-      const linkElement = $(element).find('.result__url');
-      
-      const title = titleElement.text().trim();
-      const snippet = snippetElement.text().trim();
-      const link = 'https:' + linkElement.attr('href').trim();
-
-      if (title && snippet && link) {
-        results.push({ title, snippet, link });
-      }
-    });
-
-    if (results.length === 0) {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ text: `I couldn't find any direct web results for "${query}". Try rephrasing your search.` })
-        };
+    if (snippet && title && link) {
+      let responseText = `<p style="display:inline;">${snippet} </p><a href="${link}" target="_blank" title="View source: ${title}" style="text-decoration:none; font-size:1.2em;">🔗</a>`;
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          text: responseText,
+          suggestions: ["Ask another question", "Help"]
+        })
+      };
     }
 
-    // --- UPGRADE: Expert Summary with Icon Link ---
-    // This provides a clean explanation with a discreet icon link at the end of each summary.
-
-    let responseText = `Here is a detailed explanation I found for "<b>${query}</b>":<br><br>`;
-    
-    results.forEach((res, index) => {
-        // The main content is the snippet (the explanation).
-        responseText += `<p style="display:inline;">${res.snippet} </p>`; // Use inline paragraph
-
-        // Add the link icon (🔗) at the end of each snippet, linking to the source.
-        responseText += `<a href="${res.link}" target="_blank" title="View source: ${res.title}" style="text-decoration:none; font-size:1.2em;">🔗</a>`;
-
-        // Add a separator between results, but not after the last one.
-        if (index < results.length - 1) {
-            responseText += '<hr style="border: none; border-top: 1px solid #e9ecef; margin: 15px 0;">';
-        }
-    });
-
+    // If both methods fail, return a not found message.
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
-          text: responseText, 
-          suggestions: ["Ask another question", "Help"] 
-      })
+      body: JSON.stringify({ text: `I couldn't find a good summary for "${query}". Please try rephrasing your question.` })
     };
 
   } catch (error) {
-    console.error('Scraper function error:', error);
+    console.error('Smart Summary function error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ text: "Sorry, I'm having trouble searching the web right now. Please try again later." })
