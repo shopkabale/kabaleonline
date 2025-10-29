@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeSg2kFpCm1Ei4gXgNH9zB_p8tuEpeBcIP9ZkKjIDQg8IHnMg/formResponse";
   const USER_MESSAGE_ENTRY_ID = "entry.779723602";
   const RESPONSE_GIVEN_ENTRY_ID = "entry.2015145894";
-  const PROMOTIONAL_MESSAGE = "This week, enjoy featured listings for all hostel rooms!";
+  const PROMOTIONAL_MESSAGE = "Pro Tip: Can't find what you're looking for? Post a public request on our <a href='/requests/view.html' target='_blank'>'User Requests' page</a>!";
   
   const proactiveSuggestions = {
     'sell': { text: 'Tips for good photos', intent: 'photo_tips' },
