@@ -1,10 +1,9 @@
-// File: /.netlify/functions/web-search.js
+// File: /.netlify/functions/web-search.js (Upgraded with Detailed Formatting)
 
 const axios = require('axios');
 const cheerio = require('cheerio');
 
 exports.handler = async function (event, context) {
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -15,7 +14,6 @@ exports.handler = async function (event, context) {
       return { statusCode: 400, body: 'Query is required' };
     }
 
-    // Use DuckDuckGo to perform the search. We add headers to mimic a real browser.
     const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
     const { data } = await axios.get(searchUrl, {
       headers: {
@@ -23,23 +21,18 @@ exports.handler = async function (event, context) {
       }
     });
 
-    // Load the HTML content into Cheerio to parse it
     const $ = cheerio.load(data);
     const results = [];
 
-    // Find each search result container. This selector is specific to DuckDuckGo's HTML structure.
-    // We limit it to the top 4 results.
-    $('.result').slice(0, 4).each((index, element) => {
+    $('.result').slice(0, 3).each((index, element) => { // Reduced to top 3 for cleaner look
       const titleElement = $(element).find('.result__title a');
       const snippetElement = $(element).find('.result__snippet');
       const linkElement = $(element).find('.result__url');
       
       const title = titleElement.text().trim();
       const snippet = snippetElement.text().trim();
-      // The link needs a 'https:' prefix
       const link = 'https:' + linkElement.attr('href').trim();
 
-      // Ensure we have a valid result before adding it
       if (title && snippet && link) {
         results.push({ title, snippet, link });
       }
@@ -52,19 +45,31 @@ exports.handler = async function (event, context) {
         };
     }
 
-    // Format the results into a nice HTML string for Amara to display
-    let responseText = `Here are the top web results for "<b>${query}</b>":<br><ol style="padding-left: 20px;">`;
-    results.forEach(res => {
-        responseText += `<li style="margin-bottom: 10px;">
-            <a href="${res.link}" target="_blank">${res.title}</a><br>
-            <small>${res.snippet}</small>
-        </li>`;
+    // --- UPGRADE: New Detailed Formatting Logic ---
+    // Instead of a simple list, we build "result cards" for a richer look.
+    // This removes the raw links and focuses on the explanation.
+
+    let responseText = `Here are the best summaries I found on the web for "<b>${query}</b>":<br><br>`;
+    
+    results.forEach((res, index) => {
+        // The main content is the snippet (the explanation).
+        responseText += `<p>${res.snippet}</p>`;
+        
+        // We provide the source discreetly at the end.
+        responseText += `<small><em>Source: <a href="${res.link}" target="_blank">${res.title}</a></em></small>`;
+
+        // Add a separator between results, but not after the last one.
+        if (index < results.length - 1) {
+            responseText += '<hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">';
+        }
     });
-    responseText += '</ol>';
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ text: responseText, suggestions: ["How to sell", "Find another hostel"] })
+      body: JSON.stringify({ 
+          text: responseText, 
+          suggestions: ["Ask another question", "Help"] 
+      })
     };
 
   } catch (error) {
