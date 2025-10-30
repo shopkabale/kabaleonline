@@ -918,6 +918,147 @@ footer {
         grid-template-columns: 2fr 1fr 1fr 1fr; /* Four columns for desktop */
     }
 }
+
+/* ==================================================== */
+/* / ⭐ AMARA AI CTA SECTION STYLES (COMPLETE)          / */
+/* ==================================================== */
+
+.ai-cta-section {
+    padding: 60px 15px;
+    background-color: var(--bg-main); /* Uses your theme's main background */
+}
+
+.ai-cta-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    padding: 30px;
+    text-align: center;
+    max-width: 800px; /* Constrains the card's width */
+    margin: 0 auto;
+    box-shadow: var(--shadow);
+    overflow: hidden; /* Ensures clean rounded corners */
+}
+
+.ai-cta-icon {
+    font-size: 3em; /* Big, friendly icon */
+    color: var(--ko-primary);
+    margin-bottom: 20px;
+}
+
+.ai-cta-card h2 {
+    font-size: 2em;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+/* This styles the main introductory paragraph */
+.ai-cta-card > p {
+    font-size: 1.1em;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 35px; /* Adds space before the buttons */
+    line-height: 1.7;
+}
+
+/* This is the container for the 3 CTA items */
+.ai-cta-buttons {
+    display: flex;
+    flex-direction: column; /* Stack on mobile */
+    gap: 30px; /* Space between each item */
+    align-items: center;
+    justify-content: center;
+    margin-top: 35px;
+}
+
+/* This is the wrapper for each button + paragraph */
+.ai-cta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* Constrains width on mobile for readability */
+}
+
+.ai-cta-btn {
+    padding: 12px 25px;
+    border-radius: 50px; /* Matches your .cta-btn style */
+    text-decoration: none;
+    font-weight: bold;
+    min-width: 220px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex; /* Helps align icon and text */
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
+    font-size: 1em;
+}
+
+.ai-cta-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Button 1: AI (New Style) */
+.btn-ai {
+    background-color: var(--ko-accent-dark); /* Uses your dark accent color */
+    color: white;
+}
+.btn-ai:hover {
+    background-color: #3a3f44; /* A slightly lighter dark */
+}
+
+/* Button 2: Shop (Matches your existing .cta-buy) */
+.btn-shop {
+    background: var(--ko-primary);
+    color: white;
+}
+.btn-shop:hover {
+     background-color: #0056b3; /* Darker primary */
+}
+
+/* Button 3: Sell (Matches your existing .cta-sell) */
+.btn-sell {
+    background: var(--ko-accent);
+    color: var(--ko-accent-dark);
+}
+ .btn-sell:hover {
+     background-color: #d99a00; /* Darker accent */
+}
+
+/* This styles the descriptive paragraphs under each button */
+.ai-cta-subtext {
+    font-size: 0.95em; /* Slightly larger for readability */
+    color: var(--text-secondary);
+    margin: 12px 0 0 0; /* Add a bit more space above the text */
+    line-height: 1.6; /* Better for paragraphs */
+    width: 100%; /* Use the full width of the parent .ai-cta-item */
+}
+
+/* Responsive for tablets and desktops */
+@media (min-width: 768px) {
+    .ai-cta-card {
+        padding: 40px;
+    }
+
+    .ai-cta-buttons {
+        flex-direction: row; /* Side-by-side on larger screens */
+        flex-wrap: nowrap; /* Prevent wrapping */
+        align-items: flex-start; /* Align items to the top */
+        gap: 30px; /* Adjust gap for row layout */
+    }
+    
+    .ai-cta-item {
+        flex-basis: 33.33%; /* Each item takes up 1/3 of the space */
+        flex-grow: 1;
+        max-width: none; /* Remove mobile max-width */
+    }
+}
+
     </style>
 </head>
 <body>
@@ -994,6 +1135,40 @@ footer {
                 </form>
             </div>
         </section>
+
+
+
+<div class="ai-cta-buttons">
+    
+    <div class="ai-cta-item">
+        <a href="#" id="open-chat-cta-btn" class="ai-cta-btn btn-ai">
+            <i class="fa-solid fa-comments"></i> Chat with Amara
+        </a>
+        <p class="ai-cta-subtext">
+            Click here to chat with Amara, your personal AI assistant. Amara can help you find specific products, answer your questions about Kabale Online, or guide you if you're feeling lost.
+        </p>
+    </div>
+    
+    <div class="ai-cta-item">
+        <a href="/shop/" class="ai-cta-btn btn-shop">
+            <i class="fa-solid fa-store"></i> Start Shopping
+        </a>
+        <p class="ai-cta-subtext">
+            Dive into our marketplace and discover what the Kabale community is selling. You can browse everything from electronics and textbooks to clothing and household items.
+        </p>
+    </div>
+    
+    <div class="ai-cta-item">
+        <a href="/upload/" class="ai-cta-btn btn-sell">
+            <i class="fa-solid fa-plus-circle"></i> Start Selling
+        </a>
+        <p class="ai-cta-subtext">
+            Turn your extra stuff into cash. It's fast, free, and easy to create a listing. Snap a photo, add a description, and connect with buyers right here on campus.
+        </p>
+    </div>
+
+</div>
+
 
         <section class="stats-section">
             <div class="container">
