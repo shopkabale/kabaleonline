@@ -1,18 +1,21 @@
 /* ==================================================== */
 /* 1. ROOT VARIABLES & GENERAL STYLES                   */
 /* ==================================================== */
+/* ==================================================== */
+/* 1. ROOT VARIABLES & GENERAL STYLES                   */
+/* ==================================================== */
 :root {
-    /* === NEW LIGHT MODE PALETTE === */
-    --ko-primary: #00695C; /* Deep Teal */
+    /* === NEW LIGHT MODE PALETTE (with Gray Background) === */
+    --ko-primary: #00695C;           /* Deep Teal (from before) */
     --ko-primary-rgb: 0, 105, 92;
-    --ko-accent: #FFB74D; /* Warm Sand/Orange */
-    --ko-accent-dark: #263238; /* Dark Grey for text on accent */
+    --ko-accent: #FFB74D;            /* Warm Sand/Orange (from before) */
+    --ko-accent-dark: #263238;       /* Dark Grey (from before) */
 
-    --bg-light: #FDFBF8; /* Warm, creamy background */
-    --bg-card-light: #FFFFFF; /* Pure white for cards */
-    --text-main-light: #263238; /* Softer, dark blue-grey */
+    --bg-light: #f4f6f8;             /* ⭐ NEW: Soft, light gray background */
+    --bg-card-light: #FFFFFF;        /* Pure white for cards (now they pop!) */
+    --text-main-light: #263238;      /* Softer, dark blue-grey */
     --text-secondary-light: #546E7A; /* Lighter blue-grey */
-    --border-color-light: #ECEFF1; /* Light, cool grey border */
+    --border-color-light: #ECEFF1;   /* Light, cool grey border */
     
     /* === DARK MODE (Unchanged) === */
     --bg-dark: #0f172a;
@@ -25,6 +28,8 @@
     --shadow: 0 10px 30px rgba(0,0,0,0.07);
     --border-radius: 12px;
 }
+
+
 
 body.light-mode {
     --bg-main: var(--bg-light);
