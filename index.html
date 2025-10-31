@@ -8,15 +8,17 @@
       gtag('js', new Date());
       gtag('config', 'G-5XQRYNC9TW');
     </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Buy & Sell, Find Hostels, Services & Events in Kabale | Kabale Online</title>
-    <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found , The campus Mart.">
-    <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace , Kabale campus market,  The campus mart , CAMPUS MART , buy and sell online , events in kabale , services in kabale , kabale Uganda , Campus Mart , Uganda Campus Mart ">
+    <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
+    <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale, kabale Uganda, Campus Mart">
     <meta name="author" content="Kabale Online">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.kabaleonline.com/">
+
     <meta property="og:title" content="Kabale Online: The #1 Platform for Items, Rentals, Services & More">
     <meta property="og:description" content="The community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.">
     <meta property="og:type" content="website">
@@ -29,6 +31,7 @@
     <meta name="twitter:description" content="Buy, sell, rent, and discover everything in Kabale. From electronics to hostels, find what you need in your community.">
     <meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
     <meta name="twitter:site" content="@kabaleonline">
+
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#007bff">
     <link rel="icon" href="/favicon.webp" type="image/webp">
@@ -39,13 +42,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="index.css">
+
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "46fb657e-75a2-4140-9d08-69a746055814",
-        });
+        await OneSignal.init({ appId: "46fb657e-75a2-4140-9d08-69a746055814" });
       });
     </script>
 
@@ -79,47 +82,37 @@
       ]
     }
     </script>
-    <link rel="stylesheet" href="index.css">
-    
 </head>
 <body>
-<script src="theme.js"></script>
+
+    <script src="theme.js"></script>
+
     <header class="sticky-header">
-    <div class="container">
-        <div class="header-content">
-            <a href="/" class="site-title">Kabale <span>Online</span></a>
-            
-            <nav class="desktop-nav">
-                <a href="/shop/" class="nav-link active">Shop</a>
-                <a href="/rentals/" class="nav-link">Hostels</a>
-                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
-                <a href="/events/" class="nav-link">Events</a>
-                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
-            </nav>
-
-            <!-- Header icons wrapper -->
-            <div class="header-icons">
-                <!-- Theme toggle -->
-                <div class="theme-switch-wrapper">
-                    <label class="theme-switch" for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle" />
-                        <span class="slider"></span>
-                        <span id="theme-hint" class="theme-hint-text"></span>
-                    </label>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="site-title">Kabale <span>Online</span></a>
+                <nav class="desktop-nav">
+                    <a href="/shop/" class="nav-link active">Shop</a>
+                    <a href="/rentals/" class="nav-link">Hostels</a>
+                    <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                    <a href="/events/" class="nav-link">Events</a>
+                    <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+                </nav>
+                <div class="header-icons">
+                    <div class="theme-switch-wrapper">
+                        <label class="theme-switch" for="theme-toggle">
+                            <input type="checkbox" id="theme-toggle" />
+                            <span class="slider"></span>
+                            <span id="theme-hint" class="theme-hint-text"></span>
+                        </label>
+                    </div>
+                    <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
+                    <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
                 </div>
-
-                <!-- Cart icon -->
-                <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
-
-                <!-- User / Dashboard icon -->
-                <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
-
-                <!-- Hamburger menu -->
-                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
@@ -157,39 +150,28 @@
             </div>
         </section>
 
-
-
-<div class="ai-cta-buttons">
-    
-    <div class="ai-cta-item">
-        <a href="/ai/" id="open-chat-cta-btn" class="ai-cta-btn btn-ai">
-            <i class="fa-solid fa-comments"></i> Chat with Amara
-        </a>
-        <p class="ai-cta-subtext">
-            Click here to chat with Amara, your 24/7 personal AI assistant. Amara can help you find specific products, answer your questions about Kabale Online, or upload your product for you 
-        </p>
-    </div>
-    
-    <div class="ai-cta-item">
-        <a href="/shop/" class="ai-cta-btn btn-shop">
-            <i class="fa-solid fa-store"></i> Start Shopping
-        </a>
-        <p class="ai-cta-subtext">
-            Dive into our marketplace and discover what the Kabale community is selling. You can browse everything from electronics and textbooks to clothing and household items.
-        </p>
-    </div>
-    
-    <div class="ai-cta-item">
-        <a href="/upload/" class="ai-cta-btn btn-sell">
-            <i class="fa-solid fa-plus-circle"></i> Start Selling
-        </a>
-        <p class="ai-cta-subtext">
-            Turn your extra stuff into cash. It's fast, free, and easy to create a listing. Snap a photo, add a description, and connect with buyers right here on campus.
-        </p>
-    </div>
-
-</div>
-
+        <section class="ai-cta-buttons">
+            <div class="container">
+                <div class="ai-cta-item">
+                    <a href="/ai/" id="open-chat-cta-btn" class="ai-cta-btn btn-ai">
+                        <i class="fa-solid fa-comments"></i> Chat with Amara
+                    </a>
+                    <p class="ai-cta-subtext">Chat with Amara, your 24/7 AI assistant. Amara can help you find products, answer questions, or even upload your items for you.</p>
+                </div>
+                <div class="ai-cta-item">
+                    <a href="/shop/" class="ai-cta-btn btn-shop">
+                        <i class="fa-solid fa-store"></i> Start Shopping
+                    </a>
+                    <p class="ai-cta-subtext">Dive into our marketplace and discover what the Kabale community is selling, from electronics to textbooks.</p>
+                </div>
+                <div class="ai-cta-item">
+                    <a href="/upload/" class="ai-cta-btn btn-sell">
+                        <i class="fa-solid fa-plus-circle"></i> Start Selling
+                    </a>
+                    <p class="ai-cta-subtext">Turn your extra stuff into cash. It's fast, free, and easy to create a listing and connect with local buyers.</p>
+                </div>
+            </div>
+        </section>
 
         <section class="stats-section">
             <div class="container">
@@ -217,92 +199,63 @@
                     </div>
                 </div>
             </div>
+        </section>
+
         <section class="image-category-section">
-    <div class="container">
-        <h2 class="section-title">Shop by Category</h2>
-        <div class="image-category-grid">
-            <a href="/shop/?category=Electronics" class="image-category-card">
-                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Electronics category">
-                <h3>Electronics</h3>
-            </a>
-            <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
-                <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Clothing & Apparel category">
-                <h3>Clothing</h3>
-            </a>
-            <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
-                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Home & Furniture category">
-                <h3>Furniture</h3>
-            </a>
-            <a href="/rentals/" class="image-category-card">
-                <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Hostels & Rentals category">
-                <h3>Rentals</h3>
-            </a>
-            <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
-                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Services category">
-                <h3>Services</h3>
-            </a>
-            <a href="/shop/?category=Other" class="image-category-card">
-                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Other categories">
-                <h3>Other</h3>
-            </a>
-        </div>
-    </div>
-</section>
-        <section class="top-sections" id="top-sections">
             <div class="container">
-                <h2 class="section-title">What We Offer</h2>
-                <div class="sections-grid">
-                    <a href="/shop/" class="section-card">
-                        <i class="fas fa-store"></i>
-                        <h3>Buy Items</h3>
-                        <p>Discover deals on textbooks, electronics, and more from students in Kabale.</p>
+                <h2 class="section-title">Shop by Category</h2>
+                <div class="image-category-grid">
+                    <a href="/shop/?category=Electronics" class="image-category-card">
+                        <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Electronics category">
+                        <h3>Electronics</h3>
                     </a>
-                    <a href="/upload/" class="section-card">
-                        <i class="fas fa-cash-register"></i>
-                        <h3>Sell Your Stuff</h3>
-                        <p>Turn your unused items into cash and connect with buyers in your campus community.</p>
+                    <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
+                        <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Clothing & Apparel category">
+                        <h3>Clothing</h3>
                     </a>
-                    <a href="/rentals/" class="section-card">
-                        <i class="fas fa-house-user"></i>
-                        <h3>Find Hostels</h3>
-                        <p>Browse listings for student hostels and rentals near campus, with details and contacts.</p>
+                    <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
+                        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Home & Furniture category">
+                        <h3>Furniture</h3>
                     </a>
-                    <a href="https://gigs.kabaleonline.com" class="section-card service-link">
-                        <i class="fas fa-concierge-bell"></i>
-                        <h3>Offer a Service</h3>
-                        <p>Promote your skills, from tutoring to repairs, on our services hub.</p>
+                    <a href="/rentals/" class="image-category-card">
+                        <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Hostels & Rentals category">
+                        <h3>Rentals</h3>
                     </a>
-                    <a href="/events/" class="section-card">
-                        <i class="fas fa-calendar-days"></i>
-                        <h3>Promote your event</h3>
-                        <p>Promote your event , and sell tickets to the kabale community easily .</p>
+                    <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
+                        <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Services category">
+                        <h3>Services</h3>
                     </a>
-                    <a href="/lost-and-found/" class="section-card">
-                        <i class="fas fa-magnifying-glass-plus"></i>
-                        <h3>Lost & Found</h3>
-                        <p>Post a notice for a lost item or report something you've found to help our community.</p>
+                    <a href="/shop/?category=Other" class="image-category-card">
+                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Other categories">
+                        <h3>Other</h3>
                     </a>
                 </div>
             </div>
         </section>
 
-        <section class="action-menu-section">
+        <section class="how-to-section">
             <div class="container">
-                <div class="action-menu-card">
-                    <h2 style="text-align: center;">What would you like to do?</h2>
-                    <div class="action-buttons-grid">
-                        <a href="/upload/" class="action-button"><i class="fa-solid fa-plus-circle"></i> Upload an item</a>
-                        <a href="/events/" class="action-button"><i class="fa-solid fa-calendar-days"></i> Explore Events</a>
-                        <a href="/shop/" class="action-button"><i class="fa-solid fa-store"></i> Start Buying</a>
-                        <a href="https://gigs.kabaleonline.com" class="action-button"><i class="fa-solid fa-utensils"></i> Explore Services</a>
-                        <a href="https://gigs.kabaleonline.com" class="action-button"><i class="fa-solid fa-bullhorn"></i> Offer a Service</a>
-                        <a href="/blog/" class="action-button"><i class="fa-solid fa-book"></i> Read Our Blog</a>
-                        <a href="/requests/" class="action-button"><i class="fa-solid fa-clipboard-list"></i> Request an Item</a>
-                        <a href="stories.html" class="action-button"><i class="fa-solid fa-edit"></i> Share a Story</a>
-                        <a href="submit-testimonial.html" class="action-button"><i class="fa-solid fa-comment-dots"></i> Share Feedback</a>
-                        <a href="/lost-and-found/" class="action-button"><i class="fa-solid fa-magnifying-glass"></i> Report Lost & Found</a>
-                        <a href="/rentals/" class="action-button"><i class="fa-solid fa-home"></i> List a Rental</a>
-                    </div>
+                <div class="how-to-card buy-card">
+                    <div class="how-to-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <h3>How to Buy on Kabale Online</h3>
+                    <ol class="how-to-list">
+                        <li><strong>Browse & Discover:</strong> Explore the shop or use the search bar to find exactly what you're looking for.</li>
+                        <li><strong>Add to Cart:</strong> Found something you like? Add it to your cart.</li>
+                        <li><strong>Confirm Your Order:</strong> When ready, checkout. Your order details will be sent to the seller.</li>
+                        <li><strong>Arrange Delivery:</strong> The seller will contact you to arrange payment and a safe meetup.</li>
+                    </ol>
+                    <a href="/shop/" class="how-to-btn">Start Browsing</a>
+                </div>
+                <div class="how-to-card sell-card">
+                    <div class="how-to-icon"><i class="fas fa-store"></i></div>
+                    <h3>How to Sell in Minutes</h3>
+                    <ol class="how-to-list">
+                        <li><strong>Create a Listing:</strong> Upload your item in under 60 seconds. Add clear photos and an honest description.</li>
+                        <li><strong>Get Notified:</strong> You'll be notified when a buyer places an order.</li>
+                        <li><strong>Contact the Buyer:</strong> Use the buyer's contact info to arrange a time and place for the exchange.</li>
+                        <li><strong>Get Paid & Deliver:</strong> Meet the buyer, get paid, and hand over the item. Mark the order as "Delivered."</li>
+                    </ol>
+                    <a href="/upload/" class="how-to-btn">Start Selling Now</a>
                 </div>
             </div>
         </section>
@@ -315,78 +268,29 @@
                 </div>
             </div>
         </section>
-
-        <section class="how-to-section">
-    <div class="container">
-        <div class="how-to-card buy-card">
-            <div class="how-to-icon">
-                <i class="fas fa-shopping-bag"></i>
-            </div>
-            <h3>How to Buy on Kabale Online</h3>
-            <ol class="how-to-list">
-                <li>
-                    <strong>Browse & Discover:</strong> Explore the shop or use the search bar to find exactly what you're looking for, from textbooks to electronics.
-                </li>
-                <li>
-                    <strong>Add to Cart:</strong> Found something you like? Simply add it to your shopping cart to save it for later.
-                </li>
-                <li>
-                    <strong>Confirm Your Order:</strong> When you're ready, proceed to checkout. Your order details will be sent directly to the seller.
-                </li>
-                <li>
-                    <strong>Arrange Delivery:</strong> The seller will contact you via the phone number you provided to arrange payment and a safe, convenient meetup for delivery.
-                </li>
-            </ol>
-            <a href="/shop/" class="how-to-btn">Start Browsing</a>
-        </div>
-
-        <div class="how-to-card sell-card">
-            <div class="how-to-icon">
-                <i class="fas fa-store"></i>
-            </div>
-            <h3>How to Sell in Minutes</h3>
-            <ol class="how-to-list">
-                <li>
-                    <strong>Create a Listing:</strong> Upload your item in under 60 seconds. Add clear photos, a good title, and an honest description.
-                </li>
-                <li>
-                    <strong>Get Notified:</strong> When a buyer places an order, you'll receive a notification. Check your seller dashboard for all the details.
-                </li>
-                <li>
-                    <strong>Contact the Buyer:</strong> Use the buyer's contact information to call or message them and arrange a time and public place for the exchange.
-                </li>
-                <li>
-                    <strong>Get Paid & Deliver:</strong> Meet the buyer, get paid (we recommend cash or mobile money), and hand over the item. Finally, mark the order as "Delivered" in your dashboard.
-                </li>
-            </ol>
-            <a href="/upload/" class="how-to-btn">Start Selling Now</a>
-        </div>
-    </div>
-</section>
-
         
-<section class="contact-section">
-    <div class="container">
-        <div class="contact-form">
-            <h2>Send Us a Message</h2>
-            <form action="https://formspree.io/f/xnngyovw" method="POST">
-                <div class="form-group">
-                    <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
+        <section class="contact-section">
+            <div class="container">
+                <div class="contact-form">
+                    <h2>Send Us a Message</h2>
+                    <form action="https://formspree.io/f/xnngyovw" method="POST">
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Your Email</label>
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" class="form-control" placeholder="Type your message here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Send Message</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="email">Your Email</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" class="form-control" placeholder="Type your message here..." required></textarea>
-                </div>
-                <button type="submit" class="btn-submit">Send Message</button>
-            </form>
-        </div>
-    </div>
-</section>
+            </div>
+        </section>
 
         <section class="testimonial-section" id="testimonials">
             <h2 class="section-title">Community Voices</h2>
@@ -395,46 +299,43 @@
     </main>
 
     <footer>
-    <div class="container footer-grid">
-        <div class="footer-column about-column">
-            <a href="/" class="footer-logo">Kabale <span>Online</span></a>
-            <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.</p>
-            <div class="footer-socials">
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <div class="container footer-grid">
+            <div class="footer-column about-column">
+                <a href="/" class="footer-logo">Kabale <span>Online</span></a>
+                <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
+                <div class="footer-socials">
+                    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Explore</h3>
+                <a href="/shop/">Shop Items</a>
+                <a href="/rentals/">Hostels & Rentals</a>
+                <a href="https://gigs.kabaleonline.com" class="service-link">Find Services</a>
+                <a href="/events/">Local Events</a>
+                <a href="/lost-and-found/">Lost & Found</a>
+            </div>
+            <div class="footer-column">
+                <h3>For Sellers</h3>
+                <a href="/upload/">Sell an Item</a>
+                <a href="/dashboard/">My Dashboard</a>
+                <a href="https://gigs.kabaleonline.com" class="service-link">Offer a Service</a>
+                <a href="/blog/">Seller Tips</a>
+            </div>
+            <div class="footer-column">
+                <h3>Company</h3>
+                <a href="/about.html">About Us</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/blog/">Blog & News</a>
             </div>
         </div>
-
-        <div class="footer-column">
-            <h3>Explore</h3>
-            <a href="/shop/">Shop Items</a>
-            <a href="/rentals/">Hostels & Rentals</a>
-            <a href="https://gigs.kabaleonline.com" class="service-link">Find Services</a>
-            <a href="/events/">Local Events</a>
-            <a href="/lost-and-found/">Lost & Found</a>
+        <div class="container footer-bottom">
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
-
-        <div class="footer-column">
-            <h3>For Sellers</h3>
-            <a href="/upload/">Sell an Item</a>
-            <a href="/dashboard/">My Dashboard</a>
-            <a href="https://gigs.kabaleonline.com" class="service-link">Offer a Service</a>
-            <a href="/blog/">Seller Tips</a>
-        </div>
-
-        <div class="footer-column">
-            <h3>Company</h3>
-            <a href="/about.html">About Us</a>
-            <a href="/contact.html">Contact</a>
-            <a href="/terms.html">Terms of Service</a>
-            <a href="/blog/">Blog & News</a>
-        </div>
-    </div>
-    <div class="container footer-bottom">
-        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-    </div>
-</footer>
+    </footer>
 
     <div id="nav-modal" class="nav-modal">
         <div class="nav-modal-content">
@@ -446,7 +347,8 @@
             </div>
         </div>
     </div>
-<button id="open-chat-button" aria-label="Open AI Assistant">
+    
+    <button id="open-chat-button" aria-label="Open AI Assistant">
         <i class="fa-solid fa-robot"></i>
     </button>
 
@@ -455,59 +357,13 @@
         <div class="chat-modal-content">
             <div class="chat-modal-header">
                 <h3>Amara</h3>
-                <button id="close-chat-button" aria-label="Close Chat">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <iframe id="chat-iframe" src="/ai/" title="KabaleOnline AI Assistant"></iframe>
-<div id="resize-handle"></div>
+            <div id="resize-handle"></div>
         </div>
     </div>
     
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // --- Get the essential elements ---
-    const openChatButton = document.getElementById('open-chat-button');
-    const closeChatButton = document.getElementById('close-chat-button');
-    const chatModalContainer = document.getElementById('chat-modal-container');
-    const chatModalOverlay = document.querySelector('.chat-modal-overlay');
-
-    // --- Simple and reliable open/close functions ---
-    
-    // Function to open the modal
-    function openModal() {
-        if (chatModalContainer) {
-            // This simply makes the container visible
-            chatModalContainer.classList.add('active');
-        }
-    }
-
-    // Function to close the modal
-    function closeModal() {
-        if (chatModalContainer) {
-            // This simply hides the container again
-            chatModalContainer.classList.remove('active');
-        }
-    }
-
-    // --- Attach the click event listeners ---
-
-    // When the floating button is clicked, open the modal
-    if (openChatButton) {
-        openChatButton.addEventListener('click', openModal);
-    }
-
-    // When the 'X' button inside the modal is clicked, close it
-    if (closeChatButton) {
-        closeChatButton.addEventListener('click', closeModal);
-    }
-
-    // When the dark background overlay is clicked, close the modal
-    if (chatModalOverlay) {
-        chatModalOverlay.addEventListener('click', closeModal);
-    }
-});
-</script>
-<script src="index.js"></script>
+    <script type="module" src="index.js"></script>
 </body>
 </html>
