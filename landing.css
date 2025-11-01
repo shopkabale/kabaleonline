@@ -1,5 +1,5 @@
 /* ==================================================== */
-/* 1. Base Setup & Global Variables                     */
+/* 1. Base Setup & Global Variables (LIGHT MODE ONLY)   */
 /* ==================================================== */
 :root {
     /* Brand Colors */
@@ -20,7 +20,8 @@
     --category-text: #546E7A;
     --footer-text: #546E7A;
     --shadow-color: rgba(0, 0, 0, 0.1);
-    --gray-line: #E2E8F0;
+    --gray-line: #D1D5DB; /* Lighter gray line */
+    --gray-hover: #e2e8f0; /* Gray for hover */
     
     /* Variables for mobile nav */
     --ko-primary: var(--primary);
@@ -79,14 +80,18 @@ header {
     font-weight: 700;
     text-decoration: none;
     color: var(--header-text);
+    position: relative;
+    padding-right: 20px; /* Make space for copyright */
 }
 
-.logo sup {
-    font-size: 0.8rem;
+/* NEW: Copyright Symbol Style */
+.logo-c {
+    font-size: 0.9rem;
     font-weight: 400;
-    top: -1em;
     opacity: 0.7;
-    margin-right: 2px;
+    position: absolute;
+    top: 2px;
+    right: 0;
 }
 
 .logo span {
@@ -175,7 +180,27 @@ h1.main-slogan {
     color: var(--page-text);
     animation: fadeInSlideUp 0.8s ease-out forwards;
     opacity: 0;
+    
+    /* NEW: Animated Gradient Text */
+    background: linear-gradient(90deg, 
+        var(--primary), 
+        var(--accent), 
+        #3F51B5, 
+        var(--primary));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeInSlideUp 0.8s ease-out forwards, 
+                 textGradient 10s ease infinite;
 }
+
+@keyframes textGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 
 .description-text {
     font-size: 1.1rem;
@@ -221,6 +246,10 @@ h1.main-slogan {
     color: var(--button-primary-text);
     border-color: var(--button-primary-bg);
 }
+.btn-primary:hover {
+    background-color: #004D40; /* Darker teal */
+    border-color: #004D40;
+}
 
 /* UPDATED: Start Selling Button is Yellow */
 .btn-secondary {
@@ -261,15 +290,15 @@ h1.main-slogan {
     opacity: 0;
 }
 .category-prompt {
-    font-size: 0.9rem;
+    font-size: 1rem; /* Increased size */
     font-weight: 600;
     text-transform: uppercase;
     color: var(--category-text);
     margin-bottom: 10px;
 }
 .category-animation {
-    height: 30px;
-    font-size: 1.2rem;
+    height: 36px; /* Increased size */
+    font-size: 1.5rem; /* Increased size */
     font-weight: 700;
     color: var(--primary);
     overflow: hidden;
@@ -357,48 +386,47 @@ footer {
         display: flex;
         align-items: center;
         flex: 1; /* EXPAND to fill space */
-        justify-content: space-around; /* SPREAD OUT buttons */
+        justify-content: space-evenly; /* SPREAD OUT buttons */
         margin: 0 40px;
     }
     .desktop-nav a {
+        flex: 1; /* Make all links expand equally */
+        text-align: center;
         font-family: var(--font-heading);
         font-weight: 600;
         text-decoration: none;
         color: var(--header-text);
         
         padding: 8px 16px;
-        border: 2px solid transparent; /* "Not colored" border */
-        border-radius: 50px; /* "Round border" */
+        border: 2px solid var(--gray-line); /* "gray round border" */
+        border-radius: 50px; /* "round" */
         
         transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s;
     }
     .desktop-nav a:hover {
         transform: scale(1.05); /* "Pop" */
-        background-color: #e2e8f0; /* "Gray" hover */
-        border-color: #e2e8f0;
-        color: var(--text-dark); /* Darken text on gray hover */
+        background-color: var(--gray-hover); /* "Gray" hover */
+        border-color: var(--gray-hover);
+        color: var(--text-dark); 
     }
     
     /* Active link style */
     .desktop-nav a.active {
-        color: var(--primary);
-        border-color: var(--primary);
-    }
-    .desktop-nav a.active:hover {
-        background-color: var(--primary);
-        color: var(--white);
-        border-color: var(--primary);
-    }
-    
-    /* Sign Up Button Style */
-    .desktop-nav a.nav-signup {
-        border-color: var(--accent);
+        border-color: var(--accent); /* "yellow round corner" */
         color: var(--accent);
     }
-    .desktop-nav a.nav-signup:hover {
+    .desktop-nav a.active:hover {
         background-color: var(--accent);
         color: var(--text-dark);
         border-color: var(--accent);
+    }
+    
+    /* Sign Up Button Style (now same as others) */
+    .desktop-nav a.nav-signup {
+        /* Inherits all default styles */
+    }
+    .desktop-nav a.nav-signup:hover {
+        /* Inherits all default hover styles */
     }
 
     .hamburger-menu {
@@ -435,5 +463,11 @@ footer {
         justify-content: space-between;
         align-items: center;
         padding: 20px 40px;
+    }
+    .btn-footer-details {
+        order: 2; /* Button on the right */
+    }
+    .footer-copyright {
+        order: 1; /* Copyright on the left */
     }
 }
