@@ -8,22 +8,19 @@
     --white: #FFFFFF;
     --text-dark: #263238;
     
-    /* Base Styles (Dark Mode is Default) */
-    --page-bg: #0f172a;
-    --page-text: #FFFFFF;
-    --header-text: #FFFFFF;
-    --button-primary-bg: var(--white);
-    --button-primary-text: var(--text-dark);
-    --button-secondary-bg: transparent;
-    --button-secondary-text: var(--white);
-    --button-secondary-border: var(--white);
-    --amara-bg: rgba(255, 255, 255, 0.15);
-    --amara-border: rgba(255, 255, 255, 0.3);
-    --amara-text: var(--white);
-    --category-text: rgba(255, 255, 255, 0.8);
-    --footer-text: rgba(255, 255, 255, 0.7);
-    --shadow-color: rgba(0, 0, 0, 0.3);
-    --gray-line: #4B5563;
+    /* Base Styles (Light Mode is Default) */
+    --page-bg: #f4f6f8; /* Soft gray */
+    --page-text: #263238;
+    --header-text: #263238;
+    --button-primary-bg: var(--primary);
+    --button-primary-text: var(--white);
+    --amara-bg: rgba(0, 0, 0, 0.05);
+    --amara-border: rgba(0, 0, 0, 0.1);
+    --amara-text: var(--page-text);
+    --category-text: #546E7A;
+    --footer-text: #546E7A;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --gray-line: #E2E8F0;
     
     /* Variables for mobile nav */
     --ko-primary: var(--primary);
@@ -61,27 +58,6 @@ body {
     min-height: 100vh;
 }
 
-/* Animated Gradient Background */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(125deg, 
-        var(--primary), 
-        #3F51B5, 
-        #673AB7, 
-        var(--accent));
-    background-size: 400% 400%;
-    animation: gradientShift 20s ease infinite;
-    z-index: -1;
-}
-
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
 /* ==================================================== */
 /* 2. Header & Navigation                               */
 /* ==================================================== */
@@ -105,11 +81,10 @@ header {
     color: var(--header-text);
 }
 
-/* NEW: Copyright Symbol Style */
 .logo sup {
     font-size: 0.8rem;
     font-weight: 400;
-    top: -1em; /* Lifts it higher */
+    top: -1em;
     opacity: 0.7;
     margin-right: 2px;
 }
@@ -118,7 +93,6 @@ header {
     color: var(--accent);
 }
 
-/* Desktop Navigation */
 .desktop-nav {
     display: none; /* Hidden on mobile */
 }
@@ -128,8 +102,6 @@ header {
     align-items: center;
     gap: 15px;
 }
-
-/* REMOVED Theme Toggle CSS */
 
 .hamburger-menu {
     font-size: 1.6rem;
@@ -190,7 +162,7 @@ main {
     text-align: center;
     max-width: 800px;
     width: 100%;
-    margin: 40px auto;
+    margin: 20px auto; /* Reduced margin */
     padding: 20px 25px;
 }
 
@@ -219,7 +191,7 @@ h1.main-slogan {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-bottom: 40px;
+    margin-bottom: 30px; /* Reduced margin */
     width: 100%;
     max-width: 300px;
     animation: fadeInSlideUp 0.8s ease-out 0.4s forwards;
@@ -236,9 +208,9 @@ h1.main-slogan {
     font-size: 1.05rem;
     padding: 14px 25px;
     border-radius: 8px;
-    border: none;
+    border: 2px solid transparent;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s, color 0.3s;
 }
 .btn:hover {
     transform: translateY(-2px);
@@ -247,12 +219,20 @@ h1.main-slogan {
 .btn-primary {
     background-color: var(--button-primary-bg);
     color: var(--button-primary-text);
+    border-color: var(--button-primary-bg);
 }
+
+/* UPDATED: Start Selling Button is Yellow */
 .btn-secondary {
-    background-color: var(--button-secondary-bg);
-    color: var(--button-secondary-text);
-    border: 2px solid var(--button-secondary-border);
+    background-color: var(--accent);
+    color: var(--text-dark);
+    border-color: var(--accent);
 }
+.btn-secondary:hover {
+    background-color: #ffca8a; /* Lighter yellow */
+    border-color: #ffca8a;
+}
+
 
 .amara-bubble {
     display: inline-flex;
@@ -269,14 +249,14 @@ h1.main-slogan {
     opacity: 0;
 }
 .amara-bubble:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 .amara-bubble i {
     color: var(--accent);
 }
 
 .category-section {
-    margin-top: 50px;
+    margin-top: 30px; /* Reduced margin */
     animation: fadeInSlideUp 0.8s ease-out 0.8s forwards;
     opacity: 0;
 }
@@ -327,11 +307,19 @@ h1.main-slogan {
 }
 
 footer {
-    padding: 30px 25px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: auto; /* Pushes footer to bottom */
+    padding: 20px 25px;
     text-align: center;
     font-size: 0.9rem;
     color: var(--footer-text);
-    margin-top: auto;
+    
+    display: flex;
+    flex-direction: column; /* Mobile-first stacking */
+    align-items: center;
+    gap: 15px;
 }
 
 .btn-footer-details {
@@ -346,10 +334,10 @@ footer {
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 20px;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 .btn-footer-details:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(0,0,0,0.05);
     border-color: var(--primary);
 }
 .btn-footer-details i {
@@ -368,38 +356,49 @@ footer {
     .desktop-nav {
         display: flex;
         align-items: center;
-        gap: 25px;
+        flex: 1; /* EXPAND to fill space */
+        justify-content: space-around; /* SPREAD OUT buttons */
+        margin: 0 40px;
     }
     .desktop-nav a {
         font-family: var(--font-heading);
         font-weight: 600;
         text-decoration: none;
         color: var(--header-text);
-        padding-bottom: 3px;
-        border-bottom: 2px solid transparent;
-        transition: color 0.3s, border-color 0.3s;
+        
+        padding: 8px 16px;
+        border: 2px solid transparent; /* "Not colored" border */
+        border-radius: 50px; /* "Round border" */
+        
+        transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s;
     }
     .desktop-nav a:hover {
-        color: var(--primary);
-        border-bottom-color: var(--primary);
-    }
-    /* NEW: Active link style */
-    .desktop-nav a.active {
-        color: var(--primary);
-        border-bottom-color: var(--primary);
+        transform: scale(1.05); /* "Pop" */
+        background-color: #e2e8f0; /* "Gray" hover */
+        border-color: #e2e8f0;
+        color: var(--text-dark); /* Darken text on gray hover */
     }
     
-    .desktop-nav a.btn-signup {
+    /* Active link style */
+    .desktop-nav a.active {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+    .desktop-nav a.active:hover {
         background-color: var(--primary);
         color: var(--white);
-        padding: 8px 16px;
-        border-radius: 5px;
-        border-bottom: none; /* Remove border from button */
+        border-color: var(--primary);
     }
-    .desktop-nav a.btn-signup:hover {
-        background-color: #004D40;
-        color: var(--white);
-        border-bottom: none;
+    
+    /* Sign Up Button Style */
+    .desktop-nav a.nav-signup {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+    .desktop-nav a.nav-signup:hover {
+        background-color: var(--accent);
+        color: var(--text-dark);
+        border-color: var(--accent);
     }
 
     .hamburger-menu {
@@ -407,7 +406,7 @@ footer {
     }
 
     main {
-        margin: 60px auto;
+        margin: 40px auto; /* Reduced top margin */
         padding: 40px;
     }
 
@@ -420,12 +419,21 @@ footer {
         flex-direction: row;
         max-width: none;
         justify-content: center;
+        margin-bottom: 30px; /* Reduced margin */
     }
     .btn {
         min-width: 180px;
     }
 
     .category-section {
-        margin-top: 60px;
+        margin-top: 40px; /* Reduced margin */
+    }
+
+    /* UPDATED: Footer layout for desktop */
+    footer {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 40px;
     }
 }
