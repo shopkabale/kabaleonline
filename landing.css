@@ -43,7 +43,7 @@ body {
     z-index: 1;
 }
 
-/* --- Dark Mode (Default for this page) --- */
+/* --- Dark Mode --- */
 body.dark-mode {
     background-color: var(--bg-page-dark);
     color: var(--text-color-dark);
@@ -165,7 +165,7 @@ header {
     gap: 15px;
 }
 
-/* --- NEW: CSS for YOUR Checkbox Toggle --- */
+/* --- CSS for YOUR Checkbox Toggle --- */
 .theme-switch-wrapper { 
     display: flex; 
     align-items: center; 
@@ -199,12 +199,21 @@ header {
     border-radius: 50%; 
 }
 
-/* This styles the slider when in DARK mode (checkbox is UNCHECKED) */
+/* Slider in DARK mode (checkbox UNCHECKED) */
 body.dark-mode .slider {
-    background-color: #555; /* Dark background for slider */
+    background-color: #555;
+}
+body.dark-mode input:checked + .slider {
+    background-color: var(--ko-primary);
+}
+body.dark-mode input:checked + .slider:before { 
+    transform: translateX(18px); 
 }
 
-/* This styles the slider when in LIGHT mode (checkbox is CHECKED) */
+/* Slider in LIGHT mode (checkbox CHECKED) */
+body.light-mode .slider {
+    background-color: #ccc;
+}
 body.light-mode input:checked + .slider {
     background-color: var(--ko-primary);
 }
@@ -212,7 +221,7 @@ body.light-mode input:checked + .slider:before {
     transform: translateX(18px); 
 }
 
-/* This is the hint text required by your JS */
+
 .theme-hint-text { 
     position: absolute; 
     top: -25px; 
