@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     
     <link rel="icon" href="/favicon.webp" type="image/webp">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -47,7 +47,6 @@
         </div>
         
         <div class="header-icons">
-            
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="theme-toggle">
                     <input type="checkbox" id="theme-toggle" />
@@ -62,9 +61,11 @@
         </div>
     </header>
 
-    <main>
-        <div class="hero-content">
-            <h1>Buy & Sell for Free in Kabale 📱💰</h1>
+    <main class="desktop-layout">
+        <div class="content-left">
+            <h1 class="main-slogan">Buy & Sell for Free in Kabale 📱💰</h1>
+
+            <p class="description-text">Kabale Online is your free marketplace for students. Easily find or sell phones, textbooks, shoes, food, and more. No fees, no stress, just smart shopping.</p>
 
             <div class="cta-buttons">
                 <a href="home.html" class="btn btn-primary">
@@ -76,15 +77,35 @@
             </div>
 
             <a href="/ai/" class="amara-bubble">
-                <i class="fas fa-robot"></i>
-                Chat with Amara
+                <i class="fas fa-robot"></i> Chat with Amara
             </a>
 
-            <div class="category-animation">
-                <span id="dropping-word">phones</span>
+            <div class="category-section">
+                <p class="category-prompt">CHOOSE FROM DIFFERENT CATEGORIES:</p>
+                <div class="category-animation">
+                    <span id="dropping-word">phones</span>
+                </div>
             </div>
-
-            <p class="sub-slogan">No fees. No stress. Just smart shopping.</p>
+            
+        </div>
+        <div class="content-right">
+            <svg class="growth-chart-illustration" viewBox="0 0 1000 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="50" y="400" width="80" height="150" rx="10" fill="#60A5FA" class="bar bar-1"/>
+                <rect x="180" y="300" width="80" height="250" rx="10" fill="#60A5FA" class="bar bar-2"/>
+                <rect x="310" y="200" width="80" height="350" rx="10" fill="#60A5FA" class="bar bar-3"/>
+                <rect x="440" y="100" width="80" height="450" rx="10" fill="#60A5FA" class="bar bar-4"/>
+                
+                <path d="M90 380 Q150 280, 220 280 T350 180 T480 80" stroke="#9CA3AF" stroke-width="4" fill="none" class="line-chart"/>
+                <circle cx="90" cy="380" r="10" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2" class="dot dot-1"/>
+                <circle cx="220" cy="280" r="10" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2" class="dot dot-2"/>
+                <circle cx="350" cy="180" r="10" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2" class="dot dot-3"/>
+                <circle cx="480" cy="80" r="10" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2" class="dot dot-4"/>
+                
+                <path d="M580 550 L580 400 L600 400 L600 550 Z" fill="#4B5563" class="man-legs"/>
+                <path d="M570 400 C570 380, 610 380, 610 400 L610 450 C610 460, 570 460, 570 450 Z" fill="#4B5563" class="man-body"/>
+                <circle cx="590" cy="370" r="20" fill="#9CA3AF" class="man-head"/>
+                <path d="M570 550 L610 550 L600 560 L580 560 Z" fill="#D1D5DB" class="man-base"/>
+            </svg>
         </div>
     </main>
     
@@ -93,6 +114,7 @@
     </a>
 
     <footer>
+        <a href="home.html" class="btn-footer-details">View Detailed Homepage <i class="fas fa-arrow-right"></i></a>
         <p>Copyright &copy; KabaleOnline 2025</p>
     </footer>
 
