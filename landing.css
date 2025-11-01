@@ -84,7 +84,6 @@ header {
     padding-right: 20px; /* Make space for copyright */
 }
 
-/* NEW: Copyright Symbol Style */
 .logo-c {
     font-size: 0.9rem;
     font-weight: 400;
@@ -167,7 +166,7 @@ main {
     text-align: center;
     max-width: 800px;
     width: 100%;
-    margin: 20px auto; /* Reduced margin */
+    margin: 20px auto;
     padding: 20px 25px;
 }
 
@@ -181,7 +180,6 @@ h1.main-slogan {
     animation: fadeInSlideUp 0.8s ease-out forwards;
     opacity: 0;
     
-    /* NEW: Animated Gradient Text */
     background: linear-gradient(90deg, 
         var(--primary), 
         var(--accent), 
@@ -216,7 +214,7 @@ h1.main-slogan {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-bottom: 30px; /* Reduced margin */
+    margin-bottom: 30px;
     width: 100%;
     max-width: 300px;
     animation: fadeInSlideUp 0.8s ease-out 0.4s forwards;
@@ -251,14 +249,13 @@ h1.main-slogan {
     border-color: #004D40;
 }
 
-/* UPDATED: Start Selling Button is Yellow */
 .btn-secondary {
     background-color: var(--accent);
     color: var(--text-dark);
     border-color: var(--accent);
 }
 .btn-secondary:hover {
-    background-color: #ffca8a; /* Lighter yellow */
+    background-color: #ffca8a;
     border-color: #ffca8a;
 }
 
@@ -285,20 +282,20 @@ h1.main-slogan {
 }
 
 .category-section {
-    margin-top: 30px; /* Reduced margin */
+    margin-top: 30px;
     animation: fadeInSlideUp 0.8s ease-out 0.8s forwards;
     opacity: 0;
 }
 .category-prompt {
-    font-size: 1rem; /* Increased size */
+    font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
     color: var(--category-text);
     margin-bottom: 10px;
 }
 .category-animation {
-    height: 36px; /* Increased size */
-    font-size: 1.5rem; /* Increased size */
+    height: 36px;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary);
     overflow: hidden;
@@ -339,14 +336,14 @@ footer {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    margin-top: auto; /* Pushes footer to bottom */
+    margin-top: auto;
     padding: 20px 25px;
     text-align: center;
     font-size: 0.9rem;
     color: var(--footer-text);
     
     display: flex;
-    flex-direction: column; /* Mobile-first stacking */
+    flex-direction: column; /* Button on top, Copyright on bottom */
     align-items: center;
     gap: 15px;
 }
@@ -381,16 +378,15 @@ footer {
         padding: 20px 40px;
     }
 
-    /* Show desktop nav, hide hamburger */
     .desktop-nav {
         display: flex;
         align-items: center;
-        flex: 1; /* EXPAND to fill space */
-        justify-content: space-evenly; /* SPREAD OUT buttons */
+        flex: 1;
+        justify-content: space-evenly;
         margin: 0 40px;
     }
     .desktop-nav a {
-        flex: 1; /* Make all links expand equally */
+        flex: 1;
         text-align: center;
         font-family: var(--font-heading);
         font-weight: 600;
@@ -398,21 +394,20 @@ footer {
         color: var(--header-text);
         
         padding: 8px 16px;
-        border: 2px solid var(--gray-line); /* "gray round border" */
-        border-radius: 50px; /* "round" */
+        border: 2px solid var(--gray-line);
+        border-radius: 50px;
         
         transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s;
     }
     .desktop-nav a:hover {
-        transform: scale(1.05); /* "Pop" */
-        background-color: var(--gray-hover); /* "Gray" hover */
+        transform: scale(1.05);
+        background-color: var(--gray-hover);
         border-color: var(--gray-hover);
         color: var(--text-dark); 
     }
     
-    /* Active link style */
     .desktop-nav a.active {
-        border-color: var(--accent); /* "yellow round corner" */
+        border-color: var(--accent);
         color: var(--accent);
     }
     .desktop-nav a.active:hover {
@@ -421,7 +416,6 @@ footer {
         border-color: var(--accent);
     }
     
-    /* Sign Up Button Style (now same as others) */
     .desktop-nav a.nav-signup {
         /* Inherits all default styles */
     }
@@ -430,11 +424,11 @@ footer {
     }
 
     .hamburger-menu {
-        display: none; /* Hide hamburger on desktop */
+        display: none;
     }
 
     main {
-        margin: 40px auto; /* Reduced top margin */
+        margin: 40px auto;
         padding: 40px;
     }
 
@@ -447,17 +441,16 @@ footer {
         flex-direction: row;
         max-width: none;
         justify-content: center;
-        margin-bottom: 30px; /* Reduced margin */
+        margin-bottom: 30px;
     }
     .btn {
         min-width: 180px;
     }
 
     .category-section {
-        margin-top: 40px; /* Reduced margin */
+        margin-top: 40px;
     }
 
-    /* UPDATED: Footer layout for desktop */
     footer {
         flex-direction: row;
         justify-content: space-between;
@@ -469,5 +462,24 @@ footer {
     }
     .footer-copyright {
         order: 1; /* Copyright on the left */
+    }
+}
+
+/* ==================================================== */
+/* 6. Small Mobile Responsive Tweaks                    */
+/* ==================================================== */
+@media (max-width: 480px) {
+    h1.main-slogan {
+        font-size: 2.0rem; /* Slightly smaller on small phones */
+    }
+    .description-text {
+        font-size: 1.0rem; /* Slightly smaller */
+    }
+    .category-prompt {
+        font-size: 0.9rem;
+    }
+    .category-animation {
+        font-size: 1.3rem;
+        height: 32px;
     }
 }
