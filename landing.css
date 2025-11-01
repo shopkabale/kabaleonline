@@ -1,27 +1,71 @@
 /* ==================================================== */
-/* 1. Base Setup & Animated Background                  */
+/* 1. Base Setup & Global Variables                     */
 /* ==================================================== */
 :root {
+    /* Your existing brand colors */
     --primary: #00695C; /* Deep Teal */
     --accent: #FFB74D;  /* Warm Orange */
-    --white: #FFFFFF;
-    --text-dark: #263238;
     
-    /* Variables needed for the mobile nav */
-    --ko-primary: var(--primary);
-    --ko-accent: var(--accent);
-    --ko-accent-dark: var(--text-dark);
-    --bg-card: #ffffff;
-    --text-main: #212529;
-    --border-color: #e9ecef;
-    --bg-main: #f8f9fa;
+    /* New general colors for this design style */
+    --light-bg: #FFFFFF;
+    --dark-bg: #1A202C; /* Dark, subtle background for dark mode */
+    --text-light: #2D3748; /* Dark text for light mode */
+    --text-dark: #F7FAFC; /* Light text for dark mode */
+    --gray-line: #E2E8F0; /* Light gray lines/borders */
+    --blue-bars: #4299E1; /* A standard modern blue for the bars */
+    --dark-blue-bars: #3182CE; /* Darker blue for dark mode bars */
 
-    /* Light/Dark Mode variables */
-    --bg-page-dark: #0f172a;
-    --bg-page-light: #f4f6f8; /* Soft gray */
-    --text-color-dark: #FFFFFF;
-    --text-color-light: #263238;
+    /* Typography */
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Open Sans', sans-serif;
+
+    /* Theme specific (handled by JS via classes on body) */
+    --page-bg: var(--light-bg);
+    --page-text: var(--text-light);
+    --header-text: var(--text-light);
+    --button-primary-bg: var(--primary);
+    --button-primary-text: var(--white);
+    --button-secondary-bg: transparent;
+    --button-secondary-text: var(--primary);
+    --button-secondary-border: var(--primary);
+    --amara-bg: rgba(0, 0, 0, 0.05);
+    --amara-border: rgba(0, 0, 0, 0.1);
+    --amara-text: var(--text-light);
+    --category-text: #546E7A;
+    --footer-text: #546E7A;
+    --illustration-bar-color: var(--blue-bars);
+    --illustration-line-color: var(--gray-line);
+    --illustration-dot-color: #D1D5DB; /* Light gray dots */
+    --illustration-man-color: #4B5563; /* Dark gray man */
+    --illustration-man-head-color: #9CA3AF; /* Medium gray head */
+    --illustration-man-base-color: #D1D5DB; /* Light gray base */
+    --shadow-color: rgba(0, 0, 0, 0.1);
 }
+
+/* Dark Mode Overrides */
+body.dark-mode {
+    --page-bg: var(--dark-bg);
+    --page-text: var(--text-dark);
+    --header-text: var(--text-dark);
+    --button-primary-bg: var(--primary);
+    --button-primary-text: var(--white);
+    --button-secondary-bg: transparent;
+    --button-secondary-text: var(--white);
+    --button-secondary-border: var(--white);
+    --amara-bg: rgba(255, 255, 255, 0.15);
+    --amara-border: rgba(255, 255, 255, 0.3);
+    --amara-text: var(--white);
+    --category-text: rgba(255, 255, 255, 0.8);
+    --footer-text: rgba(255, 255, 255, 0.7);
+    --illustration-bar-color: var(--dark-blue-bars);
+    --illustration-line-color: #6B7280; /* Darker gray line */
+    --illustration-dot-color: #4B5563; /* Darker gray dots */
+    --illustration-man-color: #9CA3AF; /* Lighter gray man */
+    --illustration-man-head-color: #D1D5DB; /* Lighter gray head */
+    --illustration-man-base-color: #6B7280; /* Darker gray base */
+    --shadow-color: rgba(255, 255, 255, 0.1);
+}
+
 
 * {
     margin: 0;
@@ -31,127 +75,42 @@
 
 html, body {
     height: 100%;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     overflow-x: hidden;
-    transition: background-color 0.3s, color 0.3s;
 }
 
 body {
     display: flex;
     flex-direction: column;
+    background-color: var(--page-bg);
+    color: var(--page-text);
+    transition: background-color 0.3s, color 0.3s;
     position: relative;
-    z-index: 1;
-}
-
-/* --- Dark Mode --- */
-body.dark-mode {
-    background-color: var(--bg-page-dark);
-    color: var(--text-color-dark);
-}
-body.dark-mode::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(125deg, 
-        var(--primary), 
-        #3F51B5, 
-        #673AB7, 
-        var(--accent));
-    background-size: 400% 400%;
-    animation: gradientShift 20s ease infinite;
-    z-index: -1;
-}
-body.dark-mode .logo,
-body.dark-mode .hamburger-menu {
-    color: var(--white);
-}
-body.dark-mode .btn-primary {
-    background-color: var(--white);
-    color: var(--text-dark);
-}
-body.dark-mode .btn-secondary {
-    background-color: transparent;
-    color: var(--white);
-    border: 2px solid var(--white);
-}
-body.dark-mode .amara-bubble {
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: var(--white);
-}
-body.dark-mode .category-animation {
-    color: rgba(255, 255, 255, 0.8);
-}
-body.dark-mode .sub-slogan {
-    color: rgba(255, 255, 255, 0.9);
-}
-body.dark-mode footer {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-
-/* --- Light Mode --- */
-body.light-mode {
-    background-color: var(--bg-page-light);
-    color: var(--text-color-light);
-}
-body.light-mode::before {
-    display: none; /* No gradient in light mode */
-}
-body.light-mode .logo,
-body.light-mode .hamburger-menu {
-    color: var(--text-dark);
-}
-body.light-mode .btn-primary {
-    background-color: var(--primary);
-    color: var(--white);
-}
-body.light-mode .btn-secondary {
-    background-color: transparent;
-    color: var(--primary);
-    border: 2px solid var(--primary);
-}
-body.light-mode .amara-bubble {
-    background-color: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: var(--text-dark);
-}
-body.light-mode .category-animation {
-    color: #546E7A; /* Darker text */
-}
-body.light-mode .sub-slogan {
-    color: var(--text-dark);
-}
-body.light-mode footer {
-    color: #546E7A;
-}
-
-
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    min-height: 100vh; /* Ensure it fills viewport for sticky footer */
 }
 
 /* ==================================================== */
-/* 2. Header, Main Layout & Footer                      */
+/* 2. Header & Navigation                               */
 /* ==================================================== */
 header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative; /* Changed from absolute */
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 25px;
+    padding: 20px 40px; /* Increased padding for desktop */
     z-index: 10;
+    max-width: 1200px; /* Constrain header width */
+    margin: 0 auto; /* Center header */
+    color: var(--header-text);
 }
 
 .logo {
-    font-size: 1.4rem;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
     font-weight: 700;
     text-decoration: none;
+    color: var(--header-text);
     transition: color 0.3s;
 }
 
@@ -165,7 +124,7 @@ header {
     gap: 15px;
 }
 
-/* --- CSS for YOUR Checkbox Toggle --- */
+/* --- YOUR Checkbox Toggle --- */
 .theme-switch-wrapper { 
     display: flex; 
     align-items: center; 
@@ -199,28 +158,13 @@ header {
     border-radius: 50%; 
 }
 
-/* Slider in DARK mode (checkbox UNCHECKED) */
-body.dark-mode .slider {
-    background-color: #555;
-}
-body.dark-mode input:checked + .slider {
-    background-color: var(--ko-primary);
-}
-body.dark-mode input:checked + .slider:before { 
-    transform: translateX(18px); 
-}
+body.dark-mode .slider { background-color: #555; }
+body.dark-mode input:checked + .slider { background-color: var(--ko-primary); }
+body.dark-mode input:checked + .slider:before { transform: translateX(18px); }
 
-/* Slider in LIGHT mode (checkbox CHECKED) */
-body.light-mode .slider {
-    background-color: #ccc;
-}
-body.light-mode input:checked + .slider {
-    background-color: var(--ko-primary);
-}
-body.light-mode input:checked + .slider:before { 
-    transform: translateX(18px); 
-}
-
+body.light-mode .slider { background-color: #ccc; }
+body.light-mode input:checked + .slider { background-color: var(--ko-primary); }
+body.light-mode input:checked + .slider:before { transform: translateX(18px); }
 
 .theme-hint-text { 
     position: absolute; 
@@ -247,29 +191,11 @@ body.light-mode input:checked + .slider:before {
     cursor: pointer;
     padding: 5px;
     z-index: 1101;
+    color: var(--header-text);
     transition: color 0.3s;
 }
 
-main {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 80px 25px 20px;
-}
-
-footer {
-    padding: 20px;
-    text-align: center;
-    font-size: 0.9rem;
-    transition: color 0.3s;
-}
-
-/* ==================================================== */
-/* 3. Mobile Nav (Copied from index.css)                */
-/* ==================================================== */
+/* Mobile Nav (existing styles) */
 .mobile-nav { 
     position: fixed; 
     top: 0; 
@@ -286,7 +212,6 @@ footer {
     transform: translateX(-100%); 
 }
 .mobile-nav.active { transform: translateX(0); }
-
 .mobile-nav-overlay { 
     position: fixed; 
     top: 0; 
@@ -300,7 +225,6 @@ footer {
     transition: opacity 0.3s ease; 
 }
 .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
-
 .mobile-nav-header { 
     padding: 15px 20px; 
     border-bottom: 1px solid var(--border-color); 
@@ -326,7 +250,6 @@ footer {
     text-align: center; 
 }
 .mobile-nav a.nav-link:hover { background-color: rgba(0,0,0,0.05); }
-
 .mobile-nav-footer { padding: 15px; background-color: var(--bg-main); }
 .mobile-nav .post-button { 
     background-color: var(--ko-accent); 
@@ -341,34 +264,53 @@ footer {
 }
 
 /* ==================================================== */
-/* 4. Hero Content & Buttons                            */
+/* 3. Main Content (Desktop Layout)                     */
 /* ==================================================== */
-.hero-content {
-    animation: fadeIn 1s ease-out;
+main.desktop-layout {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 40px auto; /* Push content down from header */
+    padding: 0 40px; /* Horizontal padding */
+    gap: 60px; /* Space between text and illustration */
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+.content-left {
+    flex: 1; /* Takes available space */
+    max-width: 500px; /* Max width for text block */
+    animation: fadeInSlideUp 1s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
 }
 
-h1 {
-    font-size: 2.2rem;
+@keyframes fadeInSlideUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1.main-slogan {
+    font-family: var(--font-heading);
+    font-size: 3.2rem;
     font-weight: 800;
-    line-height: 1.3;
-    text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: var(--page-text);
+    transition: color 0.3s;
 }
-body.light-mode h1 {
-    text-shadow: none;
+
+.description-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    color: var(--page-text);
+    transition: color 0.3s;
 }
 
 .cta-buttons {
     display: flex;
-    flex-direction: column;
     gap: 15px;
-    margin: 30px 0;
-    width: 100%;
-    max-width: 300px;
+    margin-bottom: 30px;
 }
 
 .btn {
@@ -378,9 +320,9 @@ body.light-mode h1 {
     gap: 10px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 1.1rem;
-    padding: 14px 20px;
-    border-radius: 50px;
+    font-size: 1.05rem;
+    padding: 14px 25px;
+    border-radius: 8px; /* Slightly less rounded */
     border: none;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease,
@@ -388,66 +330,122 @@ body.light-mode h1 {
 }
 
 .btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px var(--shadow-color);
+}
+
+.btn-primary {
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+
+.btn-secondary {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+    border: 2px solid var(--button-secondary-border);
 }
 
 .amara-bubble {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background-color: var(--amara-bg);
+    border: 1px solid var(--amara-border);
+    backdrop-filter: blur(5px); /* Soften blur for modern look */
+    -webkit-backdrop-filter: blur(5px);
     padding: 10px 20px;
     border-radius: 50px;
+    color: var(--amara-text);
     text-decoration: none;
     font-weight: 500;
     transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
-
 .amara-bubble:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-}
-body.light-mode .amara-bubble:hover {
     background-color: rgba(0, 0, 0, 0.1);
 }
-
+body.dark-mode .amara-bubble:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
 .amara-bubble i {
     color: var(--accent);
 }
 
-/* ==================================================== */
-/* 5. Animations & Floating Button                      */
-/* ==================================================== */
-.category-animation {
-    height: 40px;
-    font-size: 1.2rem;
-    font-weight: 500;
-    margin-top: 30px;
-    overflow: hidden;
+.category-section {
+    margin-top: 50px;
+    text-align: left; /* Align category section left on desktop */
+}
+.category-prompt {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--category-text);
+    margin-bottom: 10px;
     transition: color 0.3s;
 }
-
+.category-animation {
+    height: 30px; /* Reduced height for single line */
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary); /* Highlight with primary color */
+    overflow: hidden;
+    display: inline-block; /* Keep it tight to the prompt */
+}
 .category-animation .word {
     display: inline-block;
     opacity: 0;
-    animation: dropWord 2s infinite; /* <-- UPDATED to 2s */
+    animation: dropWord 2s infinite;
 }
-
 @keyframes dropWord {
-    /* Updated for 2s loop */
     0%   { transform: translateY(-30px); opacity: 0; }
-    22%  { transform: translateY(0); opacity: 1; } /* 0.44s to drop */
-    78%  { transform: translateY(0); opacity: 1; } /* 1.12s to stay */
-    100% { transform: translateY(20px); opacity: 0; } /* 0.44s to fade */
+    22%  { transform: translateY(0); opacity: 1; }
+    78%  { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(20px); opacity: 0; }
 }
 
-.sub-slogan {
-    font-size: 1.1rem;
-    margin-top: 10px;
-    transition: color 0.3s;
+
+.content-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* SVG Illustration Styling */
+.growth-chart-illustration {
+    width: 100%;
+    max-width: 600px; /* Limit max size */
+    height: auto;
+}
+.growth-chart-illustration .bar {
+    fill: var(--illustration-bar-color);
+    transition: fill 0.3s ease;
+}
+.growth-chart-illustration .line-chart {
+    stroke: var(--illustration-line-color);
+    transition: stroke 0.3s ease;
+}
+.growth-chart-illustration .dot {
+    fill: var(--illustration-dot-color);
+    stroke: var(--illustration-line-color);
+    transition: fill 0.3s ease, stroke 0.3s ease;
+}
+.growth-chart-illustration .man-legs,
+.growth-chart-illustration .man-body {
+    fill: var(--illustration-man-color);
+    transition: fill 0.3s ease;
+}
+.growth-chart-illustration .man-head {
+    fill: var(--illustration-man-head-color);
+    transition: fill 0.3s ease;
+}
+.growth-chart-illustration .man-base {
+    fill: var(--illustration-man-base-color);
+    transition: fill 0.3s ease;
+}
+
+/* ==================================================== */
+/* 4. Floating WhatsApp & Footer                        */
+/* ==================================================== */
 .whatsapp-fab {
     position: fixed;
     bottom: 20px;
@@ -466,24 +464,124 @@ body.light-mode .amara-bubble:hover {
     z-index: 100;
     transition: transform 0.2s ease;
 }
-
 .whatsapp-fab:hover {
     transform: scale(1.1);
 }
 
+footer {
+    padding: 20px 40px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--footer-text);
+    transition: color 0.3s;
+    margin-top: auto; /* Pushes footer to bottom */
+}
+
+.btn-footer-details {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    border: 1px solid var(--gray-line);
+    color: var(--page-text);
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+body.dark-mode .btn-footer-details {
+    border-color: #4B5563;
+}
+.btn-footer-details:hover {
+    background-color: rgba(0,0,0,0.05);
+    border-color: var(--primary);
+}
+body.dark-mode .btn-footer-details:hover {
+    background-color: rgba(255,255,255,0.1);
+    border-color: var(--primary);
+}
+.btn-footer-details i {
+    font-size: 0.8em;
+}
+
 /* ==================================================== */
-/* 6. Responsive Design                                 */
+/* 5. Responsive Design (Mobile Last)                   */
 /* ==================================================== */
-@media (min-width: 768px) {
-    h1 {
-        font-size: 3rem;
-        max-width: 600px;
+@media (max-width: 768px) {
+    header {
+        padding: 15px 25px;
     }
+    .logo {
+        font-size: 1.3rem;
+    }
+    .header-icons {
+        gap: 10px;
+    }
+
+    main.desktop-layout {
+        flex-direction: column; /* Stack content vertically */
+        text-align: center; /* Center align text on mobile */
+        padding: 40px 25px; /* Adjust padding */
+        margin: 20px auto; /* Adjust top margin */
+        gap: 40px;
+    }
+
+    .content-left {
+        max-width: 100%; /* Allow full width */
+    }
+
+    h1.main-slogan {
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+    }
+
+    .description-text {
+        font-size: 1rem;
+        margin-bottom: 25px;
+    }
+
     .cta-buttons {
-        flex-direction: row;
-        max-width: none;
+        flex-direction: column; /* Stack buttons */
+        max-width: 300px; /* Limit button width */
+        margin: 0 auto 25px auto; /* Center buttons */
     }
     .btn {
-        min-width: 220px;
+        width: 100%;
+        font-size: 1.0rem;
+        padding: 12px 20px;
+    }
+    .amara-bubble {
+        margin: 0 auto 40px auto; /* Center and add space */
+    }
+
+    .category-section {
+        margin-top: 30px;
+        text-align: center; /* Center category section on mobile */
+    }
+    .category-prompt {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+    .category-animation {
+        font-size: 1.1rem;
+        height: 28px;
+    }
+
+    .content-right {
+        order: -1; /* Move illustration above text on mobile */
+        margin-bottom: 20px;
+    }
+    .growth-chart-illustration {
+        max-width: 80%; /* Shrink illustration on mobile */
+    }
+    footer {
+        padding: 20px;
+    }
+    .btn-footer-details {
+        font-size: 0.9rem;
+        padding: 8px 12px;
     }
 }
