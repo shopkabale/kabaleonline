@@ -84,6 +84,7 @@ header {
     padding-right: 20px; /* Make space for copyright */
 }
 
+/* UPDATED: Copyright Symbol Style */
 .logo-c {
     font-size: 0.9rem;
     font-weight: 400;
@@ -179,26 +180,8 @@ h1.main-slogan {
     color: var(--page-text);
     animation: fadeInSlideUp 0.8s ease-out forwards;
     opacity: 0;
-    
-    background: linear-gradient(90deg, 
-        var(--primary), 
-        var(--accent), 
-        #3F51B5, 
-        var(--primary));
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: fadeInSlideUp 0.8s ease-out forwards, 
-                 textGradient 10s ease infinite;
+    /* REMOVED Gradient Animation */
 }
-
-@keyframes textGradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
 
 .description-text {
     font-size: 1.1rem;
@@ -378,16 +361,17 @@ footer {
         padding: 20px 40px;
     }
 
+    /* UPDATED: Desktop nav with 4 buttons */
     .desktop-nav {
         display: flex;
         align-items: center;
-        flex: 1;
-        justify-content: space-evenly;
-        margin: 0 40px;
+        gap: 20px; /* Space between the 4 buttons */
+        
+        /* These 3 lines group the nav to the right */
+        margin-left: auto; /* Pushes nav to the right */
+        margin-right: 40px; /* Space between nav and hamburger */
     }
     .desktop-nav a {
-        flex: 1;
-        text-align: center;
         font-family: var(--font-heading);
         font-weight: 600;
         text-decoration: none;
@@ -451,6 +435,7 @@ footer {
         margin-top: 40px;
     }
 
+    /* UPDATED: Footer layout for desktop */
     footer {
         flex-direction: row;
         justify-content: space-between;
