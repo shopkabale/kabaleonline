@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let index = 0;
 
     if (wordElement) {
-        // Set the interval to 2000ms (2 seconds)
         setInterval(() => {
             index = (index + 1) % words.length;
             wordElement.textContent = words[index];
