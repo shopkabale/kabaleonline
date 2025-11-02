@@ -32,6 +32,38 @@ const reviewsSection = document.getElementById('reviews-section');
 const avgRatingSummary = document.getElementById('average-rating-summary');
 const reviewsList = document.getElementById('reviews-list');
 
+// --- NEW: Share Button Function ---
+/**
+ * Attaches event listener to the profile share button.
+ * @param {string} sellerName The name of the seller for the share text.
+ */
+function setupProfileShareButton(sellerName) {
+    const shareBtn = document.getElementById('share-profile-btn');
+    if (!shareBtn) return;
+    
+    shareBtn.addEventListener('click', async () => {
+        const shareData = {
+            title: `View ${sellerName}'s Profile on Kabale Online`,
+            text: `Check out all the listings from ${sellerName} on Kabale Online.`,
+            url: window.location.href // This shares the current profile URL
+        };
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                // Fallback for desktop
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Profile link copied to clipboard!');
+            }
+        } catch (err) {
+            console.error("Share failed:", err);
+            // Alert removed from here to avoid "Share canceled" popups
+        }
+    });
+}
+// --- END NEW FUNCTION ---
+
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const sellerId = urlParams.get('sellerId');
@@ -45,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const userDocRef = doc(db, 'users', sellerId);
-        const userDoc = await getDoc(userDocRef);
+        const userDoc = await getDoc(userDoc);
 
         if (userDoc.exists()) {
             const userData = userDoc.data();
@@ -53,17 +85,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sellerLocation = userData.location;
             const sellerInstitution = userData.institution;
             const sellerBio = userData.bio;
-            const profilePhotoUrl = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=User'; // Updated placeholder
+            const profilePhotoUrl = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=User';
             const whatsappNumber = userData.whatsapp;
             const badges = userData.badges || [];
             
-            // --- MODIFICATION: Use new "pill" badge ---
             const isVerified = userData.isVerified || badges.includes('verified');
             let badgesHTML = '';
             if (isVerified) {
                 badgesHTML = `<div class="profile-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>`;
             }
-            // --- END MODIFICATION ---
 
             let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p>📍 From ${sellerLocation}</p>`;
@@ -75,18 +105,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
 
+            // --- MODIFICATION: Added .profile-title-header and #share-profile-btn ---
             profileHeader.innerHTML = `
                 <div class="profile-header-flex">
                     <img src="${profilePhotoUrl}" alt="${sellerName}" class="profile-photo">
                     <div class="profile-details">
-                        <h1>${sellerName}</h1>
-                        ${badgesHTML} ${detailsHTML}
+                        <div class="profile-title-header">
+                            <h1>${sellerName}</h1>
+                            <button id="share-profile-btn" class="share-btn" title="Share Profile">
+                                <i class="fa-solid fa-share-alt"></i>
+                            </button>
+                        </div>
+                        ${badgesHTML}
+                        ${detailsHTML}
                     </div>
                 </div>
                 ${bioHTML}
                 ${contactHTML}
             `;
+            // --- END MODIFICATION ---
+            
             document.title = `Profile for ${sellerName} | Kabale Online`;
+            
+            // --- NEW: Call the share button setup function ---
+            setupProfileShareButton(sellerName);
 
         } else {
             profileHeader.innerHTML = `<h1>Profile Not Found</h1>`;
@@ -101,6 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+        // (The rest of your code for reviews and products is perfect and unchanged)
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
 
@@ -147,11 +190,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 productLink.href = `product.html?id=${doc.id}`;
                 productLink.className = 'product-card-link';
 
-                // ✨ OPTIMIZATION: Create a thumbnail for the profile grid
                 const originalImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
                 const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
                 
-                // --- MODIFICATION: Add Product Tags ---
                 let tagsHTML = '';
                 if (product.listing_type === 'rent') {
                     tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
@@ -165,19 +206,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     tagsHTML += '<span class="product-tag condition-used">USED</span>';
                 }
                 const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
-                // --- END MODIFICATION ---
 
-
-                // --- MODIFICATION: Updated Product Card innerHTML ---
                 productLink.innerHTML = `
                     <div class="product-card">
-                        ${tagsContainerHTML} <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
+                        ${tagsContainerHTML}
+                        <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
                         <h3>${product.name}</h3>
                         <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
                     </div>
                 `;
-                // --- END MODIFICATION ---
-                
                 sellerProductGrid.appendChild(productLink);
             });
         }
