@@ -12,19 +12,19 @@
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            
+
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-            
+
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
+
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
@@ -45,7 +45,7 @@
             --text-secondary: var(--text-secondary-dark);
             --border-color: var(--border-color-dark);
         }
-        
+
         /* --- GENERAL & HEADER STYLES --- */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -91,7 +91,7 @@
         .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
         .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
         .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); }
-        
+
         /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
         .home-link { color: var(--ko-primary); text-decoration: none; font-weight: 600; margin-bottom: 15px; display: inline-block; }
         .info-box { border: 1px solid; border-radius: var(--border-radius); padding: 15px; margin: 20px 0; text-align: center; }
@@ -99,7 +99,7 @@
         body.dark-mode .info-box { background-color: #1c2e4a; border-color: #3e5a8a; color: #a8caff; }
         .info-box p { margin: 0; font-size: 1em; }
         .cta-button { padding: 12px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; background-color: var(--ko-primary); color: white; border: none; transition: background-color 0.2s; text-decoration: none; }
-        
+
         form { background-color: var(--bg-card); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
@@ -107,7 +107,7 @@
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--ko-primary); box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15); outline: none; }
         #submit-btn { width: 100%; }
         #submit-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
-        
+
         /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
         footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
@@ -170,9 +170,26 @@
             <div class="form-group"><label for="product-price">Price (UGX)</label><input type="number" id="product-price" required></div>
             <div class="form-group"><label for="product-quantity">Quantity Available</label><input type="number" id="product-quantity" value="1" min="1" required></div>
             <div class="form-group"><label for="product-category">Category</label><select id="product-category" required></select></div>
+            
+            <div class="form-group">
+                <label for="product-condition">Condition</label>
+                <select id="product-condition" required>
+                    <option value="" disabled selected>-- Select Condition --</option>
+                    <option value="New">New</option>
+                    <option value="Used">Used</option>
+                    <option value="Refurbished">Refurbished</option>
+                </select>
+            </div>
+
             <div class="form-group"><label for="product-description">Description</label><textarea id="product-description" required rows="5"></textarea></div>
             <div class="form-group"><label for="product-story">Your Story (Optional)</label><textarea id="product-story" rows="3"></textarea></div>
             <div class="form-group"><label for="whatsapp-number">WhatsApp Number</label><input type="tel" id="whatsapp-number" required></div>
+            
+            <div class="form-group">
+                <label for="product-location">Location</label>
+                <input type="text" id="product-location" placeholder="e.g., Kabale" value="Kabale" required>
+            </div>
+
             <div class="form-group"><label for="product-image-1">Main Image</label><input type="file" id="product-image-1" accept="image/*"></div>
             <div class="form-group"><label for="product-image-2">Optional Second Image</label><input type="file" id="product-image-2" accept="image/*"></div>
             <p id="product-form-message" style="display: none;"></p>
@@ -202,7 +219,7 @@
           color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
       </div>
     </div>
-    
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Logic for the mobile nav toggle and service modal
@@ -219,7 +236,7 @@
               overlay.classList.remove('active');
           });
       }
-      
+
       const serviceLinks = document.querySelectorAll('a.service-link');
       const modal = document.getElementById('service-notice');
       const continueBtn = document.getElementById('continue-btn');
