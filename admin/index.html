@@ -88,16 +88,97 @@
         /* Management List Styles */
         .user-list { list-style-type: none; padding: 0; }
         .user-list-item { background: var(--bg-main); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
-        .product-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        
+        /* --- MODIFIED: Product Grid --- */
+        .product-grid { 
+            display: grid; 
+            gap: 20px; 
+            grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
+        }
+        @media (max-width: 600px) {
+            .product-grid {
+                grid-template-columns: 1fr; /* Single column on small screens */
+            }
+        }
+        
         .product-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--bg-main); text-align: center; display: flex; flex-direction: column; }
         .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
-        .product-card h3, .product-card .price { margin: 10px; }
-        .seller-controls button { width: calc(100% - 20px); margin: 5px 10px; padding: 8px; border: 1px solid var(--border-color); background-color: var(--bg-main); color: var(--text-main); cursor: pointer; border-radius: 5px; font-size: 0.8em; }
+        .product-card h3 { 
+            margin: 10px;
+            font-size: 1em;
+            /* Fix for long names */
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+        .product-card .price { margin: 10px; }
 
         .action-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
         .action-btn.green { background-color: #28a745; color: white; }
         .action-btn.red { background-color: #dc3545; color: white; }
         .action-btn.blue { background-color: #007bff; color: white; }
+
+        /* --- NEW: Styles for new product toggle buttons --- */
+        .seller-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 0 10px 10px; /* Aligns buttons with card padding */
+        }
+
+        .product-toggle-btn {
+            background-color: #f0f0f0; /* Default off state */
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            flex-grow: 1; /* Make buttons fill space */
+            flex-basis: 100px; /* Min width before wrapping */
+        }
+        
+        /* Ensure delete button uses new flex properties */
+        .action-btn.red {
+            flex-grow: 1;
+            flex-basis: 100px;
+        }
+
+        .product-toggle-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* "ON" states for buttons */
+        .product-toggle-btn.on-deal {
+            background-color: var(--ko-accent); /* Yellow */
+            color: #212529;
+            border-color: var(--ko-accent);
+        }
+
+        .product-toggle-btn.on-save {
+            background-color: #17a2b8; /* Teal/Info */
+            color: white;
+            border-color: #17a2b8;
+        }
+
+        .product-toggle-btn.on-sponsor {
+            background-color: #28a745; /* Green */
+            color: white;
+            border-color: #28a745;
+        }
+
+        .product-toggle-btn.red { /* For Hero "on" state */
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .product-toggle-btn.blue { /* For Hero "off" state */
+            background-color: var(--ko-primary);
+            color: white;
+            border-color: var(--ko-primary);
+        }
+
     </style>
 </head>
 <body>
