@@ -347,16 +347,18 @@ footer {
     }
 }
 /* ==================================================== */
-/* 1. REPLACEMENT CSS FOR FILTERS, CARDS, AND MODAL */
+/* 3. ADD THIS CSS (Inside your <style> tag)        */
 /* ==================================================== */
 
-/* --- FILTER & SORT BAR STYLES (Mobile-Friendly Fix) --- */
+/* --- FILTER & SORT BAR STYLES --- */
 .filter-sort-bar {
-    /* Mobile-first: stack elements */
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0; 
     margin-top: 25px;
-    padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
+    gap: 15px;
 }
 .filter-btn {
     background: var(--bg-card);
@@ -372,17 +374,13 @@ footer {
     gap: 8px;
 }
 .sort-controls {
-    /* Stack below the filter button on mobile */
-    margin-top: 15px;
     display: flex;
-    justify-content: space-between; /* Pushes label left, dropdown right */
     align-items: center;
+    gap: 10px;
 }
 .sort-controls label {
     font-size: 0.9em;
     color: var(--text-secondary);
-    white-space: nowrap; /* Prevent label from wrapping */
-    margin-right: 10px;
 }
 .sort-select {
     font-size: 0.9em;
@@ -397,11 +395,8 @@ footer {
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 16px;
-    padding-right: 35px;
+    padding-right: 35px; /* Make space for the icon */
     cursor: pointer;
-    /* Give it space, but not full width */
-    flex-grow: 1;
-    max-width: 70%;
 }
 /* This styles the (3 Filters) badge */
 .filter-badge {
@@ -413,27 +408,6 @@ footer {
     margin-left: 8px;
     vertical-align: middle;
 }
-/* --- Tablet and Desktop --- */
-@media (min-width: 768px) {
-    .filter-sort-bar {
-        /* Go horizontal on tablets+ */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-        padding: 15px 0; /* Add padding back */
-    }
-    .sort-controls {
-        margin-top: 0; /* Reset mobile margin */
-        justify-content: flex-start; /* Align normally */
-        gap: 10px;
-    }
-    .sort-select {
-        width: auto; /* Let it be auto-width */
-        max-width: none;
-        flex-grow: 0;
-    }
-}
 @media (min-width: 1200px) {
     .filter-sort-bar {
         padding: 15px;
@@ -443,8 +417,7 @@ footer {
     }
 }
 
-
-/* --- PRODUCT CARD ENHANCEMENTS (Unchanged) --- */
+/* --- PRODUCT CARD ENHANCEMENTS --- */
 .product-card .condition-banner {
     position: absolute;
     top: 12px;
@@ -491,8 +464,7 @@ footer {
     color: var(--ko-primary);
 }
 
-
-/* --- FILTER MODAL STYLES (Unchanged) --- */
+/* --- FILTER MODAL STYLES --- */
 .filter-modal-overlay {
     position: fixed;
     top: 0;
