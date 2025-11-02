@@ -40,40 +40,19 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-const imageCategoryGrid = document.querySelector(".image-category-grid");
+const imageCategoryGrid = document.querySelector(".image-category-grid"); // Added reference for image grid
 const modal = document.getElementById('custom-modal');
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
 const backToTopBtn = document.getElementById("back-to-top-btn");
 
-// --- (NEW) REFERENCES FOR SORTING & FILTERING ---
-const sortBySelect = document.getElementById("sort-by");
-const filterBtn = document.getElementById("filter-btn");
-const filterModalOverlay = document.getElementById("filter-modal-overlay");
-const filterModalContent = document.getElementById("filter-modal-content");
-const filterModalCloseBtn = document.getElementById("filter-modal-close");
-const filterApplyBtn = document.getElementById("filter-apply-btn");
-const filterClearBtn = document.getElementById("filter-clear-btn");
-const filterMinPrice = document.getElementById("filter-min-price");
-const filterMaxPrice = document.getElementById("filter-max-price");
-
-
-// --- (UPDATED) APPLICATION STATE ---
-// We add the new filter properties
+// --- APPLICATION STATE ---
 const state = {
     currentPage: 0,
     totalPages: 1,
     isFetching: false,
     searchTerm: '',
-    filters: {
-        type: '',
-        category: '',
-        sortBy: 'createdAt_desc', // (NEW)
-        condition: '',           // (NEW)
-        minPrice: '',            // (NEW)
-        maxPrice: '',            // (NEW)
-        location: ''             // (NEW)
-    },
+    filters: { type: '', category: '' },
     currentUser: null,
     wishlist: new Set()
 };
@@ -105,14 +84,6 @@ function hideModal() {
     if (modal) modal.classList.remove('show');
 }
 
-// --- (NEW) FILTER MODAL FUNCTIONS ---
-function openFilterModal() {
-    if (filterModalOverlay) filterModalOverlay.classList.add('active');
-}
-function closeFilterModal() {
-    if (filterModalOverlay) filterModalOverlay.classList.remove('active');
-}
-
 function renderSkeletonLoaders(container, count) {
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
@@ -142,9 +113,6 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// --- (THE REAL FIX) ---
-// This function now uses YOUR ORIGINAL LOGIC and HTML structure.
-// It will NOT break your layout.
 function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
@@ -165,7 +133,6 @@ function renderProducts(gridElement, products, append = false) {
         const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
-        
         let stockStatusHTML = '';
         if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
@@ -174,25 +141,6 @@ function renderProducts(gridElement, products, append = false) {
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
-
-        // --- (NEW) Creating the new elements as strings ---
-        let conditionBannerHTML = '';
-        if (product.condition && !isActuallySold) {
-            const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1).toLowerCase();
-            const conditionClass = `is-${conditionText.toLowerCase().replace(' ', '-')}`;
-            conditionBannerHTML = `<div class="condition-banner ${conditionClass}">${conditionText}</div>`;
-        }
-
-        let sellerInfoHTML = '';
-        if (product.sellerName) {
-            sellerInfoHTML = `<div class="seller-info"><i class="fa-regular fa-user"></i>${product.sellerName}</div>`;
-        }
-
-        let locationInfoHTML = '';
-        if (product.location) { 
-            locationInfoHTML = `<div class="product-location"><i class="fa-solid fa-location-dot"></i> ${product.location}</div>`;
-        }
-
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
@@ -200,28 +148,17 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.pointerEvents = 'none';
             productLink.style.cursor = 'default';
         }
-
-        // --- (FIXED) This is YOUR original innerHTML structure ---
-        // It does NOT have the broken "product-card-content" div
-        // The new elements are added in the correct order to match your CSS
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             ${conditionBannerHTML} <!-- NEW -->
              <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
-            
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-            
-            <!-- New elements added AFTER price, BEFORE verified text -->
-            ${locationInfoHTML} 
-            ${sellerInfoHTML}
-
-            ${verifiedTextHTML} <!-- Your original element is preserved -->
+            ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
@@ -233,7 +170,6 @@ function renderProducts(gridElement, products, append = false) {
 }
 
 // --- DATA FETCHING FUNCTIONS ---
-// (UPDATED) fetchAndRenderProducts to send all filters to the API
 async function fetchAndRenderProducts(append = false) {
     if (state.isFetching) return;
     state.isFetching = true;
@@ -251,15 +187,8 @@ async function fetchAndRenderProducts(append = false) {
     try {
         const params = new URLSearchParams({ page: state.currentPage });
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
-        
-        // (NEW) Add all filters from state to params
-        if (state.filters.sortBy) params.append('sortBy', state.filters.sortBy);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
-        if (state.filters.condition) params.append('condition', state.filters.condition);
-        if (state.filters.location) params.append('location', state.filters.location);
-        if (state.filters.minPrice) params.append('minPrice', state.filters.minPrice);
-        if (state.filters.maxPrice) params.append('maxPrice', state.filters.maxPrice);
         
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
@@ -324,19 +253,18 @@ async function fetchAndDisplayCategoryCounts() {
         const response = await fetch('/.netlify/functions/count-categories');
         if (!response.ok) return;
         const counts = await response.json();
-        // (FIXED) This now uses your .image-category-card h3
         const categoryMapping = {
-            'Electronics': document.querySelector('a[href="/shop/?category=Electronics"] h3'),
-            'Clothing & Apparel': document.querySelector('a[href="/shop/?category=Clothing+%26+Apparel"] h3'),
-            'Home & Furniture': document.querySelector('a[href="/shop/?category=Home+%26+Furniture"] h3'),
-            'Other': document.querySelector('a[href="/shop/?category=Other"] h3'),
-            'Rentals': document.querySelector('a[href="/rentals/"] h3'),
-            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] h3')
+            'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
+            'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
+            'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
+            'Other': document.querySelector('a[href="/?category=Other"] span'),
+            'Rentals': document.querySelector('a[href="/rentals/"] span'),
+            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] span')
         };
         for (const category in counts) {
-            const h3 = categoryMapping[category];
-            if (counts[category] > 0 && h3 && !h3.querySelector('.category-count')) {
-                h3.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
+            const span = categoryMapping[category];
+            if (counts[category] > 0 && span && !span.querySelector('.category-count')) {
+                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
             }
         }
     } catch (error) { console.error('Error fetching category counts:', error); }
@@ -354,23 +282,12 @@ function updateLoadMoreUI() {
     }
 }
 
-// (UPDATED) updateListingsTitle to show filter count
 function updateListingsTitle() {
     let title = "Recent Items";
     if (state.filters.category) { title = state.filters.category; }
     else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
     if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
-    
-    // (NEW) Add a badge if filters are active
-    const activeFilterCount = ['condition', 'location', 'minPrice', 'maxPrice']
-        .filter(key => state.filters[key])
-        .length;
-    
-    if (activeFilterCount > 0) {
-        title += ` <span class="filter-badge">${activeFilterCount} Filter${activeFilterCount > 1 ? 's' : ''}</span>`;
-    }
-    
-    listingsTitle.innerHTML = title; // Use .innerHTML to render the span
+    listingsTitle.textContent = title;
 }
 
 async function handleWishlistClick(event) {
@@ -448,44 +365,42 @@ function handleSearch() {
     const term = searchInput.value.trim();
     state.searchTerm = term;
     state.currentPage = 0;
-    // (FIXED) Don't reset these filters on search
-    // state.filters.type = '';
-    // state.filters.category = '';
+    state.filters.type = '';
+    state.filters.category = '';
     
+    // ⭐ ADDED: Scroll to results on search
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     fetchAndRenderProducts(false);
 }
 
-// (UPDATED) To handle all category links and reset filters
+// ⭐ CORRECTED to handle BOTH types of category links
 function handleFilterLinkClick(event) {
-    // This now correctly targets your new .image-category-card links
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
 
+    // This handles the external gigs.kabaleonline.com link separately
     if (link.classList.contains('service-link')) {
+        // You might want to show your service modal here if you have one
         window.location.href = link.href;
         return;
     }
 
-    event.preventDefault();
+    event.preventDefault(); // Stop the page from reloading
 
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
     
-    // (NEW) Reset all filters when clicking a category
     state.filters.type = type;
     state.filters.category = category;
-    state.filters.condition = '';
-    state.filters.location = '';
-    state.filters.minPrice = '';
-    state.filters.maxPrice = '';
-
     state.currentPage = 0;
     state.searchTerm = '';
     searchInput.value = '';
 
+    // ⭐ ADDED: Scroll to results on filter
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     fetchAndRenderProducts(false);
 
     if (mobileNav) { 
@@ -494,77 +409,11 @@ function handleFilterLinkClick(event) {
     }
 }
 
-// (NEW) Handler for the sort dropdown
-function handleSortChange() {
-    const newSortBy = sortBySelect.value;
-    if (newSortBy === state.filters.sortBy) return;
-
-    state.filters.sortBy = newSortBy;
-    state.currentPage = 0;
-    fetchAndRenderProducts(false);
-}
-
-// (NEW) FILTER MODAL HANDLERS
-function handleApplyFilters() {
-    // Read values from modal and update state
-    state.filters.type = document.querySelector('input[name="filter-type"]:checked').value;
-    state.filters.condition = document.querySelector('input[name="filter-condition"]:checked').value;
-    state.filters.location = document.querySelector('input[name="filter-location"]:checked').value;
-    state.filters.minPrice = filterMinPrice.value || '';
-    state.filters.maxPrice = filterMaxPrice.value || '';
-    
-    state.filters.category = ''; // Clear category when applying filters
-    
-    state.currentPage = 0; // Reset pagination
-    closeFilterModal();
-    fetchAndRenderProducts(false); // Re-fetch
-}
-
-function handleClearFilters() {
-    // Reset the form inputs
-    document.querySelector('input[name="filter-type"][value=""]').checked = true;
-    document.querySelector('input[name="filter-condition"][value=""]').checked = true;
-    document.querySelector('input[name="filter-location"][value=""]').checked = true;
-    filterMinPrice.value = '';
-    filterMaxPrice.value = '';
-    
-    // Reset the state
-    state.filters.type = '';
-    state.filters.condition = '';
-    state.filters.location = '';
-    state.filters.minPrice = '';
-    state.filters.maxPrice = '';
-    state.filters.category = ''; // Also clear category
-    
-    state.currentPage = 0;
-    closeFilterModal();
-    fetchAndRenderProducts(false);
-}
-
-// (UPDATED) initializeStateFromURL to read all filters
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     state.filters.type = params.get('type') || '';
     state.filters.category = params.get('category') || '';
     state.searchTerm = params.get('q') || '';
-    
-    // (NEW) Read sort and filter params from URL
-    state.filters.sortBy = params.get('sortBy') || 'createdAt_desc';
-    state.filters.condition = params.get('condition') || '';
-    state.filters.location = params.get('location') || '';
-    state.filters.minPrice = params.get('minPrice') || '';
-    state.filters.maxPrice = params.get('maxPrice') || '';
-
-    // (NEW) Update modal inputs to reflect URL state
-    if(filterModalOverlay) { // Check if modal exists
-        if(state.filters.type) document.querySelector(`input[name="filter-type"][value="${state.filters.type}"]`).checked = true;
-        if(state.filters.condition) document.querySelector(`input[name="filter-condition"][value="${state.filters.condition}"]`).checked = true;
-        if(state.filters.location) document.querySelector(`input[name="filter-location"][value="${state.filters.location}"]`).checked = true;
-        if(state.filters.minPrice) filterMinPrice.value = state.filters.minPrice;
-        if(state.filters.maxPrice) filterMaxPrice.value = state.filters.maxPrice;
-    }
-    
-    if (sortBySelect) sortBySelect.value = state.filters.sortBy;
     if (state.searchTerm) searchInput.value = state.searchTerm;
 }
 
@@ -597,32 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
     
-    // --- (UPDATED) ALL EVENT LISTENERS ---
+    // --- ALL EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
     
-    // (NEW) Sort dropdown listener
-    if (sortBySelect) {
-        sortBySelect.addEventListener('change', handleSortChange);
-    }
-    
-    // (NEW) Filter button opens the modal
-    if (filterBtn) {
-        filterBtn.addEventListener('click', openFilterModal);
-    }
-
-    // (NEW) Filter Modal Listeners
-    if (filterModalOverlay) {
-        filterModalCloseBtn.addEventListener('click', closeFilterModal);
-        filterApplyBtn.addEventListener('click', handleApplyFilters);
-        filterClearBtn.addEventListener('click', handleClearFilters);
-        // Close modal if clicking overlay
-        filterModalOverlay.addEventListener('click', (e) => {
-            if (e.target === filterModalOverlay) closeFilterModal();
-        });
-    }
-    
-    // (UPDATED) Attach listeners to ALL category types
+    // ⭐ CORRECTED: Attach listeners to ALL category types
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
     if(imageCategoryGrid) imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
