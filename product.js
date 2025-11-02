@@ -96,6 +96,25 @@ function renderProductDetails(product, seller) {
     } else {
         stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
     }
+    
+    // --- NEW: Product Specs (Location, Condition, Type) ---
+    let specsHTML = '';
+    if (product.location) {
+        specsHTML += `<div class="product-spec"><i class="fa-solid fa-location-dot"></i><span><strong>Location:</strong> ${product.location}</span></div>`;
+    }
+    if (product.condition) {
+        // Capitalize the first letter (e.g., "new" -> "New")
+        const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1);
+        specsHTML += `<div class="product-spec"><i class="fa-solid fa-tag"></i><span><strong>Condition:</strong> ${conditionText}</span></div>`;
+    }
+    if (product.listing_type) {
+        // Make it user-friendly (e.g., "sale" -> "For Sale")
+        const typeText = product.listing_type === 'sale' ? 'For Sale' : 'For Rent';
+        specsHTML += `<div class="product-spec"><i class="fa-solid fa-clipboard-list"></i><span><strong>Type:</strong> ${typeText}</span></div>`;
+    }
+    // Only show the grid if there is at least one spec to show
+    const specsGridHTML = specsHTML ? `<div class="product-specs-grid">${specsHTML}</div>` : '';
+    // --- END NEW ---
 
     productElement.innerHTML = `
         <div class="product-images">
@@ -108,6 +127,9 @@ function renderProductDetails(product, seller) {
             </div>
             <h2 id="product-price">UGX ${product.price.toLocaleString()}</h2>
             ${stockStatusHTML}
+            
+            ${specsGridHTML}
+            
             <p id="product-description">${product.description}</p>
             <div class="seller-card">
                 <h4>About the Seller</h4>
@@ -245,52 +267,4 @@ async function setupWishlistButton(product) {
             wishlistBtn.classList.remove('active');
         }
     }
-    updateButtonState();
-    wishlistBtn.addEventListener('click', async () => {
-        wishlistBtn.disabled = true;
-        if (isInWishlist) { await deleteDoc(wishlistRef); } 
-        else { await setDoc(wishlistRef, { name: product.name, price: product.price, imageUrl: product.imageUrls ? product.imageUrls[0] : '', addedAt: serverTimestamp() }); }
-        isInWishlist = !isInWishlist;
-        updateButtonState();
-        wishlistBtn.disabled = false;
-    });
-}
-
-function loadQandA(sellerId) {
-    const qandaRef = collection(db, 'products', productId, 'qanda');
-    const q = query(qandaRef, orderBy('timestamp', 'desc'));
-    try {
-        onSnapshot(q, (snapshot) => {
-            qaList.innerHTML = '';
-            if (snapshot.empty) { qaList.innerHTML = '<p>No questions have been asked yet.</p>'; } 
-            else { snapshot.forEach(docSnap => { const qa = docSnap.data(); const div = document.createElement('div'); div.className = 'question-item'; div.innerHTML = `<p><strong>Q: ${qa.question}</strong></p>${qa.answer ? `<div class="answer-item"><p><strong>A:</strong> ${qa.answer}</p></div>` : ''}`; qaList.appendChild(div); }); }
-        });
-        if (currentUser) {
-            qaFormContainer.innerHTML = `<h4>Ask a Question</h4><form id="qa-form" class="qa-form"><textarea id="question-input" placeholder="Type your question here..." required></textarea><button type="submit" class="cta-button message-btn" style="margin-top: 10px;">Submit Question</button><p id="qa-form-message"></p></form>`;
-            document.getElementById('qa-form').addEventListener('submit', (e) => submitQuestion(e, sellerId));
-        } else {
-            qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/login/" style="font-weight: bold;">login or register</a> to ask a question.</p>`;
-        }
-    } catch (error) { console.error("Error loading Q&A:", error); qaList.innerHTML = '<p style="color: red;">Could not load questions.</p>'; }
-}
-
-async function submitQuestion(e, sellerId) {
-    e.preventDefault();
-    const form = e.target;
-    const questionInput = form.querySelector('#question-input');
-    const messageEl = form.querySelector('#qa-form-message');
-    const questionText = questionInput.value.trim();
-    if (!questionText) return;
-    try {
-        await addDoc(collection(db, 'products', productId, 'qanda'), { question: questionText, answer: null, askerId: currentUser.uid, sellerId: sellerId, timestamp: serverTimestamp() });
-        questionInput.value = '';
-        messageEl.textContent = 'Your question has been submitted!';
-        messageEl.style.color = 'green';
-    } catch (err) {
-        console.error("Error submitting question:", err);
-        messageEl.textContent = 'Failed to submit question.';
-        messageEl.style.color = 'red';
-    } finally {
-        setTimeout(() => messageEl.textContent = '', 3000);
-    }
-}
+    updateButtonS
