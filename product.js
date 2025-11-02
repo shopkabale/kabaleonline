@@ -125,6 +125,13 @@ function renderProductDetails(product, seller) {
     const specsGridHTML = specsHTML ? `<div class="product-specs-grid">${specsHTML}</div>` : '';
     // --- END NEW ---
 
+    // --- NEW: Create a prominent Verified Seller badge ---
+    const isVerified = (seller.badges || []).includes('verified') || seller.isVerified; // Check both user data fields
+    const prominentVerifiedBadgeHTML = isVerified 
+        ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
+        : '';
+    // --- END NEW ---
+
     productElement.innerHTML = `
         <div class="product-images">
             ${(product.imageUrls && product.imageUrls.length > 0) 
@@ -138,6 +145,9 @@ function renderProductDetails(product, seller) {
                 <button id="share-btn" title="Share"><i class="fa-solid fa-share-alt"></i></button>
             </div>
             <h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>
+            
+            ${prominentVerifiedBadgeHTML}
+
             ${stockStatusHTML}
             
             ${specsGridHTML}
@@ -151,7 +161,7 @@ function renderProductDetails(product, seller) {
                     <div>
                         <strong>${seller.name || 'Seller'}</strong>
                         <div id="user-badges">
-                            ${(seller.badges || []).includes('verified') ? '<span class="badge-icon verified"><i class="fa-solid fa-circle-check"></i> Verified</span>' : ''}
+                            ${isVerified ? '<span class="badge-icon verified"><i class="fa-solid fa-circle-check"></i> Verified</span>' : ''}
                         </div>
                     </div>
                 </div>
@@ -290,7 +300,7 @@ async function setupWishlistButton(product) {
         }
     }
     
-    updateButtonState(); // This was the line that was cut off
+    updateButtonState();
 
     wishlistBtn.addEventListener('click', async () => {
         wishlistBtn.disabled = true;
