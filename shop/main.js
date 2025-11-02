@@ -206,14 +206,17 @@ function renderProducts(gridElement, products, append = false) {
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             ${conditionBannerHTML} <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+             ${conditionBannerHTML} <!-- Now added -->
+             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-            ${locationInfoHTML} ${sellerInfoHTML} ${verifiedTextHTML}
+            ${locationInfoHTML} <!-- Now added -->
+            ${sellerInfoHTML} <!-- Now added -->
+            ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
