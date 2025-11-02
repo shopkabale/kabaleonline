@@ -46,8 +46,14 @@ exports.handler = async (event) => {
                 description: data.description,
                 category: data.category,
                 price: data.price,
-                quantity: data.quantity, // THIS LINE WAS ADDED
+                quantity: data.quantity,
                 listing_type: data.listing_type,
+                
+                // --- ADDED THESE TWO LINES ---
+                condition: data.condition,
+                location: data.location,
+                // -----------------------------
+                
                 sellerId: data.sellerId,
                 sellerName: data.sellerName,
                 imageUrls: data.imageUrls,
@@ -57,7 +63,7 @@ exports.handler = async (event) => {
         });
         await productsIndex.saveObjects(algoliaObjects);
 
-        // Sync Events
+        // Sync Events (This section remains the same)
         const eventsSnapshot = await db.collection('events').get();
         const algoliaEventObjects = eventsSnapshot.docs.map(doc => {
             const data = doc.data();
