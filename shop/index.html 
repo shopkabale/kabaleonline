@@ -381,13 +381,21 @@ footer {
     color: #212529; /* Dark text for yellow bg */
 }
 
+/* --- EDITED CSS FOR LOCATION, SELLER, AND TITLE --- */
+
+/* This rule forces long text to wrap aggressively */
+.product-card h3,
+.product-card .location-name,
+.product-card .seller-name {
+    overflow-wrap: break-word; /* Standard property */
+    word-break: break-all;     /* Aggressive fallback for long words */
+}
+
 /* Style for the new Location field */
 .product-card .location-name {
     font-size: 0.85em;
     color: var(--text-secondary);
     margin: -10px 15px 5px; /* Sits between price and seller */
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 .product-card .location-name i {
     margin-right: 5px;
@@ -399,8 +407,6 @@ footer {
     font-size: 0.85em;
     color: var(--text-secondary);
     margin: 0 15px 10px; /* Adjusted margin to fit under location */
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
     </style>
 </head>
