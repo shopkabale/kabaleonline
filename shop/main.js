@@ -113,6 +113,9 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
+// =================================================================
+// === MODIFIED RENDERPRODUCTS FUNCTION ============================
+// =================================================================
 function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
@@ -121,7 +124,7 @@ function renderProducts(gridElement, products, append = false) {
         gridElement.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
     }
-    
+
     const fragment = document.createDocumentFragment();
     products.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
@@ -133,6 +136,8 @@ function renderProducts(gridElement, products, append = false) {
         const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+        
+        // --- Stock Status Logic (Existing) ---
         let stockStatusHTML = '';
         if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
@@ -141,6 +146,23 @@ function renderProducts(gridElement, products, append = false) {
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
+        
+        // --- NEW: Build Tags for Condition and Listing Type (with FOR SALE) ---
+        let tagsHTML = '';
+        if (product.listing_type === 'rent') {
+            tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+        } else if (product.listing_type === 'sale') {
+            tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+        }
+        
+        if (product.condition === 'new') {
+            tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+        } else if (product.condition === 'used') {
+            tagsHTML += '<span class="product-tag condition-used">USED</span>';
+        }
+        const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
+        // --- END NEW ---
+
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
@@ -148,26 +170,39 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.pointerEvents = 'none';
             productLink.style.cursor = 'default';
         }
+
+        // --- NEW: Updated innerHTML with all new fields ---
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+             ${tagsContainerHTML} <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+            
+            ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
+            
+            ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
+
             ${verifiedTextHTML}
           </div>
         `;
+        // --- END NEW ---
+        
         fragment.appendChild(productLink);
     });
-    
+
     gridElement.appendChild(fragment);
     observeLazyImages();
     initializeWishlistButtons();
 }
+// =================================================================
+// === END MODIFIED RENDERPRODUCTS FUNCTION ========================
+// =================================================================
+
 
 // --- DATA FETCHING FUNCTIONS ---
 async function fetchAndRenderProducts(append = false) {
@@ -180,7 +215,7 @@ async function fetchAndRenderProducts(append = false) {
         loadMoreBtn.disabled = true;
         loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner loading-icon"></i> <span>LOADING...</span>`;
     }
-    
+
     updateLoadMoreUI();
     updateListingsTitle();
 
@@ -189,10 +224,10 @@ async function fetchAndRenderProducts(append = false) {
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
-        
+
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
-        
+
         const { products, totalPages } = await response.json();
         state.totalPages = totalPages;
         renderProducts(productGrid, products, append);
@@ -367,42 +402,28 @@ function handleSearch() {
     state.currentPage = 0;
     state.filters.type = '';
     state.filters.category = '';
-    
-    // ⭐ ADDED: Scroll to results on search
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     fetchAndRenderProducts(false);
 }
 
-// ⭐ CORRECTED to handle BOTH types of category links
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
-
-    // This handles the external gigs.kabaleonline.com link separately
     if (link.classList.contains('service-link')) {
-        // You might want to show your service modal here if you have one
         window.location.href = link.href;
         return;
     }
-
-    event.preventDefault(); // Stop the page from reloading
-
+    event.preventDefault(); 
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
-    
     state.filters.type = type;
     state.filters.category = category;
     state.currentPage = 0;
     state.searchTerm = '';
     searchInput.value = '';
-
-    // ⭐ ADDED: Scroll to results on filter
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     fetchAndRenderProducts(false);
-
     if (mobileNav) { 
         mobileNav.classList.remove('active'); 
         document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); 
@@ -445,16 +466,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
-    
-    // --- ALL EVENT LISTENERS ---
+
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
-    
-    // ⭐ CORRECTED: Attach listeners to ALL category types
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
     if(imageCategoryGrid) imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
-    
+
     if(loadMoreBtn) {
         loadMoreBtn.addEventListener('click', () => {
             if (state.currentPage < state.totalPages - 1) {
@@ -468,7 +486,6 @@ document.addEventListener('DOMContentLoaded', () => {
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-
         window.addEventListener('scroll', () => {
             if (window.scrollY > 400) {
                 backToTopBtn.classList.add('visible');
