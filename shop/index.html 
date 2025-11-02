@@ -346,13 +346,11 @@ footer {
         grid-template-columns: repeat(3, 1fr);
     }
 }
-
 /* ==================================================== */
-/* 1. REPLACEMENT CSS FOR FILTERS & MODAL (Cards Untouched) */
+/* 1. REPLACEMENT CSS FOR FILTERS, CARDS, AND MODAL */
 /* ==================================================== */
 
 /* --- FILTER & SORT BAR STYLES (Mobile-Friendly Fix) --- */
-/* This styles the new filter/sort bar ONLY */
 .filter-sort-bar {
     /* Mobile-first: stack elements */
     display: block;
@@ -446,15 +444,55 @@ footer {
 }
 
 
-/* --- PRODUCT CARD ENHANCEMENTS (REMOVED) --- */
-/* This section is intentionally left blank.
-    No styles will be applied to your product cards,
-    so their layout, size, and images will not change.
-*/
+/* --- PRODUCT CARD ENHANCEMENTS (Unchanged) --- */
+.product-card .condition-banner {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 3;
+    padding: 3px 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+.product-card .condition-banner.is-new {
+    background-color: #28a745; /* Green */
+}
+.product-card .condition-banner.is-used {
+    background-color: var(--ko-primary); /* Blue (your primary) */
+}
+.product-card .condition-banner.is-refurbished {
+    background-color: var(--ko-accent); /* Yellow (your accent) */
+    color: #212529;
+}
+.product-card .seller-info {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin: 0 15px 15px;
+    padding-top: 5px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 10px;
+}
+.product-card .seller-info i {
+    margin-right: 5px;
+}
+.product-card .product-location {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin: 0 15px 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.product-card .product-location i {
+    font-size: 0.9em;
+    color: var(--ko-primary);
+}
 
 
 /* --- FILTER MODAL STYLES (Unchanged) --- */
-/* This styles the new filter modal ONLY */
 .filter-modal-overlay {
     position: fixed;
     top: 0;
@@ -578,6 +616,7 @@ footer {
     background-color: var(--ko-primary);
     color: white;
 }
+
     </style>
 </head>
 <body>
