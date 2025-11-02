@@ -16,7 +16,12 @@ function showModal({ icon, title, message, theme = 'info', buttons }) {
     const modal = document.getElementById('custom-modal'); // You'll need to add this modal HTML to your page
     if (!modal) {
         alert(message); // Fallback to a simple alert if modal doesn't exist
-        buttons.find(b => b.class === 'primary')?.onClick(); // Simulate primary button click for redirection
+        
+        // Find the primary button's action (like redirecting) and run it
+        const primaryAction = buttons.find(b => b.class === 'primary')?.onClick;
+        if (primaryAction) {
+            primaryAction();
+        }
         return;
     }
     const modalIcon = document.getElementById('modal-icon');
@@ -67,6 +72,10 @@ async function loadProductAndSeller() {
         }
 
         const productData = productSnap.data();
+        
+        // Set page title dynamically
+        document.title = `${productData.name || 'Product'} | Kabale Online`;
+
         const sellerRef = doc(db, 'users', productData.sellerId);
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
@@ -89,14 +98,14 @@ function renderProductDetails(product, seller) {
     // Logic for stock status
     let stockStatusHTML = '';
     const quantity = product.quantity;
-    if (quantity > 5) {
+    if (product.isSold || (!quantity && quantity !== 0) || quantity <= 0) {
+        stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
+    } else if (quantity > 5) {
         stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
     } else if (quantity > 0 && quantity <= 5) {
         stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left in stock - order soon!</p>`;
-    } else {
-        stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
     }
-    
+
     // --- NEW: Product Specs (Location, Condition, Type) ---
     let specsHTML = '';
     if (product.location) {
@@ -118,23 +127,27 @@ function renderProductDetails(product, seller) {
 
     productElement.innerHTML = `
         <div class="product-images">
-            ${(product.imageUrls || []).map(url => `<img src="${url}" alt="${product.name}">`).join('')}
+            ${(product.imageUrls && product.imageUrls.length > 0) 
+                ? product.imageUrls.map(url => `<img src="${url}" alt="${product.name}">`).join('')
+                : `<img src="https://placehold.co/600x600/e0e0e0/777?text=No+Image" alt="No image available">`
+            }
         </div>
         <div class="product-info">
             <div class="product-title-header">
                 <h1 id="product-name">${product.name}</h1>
                 <button id="share-btn" title="Share"><i class="fa-solid fa-share-alt"></i></button>
             </div>
-            <h2 id="product-price">UGX ${product.price.toLocaleString()}</h2>
+            <h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>
             ${stockStatusHTML}
             
             ${specsGridHTML}
             
-            <p id="product-description">${product.description}</p>
+            <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
+            
             <div class="seller-card">
                 <h4>About the Seller</h4>
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <img src="${seller.profilePhotoUrl || 'placeholder.webp'}" alt="${seller.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <img src="${seller.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=User'}" alt="${seller.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                     <div>
                         <strong>${seller.name || 'Seller'}</strong>
                         <div id="user-badges">
@@ -164,9 +177,11 @@ function renderProductDetails(product, seller) {
     }
     if (currentUser && currentUser.uid === product.sellerId) {
         const contactBtn = productElement.querySelector('#contact-seller-btn');
+        const whatsappBtn = productElement.querySelector('.whatsapp-btn');
         contactBtn.style.pointerEvents = 'none';
-        contactBtn.style.backgroundColor = '#ccc';
+        contactBtn.style.backgroundColor = '#6c757d'; // 'disabled' grey
         contactBtn.textContent = 'This is your listing';
+        whatsappBtn.style.display = 'none'; // Hide WhatsApp button for own listing
     }
 }
 
@@ -175,7 +190,7 @@ function setupAddToCartButton(product) {
     if (!addToCartBtn) return;
 
     // Handle out of stock case
-    if (!product.quantity || product.quantity <= 0) {
+    if (product.isSold || !product.quantity || product.quantity <= 0) {
         addToCartBtn.disabled = true;
         addToCartBtn.innerHTML = '<i class="fa-solid fa-times-circle"></i> Out of Stock';
         return;
@@ -254,10 +269,17 @@ function setupShareButton(product) {
 async function setupWishlistButton(product) {
     const wishlistBtn = document.getElementById('wishlist-btn');
     if (!wishlistBtn) return;
-    wishlistBtn.style.display = 'flex';
+    wishlistBtn.style.display = 'flex'; // Make it visible
     const wishlistRef = doc(db, 'users', currentUser.uid, 'wishlist', productId);
-    const wishlistSnap = await getDoc(wishlistRef);
-    let isInWishlist = wishlistSnap.exists();
+    let isInWishlist = false;
+
+    try {
+        const wishlistSnap = await getDoc(wishlistRef);
+        isInWishlist = wishlistSnap.exists();
+    } catch (e) {
+        console.error("Error checking wishlist:", e);
+    }
+
     function updateButtonState() {
         if (isInWishlist) {
             wishlistBtn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
@@ -267,4 +289,98 @@ async function setupWishlistButton(product) {
             wishlistBtn.classList.remove('active');
         }
     }
-    updateButtonS
+    
+    updateButtonState(); // This was the line that was cut off
+
+    wishlistBtn.addEventListener('click', async () => {
+        wishlistBtn.disabled = true;
+        try {
+            if (isInWishlist) { 
+                await deleteDoc(wishlistRef); 
+            } else { 
+                await setDoc(wishlistRef, { 
+                    name: product.name, 
+                    price: product.price, 
+                    imageUrl: product.imageUrls ? product.imageUrls[0] : '', 
+                    addedAt: serverTimestamp() 
+                }); 
+            }
+            isInWishlist = !isInWishlist;
+            updateButtonState();
+        } catch (e) {
+            console.error("Error updating wishlist:", e);
+        } finally {
+            wishlistBtn.disabled = false;
+        }
+    });
+}
+
+function loadQandA(sellerId) {
+    const qandaRef = collection(db, 'products', productId, 'qanda');
+    const q = query(qandaRef, orderBy('timestamp', 'desc'));
+    try {
+        onSnapshot(q, (snapshot) => {
+            qaList.innerHTML = '';
+            if (snapshot.empty) { 
+                qaList.innerHTML = '<p>No questions have been asked yet.</p>'; 
+            } else { 
+                snapshot.forEach(docSnap => { 
+                    const qa = docSnap.data(); 
+                    const div = document.createElement('div'); 
+                    div.className = 'question-item'; 
+                    // Sanitize output (simple text replacement)
+                    const question = qa.question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const answer = qa.answer ? qa.answer.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>') : null;
+
+                    div.innerHTML = `<p><strong>Q: ${question}</strong></p>${answer ? `<div class="answer-item"><p><strong>A:</strong> ${answer}</p></div>` : ''}`; 
+                    qaList.appendChild(div); 
+                }); 
+            }
+        });
+
+        if (currentUser) {
+            qaFormContainer.innerHTML = `<h4>Ask a Question</h4><form id="qa-form" class="qa-form"><textarea id="question-input" placeholder="Type your question here..." required></textarea><button type="submit" class="cta-button message-btn" style="margin-top: 10px;">Submit Question</button><p id="qa-form-message"></p></form>`;
+            document.getElementById('qa-form').addEventListener('submit', (e) => submitQuestion(e, sellerId));
+        } else {
+            qaFormContainer.innerHTML = `<p style="text-align: center;">Please <a href="/login/?redirect=/product.html?id=${productId}" style="font-weight: bold;">login or register</a> to ask a question.</p>`;
+        }
+    } catch (error) { 
+        console.error("Error loading Q&A:", error); 
+        qaList.innerHTML = '<p style="color: red;">Could not load questions.</p>'; 
+    }
+}
+
+async function submitQuestion(e, sellerId) {
+    e.preventDefault();
+    const form = e.target;
+    const button = form.querySelector('button');
+    const questionInput = form.querySelector('#question-input');
+    const messageEl = form.querySelector('#qa-form-message');
+    const questionText = questionInput.value.trim();
+    if (!questionText || !currentUser) return;
+
+    button.disabled = true;
+    button.textContent = 'Submitting...';
+
+    try {
+        await addDoc(collection(db, 'products', productId, 'qanda'), { 
+            question: questionText, 
+            answer: null, 
+            askerId: currentUser.uid, 
+            askerName: currentUser.displayName || currentUser.email, // Store asker's name
+            sellerId: sellerId, 
+            timestamp: serverTimestamp() 
+        });
+        questionInput.value = '';
+        messageEl.textContent = 'Your question has been submitted!';
+        messageEl.style.color = 'green';
+    } catch (err) {
+        console.error("Error submitting question:", err);
+        messageEl.textContent = 'Failed to submit question.';
+        messageEl.style.color = 'red';
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Submit Question';
+        setTimeout(() => messageEl.textContent = '', 3000);
+    }
+}
