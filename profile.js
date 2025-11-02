@@ -53,9 +53,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sellerLocation = userData.location;
             const sellerInstitution = userData.institution;
             const sellerBio = userData.bio;
-            const profilePhotoUrl = userData.profilePhotoUrl || 'placeholder.webp';
+            const profilePhotoUrl = userData.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=User'; // Updated placeholder
             const whatsappNumber = userData.whatsapp;
             const badges = userData.badges || [];
+            
+            // --- MODIFICATION: Use new "pill" badge ---
+            const isVerified = userData.isVerified || badges.includes('verified');
+            let badgesHTML = '';
+            if (isVerified) {
+                badgesHTML = `<div class="profile-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>`;
+            }
+            // --- END MODIFICATION ---
 
             let detailsHTML = '';
             if (sellerLocation) detailsHTML += `<p>📍 From ${sellerLocation}</p>`;
@@ -66,18 +74,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hi, I saw your profile on Kabale Online.`;
                 contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
-            let badgesHTML = '';
-            if (badges.includes('verified')) {
-                badgesHTML += `<span class="badge-icon verified"><i class="fa-solid fa-circle-check"></i> Verified Seller</span>`;
-            }
 
             profileHeader.innerHTML = `
                 <div class="profile-header-flex">
                     <img src="${profilePhotoUrl}" alt="${sellerName}" class="profile-photo">
                     <div class="profile-details">
                         <h1>${sellerName}</h1>
-                        ${badgesHTML}
-                        ${detailsHTML}
+                        ${badgesHTML} ${detailsHTML}
                     </div>
                 </div>
                 ${bioHTML}
@@ -147,14 +150,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // ✨ OPTIMIZATION: Create a thumbnail for the profile grid
                 const originalImage = (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'placeholder.webp';
                 const thumbnailUrl = getCloudinaryTransformedUrl(originalImage, 'thumbnail');
+                
+                // --- MODIFICATION: Add Product Tags ---
+                let tagsHTML = '';
+                if (product.listing_type === 'rent') {
+                    tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+                } else if (product.listing_type === 'sale') {
+                     tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+                }
+                
+                if (product.condition === 'new') {
+                    tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+                } else if (product.condition === 'used') {
+                    tagsHTML += '<span class="product-tag condition-used">USED</span>';
+                }
+                const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
+                // --- END MODIFICATION ---
 
+
+                // --- MODIFICATION: Updated Product Card innerHTML ---
                 productLink.innerHTML = `
                     <div class="product-card">
-                        <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
+                        ${tagsContainerHTML} <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
                         <h3>${product.name}</h3>
                         <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
                     </div>
                 `;
+                // --- END MODIFICATION ---
+                
                 sellerProductGrid.appendChild(productLink);
             });
         }
