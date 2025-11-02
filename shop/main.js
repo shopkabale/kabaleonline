@@ -40,11 +40,23 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-const imageCategoryGrid = document.querySelector(".image-category-grid"); // Added reference for image grid
+const imageCategoryGrid = document.querySelector(".image-category-grid");
 const modal = document.getElementById('custom-modal');
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
 const backToTopBtn = document.getElementById("back-to-top-btn");
+const sortBySelect = document.getElementById("sort-by");
+const filterBtn = document.getElementById("filter-btn");
+
+// --- (NEW) FILTER MODAL DOM REFERENCES ---
+const filterModalOverlay = document.getElementById("filter-modal-overlay");
+const filterModalContent = document.getElementById("filter-modal-content");
+const filterModalCloseBtn = document.getElementById("filter-modal-close");
+const filterApplyBtn = document.getElementById("filter-apply-btn");
+const filterClearBtn = document.getElementById("filter-clear-btn");
+const filterMinPrice = document.getElementById("filter-min-price");
+const filterMaxPrice = document.getElementById("filter-max-price");
+
 
 // --- APPLICATION STATE ---
 const state = {
@@ -52,7 +64,15 @@ const state = {
     totalPages: 1,
     isFetching: false,
     searchTerm: '',
-    filters: { type: '', category: '' },
+    filters: {
+        type: '',
+        category: '',
+        sortBy: 'createdAt_desc',
+        condition: '', // (NEW)
+        minPrice: '',  // (NEW)
+        maxPrice: '',  // (NEW)
+        location: ''   // (NEW)
+    },
     currentUser: null,
     wishlist: new Set()
 };
@@ -82,6 +102,14 @@ function showModal({ icon, title, message, theme = 'info', buttons }) {
 
 function hideModal() {
     if (modal) modal.classList.remove('show');
+}
+
+// --- (NEW) FILTER MODAL FUNCTIONS ---
+function openFilterModal() {
+    if (filterModalOverlay) filterModalOverlay.classList.add('active');
+}
+function closeFilterModal() {
+    if (filterModalOverlay) filterModalOverlay.classList.remove('active');
 }
 
 function renderSkeletonLoaders(container, count) {
@@ -121,7 +149,7 @@ function renderProducts(gridElement, products, append = false) {
         gridElement.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
         return;
     }
-    
+
     const fragment = document.createDocumentFragment();
     products.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
@@ -133,6 +161,7 @@ function renderProducts(gridElement, products, append = false) {
         const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+
         let stockStatusHTML = '';
         if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
@@ -141,6 +170,24 @@ function renderProducts(gridElement, products, append = false) {
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
+
+        let conditionBannerHTML = '';
+        if (product.condition && !isActuallySold) {
+            const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1).toLowerCase();
+            const conditionClass = `is-${conditionText.toLowerCase().replace(' ', '-')}`;
+            conditionBannerHTML = `<div class="condition-banner ${conditionClass}">${conditionText}</div>`;
+        }
+
+        let sellerInfoHTML = '';
+        if (product.sellerName) {
+            sellerInfoHTML = `<div class="seller-info"><i class="fa-regular fa-user"></i>${product.sellerName}</div>`;
+        }
+
+        let locationInfoHTML = '';
+        if (product.location) {
+            locationInfoHTML = `<div class="product-location"><i class="fa-solid fa-location-dot"></i> ${product.location}</div>`;
+        }
+
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
@@ -148,9 +195,11 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.pointerEvents = 'none';
             productLink.style.cursor = 'default';
         }
+
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
+             ${conditionBannerHTML}
              <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
@@ -158,12 +207,14 @@ function renderProducts(gridElement, products, append = false) {
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+            ${locationInfoHTML}
+            ${sellerInfoHTML}
             ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
     });
-    
+
     gridElement.appendChild(fragment);
     observeLazyImages();
     initializeWishlistButtons();
@@ -180,19 +231,27 @@ async function fetchAndRenderProducts(append = false) {
         loadMoreBtn.disabled = true;
         loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner loading-icon"></i> <span>LOADING...</span>`;
     }
-    
+
     updateLoadMoreUI();
     updateListingsTitle();
 
     try {
         const params = new URLSearchParams({ page: state.currentPage });
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
+        if (state.filters.sortBy) params.append('sortBy', state.filters.sortBy);
+        
+        // (UPDATED) Add all filters to params
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
-        
+        if (state.filters.condition) params.append('condition', state.filters.condition);
+        if (state.filters.location) params.append('location', state.filters.location);
+        if (state.filters.minPrice) params.append('minPrice', state.filters.minPrice);
+        if (state.filters.maxPrice) params.append('maxPrice', state.filters.maxPrice);
+
+
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
-        
+
         const { products, totalPages } = await response.json();
         state.totalPages = totalPages;
         renderProducts(productGrid, products, append);
@@ -254,17 +313,17 @@ async function fetchAndDisplayCategoryCounts() {
         if (!response.ok) return;
         const counts = await response.json();
         const categoryMapping = {
-            'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
-            'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
-            'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
-            'Other': document.querySelector('a[href="/?category=Other"] span'),
-            'Rentals': document.querySelector('a[href="/rentals/"] span'),
-            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] span')
+            'Electronics': document.querySelector('a[href="/shop/?category=Electronics"] h3'),
+            'Clothing & Apparel': document.querySelector('a[href="/shop/?category=Clothing+%26+Apparel"] h3'),
+            'Home & Furniture': document.querySelector('a[href="/shop/?category=Home+%26+Furniture"] h3'),
+            'Other': document.querySelector('a[href="/shop/?category=Other"] h3'),
+            'Rentals': document.querySelector('a[href="/rentals/"] h3'),
+            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] h3')
         };
         for (const category in counts) {
-            const span = categoryMapping[category];
-            if (counts[category] > 0 && span && !span.querySelector('.category-count')) {
-                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
+            const h3 = categoryMapping[category];
+            if (counts[category] > 0 && h3 && !h3.querySelector('.category-count')) {
+                h3.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
             }
         }
     } catch (error) { console.error('Error fetching category counts:', error); }
@@ -287,7 +346,17 @@ function updateListingsTitle() {
     if (state.filters.category) { title = state.filters.category; }
     else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
     if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
-    listingsTitle.textContent = title;
+    
+    // (NEW) Add a badge if filters are active
+    const activeFilterCount = ['condition', 'location', 'minPrice', 'maxPrice']
+        .filter(key => state.filters[key])
+        .length;
+    
+    if (activeFilterCount > 0) {
+        title += ` <span class="filter-badge">${activeFilterCount} Filter${activeFilterCount > 1 ? 's' : ''}</span>`;
+    }
+    
+    listingsTitle.innerHTML = title; // Use .innerHTML to render the span
 }
 
 async function handleWishlistClick(event) {
@@ -365,55 +434,119 @@ function handleSearch() {
     const term = searchInput.value.trim();
     state.searchTerm = term;
     state.currentPage = 0;
-    state.filters.type = '';
-    state.filters.category = '';
+    // Don't reset filters when searching
+    // state.filters.type = '';
+    // state.filters.category = '';
     
-    // ⭐ ADDED: Scroll to results on search
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     fetchAndRenderProducts(false);
 }
 
-// ⭐ CORRECTED to handle BOTH types of category links
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
 
-    // This handles the external gigs.kabaleonline.com link separately
     if (link.classList.contains('service-link')) {
-        // You might want to show your service modal here if you have one
         window.location.href = link.href;
         return;
     }
 
-    event.preventDefault(); // Stop the page from reloading
+    event.preventDefault();
 
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
-    
+
+    // (UPDATED) Clear other filters when clicking a main category
     state.filters.type = type;
     state.filters.category = category;
+    state.filters.condition = '';
+    state.filters.location = '';
+    state.filters.minPrice = '';
+    state.filters.maxPrice = '';
+    
     state.currentPage = 0;
     state.searchTerm = '';
     searchInput.value = '';
 
-    // ⭐ ADDED: Scroll to results on filter
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     fetchAndRenderProducts(false);
 
-    if (mobileNav) { 
-        mobileNav.classList.remove('active'); 
-        document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); 
+    if (mobileNav) {
+        mobileNav.classList.remove('active');
+        document.querySelector('.mobile-nav-overlay')?.classList.remove('active');
     }
 }
+
+function handleSortChange() {
+    const newSortBy = sortBySelect.value;
+    if (newSortBy === state.filters.sortBy) return;
+
+    state.filters.sortBy = newSortBy;
+    state.currentPage = 0;
+    fetchAndRenderProducts(false);
+}
+
+// --- (NEW) FILTER MODAL HANDLERS ---
+function handleApplyFilters() {
+    // Read values from modal and update state
+    state.filters.type = document.querySelector('input[name="filter-type"]:checked').value;
+    state.filters.condition = document.querySelector('input[name="filter-condition"]:checked').value;
+    state.filters.location = document.querySelector('input[name="filter-location"]:checked').value;
+    state.filters.minPrice = filterMinPrice.value || '';
+    state.filters.maxPrice = filterMaxPrice.value || '';
+    
+    // Clear category if other filters are applied (optional, but good)
+    state.filters.category = ''; 
+    
+    state.currentPage = 0; // Reset pagination
+    closeFilterModal();
+    fetchAndRenderProducts(false); // Re-fetch
+}
+
+function handleClearFilters() {
+    // Reset the form inputs
+    document.querySelector('input[name="filter-type"][value=""]').checked = true;
+    document.querySelector('input[name="filter-condition"][value=""]').checked = true;
+    document.querySelector('input[name="filter-location"][value=""]').checked = true;
+    filterMinPrice.value = '';
+    filterMaxPrice.value = '';
+    
+    // Reset the state
+    state.filters.type = '';
+    state.filters.condition = '';
+    state.filters.location = '';
+    state.filters.minPrice = '';
+    state.filters.maxPrice = '';
+    state.filters.category = ''; // Also clear category
+    
+    state.currentPage = 0;
+    closeFilterModal();
+    fetchAndRenderProducts(false);
+}
+
 
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     state.filters.type = params.get('type') || '';
     state.filters.category = params.get('category') || '';
     state.searchTerm = params.get('q') || '';
+    state.filters.sortBy = params.get('sortBy') || 'createdAt_desc';
+    
+    // (NEW) Read other filters from URL
+    state.filters.condition = params.get('condition') || '';
+    state.filters.location = params.get('location') || '';
+    state.filters.minPrice = params.get('minPrice') || '';
+    state.filters.maxPrice = params.get('maxPrice') || '';
+
+    // (NEW) Update modal inputs to reflect URL state
+    if(state.filters.type) document.querySelector(`input[name="filter-type"][value="${state.filters.type}"]`).checked = true;
+    if(state.filters.condition) document.querySelector(`input[name="filter-condition"][value="${state.filters.condition}"]`).checked = true;
+    if(state.filters.location) document.querySelector(`input[name="filter-location"][value="${state.filters.location}"]`).checked = true;
+    if(state.filters.minPrice) filterMinPrice.value = state.filters.minPrice;
+    if(state.filters.maxPrice) filterMaxPrice.value = state.filters.maxPrice;
+    
+    if (sortBySelect) sortBySelect.value = state.filters.sortBy;
     if (state.searchTerm) searchInput.value = state.searchTerm;
 }
 
@@ -445,16 +578,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
-    
+
     // --- ALL EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
+
+    if (sortBySelect) {
+        sortBySelect.addEventListener('change', handleSortChange);
+    }
     
-    // ⭐ CORRECTED: Attach listeners to ALL category types
+    // (UPDATED) Filter button now opens the modal
+    if (filterBtn) {
+        filterBtn.addEventListener('click', openFilterModal);
+    }
+
+    // (NEW) Filter Modal Listeners
+    if (filterModalOverlay) {
+        filterModalCloseBtn.addEventListener('click', closeFilterModal);
+        filterApplyBtn.addEventListener('click', handleApplyFilters);
+        filterClearBtn.addEventListener('click', handleClearFilters);
+        // Close modal if clicking overlay
+        filterModalOverlay.addEventListener('click', (e) => {
+            if (e.target === filterModalOverlay) closeFilterModal();
+        });
+    }
+
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
     if(imageCategoryGrid) imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
-    
+
     if(loadMoreBtn) {
         loadMoreBtn.addEventListener('click', () => {
             if (state.currentPage < state.totalPages - 1) {
