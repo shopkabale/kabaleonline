@@ -58,10 +58,26 @@ async function populateFormForEdit(productId) {
             document.getElementById('product-category').value = product.category || '';
             document.getElementById('product-description').value = product.description;
             document.getElementById('product-story').value = product.story || '';
-            // MODIFIED: Also populate the quantity field for editing
             document.getElementById('product-quantity').value = product.quantity || 1;
             const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
             document.getElementById('whatsapp-number').value = localNumber;
+
+            // --- MODIFIED: Set radio buttons based on saved data ---
+            // Set Listing Type radio
+            if (product.listing_type === 'rent') {
+                document.getElementById('type-rent').checked = true;
+            } else {
+                document.getElementById('type-sale').checked = true; // Default to 'sale'
+            }
+
+            // Set Condition radio
+            if (product.condition === 'used') {
+                document.getElementById('condition-used').checked = true;
+            } else {
+                document.getElementById('condition-new').checked = true; // Default to 'new'
+            }
+            // --- END MODIFICATION ---
+
             submitBtn.textContent = 'Update Item';
         } else {
             showMessage(messageEl, 'Product not found or you do not have permission to edit it.', true);
@@ -117,13 +133,18 @@ productForm.addEventListener('submit', async (e) => {
             throw new Error('At least one image is required for a new listing.');
         }
 
-        // MODIFIED: Read the quantity from the new form field
+        // --- MODIFIED: Read new radio button values ---
+        const listingType = document.querySelector('input[name="listing-type"]:checked').value;
+        const condition = document.querySelector('input[name="condition"]:checked').value;
+        // --- END MODIFICATION ---
+
         const productData = {
-            listing_type: 'item',
+            listing_type: listingType, // <-- MODIFIED
+            condition: condition,      // <-- ADDED
             name: productName,
             name_lowercase: productName.toLowerCase(),
             price: Number(document.getElementById('product-price').value),
-            quantity: Number(document.getElementById('product-quantity').value) || 1, // Add this line
+            quantity: Number(document.getElementById('product-quantity').value) || 1,
             category: document.getElementById('product-category').value,
             description: document.getElementById('product-description').value,
             story: document.getElementById('product-story').value,
