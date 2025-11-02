@@ -141,8 +141,9 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// --- (REVERTED & FIXED) RENDERPRODUCTS ---
-// This function NO LONGER uses ".product-card-content" and matches your original HTML structure
+// --- (FIXED) RENDERPRODUCTS ---
+// This function NO LONGER uses the broken ".product-card-content" wrapper.
+// It matches your original HTML structure, so your CSS will work again.
 function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
@@ -157,7 +158,7 @@ function renderProducts(gridElement, products, append = false) {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         
-        // This line was in your original code, but remove it if you don't have this class
+        // Check for verified text (as in your original file)
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
         
         const isInWishlist = state.wishlist.has(product.id);
@@ -202,8 +203,8 @@ function renderProducts(gridElement, products, append = false) {
         }
 
         // --- THIS IS THE FIX ---
-        // We are back to your original HTML structure.
-        // The new elements (location, seller) are added *after* the price.
+        // We are back to your original HTML structure from your file.
+        // The h3, price, and new elements are all direct children of .product-card
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
@@ -213,12 +214,11 @@ function renderProducts(gridElement, products, append = false) {
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             
-            <!-- This is your original, working structure -->
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
             
-            <!-- New elements are added here, respecting your flex layout -->
+            <!-- New elements are added here, respecting your original flex layout -->
             ${locationInfoHTML}
             ${sellerInfoHTML}
             ${verifiedTextHTML}
@@ -640,4 +640,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
