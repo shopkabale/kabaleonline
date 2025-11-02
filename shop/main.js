@@ -59,6 +59,7 @@ const filterMaxPrice = document.getElementById("filter-max-price");
 
 
 // --- (UPDATED) APPLICATION STATE ---
+// We add the new filter properties
 const state = {
     currentPage: 0,
     totalPages: 1,
@@ -202,7 +203,7 @@ function renderProducts(gridElement, products, append = false) {
 
         // --- (FIXED) This is YOUR original innerHTML structure ---
         // It does NOT have the broken "product-card-content" div
-        // The new elements are added in the correct order
+        // The new elements are added in the correct order to match your CSS
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
@@ -211,6 +212,7 @@ function renderProducts(gridElement, products, append = false) {
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
+            
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
@@ -231,6 +233,7 @@ function renderProducts(gridElement, products, append = false) {
 }
 
 // --- DATA FETCHING FUNCTIONS ---
+// (UPDATED) fetchAndRenderProducts to send all filters to the API
 async function fetchAndRenderProducts(append = false) {
     if (state.isFetching) return;
     state.isFetching = true;
@@ -321,18 +324,19 @@ async function fetchAndDisplayCategoryCounts() {
         const response = await fetch('/.netlify/functions/count-categories');
         if (!response.ok) return;
         const counts = await response.json();
+        // (FIXED) This now uses your .image-category-card h3
         const categoryMapping = {
-            'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
-            'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
-            'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
-            'Other': document.querySelector('a[href="/?category=Other"] span'),
-            'Rentals': document.querySelector('a[href="/rentals/"] span'),
-            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] span')
+            'Electronics': document.querySelector('a[href="/shop/?category=Electronics"] h3'),
+            'Clothing & Apparel': document.querySelector('a[href="/shop/?category=Clothing+%26+Apparel"] h3'),
+            'Home & Furniture': document.querySelector('a[href="/shop/?category=Home+%26+Furniture"] h3'),
+            'Other': document.querySelector('a[href="/shop/?category=Other"] h3'),
+            'Rentals': document.querySelector('a[href="/rentals/"] h3'),
+            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] h3')
         };
         for (const category in counts) {
-            const span = categoryMapping[category];
-            if (counts[category] > 0 && span && !span.querySelector('.category-count')) {
-                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
+            const h3 = categoryMapping[category];
+            if (counts[category] > 0 && h3 && !h3.querySelector('.category-count')) {
+                h3.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
             }
         }
     } catch (error) { console.error('Error fetching category counts:', error); }
@@ -452,7 +456,9 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
+// (UPDATED) To handle all category links and reset filters
 function handleFilterLinkClick(event) {
+    // This now correctly targets your new .image-category-card links
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
 
@@ -616,6 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // (UPDATED) Attach listeners to ALL category types
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
     if(imageCategoryGrid) imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
