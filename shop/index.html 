@@ -12,635 +12,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop Deals on Electronics, Textbooks & More in Kabale | Kabale Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
     <link rel="icon" href="/favicon.webp" type="image/webp">
+    
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <!-- 
-      THIS STYLE BLOCK IS NOW 100% FIXED.
-      All conflicting and duplicate CSS has been removed.
-      This CSS works with the new main.js file.
-    -->
-<style>
-    :root {
-        --ko-primary: #007aff;
-        --ko-primary-rgb: 0, 122, 255;
-        --ko-accent: #ffc107;
-        --bg-light: #f8f9fa;
-        --bg-card-light: #ffffff;
-        --text-main-light: #212529;
-        --text-secondary-light: #6c757d;
-        --border-color-light: #e9ecef;
-        --bg-dark: #0f172a;
-        --bg-card-dark: #1e2b3b;
-        --text-main-dark: #e2e8f0;
-        --text-secondary-dark: #94a3b8;
-        --border-color-dark: #334155;
-        --shadow: 0 10px 30px rgba(0,0,0,0.07);
-        --border-radius: 12px;
-    }
-    body.light-mode {
-        --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
-        --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
-    }
-    body.dark-mode {
-        --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
-        --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
-    }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-    
-    /* --- HEADER & NAV (Your Original CSS) --- */
-    .sticky-header {
-        position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-        background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
-        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--border-color);
-    }
-    body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
-    body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
-    .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
-    .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
-    .site-title span { color: var(--ko-accent); }
-    .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
-    .header-icons { display: flex; align-items: center; gap: 20px; }
-    .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
-    .desktop-nav { display: none; } 
-    @media (min-width: 1024px) { .hamburger-menu { display: none; } .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } }
-    .page-container { padding-top: 90px; padding-bottom: 20px; }
-    .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
-    .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
-    .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
-    .mobile-nav.active { transform: translateX(280px); }
-    .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
-    .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
-    .mobile-nav a i { margin-right: 15px; color: var(--ko-primary); }
-    .mobile-nav-footer { padding: 15px; }
-    .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; text-decoration: none; }
-    
-    /* --- SEARCH & SECTION TITLES (Your Original CSS) --- */
-    .search-container { display: flex; margin-bottom: 25px; }
-    #search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-card); color: var(--text-main); }
-    #search-btn { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
-    .section-title { border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
-
-    /* --- PRODUCT GRID & CARDS (Your Original CSS) --- */
-    .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
-    .product-card-link { text-decoration: none; color: inherit; }
-    .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; transition: all 0.3s ease-out; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
-    .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; transition: transform 0.3s ease-out; }
-    .product-card:hover img { transform: scale(1.05); }
-    .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
-    .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
-    .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
-    
-    /* --- STOCK & SOLD STYLES (Your Original CSS) --- */
-    .stock-info {
-        font-size: 0.85em;
-        font-weight: bold;
-        margin: -10px 15px 10px;
-        padding: 3px 8px;
-        border-radius: 4px;
-        display: inline-block;
-    }
-    .in-stock { color: #155724; background-color: #d4edda; }
-    .low-stock { color: #856404; background-color: #fff3cd; }
-    .out-of-stock, .sold-out { color: #721c24; background-color: #f8d7da; }
-    .product-card.is-sold { position: relative; cursor: not-allowed; }
-    .product-card.is-sold img { filter: grayscale(90%); }
-    .product-card-sold-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; }
-    .product-card-sold-overlay span { color: #dc3545; font-size: 1.8em; font-weight: bold; border: 3px solid #dc3545; padding: 5px 15px; border-radius: 5px; transform: rotate(-15deg); background-color: rgba(255, 255, 255, 0.9); }
-
-    /* --- CATEGORY, SKELETONS, DEALS (Your Original CSS) --- */
-    .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-card); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-main); }
-    .category-item i { font-size: 24px; color: var(--ko-primary); margin-bottom: 8px; }
-    .category-item span { font-size: 0.8em; font-weight: 600; }
-    .skeleton-card, .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
-    body.dark-mode .skeleton-card, body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color: #334155; background-image: linear-gradient(90deg, #334155, #475569, #334155); }
-    .skeleton-image { width: 100%; aspect-ratio: 1 / 1; }
-    .skeleton-text { height: 1.2rem; margin: 12px 15px 0; border-radius: 4px; }
-    @keyframes skeleton-shimmer { 100% { background-position: 250px; } }
-    .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -webkit-overflow-scrolling: touch;}
-    .deals-carousel-wrapper::-webkit-scrollbar { display: none; }
-    .deals-grid { display: flex; gap: 15px; }
-    .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
-    @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } .category-grid { grid-template-columns: repeat(6, 1fr); } .deals-grid .product-card { flex: 0 0 200px; width: 200px; } }
-    
-    /* --- CTA & FOOTER (Your Original CSS) --- */
-    .cta-wrapper { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 30px 20px; margin-top: 40px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
-    .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8em; color: var(--text-main); }
-    .cta-container { display: grid; grid-template-columns: 1fr; gap: 15px; }
-    .cta-button { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 1em; }
-    .cta-button i { font-size: 20px; width: 25px; text-align: center; color: var(--ko-primary); }
-    @media (min-width: 768px) { .cta-container { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1400px) { .container { max-width: 95%; } .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } .category-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
-    .load-more-container { text-align: center; padding: 30px 0; display: none; }
-    #load-more-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px 25px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; }
-    #load-more-btn .loading-icon { animation: rotate 1.5s linear infinite; }
-    @keyframes rotate { to { transform: rotate(360deg); } }
-    #back-to-top-btn { position: fixed; bottom: 100px; right: 25px; width: 45px; height: 45px; background-color: rgba(var(--ko-primary-rgb), 0.8); color: white; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 998; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transform: translateY(20px); transition: opacity 0.3s, visibility 0.3s, transform 0.3s; }
-    #back-to-top-btn.visible { opacity: 1; visibility: visible; transform: translateY(0); }
-    @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
-    #open-chat-button { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background-color: var(--ko-primary); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; animation: bounce 2s ease infinite 4s; }
-    #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
-    .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
-    .chat-modal-content { position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%; max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
-    .chat-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-    .chat-modal-header h3 { margin: 0; font-size: 1.2em; color: var(--text-main); }
-    #close-chat-button { background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; padding: 5px; }
-    #chat-iframe { width: 100%; height: 100%; border: none; }
-    #chat-modal-container.active { display: flex; }
-    #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
-    #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
-    footer {
-        background-color: #0f172a;
-        color: #e2e8f0;
-        padding: 60px 0 20px;
-        margin-top: 30px;
-    }
-    .footer-grid { display: grid; grid-template-columns: 1fr; gap: 40px; padding-bottom: 40px; }
-    .footer-column { text-align: left; }
-    .footer-column h3 { font-size: 1.1em; font-weight: 600; color: #ffffff; margin-top: 0; margin-bottom: 20px; position: relative; padding-bottom: 10px; }
-    .footer-column h3::after { content: ''; position: absolute; bottom: 0; left: 0; width: 30px; height: 2px; background-color: var(--ko-accent); }
-    .footer-column a { display: block; color: #94a3b8; text-decoration: none; margin-bottom: 12px; transition: color 0.2s ease, padding-left 0.2s ease; }
-    .footer-column a:hover { color: #ffffff; padding-left: 5px; }
-    .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; text-decoration: none; color: #ffffff; display: inline-block; }
-    .footer-logo span { color: var(--ko-accent); }
-    .footer-tagline { color: #94a3b8; line-height: 1.7; margin-bottom: 20px; }
-    .footer-socials a { color: #e2e8f0; font-size: 22px; margin-right: 20px; text-decoration: none; transition: color 0.2s ease; }
-    .footer-socials a:hover { color: var(--ko-primary); }
-    .footer-bottom { border-top: 1px solid #334155; padding-top: 20px; text-align: center; }
-    .footer-copyright { font-size: 0.9em; color: #64748b; margin: 0; }
-    @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
-    
-    /* --- IMAGE CATEGORY SECTION (Your Original CSS) --- */
-    .image-category-section { padding: 60px 15px; background-color: var(--bg-main); }
-    .image-category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .image-category-card { position: relative; text-decoration: none; border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; display: block; }
-    .image-category-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
-    .image-category-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.75), transparent); z-index: 1; transition: opacity 0.3s ease; }
-    .image-category-card:hover::after { opacity: 0.8; }
-    .image-category-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; transition: transform 0.3s ease; }
-    .image-category-card:hover img { transform: scale(1.05); }
-    .image-category-card h3 { position: absolute; bottom: 0; left: 0; width: 100%; color: #ffffff; font-weight: 700; font-size: 1.2em; margin: 0; padding: 20px; z-index: 2; text-align: left; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
-    @media (min-width: 1024px) { .image-category-grid { grid-template-columns: repeat(3, 1fr); } }
-
-    /* ======================================================= */
-/* --- START: FINAL, FIXED CSS FOR FILTERS, CARDS, & MODAL --- */
-/* ======================================================= */
-
-/* --- 1. FILTER & SORT BAR STYLES (Professional Layout Fix) --- */
-.filter-sort-bar {
-    display: flex;
-    justify-content: space-between; /* This is the key */
-    align-items: center;
-    gap: 15px; /* Adds space between items */
-    margin-top: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
+ 
+    <style>
+        :root {
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
+        }
+        body.light-mode {
+            --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
+        }
+        body.dark-mode {
+            --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) { .hamburger-menu { display: none; } .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } }
+        .page-container { padding-top: 90px; padding-bottom: 20px; }
+        .search-container { display: flex; margin-bottom: 25px; }
+        #search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-card); color: var(--text-main); }
+        #search-btn { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav.active { transform: translateX(280px); }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
+        .mobile-nav a i { margin-right: 15px; color: var(--ko-primary); }
+        .mobile-nav-footer { padding: 15px; }
+        .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; text-decoration: none; }
+        .section-title { border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
+        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
+        .product-card-link { text-decoration: none; color: inherit; }
+        .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; transition: all 0.3s ease-out; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
+        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; transition: transform 0.3s ease-out; }
+        .product-card:hover img { transform: scale(1.05); }
+        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
+        .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
+        .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-card); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-main); }
+        .category-item i { font-size: 24px; color: var(--ko-primary); margin-bottom: 8px; }
+        .category-item span { font-size: 0.8em; font-weight: 600; }
+        .skeleton-card, .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
+        body.dark-mode .skeleton-card, body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color: #334155; background-image: linear-gradient(90deg, #334155, #475569, #334155); }
+        .skeleton-image { width: 100%; aspect-ratio: 1 / 1; }
+        .skeleton-text { height: 1.2rem; margin: 12px 15px 0; border-radius: 4px; }
+        @keyframes skeleton-shimmer { 100% { background-position: 250px; } }
+        .deals-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -webkit-overflow-scrolling: touch;}
+        .deals-carousel-wrapper::-webkit-scrollbar { display: none; }
+        .deals-grid { display: flex; gap: 15px; }
+        .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
+        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } .category-grid { grid-template-columns: repeat(6, 1fr); } .deals-grid .product-card { flex: 0 0 200px; width: 200px; } }
+        .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
+        .stock-info { font-size: 0.85em; font-weight: bold; margin: -10px 15px 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+        .low-stock { color: #856404; background-color: #fff3cd; }
+        .sold-out { color: #721c24; background-color: #f8d7da; }
+        .product-card.is-sold { position: relative; cursor: not-allowed; }
+        .product-card.is-sold img { filter: grayscale(90%); }
+        .product-card-sold-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; }
+        .product-card-sold-overlay span { color: #dc3545; font-size: 1.8em; font-weight: bold; border: 3px solid #dc3545; padding: 5px 15px; border-radius: 5px; transform: rotate(-15deg); background-color: rgba(255, 255, 255, 0.9); }
+        .cta-wrapper { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 30px 20px; margin-top: 40px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+        .cta-wrapper h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8em; color: var(--text-main); }
+        .cta-container { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .cta-button { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 1em; }
+        .cta-button i { font-size: 20px; width: 25px; text-align: center; color: var(--ko-primary); }
+        @media (min-width: 768px) { .cta-container { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1400px) { .container { max-width: 95%; } .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } .category-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+        .load-more-container { text-align: center; padding: 30px 0; display: none; }
+        #load-more-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px 25px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; }
+        #load-more-btn .loading-icon { animation: rotate 1.5s linear infinite; }
+        @keyframes rotate { to { transform: rotate(360deg); } }
+        #back-to-top-btn { position: fixed; bottom: 100px; right: 25px; width: 45px; height: 45px; background-color: rgba(var(--ko-primary-rgb), 0.8); color: white; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 998; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transform: translateY(20px); transition: opacity 0.3s, visibility 0.3s, transform 0.3s; }
+        #back-to-top-btn.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+        #open-chat-button { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background-color: var(--ko-primary); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; animation: bounce 2s ease infinite 4s; }
+        #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
+        .chat-modal-content { position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%; max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .chat-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .chat-modal-header h3 { margin: 0; font-size: 1.2em; color: var(--text-main); }
+        #close-chat-button { background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; padding: 5px; }
+        #chat-iframe { width: 100%; height: 100%; border: none; }
+        #chat-modal-container.active { display: flex; }
+        #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
+        #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+/* ==================================================== */
+/* 4-COLUMN FOOTER STYLES                          */
+/* ==================================================== */
+footer {
+    background-color: #0f172a; /* Your original dark background */
+    color: #e2e8f0;
+    padding: 60px 0 20px;
+    margin-top: 30px;
 }
-.filter-btn {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-size: 0.9em;
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 40px;
+    padding-bottom: 40px;
+}
+
+.footer-column {
+    text-align: left;
+}
+
+.footer-column h3 {
+    font-size: 1.1em;
     font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0; /* Prevents button from shrinking */
-}
-.sort-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-grow: 1; /* Allows this to take up remaining space */
-    justify-content: flex-end; /* Pushes sort to the right */
-}
-.sort-controls label {
-    font-size: 0.9em;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    display: none; /* Hide label on mobile to save space */
-}
-.sort-select {
-    font-size: 0.9em;
-    padding: 10px 12px;
-    background-color: var(--bg-card);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    -webkit-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%236c757d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 16px;
-    padding-right: 35px;
-    cursor: pointer;
-    width: 100%; /* Make it fill the space */
-    max-width: 220px; /* But not get too large */
-}
-/* This styles the (3 Filters) badge */
-.filter-badge {
-    background-color: var(--ko-primary);
-    color: white;
-    font-size: 0.7em;
-    padding: 3px 8px;
-    border-radius: 12px;
-    margin-left: 8px;
-    vertical-align: middle;
+    color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
 }
 
-/* On tablets, show the "Sort by:" label */
-@media (min-width: 768px) {
-    .sort-controls label {
-        display: block; /* Show the label again */
-    }
-    .sort-select {
-         width: auto; /* Let it be auto-width */
-    }
-}
-@media (min-width: 1200px) {
-    .filter-sort-bar {
-        padding: 15px;
-        border-radius: var(--border-radius);
-        border: 1px solid var(--border-color);
-        background: var(--bg-card);
-    }
-}
-
-
-/* --- 2. CARD ENHANCEMENT STYLES --- */
-/* These styles will NOT break your layout and will work with the fixed main.js */
-.product-card .condition-banner {
+.footer-column h3::after {
+    content: '';
     position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 3;
-    padding: 3px 10px;
-    font-size: 0.75em;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background-color: var(--ko-accent);
+}
+
+.footer-column a {
+    display: block;
+    color: #94a3b8; /* Light gray for links */
+    text-decoration: none;
+    margin-bottom: 12px;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+}
+
+.footer-column a:hover {
+    color: #ffffff;
+    padding-left: 5px;
+}
+
+.footer-logo {
+    font-size: 1.8em;
     font-weight: bold;
-    color: #fff;
-    border-radius: 4px;
-    text-transform: uppercase;
+    margin-bottom: 15px;
+    text-decoration: none;
+    color: #ffffff;
+    display: inline-block;
 }
-.product-card .condition-banner.is-new {
-    background-color: #28a745; /* Green */
+
+.footer-logo span {
+    color: var(--ko-accent);
 }
-.product-card .condition-banner.is-used {
-    background-color: var(--ko-primary); /* Blue (your primary) */
+
+.footer-tagline {
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 20px;
 }
-.product-card .condition-banner.is-refurbished {
-    background-color: var(--ko-accent); /* Yellow (your accent) */
-    color: #212529;
+
+.footer-socials a {
+    color: #e2e8f0;
+    font-size: 22px;
+    margin-right: 20px;
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
-.product-card .seller-info {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    margin: 0 15px 15px; /* Added bottom margin */
-    padding-top: 5px;
-    border-top: 1px solid var(--border-color);
-    margin-top: 10px; 
-}
-.product-card .seller-info i {
-    margin-right: 5px;
-}
-.product-card .product-location {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    margin: 0 15px 5px; /* Added bottom margin */
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.product-card .product-location i {
-    font-size: 0.9em;
+
+.footer-socials a:hover {
     color: var(--ko-primary);
 }
-/* This rule ensures your 'verified-text' also has correct margin */
-.product-card .verified-text {
-    font-size: 0.8em;
-    color: var(--text-secondary);
-    margin: 5px 15px 15px; /* Added bottom margin */
+
+.footer-bottom {
+    border-top: 1px solid #334155; /* Your dark border color */
+    padding-top: 20px;
+    text-align: center;
 }
 
-
-/* --- 3. FILTER MODAL STYLES --- */
-.filter-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    display: none; /* Hidden by default */
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-.filter-modal-overlay.active {
-    display: flex;
-    opacity: 1;
-}
-.filter-modal-content {
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius);
-    width: 90%;
-    max-width: 450px;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
-.filter-modal-overlay.active .filter-modal-content {
-    transform: scale(1);
-}
-.filter-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-.filter-modal-header h3 {
+.footer-copyright {
+    font-size: 0.9em;
+    color: #64748b; /* Darker gray for copyright */
     margin: 0;
-    font-size: 1.2em;
 }
-.filter-modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: var(--text-secondary);
-    cursor: pointer;
-}
-.filter-modal-body {
-    padding: 20px;
-    overflow-y: auto;
-    flex-grow: 1;
-}
-.filter-group {
-    margin-bottom: 25px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 20px;
-}
-.filter-group:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-.filter-group h4 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1em;
-    font-weight: 600;
-}
-.radio-group label {
-    display: block;
-    margin-bottom: 10px;
-    cursor: pointer;
-}
-.radio-group input {
-    margin-right: 10px;
-    accent-color: var(--ko-primary);
-}
-.price-range-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.price-range-group .price-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 1em;
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-}
-.price-range-group span {
-    color: var(--text-secondary);
-}
-.filter-modal-footer {
-    display: flex;
-    gap: 10px;
-    padding: 15px 20px;
-    border-top: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-.filter-btn-secondary, .filter-btn-primary {
-    width: 100%;
-    padding: 12px;
-    font-size: 1em;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.filter-btn-secondary {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-}
-.filter-btn-primary {
-    background-color: var(--ko-primary);
-    color: white;
-}
-    
 
-    /* --- 2. NEW CARD ELEMENT STYLES --- */
-    /* This CSS is safe and will not conflict with your layout */
-    
-    .product-card .condition-banner {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        z-index: 3;
-        padding: 3px 10px;
-        font-size: 0.75em;
-        font-weight: bold;
-        color: #fff;
-        border-radius: 4px;
-        text-transform: uppercase;
+/* Responsive grid for tablets and desktops */
+@media (min-width: 768px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for tablets */
     }
-    .product-card .condition-banner.is-new {
-        background-color: #28a745; /* Green */
-    }
-    .product-card .condition-banner.is-used {
-        background-color: var(--ko-primary); /* Blue (your primary) */
-    }
-    .product-card .condition-banner.is-refurbished {
-        background-color: var(--ko-accent); /* Yellow (your accent) */
-        color: #212529;
-    }
-    .product-card .seller-info {
-        font-size: 0.85em;
-        color: var(--text-secondary);
-        margin: 0 15px 15px; /* Added bottom margin */
-        padding-top: 5px;
-        border-top: 1px solid var(--border-color);
-        margin-top: 10px; 
-    }
-    .product-card .seller-info i {
-        margin-right: 5px;
-    }
-    .product-card .product-location {
-        font-size: 0.85em;
-        color: var(--text-secondary);
-        margin: 0 15px 5px; /* Added bottom margin */
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .product-card .product-location i {
-        font-size: 0.9em;
-        color: var(--ko-primary);
-    }
-    /* This rule ensures your 'verified-text' also has correct margin */
-    .product-card .verified-text {
-        font-size: 0.8em;
-        color: var(--text-secondary);
-        margin: 5px 15px 15px; /* Added bottom margin */
-    }
+}
 
-    /* --- 3. FILTER MODAL STYLES --- */
-    .filter-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 2000;
-        display: none; /* Hidden by default */
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+@media (min-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr; /* Four columns for desktop */
     }
-    .filter-modal-overlay.active {
-        display: flex;
-        opacity: 1;
-    }
-    .filter-modal-content {
-        background-color: var(--bg-card);
-        border-radius: var(--border-radius);
-        width: 90%;
-        max-width: 450px;
-        max-height: 90vh;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        transform: scale(0.95);
-        transition: transform 0.3s ease;
-    }
-    .filter-modal-overlay.active .filter-modal-content {
-        transform: scale(1);
-    }
-    .filter-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        border-bottom: 1px solid var(--border-color);
-        flex-shrink: 0;
-    }
-    .filter-modal-header h3 {
-        margin: 0;
-        font-size: 1.2em;
-    }
-    .filter-modal-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: var(--text-secondary);
-        cursor: pointer;
-    }
-    .filter-modal-body {
-        padding: 20px;
-        overflow-y: auto;
-        flex-grow: 1;
-    }
-    .filter-group {
-        margin-bottom: 25px;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 20px;
-    }
-    .filter-group:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-    }
-    .filter-group h4 {
-        margin-top: 0;
-        margin-bottom: 15px;
-        font-size: 1em;
-        font-weight: 600;
-    }
-    .radio-group label {
-        display: block;
-        margin-bottom: 10px;
-        cursor: pointer;
-    }
-    .radio-group input {
-        margin-right: 10px;
-        accent-color: var(--ko-primary);
-    }
-    .price-range-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .price-range-group .price-input {
-        width: 100%;
-        padding: 10px;
-        font-size: 1em;
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-    }
-    .price-range-group span {
-        color: var(--text-secondary);
-    }
-    .filter-modal-footer {
-        display: flex;
-        gap: 10px;
-        padding: 15px 20px;
-        border-top: 1px solid var(--border-color);
-        flex-shrink: 0;
-    }
-    .filter-btn-secondary, .filter-btn-primary {
-        width: 100%;
-        padding: 12px;
-        font-size: 1em;
-        font-weight: 600;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-    .filter-btn-secondary {
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        border: 1px solid var(--border-color);
-    }
-    .filter-btn-primary {
-        background-color: var(--ko-primary);
-        color: white;
-    }
-    /* ======================================================= */
-    /* --- END: NEW/FIXED CSS BLOCK --- */
-    /* ======================================================= */
+}
 
+/* ==================================================== */
+        /* ⭐ NEW IMAGE CATEGORY SECTION STYLES ⭐          */
+        /* ==================================================== */
+        .image-category-section {
+            padding: 20px 0;
+        }
+        .image-category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on all screen sizes */
+            gap: 20px;
+        }
+        .image-category-card {
+            text-decoration: none;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden; /* This makes the image corners rounded */
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .image-category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        .image-category-card img {
+            width: 100%;
+            aspect-ratio: 4 / 3; /* Maintains shape */
+            object-fit: cover; /* Prevents image distortion */
+            display: block;
+        }
+        .image-category-card h3 {
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 1.1em;
+            margin: 0;
+            padding: 20px 10px;
+        }
+        /* On larger screens, you can optionally make the grid wider */
+        @media (min-width: 1024px) {
+            .image-category-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -665,53 +311,15 @@
         </div>
     </header>
 
-    <nav class="mobile-nav">
-        <div class="mobile-nav-header">Kabale Online</div>
-        <div class="mobile-nav-links">
-            <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="https://gigs.kabaleonline.com" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
-            <a href="stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
-            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
-            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
-            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
-            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
-            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
-        </div>
-        <div class="mobile-nav-footer">
-            <a href="/dashboard/" class="post-button">Post Something Free</a>
-        </div>
-    </nav>
     <div class="mobile-nav-overlay"></div>
+    <nav class="mobile-nav">
+        </nav>
 
     <div class="container page-container">
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search for items, e.g. 'iPhone'">
             <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
-        
-        <!-- 
-          FILTER BAR IS MOVED HERE, right below the search bar.
-        -->
-        <section class="filter-sort-bar"> <!-- No 'container' class needed, it's inside one -->
-            <div class="filter-controls">
-                <button id="filter-btn" class="filter-btn">
-                    <i class="fa-solid fa-filter"></i>
-                    <span>Filter</span>
-                </button>
-            </div>
-        
-            <div class="sort-controls">
-                <label for="sort-by">Sort by:</label>
-                <select id="sort-by" class="sort-select">
-                    <option value="createdAt_desc" selected>Recent (Default)</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                </select>
-            </div>
-        </section>
 
         <section class="image-category-section" style="margin-top: 25px;">
             <h2 class="section-title">Browse by Category</h2>
@@ -767,7 +375,7 @@
         <main style="margin-top: 40px;">
             <h2 id="listings-title" class="section-title">Recent Items</h2>
             <div id="product-grid" class="product-grid"></div>
-
+            
             <div id="load-more-container" class="load-more-container">
                 <button id="load-more-btn">
                     <i class="fa-solid fa-rotate"></i>
@@ -791,7 +399,7 @@
             </div>
         </main>
     </div>
-
+    
     <button id="back-to-top-btn" aria-label="Back to Top"><i class="fa-solid fa-arrow-up"></i></button>
     <button id="open-chat-button" aria-label="Open AI Assistant"><i class="fa-solid fa-robot"></i></button>
     <div id="chat-modal-container">
@@ -801,10 +409,9 @@
                 <h3>KabaleOnline Assistant</h3>
                 <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <iframe id="chat-iframe" src="/ai/" title="Amara"></iframe>
+            <iframe id="chat-iframe" src="/chatbot.html" title="KabaleOnline AI Assistant"></iframe>
         </div>
     </div>
-    
     <footer>
     <div class="container footer-grid">
         <div class="footer-column about-column">
@@ -846,15 +453,9 @@
         <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </div>
 </footer>
-
     <script type="module" src="../ui.js"></script>
-    <!-- 
-      This is the main.js file that contains all the logic.
-      You MUST use the updated version from my previous message.
-    -->
     <script type="module" src="main.js"></script>
     <script type="module" src="../shared.js"></script>
-    
     <script>
         // Self-contained script for the AI chat pop-up
         document.addEventListener('DOMContentLoaded', function() {
@@ -869,68 +470,5 @@
             if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
         });
     </script>
-
-    <!-- 
-      This is the HTML for the filter modal.
-      It is correctly placed at the end of the body.
-    -->
-    <div class="filter-modal-overlay" id="filter-modal-overlay">
-        <div class="filter-modal-content" id="filter-modal-content">
-    
-            <div class="filter-modal-header">
-                <h3>Filters</h3>
-                <button id="filter-modal-close" class="filter-modal-close" aria-label="Close filters">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-    
-            <div class="filter-modal-body">
-    
-                <div class="filter-group">
-                    <h4>Listing Type</h4>
-                    <div class="radio-group">
-                        <label><input type="radio" name="filter-type" value="" checked> All</label>
-                        <label><input type="radio" name="filter-type" value="For Sale"> For Sale</label>
-                        <label><input type="radio" name="filter-type" value="For Rent"> For Rent</label>
-                    </div>
-                </div>
-    
-                <div class="filter-group">
-                    <h4>Condition</h4>
-                    <div class="radio-group">
-                        <label><input type="radio" name="filter-condition" value="" checked> All</label>
-                        <label><input type="radio" name="filter-condition" value="New"> New</label>
-                        <label><input type="radio" name="filter-condition" value="Used"> Used</label>
-                    </div>
-                </div>
-    
-                <div class="filter-group">
-                    <h4>Price Range (UGX)</h4>
-                    <div class="price-range-group">
-                        <input type="number" id="filter-min-price" placeholder="Min" class="price-input">
-                        <span>to</span>
-                        <input type="number" id="filter-max-price" placeholder="Max" class="price-input">
-                    </div>
-                </div>
-    
-                <div class="filter-group">
-                    <h4>Location</h4>
-                    <div class="radio-group">
-                        <label><input type="radio" name="filter-location" value="" checked> All</label>
-                        <label><input type="radio" name="filter-location" value="Kabale"> Kabale</label>
-                        <label><input type="radio" name="filter-location" value="Mbarara"> Mbarara</label>
-                        <label><input type="radio" name="filter-location" value="Kampala"> Kampala</label>
-                    </div>
-                </div>
-    
-            </div>
-    
-            <div class="filter-modal-footer">
-                <button id="filter-clear-btn" class="filter-btn-secondary">Clear Filters</button>
-                <button id="filter-apply-btn" class="filter-btn-primary">Apply Filters</button>
-            </div>
-    
-        </div>
-    </div>
 </body>
 </html>
