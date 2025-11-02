@@ -164,6 +164,37 @@
         body.dark-mode .in-stock { color: #c3e6cb; background-color: #1f3c2b; }
         body.dark-mode .low-stock { color: #ffeeba; background-color: #493f1b; }
         body.dark-mode .out-of-stock { color: #f5c6cb; background-color: #4a1c24; }
+        
+        /* --- NEW: Product Specs Styles --- */
+        .product-specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            background-color: var(--bg-main);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        .product-spec {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+        .product-spec i {
+            color: var(--ko-primary);
+            font-size: 1.1em;
+            width: 20px;
+            text-align: center;
+        }
+        .product-spec strong {
+            color: var(--text-main);
+            margin-right: 5px;
+        }
+        /* --- END NEW --- */
+        
     </style>
 </head>
 <body>
