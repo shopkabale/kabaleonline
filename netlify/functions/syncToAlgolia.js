@@ -9,11 +9,14 @@ const serviceAccount = {
     privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
 };
 
+// Initialize Firebase Admin
 if (!global._firebaseApp) {
     global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
 
 const db = getFirestore();
+
+// Initialize Algolia Admin Client
 const algoliaClient = algoliasearch(
     process.env.ALGOLIA_APP_ID, 
     process.env.ALGOLIA_ADMIN_API_KEY
@@ -24,6 +27,7 @@ const eventsIndex = algoliaClient.initIndex('events');
 
 exports.handler = async (event) => {
     try {
+        // Handle a POST request to delete a single object (your existing logic)
         if (event.httpMethod === 'POST' && event.body) {
             const body = JSON.parse(event.body);
             if (body.action === 'delete' && body.objectID) {
@@ -34,11 +38,14 @@ exports.handler = async (event) => {
                 };
             }
         }
-        
-        // Sync Products
+
+        // --- Sync Products ---
+        console.log("Starting product sync...");
         const productsSnapshot = await db.collection('products').get();
         const algoliaObjects = productsSnapshot.docs.map(doc => {
             const data = doc.data();
+            
+            // This object defines *what* data gets sent to Algolia
             return {
                 objectID: doc.id,
                 name: data.name,
@@ -46,18 +53,29 @@ exports.handler = async (event) => {
                 description: data.description,
                 category: data.category,
                 price: data.price,
-                quantity: data.quantity, // THIS LINE WAS ADDED
+                quantity: data.quantity,
                 listing_type: data.listing_type,
                 sellerId: data.sellerId,
                 sellerName: data.sellerName,
                 imageUrls: data.imageUrls,
                 isSold: data.isSold || false,
-                createdAt: data.createdAt ? data.createdAt.toMillis() : null
+                createdAt: data.createdAt ? data.createdAt.toMillis() : null,
+                
+                // --- THESE ARE THE NEWLY ADDED FIELDS ---
+                condition: data.condition, // Adds the 'condition' field
+                location: data.location    // Adds the 'location' field
             };
         });
-        await productsIndex.saveObjects(algoliaObjects);
+        
+        if (algoliaObjects.length > 0) {
+            await productsIndex.saveObjects(algoliaObjects);
+            console.log(`Successfully synced ${algoliaObjects.length} products.`);
+        } else {
+            console.log("No products found to sync.");
+        }
 
-        // Sync Events
+        // --- Sync Events ---
+        console.log("Starting event sync...");
         const eventsSnapshot = await db.collection('events').get();
         const algoliaEventObjects = eventsSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -73,13 +91,19 @@ exports.handler = async (event) => {
                 createdAt: data.createdAt ? data.createdAt.toMillis() : null
             };
         });
-        await eventsIndex.saveObjects(algoliaEventObjects);
+        
+        if (algoliaEventObjects.length > 0) {
+            await eventsIndex.saveObjects(algoliaEventObjects);
+            console.log(`Successfully synced ${algoliaEventObjects.length} events.`);
+        } else {
+            console.log("No events found to sync.");
+        }
 
         return {
             statusCode: 200,
             body: JSON.stringify({ message: "Full sync for Products and Events completed successfully." }),
         };
-        
+
     } catch (error) {
         console.error("Algolia sync error:", error);
         return {
