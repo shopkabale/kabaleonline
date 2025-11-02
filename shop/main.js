@@ -45,10 +45,10 @@ const modal = document.getElementById('custom-modal');
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
 const backToTopBtn = document.getElementById("back-to-top-btn");
+
+// --- (NEW) REFERENCES FOR SORTING & FILTERING ---
 const sortBySelect = document.getElementById("sort-by");
 const filterBtn = document.getElementById("filter-btn");
-
-// --- FILTER MODAL DOM REFERENCES ---
 const filterModalOverlay = document.getElementById("filter-modal-overlay");
 const filterModalContent = document.getElementById("filter-modal-content");
 const filterModalCloseBtn = document.getElementById("filter-modal-close");
@@ -67,11 +67,11 @@ const state = {
     filters: {
         type: '',
         category: '',
-        sortBy: 'createdAt_desc',
-        condition: '', // (NEW)
-        minPrice: '',  // (NEW)
-        maxPrice: '',  // (NEW)
-        location: ''   // (NEW)
+        sortBy: 'createdAt_desc', // (NEW)
+        condition: '',           // (NEW)
+        minPrice: '',            // (NEW)
+        maxPrice: '',            // (NEW)
+        location: ''             // (NEW)
     },
     currentUser: null,
     wishlist: new Set()
@@ -104,7 +104,7 @@ function hideModal() {
     if (modal) modal.classList.remove('show');
 }
 
-// --- FILTER MODAL FUNCTIONS ---
+// --- (NEW) FILTER MODAL FUNCTIONS ---
 function openFilterModal() {
     if (filterModalOverlay) filterModalOverlay.classList.add('active');
 }
@@ -141,6 +141,8 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
+// --- (UPDATED) RENDERPRODUCTS ---
+// This function now includes the logic for Condition, Location, and Seller Name
 function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
@@ -161,7 +163,7 @@ function renderProducts(gridElement, products, append = false) {
         const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
-
+        
         let stockStatusHTML = '';
         if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
@@ -171,22 +173,26 @@ function renderProducts(gridElement, products, append = false) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
 
+        // --- (RE-ADDED) Condition Banner Logic ---
         let conditionBannerHTML = '';
-        if (product.condition && !isActuallySold) {
+        if (product.condition && !isActuallySold) { // Only show if 'condition' exists
             const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1).toLowerCase();
             const conditionClass = `is-${conditionText.toLowerCase().replace(' ', '-')}`;
             conditionBannerHTML = `<div class="condition-banner ${conditionClass}">${conditionText}</div>`;
         }
 
+        // --- (RE-ADDED) Seller Info Logic ---
         let sellerInfoHTML = '';
         if (product.sellerName) {
             sellerInfoHTML = `<div class="seller-info"><i class="fa-regular fa-user"></i>${product.sellerName}</div>`;
         }
 
+        // --- (RE-ADDED) Location Info Logic ---
         let locationInfoHTML = '';
-        if (product.location) {
+        if (product.location) { 
             locationInfoHTML = `<div class="product-location"><i class="fa-solid fa-location-dot"></i> ${product.location}</div>`;
         }
+
 
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
@@ -196,20 +202,18 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.cursor = 'default';
         }
 
+        // --- (UPDATED) Inner HTML to include new elements ---
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             ${conditionBannerHTML}
-             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+             ${conditionBannerHTML} <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-            ${locationInfoHTML}
-            ${sellerInfoHTML}
-            ${verifiedTextHTML}
+            ${locationInfoHTML} ${sellerInfoHTML} ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
@@ -238,16 +242,15 @@ async function fetchAndRenderProducts(append = false) {
     try {
         const params = new URLSearchParams({ page: state.currentPage });
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
-        if (state.filters.sortBy) params.append('sortBy', state.filters.sortBy);
         
-        // Add all filters to params
+        // Add all filters from state to params
+        if (state.filters.sortBy) params.append('sortBy', state.filters.sortBy);
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
         if (state.filters.condition) params.append('condition', state.filters.condition);
         if (state.filters.location) params.append('location', state.filters.location);
         if (state.filters.minPrice) params.append('minPrice', state.filters.minPrice);
         if (state.filters.maxPrice) params.append('maxPrice', state.filters.maxPrice);
-
 
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
@@ -312,6 +315,7 @@ async function fetchAndDisplayCategoryCounts() {
         const response = await fetch('/.netlify/functions/count-categories');
         if (!response.ok) return;
         const counts = await response.json();
+        // This will only work if you have <h3> elements in your category links
         const categoryMapping = {
             'Electronics': document.querySelector('a[href="/shop/?category=Electronics"] h3'),
             'Clothing & Apparel': document.querySelector('a[href="/shop/?category=Clothing+%26+Apparel"] h3'),
@@ -353,6 +357,7 @@ function updateListingsTitle() {
         .length;
     
     if (activeFilterCount > 0) {
+        // You'll need to style this "filter-badge" class
         title += ` <span class="filter-badge">${activeFilterCount} Filter${activeFilterCount > 1 ? 's' : ''}</span>`;
     }
     
@@ -434,7 +439,6 @@ function handleSearch() {
     const term = searchInput.value.trim();
     state.searchTerm = term;
     state.currentPage = 0;
-    // Don't reset filters when searching
     
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     fetchAndRenderProducts(false);
@@ -476,6 +480,7 @@ function handleFilterLinkClick(event) {
     }
 }
 
+// Handler for the sort dropdown
 function handleSortChange() {
     const newSortBy = sortBySelect.value;
     if (newSortBy === state.filters.sortBy) return;
@@ -494,8 +499,7 @@ function handleApplyFilters() {
     state.filters.minPrice = filterMinPrice.value || '';
     state.filters.maxPrice = filterMaxPrice.value || '';
     
-    // Clear category if other filters are applied
-    state.filters.category = ''; 
+    state.filters.category = ''; // Clear category when applying filters
     
     state.currentPage = 0; // Reset pagination
     closeFilterModal();
@@ -523,7 +527,7 @@ function handleClearFilters() {
     fetchAndRenderProducts(false);
 }
 
-
+// (UPDATED) initializeStateFromURL to read all filters
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     state.filters.type = params.get('type') || '';
@@ -531,18 +535,19 @@ function initializeStateFromURL() {
     state.searchTerm = params.get('q') || '';
     state.filters.sortBy = params.get('sortBy') || 'createdAt_desc';
     
-    // Read other filters from URL
     state.filters.condition = params.get('condition') || '';
     state.filters.location = params.get('location') || '';
     state.filters.minPrice = params.get('minPrice') || '';
     state.filters.maxPrice = params.get('maxPrice') || '';
 
     // Update modal inputs to reflect URL state
-    if(state.filters.type) document.querySelector(`input[name="filter-type"][value="${state.filters.type}"]`).checked = true;
-    if(state.filters.condition) document.querySelector(`input[name="filter-condition"][value="${state.filters.condition}"]`).checked = true;
-    if(state.filters.location) document.querySelector(`input[name="filter-location"][value="${state.filters.location}"]`).checked = true;
-    if(state.filters.minPrice) filterMinPrice.value = state.filters.minPrice;
-    if(state.filters.maxPrice) filterMaxPrice.value = state.filters.maxPrice;
+    if(filterModalOverlay) { // Check if modal exists
+        if(state.filters.type) document.querySelector(`input[name="filter-type"][value="${state.filters.type}"]`).checked = true;
+        if(state.filters.condition) document.querySelector(`input[name="filter-condition"][value="${state.filters.condition}"]`).checked = true;
+        if(state.filters.location) document.querySelector(`input[name="filter-location"][value="${state.filters.location}"]`).checked = true;
+        if(state.filters.minPrice) filterMinPrice.value = state.filters.minPrice;
+        if(state.filters.maxPrice) filterMaxPrice.value = state.filters.maxPrice;
+    }
     
     if (sortBySelect) sortBySelect.value = state.filters.sortBy;
     if (state.searchTerm) searchInput.value = state.searchTerm;
@@ -577,15 +582,16 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
 
-    // --- ALL EVENT LISTENERS ---
+    // --- (UPDATED) ALL EVENT LISTENERS ---
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
 
+    // Sort dropdown listener
     if (sortBySelect) {
         sortBySelect.addEventListener('change', handleSortChange);
     }
     
-    // Filter button now opens the modal
+    // Filter button opens the modal
     if (filterBtn) {
         filterBtn.addEventListener('click', openFilterModal);
     }
