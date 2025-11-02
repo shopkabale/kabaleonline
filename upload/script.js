@@ -58,13 +58,8 @@ async function populateFormForEdit(productId) {
             document.getElementById('product-category').value = product.category || '';
             document.getElementById('product-description').value = product.description;
             document.getElementById('product-story').value = product.story || '';
+            // MODIFIED: Also populate the quantity field for editing
             document.getElementById('product-quantity').value = product.quantity || 1;
-            
-            // --- NEW: Populate new fields ---
-            document.getElementById('product-condition').value = product.condition || ''; // <-- NEW
-            document.getElementById('product-location').value = product.location || '';   // <-- NEW
-            // --- End new fields ---
-
             const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
             document.getElementById('whatsapp-number').value = localNumber;
             submitBtn.textContent = 'Update Item';
@@ -122,19 +117,14 @@ productForm.addEventListener('submit', async (e) => {
             throw new Error('At least one image is required for a new listing.');
         }
 
+        // MODIFIED: Read the quantity from the new form field
         const productData = {
             listing_type: 'item',
             name: productName,
             name_lowercase: productName.toLowerCase(),
             price: Number(document.getElementById('product-price').value),
-            quantity: Number(document.getElementById('product-quantity').value) || 1,
+            quantity: Number(document.getElementById('product-quantity').value) || 1, // Add this line
             category: document.getElementById('product-category').value,
-            
-            // --- NEW: Read new fields from form ---
-            condition: document.getElementById('product-condition').value, // <-- NEW
-            location: document.getElementById('product-location').value,   // <-- NEW
-            // --- End new fields ---
-            
             description: document.getElementById('product-description').value,
             story: document.getElementById('product-story').value,
             whatsapp: normalizeWhatsAppNumber(document.getElementById('whatsapp-number').value),
