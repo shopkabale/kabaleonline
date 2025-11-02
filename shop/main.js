@@ -67,11 +67,11 @@ const state = {
     filters: {
         type: '',
         category: '',
-        sortBy: 'createdAt_desc', // (NEW)
-        condition: '',           // (NEW)
-        minPrice: '',            // (NEW)
-        maxPrice: '',            // (NEW)
-        location: ''             // (NEW)
+        sortBy: 'createdAt_desc',
+        condition: '',
+        minPrice: '',
+        maxPrice: '',
+        location: ''
     },
     currentUser: null,
     wishlist: new Set()
@@ -142,7 +142,7 @@ function observeLazyImages() {
 }
 
 // --- (UPDATED) RENDERPRODUCTS ---
-// This function now includes the logic for Condition, Location, and Seller Name
+// This function now uses a "product-card-content" wrapper to fix layout issues
 function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
@@ -173,26 +173,22 @@ function renderProducts(gridElement, products, append = false) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
 
-        // --- (RE-ADDED) Condition Banner Logic ---
         let conditionBannerHTML = '';
-        if (product.condition && !isActuallySold) { // Only show if 'condition' exists
+        if (product.condition && !isActuallySold) {
             const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1).toLowerCase();
             const conditionClass = `is-${conditionText.toLowerCase().replace(' ', '-')}`;
             conditionBannerHTML = `<div class="condition-banner ${conditionClass}">${conditionText}</div>`;
         }
 
-        // --- (RE-ADDED) Seller Info Logic ---
         let sellerInfoHTML = '';
         if (product.sellerName) {
             sellerInfoHTML = `<div class="seller-info"><i class="fa-regular fa-user"></i>${product.sellerName}</div>`;
         }
 
-        // --- (RE-ADDED) Location Info Logic ---
         let locationInfoHTML = '';
         if (product.location) { 
             locationInfoHTML = `<div class="product-location"><i class="fa-solid fa-location-dot"></i> ${product.location}</div>`;
         }
-
 
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
@@ -202,21 +198,27 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.cursor = 'default';
         }
 
-        // --- (UPDATED) Inner HTML to include new elements ---
+        // --- (THE FIX) ---
+        // All text content is now inside "product-card-content"
+        // This stops it from conflicting with the card's main flex display.
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             ${conditionBannerHTML} <!-- Now added -->
+             ${conditionBannerHTML}
              <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
-            <h3>${product.name}</h3>
-            ${stockStatusHTML}
-            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-            ${locationInfoHTML} <!-- Now added -->
-            ${sellerInfoHTML} <!-- Now added -->
-            ${verifiedTextHTML}
+            
+            <!-- This new content wrapper fixes the layout -->
+            <div class="product-card-content">
+                <h3>${product.name}</h3>
+                ${stockStatusHTML}
+                <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+                ${locationInfoHTML}
+                ${sellerInfoHTML}
+                ${verifiedTextHTML}
+            </div>
           </div>
         `;
         fragment.appendChild(productLink);
