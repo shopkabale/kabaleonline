@@ -1,7 +1,7 @@
 /**
  * Creates an optimized and transformed Cloudinary URL.
  * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
+ *@param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
  * @returns {string} The new, transformed URL.
  */
 function getCloudinaryTransformedUrl(url, type) {
@@ -48,7 +48,7 @@ const backToTopBtn = document.getElementById("back-to-top-btn");
 const sortBySelect = document.getElementById("sort-by");
 const filterBtn = document.getElementById("filter-btn");
 
-// --- (NEW) FILTER MODAL DOM REFERENCES ---
+// --- FILTER MODAL DOM REFERENCES ---
 const filterModalOverlay = document.getElementById("filter-modal-overlay");
 const filterModalContent = document.getElementById("filter-modal-content");
 const filterModalCloseBtn = document.getElementById("filter-modal-close");
@@ -104,7 +104,7 @@ function hideModal() {
     if (modal) modal.classList.remove('show');
 }
 
-// --- (NEW) FILTER MODAL FUNCTIONS ---
+// --- FILTER MODAL FUNCTIONS ---
 function openFilterModal() {
     if (filterModalOverlay) filterModalOverlay.classList.add('active');
 }
@@ -240,7 +240,7 @@ async function fetchAndRenderProducts(append = false) {
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         if (state.filters.sortBy) params.append('sortBy', state.filters.sortBy);
         
-        // (UPDATED) Add all filters to params
+        // Add all filters to params
         if (state.filters.type) params.append('type', state.filters.type);
         if (state.filters.category) params.append('category', state.filters.category);
         if (state.filters.condition) params.append('condition', state.filters.condition);
@@ -347,7 +347,7 @@ function updateListingsTitle() {
     else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
     if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
     
-    // (NEW) Add a badge if filters are active
+    // Add a badge if filters are active
     const activeFilterCount = ['condition', 'location', 'minPrice', 'maxPrice']
         .filter(key => state.filters[key])
         .length;
@@ -435,8 +435,6 @@ function handleSearch() {
     state.searchTerm = term;
     state.currentPage = 0;
     // Don't reset filters when searching
-    // state.filters.type = '';
-    // state.filters.category = '';
     
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     fetchAndRenderProducts(false);
@@ -457,7 +455,7 @@ function handleFilterLinkClick(event) {
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
 
-    // (UPDATED) Clear other filters when clicking a main category
+    // Clear other filters when clicking a main category
     state.filters.type = type;
     state.filters.category = category;
     state.filters.condition = '';
@@ -487,7 +485,7 @@ function handleSortChange() {
     fetchAndRenderProducts(false);
 }
 
-// --- (NEW) FILTER MODAL HANDLERS ---
+// --- FILTER MODAL HANDLERS ---
 function handleApplyFilters() {
     // Read values from modal and update state
     state.filters.type = document.querySelector('input[name="filter-type"]:checked').value;
@@ -496,7 +494,7 @@ function handleApplyFilters() {
     state.filters.minPrice = filterMinPrice.value || '';
     state.filters.maxPrice = filterMaxPrice.value || '';
     
-    // Clear category if other filters are applied (optional, but good)
+    // Clear category if other filters are applied
     state.filters.category = ''; 
     
     state.currentPage = 0; // Reset pagination
@@ -533,13 +531,13 @@ function initializeStateFromURL() {
     state.searchTerm = params.get('q') || '';
     state.filters.sortBy = params.get('sortBy') || 'createdAt_desc';
     
-    // (NEW) Read other filters from URL
+    // Read other filters from URL
     state.filters.condition = params.get('condition') || '';
     state.filters.location = params.get('location') || '';
     state.filters.minPrice = params.get('minPrice') || '';
     state.filters.maxPrice = params.get('maxPrice') || '';
 
-    // (NEW) Update modal inputs to reflect URL state
+    // Update modal inputs to reflect URL state
     if(state.filters.type) document.querySelector(`input[name="filter-type"][value="${state.filters.type}"]`).checked = true;
     if(state.filters.condition) document.querySelector(`input[name="filter-condition"][value="${state.filters.condition}"]`).checked = true;
     if(state.filters.location) document.querySelector(`input[name="filter-location"][value="${state.filters.location}"]`).checked = true;
@@ -587,12 +585,12 @@ document.addEventListener('DOMContentLoaded', () => {
         sortBySelect.addEventListener('change', handleSortChange);
     }
     
-    // (UPDATED) Filter button now opens the modal
+    // Filter button now opens the modal
     if (filterBtn) {
         filterBtn.addEventListener('click', openFilterModal);
     }
 
-    // (NEW) Filter Modal Listeners
+    // Filter Modal Listeners
     if (filterModalOverlay) {
         filterModalCloseBtn.addEventListener('click', closeFilterModal);
         filterApplyBtn.addEventListener('click', handleApplyFilters);
