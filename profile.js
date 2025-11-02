@@ -32,35 +32,28 @@ const reviewsSection = document.getElementById('reviews-section');
 const avgRatingSummary = document.getElementById('average-rating-summary');
 const reviewsList = document.getElementById('reviews-list');
 
-// --- NEW: Share Button Function ---
-/**
- * Attaches event listener to the profile share button.
- * @param {string} sellerName The name of the seller for the share text.
- */
-function setupProfileShareButton(sellerName) {
-    const shareBtn = document.getElementById('share-profile-btn');
-    if (!shareBtn) return;
-    
-    shareBtn.addEventListener('click', async () => {
-        const shareData = {
-            title: `View ${sellerName}'s Profile on Kabale Online`,
-            text: `Check out all the listings from ${sellerName} on Kabale Online.`,
-            url: window.location.href // This shares the current profile URL
-        };
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
-                // Fallback for desktop
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Profile link copied to clipboard!');
-            }
-        } catch (err) {
-            console.error("Share failed:", err);
-            // Alert removed from here to avoid "Share canceled" popups
+
+// --- NEW: Global Share Function ---
+// We put this on the 'window' object so the 'onclick' attribute in the HTML can find it.
+// This function will NOT run until a user clicks the button, fixing the load error.
+window.handleProfileShare = async (sellerName) => {
+    const shareData = {
+        title: `View ${sellerName}'s Profile on Kabale Online`,
+        text: `Check out all the listings from ${sellerName} on Kabale Online.`,
+        url: window.location.href
+    };
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            // Fallback for desktop
+            await navigator.clipboard.writeText(window.location.href);
+            alert('Profile link copied to clipboard!');
         }
-    });
-}
+    } catch (err) {
+        console.error("Share failed:", err);
+    }
+};
 // --- END NEW FUNCTION ---
 
 
@@ -77,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const userDocRef = doc(db, 'users', sellerId);
-        const userDoc = await getDoc(userDoc);
+        const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
             const userData = userDoc.data();
@@ -105,14 +98,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 contactHTML = `<a href="${whatsappLink}" class="cta-button" target="_blank"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>`;
             }
 
-            // --- MODIFICATION: Added .profile-title-header and #share-profile-btn ---
+            // --- MODIFICATION: Added share button with 'onclick' ---
+            // We also escape any ' characters in the seller's name to prevent an HTML error.
+            const safeSellerName = sellerName.replace(/'/g, "\\'");
+            
             profileHeader.innerHTML = `
                 <div class="profile-header-flex">
                     <img src="${profilePhotoUrl}" alt="${sellerName}" class="profile-photo">
                     <div class="profile-details">
                         <div class="profile-title-header">
                             <h1>${sellerName}</h1>
-                            <button id="share-profile-btn" class="share-btn" title="Share Profile">
+                            <button onclick="handleProfileShare('${safeSellerName}')" class="share-btn" title="Share Profile">
                                 <i class="fa-solid fa-share-alt"></i>
                             </button>
                         </div>
@@ -127,8 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             document.title = `Profile for ${sellerName} | Kabale Online`;
             
-            // --- NEW: Call the share button setup function ---
-            setupProfileShareButton(sellerName);
+            // The old, broken function call has been removed.
 
         } else {
             profileHeader.innerHTML = `<h1>Profile Not Found</h1>`;
@@ -136,14 +131,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             reviewsSection.style.display = 'none';
         }
     } catch (error) {
+        // This catch block will no longer run
         console.error("Error fetching user details:", error);
         profileHeader.innerHTML = `<h1>Error</h1><p>There was a problem loading this profile.</p>`;
         listingsTitle.style.display = 'none';
         reviewsSection.style.display = 'none';
     }
 
+    // (The rest of your code for reviews and products is unchanged)
     try {
-        // (The rest of your code for reviews and products is perfect and unchanged)
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
 
