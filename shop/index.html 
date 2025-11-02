@@ -101,9 +101,32 @@
         .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
         @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } .category-grid { grid-template-columns: repeat(6, 1fr); } .deals-grid .product-card { flex: 0 0 200px; width: 200px; } }
         .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
-        .stock-info { font-size: 0.85em; font-weight: bold; margin: -10px 15px 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-        .low-stock { color: #856404; background-color: #fff3cd; }
-        .sold-out { color: #721c24; background-color: #f8d7da; }
+        .stock-info {
+    font-size: 0.85em;
+    font-weight: bold;
+    margin: -10px 15px 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Green for "In Stock" */
+.in-stock {
+    color: #155724;         /* Dark Green Text */
+    background-color: #d4edda; /* Light Green Background */
+}
+
+/* Yellow for "Low Stock" */
+.low-stock {
+    color: #856404;         /* Dark Yellow/Brown Text */
+    background-color: #fff3cd; /* Light Yellow Background */
+}
+
+/* Red for "Out of Stock" or "Sold Out" */
+.out-of-stock, .sold-out {
+    color: #721c24;         /* Dark Red Text */
+    background-color: #f8d7da; /* Light Red Background */
+}
         .product-card.is-sold { position: relative; cursor: not-allowed; }
         .product-card.is-sold img { filter: grayscale(90%); }
         .product-card-sold-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2; pointer-events: none; }
@@ -244,49 +267,85 @@ footer {
 }
 
 /* ==================================================== */
-        /* ⭐ NEW IMAGE CATEGORY SECTION STYLES ⭐          */
-        /* ==================================================== */
-        .image-category-section {
-            padding: 20px 0;
-        }
-        .image-category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 columns on all screen sizes */
-            gap: 20px;
-        }
-        .image-category-card {
-            text-decoration: none;
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            overflow: hidden; /* This makes the image corners rounded */
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .image-category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-        }
-        .image-category-card img {
-            width: 100%;
-            aspect-ratio: 4 / 3; /* Maintains shape */
-            object-fit: cover; /* Prevents image distortion */
-            display: block;
-        }
-        .image-category-card h3 {
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 1.1em;
-            margin: 0;
-            padding: 20px 10px;
-        }
-        /* On larger screens, you can optionally make the grid wider */
-        @media (min-width: 1024px) {
-            .image-category-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
+/* ⭐ IMAGE CATEGORY SECTION (WITH FLOATING TEXT) ⭐     */
+/* ==================================================== */
+
+.image-category-section {
+    padding: 60px 15px;
+    background-color: var(--bg-main);
+}
+
+.image-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    gap: 20px;
+}
+
+.image-category-card {
+    position: relative; /* This is crucial for positioning the text inside */
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    overflow: hidden; /* This makes the image corners rounded */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block;
+}
+
+.image-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+/* Adds a dark gradient overlay for text readability */
+.image-category-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70%; /* Covers the bottom 70% of the image */
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.image-category-card:hover::after {
+    opacity: 0.8; /* Slightly darkens the gradient on hover */
+}
+
+.image-category-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.image-category-card:hover img {
+    transform: scale(1.05); /* Adds a subtle zoom effect on hover */
+}
+
+.image-category-card h3 {
+    position: absolute; /* This makes the text float */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    color: #ffffff; /* White text for contrast */
+    font-weight: 700;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 20px;
+    z-index: 2; /* Ensures text is on top of the gradient */
+    text-align: left; /* Aligns text to the left */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4); /* Adds a slight shadow to text */
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 1024px) {
+    .image-category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
     </style>
 </head>
 <body>
@@ -311,9 +370,26 @@ footer {
         </div>
     </header>
 
+        <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/dashboard/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
     <div class="mobile-nav-overlay"></div>
-    <nav class="mobile-nav">
-        </nav>
 
     <div class="container page-container">
         <div class="search-container">
@@ -409,7 +485,7 @@ footer {
                 <h3>KabaleOnline Assistant</h3>
                 <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <iframe id="chat-iframe" src="/chatbot.html" title="KabaleOnline AI Assistant"></iframe>
+            <iframe id="chat-iframe" src="/ai/" title="Amara"></iframe>
         </div>
     </div>
     <footer>
