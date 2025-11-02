@@ -17,20 +17,21 @@
         /* --- THEME-AWARE CSS VARIABLES --- */
         :root {
             --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            
+
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-            
+
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
+
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
@@ -51,7 +52,7 @@
             --text-secondary: var(--text-secondary-dark);
             --border-color: var(--border-color-dark);
         }
-        
+
         /* --- GENERAL & HEADER STYLES --- */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -117,9 +118,17 @@
         #listings-title { margin-top: 40px; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
-        .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
+        
+        .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); text-decoration: none; color: inherit; border: 1px solid var(--border-color); position: relative; /* Added for tags */ }
         .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
-        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
+        .product-card h3 { 
+            margin: 10px 15px; 
+            font-size: 0.95rem; 
+            flex-grow: 1; 
+            /* Fix for long product names */
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
 
         /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
@@ -129,6 +138,61 @@
         .footer-links { margin: 25px 0; }
         .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
         .footer-copyright { font-size: 0.9em; color: #64748b; }
+        
+        /* --- ADD ALL THIS NEW CSS --- */
+        
+        /* 1. New "Pill" Badge for Profile Header */
+        .profile-verified-badge {
+            font-size: 0.8em;
+            font-weight: 700;
+            color: var(--ko-primary); /* Use your site's main blue color */
+            background-color: rgba(var(--ko-primary-rgb), 0.1); /* Light blue background */
+            border: 1px solid rgba(var(--ko-primary-rgb), 0.2); /* Faint blue border */
+            padding: 4px 12px;
+            border-radius: 20px; /* "pill" shape */
+            display: inline-block;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .profile-verified-badge i {
+            margin-right: 6px;
+        }
+
+        /* 2. New Product Tags for Product Cards */
+        .product-tags {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .product-tag {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .product-tag.type-rent {
+            background-color: var(--ko-primary); /* Blue for rent */
+        }
+        .product-tag.type-sale {
+            background-color: #6c757d; /* A neutral gray for "sale" */
+        }
+        .product-tag.condition-new {
+            background-color: #28a745; /* Green for new */
+        }
+        .product-tag.condition-used {
+            background-color: var(--ko-accent); /* Your accent yellow for used */
+            color: #212529; /* Dark text for yellow bg */
+        }
+        /* --- END NEW CSS --- */
+        
     </style>
 </head>
 <body>
@@ -202,7 +266,7 @@
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
-    
+
     <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
       background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1201;">
       <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
@@ -230,7 +294,7 @@
               overlay.classList.remove('active');
           });
       }
-      
+
       const serviceLinks = document.querySelectorAll('a.service-link');
       const modal = document.getElementById('service-notice');
       const continueBtn = document.getElementById('continue-btn');
@@ -250,7 +314,7 @@
       }
     });
     </script>
-    
+
     <script type="module" src="ui.js"></script>
     <script type="module" src="profile.js"></script>
 </body>
