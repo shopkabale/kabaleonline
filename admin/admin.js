@@ -48,14 +48,12 @@ function initializeAdminPanel() {
                     adminContent.style.display = 'block';
                     loader.style.display = 'none';
 
-                    // --- CRITICAL FIX ---
                     // Setup UI interactivity immediately.
                     setupEventListeners();
-                    
+
                     // Fetch data in the background without blocking the UI.
                     fetchAllStats();
                     fetchManagementData();
-                    // --- END FIX ---
 
                 } else {
                     showAccessDenied();
@@ -112,7 +110,7 @@ async function fetchAllStats() {
         ]);
 
         const totalSalesValue = salesData.docs.reduce((sum, doc) => sum + (doc.data().price || 0), 0);
-        
+
         totalUsersStat.textContent = usersSnapshot.size;
         totalProductsStat.textContent = productCount.data().count;
         totalOrdersStat.textContent = orderCount.data().count;
@@ -124,7 +122,7 @@ async function fetchAllStats() {
         totalServicesStat.textContent = serviceCount.data().count;
         pendingProductsCount.textContent = pendingProducts.data().count;
         pendingTestimonialsCount.textContent = pendingTestimonials.data().count;
-        
+
         fetchAndRenderChart(7);
 
     } catch (error) {
@@ -141,7 +139,7 @@ async function fetchAndRenderChart(days) {
     startDate.setDate(today.getDate() - days);
     const startTimestamp = Timestamp.fromDate(startDate);
     const labels = Array.from({ length: days }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (days - 1 - i)); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); });
-    
+
     const fetchDataForTimespan = async (collectionName) => {
         const counts = new Array(days).fill(0);
         const q = query(collection(db, collectionName), where('createdAt', '>=', startTimestamp));
@@ -159,7 +157,7 @@ async function fetchAndRenderChart(days) {
         });
         return counts;
     };
-    
+
     try {
         const [userCounts, productCounts, orderCounts] = await Promise.all([
             fetchDataForTimespan('users'),
@@ -180,7 +178,7 @@ function renderActivityChart(labels, userCounts, productCounts, orderCounts) {
     const isDarkMode = document.body.classList.contains('dark-mode');
     const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     const labelColor = isDarkMode ? '#e2e8f0' : '#34495e';
-    
+
     activityChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -218,7 +216,7 @@ function setupEventListeners() {
         monthlyViewBtn.classList.add('active');
         weeklyViewBtn.classList.remove('active');
     });
-    
+
     const accordions = document.querySelectorAll('.accordion-header');
     accordions.forEach(header => {
         header.addEventListener('click', () => {
@@ -232,20 +230,106 @@ function setupEventListeners() {
         });
     });
 
+    // --- UPGRADED EVENT LISTENER ---
     adminContent.addEventListener('click', (e) => {
         const button = e.target.closest('button[data-action]');
         if (!button) return;
+        
         const action = button.dataset.action;
-        const id = button.dataset.id || button.dataset.uid;
-        const name = button.dataset.name;
+        
         switch(action) {
+            // User Toggles
             case 'toggle-verify': handleToggleVerify(button); break;
-            case 'delete-product': handleDeleteProduct(id, name); break;
-            case 'approve-testimonial': handleApproveTestimonial(id); break;
-            case 'delete-testimonial': handleDeleteTestimonial(id); break;
+            
+            // Product Toggles
+            case 'toggle-deal': handleToggleDeal(button); break;
+            case 'toggle-hero': handleToggleHero(button); break;
+            case 'toggle-save': handleToggleSaveOnMore(button); break;
+            case 'toggle-sponsor': handleToggleSponsor(button); break;
+            case 'delete-product': handleDeleteProduct(button); break;
+
+            // Testimonial Toggles
+            case 'approve-testimonial': handleApproveTestimonial(button); break;
+            case 'delete-testimonial': handleDeleteTestimonial(button); break;
         }
     });
 }
+
+// --- NEW HELPER FUNCTIONS (FROM FILE 2) ---
+
+/**
+ * Generic helper function to toggle a boolean field on a product.
+ */
+async function handleGenericToggle(button, fieldName, friendlyName) {
+    const productId = button.dataset.id;
+    const currentStatus = button.dataset.status === 'true';
+    const newStatus = !currentStatus;
+    
+    button.disabled = true;
+    button.textContent = 'Updating...';
+    try {
+        await updateDoc(doc(db, 'products', productId), { [fieldName]: newStatus });
+        button.dataset.status = newStatus;
+        button.textContent = newStatus ? `Remove ${friendlyName}` : `Make ${friendlyName}`;
+        button.classList.toggle(`on-${fieldName.toLowerCase().replace('is','')}`, newStatus);
+    } catch (e) {
+        console.error(`Error updating ${friendlyName}:`, e);
+        alert(`Error updating ${friendlyName} status.`);
+        button.dataset.status = currentStatus;
+        button.textContent = currentStatus ? `Remove ${friendlyName}` : `Make ${friendlyName}`;
+        button.classList.toggle(`on-${fieldName.toLowerCase().replace('is','')}`, currentStatus);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+// --- NEW TOGGLE HANDLERS (FROM FILE 2) ---
+function handleToggleSaveOnMore(button) {
+    handleGenericToggle(button, 'isSaveOnMore', 'Save');
+}
+
+function handleToggleSponsor(button) {
+    handleGenericToggle(button, 'isSponsored', 'Sponsor');
+}
+
+function handleToggleDeal(button) {
+    handleGenericToggle(button, 'isDeal', 'Deal');
+}
+
+async function handleToggleHero(button) {
+    const productId = button.dataset.id;
+    const currentStatus = button.dataset.isHero === 'true';
+    const newStatus = !currentStatus;
+
+    button.disabled = true;
+    button.textContent = 'Updating...';
+
+    try {
+        if (newStatus === true) {
+            const productsRef = collection(db, 'products');
+            const q = query(productsRef, where('isHero', '==', true));
+            const countSnapshot = await getCountFromServer(q);
+            if (countSnapshot.data().count >= 6) {
+                alert('Hero slider is full (6 items max). Please remove another item first.');
+                fetchAllProducts(); // Refresh to show correct state
+                return;
+            }
+        }
+        const productRef = doc(db, 'products', productId);
+        await updateDoc(productRef, {
+            isHero: newStatus,
+            ...(newStatus && { heroTimestamp: serverTimestamp() })
+        });
+        await fetchAllProducts();
+    } catch (e) {
+        console.error("Error toggling hero status:", e);
+        alert("Could not update hero status.");
+        await fetchAllProducts();
+    }
+}
+
+
+// --- MANAGEMENT DATA FUNCTIONS ---
 
 function fetchManagementData() {
     fetchAllUsers();
@@ -284,6 +368,7 @@ async function handleToggleVerify(button) {
     } catch (e) { console.error("Error toggling user verification:", e); alert("Failed to update status."); button.disabled = false; button.textContent = currentStatus ? 'Un-verify' : 'Verify'; }
 }
 
+// --- REPLACED/UPGRADED: fetchAllProducts ---
 async function fetchAllProducts() {
     allProductsList.innerHTML = '<p>Loading products...</p>';
     try {
@@ -293,23 +378,64 @@ async function fetchAllProducts() {
         allProductsList.innerHTML = '';
         snapshot.forEach(docSnap => {
             const product = docSnap.data();
+            const id = docSnap.id;
+            const isDeal = product.isDeal || false;
+            const isHero = product.isHero || false;
+            const isSaveOnMore = product.isSaveOnMore || false; 
+            const isSponsored = product.isSponsored || false; 
+            const verifiedBadge = product.sellerIsVerified ? '✔️' : '';
+
             const card = document.createElement('div');
             card.className = 'product-card';
-            card.innerHTML = `<img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" alt="${product.name}" loading="lazy"><div style="padding:10px"><h3>${product.name}</h3><p class="price">UGX ${product.price?.toLocaleString() || 'N/A'}</p><div class="seller-controls"><button class="action-btn red" data-action="delete-product" data-id="${docSnap.id}" data-name="${product.name.replace(/"/g, '&quot;')}">Delete</button></div></div>`;
+            // This innerHTML is from File 2, as it's more feature-rich
+            card.innerHTML = `
+                <img src="${product.imageUrls?.[0] || 'https://placehold.co/200'}" alt="${product.name}" loading="lazy" width="200" height="200">
+                <h3>${product.name}</h3>
+                <p class="price">UGX ${product.price?.toLocaleString() || 'N/A'}</p>
+                <p style="font-size:0.8em;color:grey;word-break:break-all;">By: ${product.sellerName || 'N/A'} ${verifiedBadge}</p>
+                <div class="seller-controls">
+                    <button class="action-btn product-toggle-btn ${isDeal ? 'on-deal' : ''}" data-action="toggle-deal" data-id="${id}" data-status="${isDeal}">
+                        ${isDeal ? 'Remove Deal' : 'Make Deal'}
+                    </button>
+                    <button class="action-btn product-toggle-btn ${isSaveOnMore ? 'on-save' : ''}" data-action="toggle-save" data-id="${id}" data-status="${isSaveOnMore}">
+                        ${isSaveOnMore ? 'Remove Save' : 'Add to Save'}
+                    </button>
+                    <button class="action-btn product-toggle-btn ${isSponsored ? 'on-sponsor' : ''}" data-action="toggle-sponsor" data-id="${id}" data-status="${isSponsored}">
+                        ${isSponsored ? 'Remove Sponsor' : 'Sponsor Item'}
+                    </button>
+                    <button class="action-btn product-toggle-btn ${isHero ? 'red' : 'blue'}" data-action="toggle-hero" data-id="${id}" data-is-hero="${isHero}">
+                        ${isHero ? 'Remove Hero' : 'Add to Hero'}
+                    </button>
+                    <button class="action-btn red" data-action="delete-product" data-id="${id}" data-name="${product.name.replace(/"/g, '&quot;')}">Delete</button>
+                </div>
+            `;
             allProductsList.appendChild(card);
         });
-    } catch (e) { console.error("Error fetching products:", e); allProductsList.innerHTML = '<p>Could not load products.</p>'; }
+    } catch (e) {
+        console.error("Error fetching products:", e);
+        allProductsList.innerHTML = '<p>Could not load products.</p>';
+    }
 }
 
-async function handleDeleteProduct(id, name) {
+// --- REPLACED/UPGRADED: handleDeleteProduct ---
+async function handleDeleteProduct(button) { 
+    const id = button.dataset.id; 
+    const name = button.dataset.name;
     if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
-    try {
-        await deleteDoc(doc(db, 'products', id));
-        fetchManagementData();
-        fetchAllStats();
-    } catch (e) { console.error("Error deleting product:", e); alert("Could not delete product."); }
+    try { 
+        await deleteDoc(doc(db, 'products', id)); 
+        // No need to call fetchAllStats(), just refresh the product list
+        await fetchAllProducts(); 
+        // We can update just the product count stat for efficiency
+        const productCount = await getCountFromServer(collection(db, 'products'));
+        totalProductsStat.textContent = productCount.data().count;
+    } catch (e) { 
+        console.error("Error deleting product:", e); 
+        alert("Could not delete product."); 
+    } 
 }
 
+// --- UNCHANGED: fetchTestimonialsForAdmin ---
 async function fetchTestimonialsForAdmin() {
     pendingTestimonialsList.innerHTML = '<li>Loading...</li>';
     approvedTestimonialsList.innerHTML = '<li>Loading...</li>';
@@ -327,20 +453,26 @@ async function fetchTestimonialsForAdmin() {
     } catch (e) { console.error("Error fetching testimonials:", e); }
 }
 
-async function handleApproveTestimonial(id) {
+// --- MODIFIED: handleApproveTestimonial (to accept button) ---
+async function handleApproveTestimonial(button) {
+    const id = button.dataset.id;
+    button.disabled = true; button.textContent = 'Approving...';
     try {
         await updateDoc(doc(db, 'testimonials', id), { status: 'approved', order: Date.now() });
         fetchManagementData();
-        fetchAllStats();
+        fetchAllStats(); // Keep this to update pending count
     } catch (e) { console.error("Error approving testimonial:", e); alert("Could not approve."); }
 }
 
-async function handleDeleteTestimonial(id) {
+// --- MODIFIED: handleDeleteTestimonial (to accept button) ---
+async function handleDeleteTestimonial(button) {
+    const id = button.dataset.id;
     if (!confirm("Delete this testimonial?")) return;
+    button.disabled = true; button.textContent = 'Deleting...';
     try {
         await deleteDoc(doc(db, 'testimonials', id));
         fetchManagementData();
-        fetchAllStats();
+        fetchAllStats(); // Keep this to update pending count
     } catch (e) { console.error("Error deleting testimonial:", e); alert("Could not delete."); }
 }
 
