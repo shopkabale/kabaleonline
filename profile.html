@@ -191,6 +191,46 @@
             background-color: var(--ko-accent); /* Your accent yellow for used */
             color: #212529; /* Dark text for yellow bg */
         }
+/* --- ADD THIS NEW CSS --- */
+        
+        /* New wrapper for the profile title and share button */
+        .profile-title-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Aligns h1 and button top */
+            gap: 15px;
+        }
+        .profile-title-header h1 {
+            flex-grow: 1; /* Allows h1 to take space */
+            /* Fix for long names */
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+
+        /* Style for the new share button */
+        .share-btn {
+            background-color: var(--bg-main);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Prevents button from shrinking */
+            margin-top: 4px; /* Aligns with h1 */
+        }
+        .share-btn:hover {
+            color: var(--text-main);
+            background-color: var(--border-color-light);
+        }
+        body.dark-mode .share-btn:hover {
+            background-color: var(--border-color-dark);
+        }
+        
         /* --- END NEW CSS --- */
         
     </style>
