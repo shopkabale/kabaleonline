@@ -79,14 +79,10 @@
         .mobile-nav-footer { padding: 15px; }
         .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; text-decoration: none; }
         .section-title { border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; font-size: 1.4em; }
+        
         .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
         .product-card-link { text-decoration: none; color: inherit; }
-        .product-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; transition: all 0.3s ease-out; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; transition: transform 0.3s ease-out; }
-        .product-card:hover img { transform: scale(1.05); }
-        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
-        .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
+        
         .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .category-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-card); border-radius: var(--border-radius); padding: 15px 5px; text-decoration: none; color: var(--text-main); }
         .category-item i { font-size: 24px; color: var(--ko-primary); margin-bottom: 8px; }
@@ -178,12 +174,12 @@
         .image-category-card h3 { position: absolute; bottom: 0; left: 0; width: 100%; color: #ffffff; font-weight: 700; font-size: 1.2em; margin: 0; padding: 20px; z-index: 2; text-align: left; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
         @media (min-width: 1024px) { .image-category-grid { grid-template-columns: repeat(3, 1fr); } }
 
-
+        
         /* ======================================================= */
         /* --- START: NEW/FIXED CSS FOR FILTERS, CARDS, & MODAL --- */
         /* ======================================================= */
 
-        /* --- FILTER & SORT BAR STYLES (Mobile-Friendly Fix) --- */
+        /* --- 1. FILTER & SORT BAR STYLES (Mobile-Friendly Fix) --- */
         .filter-sort-bar {
             /* Mobile-first: stack elements */
             display: block;
@@ -276,7 +272,58 @@
             }
         }
 
-        /* --- PRODUCT CARD ENHANCEMENTS --- */
+        /* --- 2. PRODUCT CARD LAYOUT FIX --- */
+        /* This replaces your old, conflicting .product-card styles */
+        .product-card { 
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex; /* This is key */
+            flex-direction: column; /* This is key */
+            height: 100%;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: all 0.3s ease-out;
+        }
+        .product-card:hover { 
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        .product-card img { 
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            transition: transform 0.3s ease-out;
+            /* This prevents a layout shift as the image loads */
+            background-color: var(--border-color);
+        }
+        .product-card:hover img { 
+            transform: scale(1.05);
+        }
+        /* This new wrapper holds all text and fixes the flexbox layout */
+        .product-card-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* This makes the content area fill the card */
+            padding: 0 15px 15px; /* Applies padding to all text content */
+        }
+        .product-card-content h3 { 
+            margin: 10px 0; /* Simplified margin */
+            font-size: 0.95rem;
+            flex-grow: 1; /* This makes the title push all other text to the bottom */
+        }
+        .product-card-content .price { 
+            margin: 0 0 10px 0; /* Simplified margin */
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--ko-primary);
+        }
+        /* This adjusts your existing stock-info class to the new layout */
+        .product-card-content .stock-info {
+            margin: -10px 0 10px 0; /* Simplified margin */
+        }
+
+        /* --- 3. CARD ENHANCEMENT STYLES --- */
         /* These styles will be used by main.js to show the new info */
         .product-card .condition-banner {
             position: absolute;
@@ -300,31 +347,30 @@
             background-color: var(--ko-accent); /* Yellow (your accent) */
             color: #212529;
         }
-        .product-card .seller-info {
+        .product-card-content .seller-info {
             font-size: 0.85em;
             color: var(--text-secondary);
-            margin: 0 15px 15px;
             padding-top: 5px;
             border-top: 1px solid var(--border-color);
-            margin-top: 10px;
+            margin-top: 10px; /* Simplified margin */
         }
-        .product-card .seller-info i {
+        .product-card-content .seller-info i {
             margin-right: 5px;
         }
-        .product-card .product-location {
+        .product-card-content .product-location {
             font-size: 0.85em;
             color: var(--text-secondary);
-            margin: 0 15px 5px;
+            margin-bottom: 5px; /* Simplified margin */
             display: flex;
             align-items: center;
             gap: 5px;
         }
-        .product-card .product-location i {
+        .product-card-content .product-location i {
             font-size: 0.9em;
             color: var(--ko-primary);
         }
 
-        /* --- FILTER MODAL STYLES --- */
+        /* --- 4. FILTER MODAL STYLES --- */
         .filter-modal-overlay {
             position: fixed;
             top: 0;
@@ -663,7 +709,7 @@
     <script type="module" src="../ui.js"></script>
     <!-- 
       This is the main.js file that contains all the logic.
-      You MUST use the updated version I am providing in the next file block.
+      You MUST use the updated version from my previous message.
     -->
     <script type="module" src="main.js"></script>
     <script type="module" src="../shared.js"></script>
@@ -684,9 +730,8 @@
     </script>
 
     <!-- 
-      FIXED:
-      The duplicate filter modal HTML that was at the end of your file
-      has been REMOVED. This is the only one you need.
+      This is the HTML for the filter modal.
+      It is correctly placed at the end of the body.
     -->
     <div class="filter-modal-overlay" id="filter-modal-overlay">
         <div class="filter-modal-content" id="filter-modal-content">
