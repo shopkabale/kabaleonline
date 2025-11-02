@@ -141,8 +141,8 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// --- (UPDATED) RENDERPRODUCTS ---
-// This function now uses a "product-card-content" wrapper to fix layout issues
+// --- (REVERTED & FIXED) RENDERPRODUCTS ---
+// This function NO LONGER uses ".product-card-content" and matches your original HTML structure
 function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
@@ -156,7 +156,10 @@ function renderProducts(gridElement, products, append = false) {
     products.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
+        
+        // This line was in your original code, but remove it if you don't have this class
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
+        
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
@@ -198,9 +201,9 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.cursor = 'default';
         }
 
-        // --- (THE FIX) ---
-        // All text content is now inside "product-card-content"
-        // This stops it from conflicting with the card's main flex display.
+        // --- THIS IS THE FIX ---
+        // We are back to your original HTML structure.
+        // The new elements (location, seller) are added *after* the price.
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
@@ -210,15 +213,15 @@ function renderProducts(gridElement, products, append = false) {
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             
-            <!-- This new content wrapper fixes the layout -->
-            <div class="product-card-content">
-                <h3>${product.name}</h3>
-                ${stockStatusHTML}
-                <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-                ${locationInfoHTML}
-                ${sellerInfoHTML}
-                ${verifiedTextHTML}
-            </div>
+            <!-- This is your original, working structure -->
+            <h3>${product.name}</h3>
+            ${stockStatusHTML}
+            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+            
+            <!-- New elements are added here, respecting your flex layout -->
+            ${locationInfoHTML}
+            ${sellerInfoHTML}
+            ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
@@ -320,7 +323,6 @@ async function fetchAndDisplayCategoryCounts() {
         const response = await fetch('/.netlify/functions/count-categories');
         if (!response.ok) return;
         const counts = await response.json();
-        // This will only work if you have <h3> elements in your category links
         const categoryMapping = {
             'Electronics': document.querySelector('a[href="/shop/?category=Electronics"] h3'),
             'Clothing & Apparel': document.querySelector('a[href="/shop/?category=Clothing+%26+Apparel"] h3'),
@@ -362,11 +364,10 @@ function updateListingsTitle() {
         .length;
     
     if (activeFilterCount > 0) {
-        // You'll need to style this "filter-badge" class
         title += ` <span class="filter-badge">${activeFilterCount} Filter${activeFilterCount > 1 ? 's' : ''}</span>`;
     }
     
-    listingsTitle.innerHTML = title; // Use .innerHTML to render the span
+    listingsTitle.innerHTML = title;
 }
 
 async function handleWishlistClick(event) {
@@ -639,3 +640,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
