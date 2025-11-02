@@ -387,7 +387,6 @@ footer {
     color: var(--text-secondary);
     margin: -10px 15px 5px; /* Sits between price and seller */
     text-overflow: ellipsis;
-    white-space: nowrap;
     overflow: hidden;
 }
 .product-card .location-name i {
@@ -401,7 +400,6 @@ footer {
     color: var(--text-secondary);
     margin: 0 15px 10px; /* Adjusted margin to fit under location */
     text-overflow: ellipsis;
-    white-space: nowrap;
     overflow: hidden;
 }
     </style>
