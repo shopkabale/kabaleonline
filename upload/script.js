@@ -62,7 +62,9 @@ async function populateFormForEdit(productId) {
             const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
             document.getElementById('whatsapp-number').value = localNumber;
 
-            // --- MODIFIED: Set radio buttons based on saved data ---
+            // --- NEW: Populate all new fields ---
+            document.getElementById('product-location').value = product.location || ''; 
+
             // Set Listing Type radio
             if (product.listing_type === 'rent') {
                 document.getElementById('type-rent').checked = true;
@@ -76,7 +78,7 @@ async function populateFormForEdit(productId) {
             } else {
                 document.getElementById('condition-new').checked = true; // Default to 'new'
             }
-            // --- END MODIFICATION ---
+            // --- END NEW ---
 
             submitBtn.textContent = 'Update Item';
         } else {
@@ -133,14 +135,17 @@ productForm.addEventListener('submit', async (e) => {
             throw new Error('At least one image is required for a new listing.');
         }
 
-        // --- MODIFIED: Read new radio button values ---
+        // --- NEW: Read all new field values ---
         const listingType = document.querySelector('input[name="listing-type"]:checked').value;
         const condition = document.querySelector('input[name="condition"]:checked').value;
-        // --- END MODIFICATION ---
+        const location = document.getElementById('product-location').value || '';
+        // --- END NEW ---
 
+        // --- MODIFIED: Add new fields to productData object ---
         const productData = {
             listing_type: listingType, // <-- MODIFIED
             condition: condition,      // <-- ADDED
+            location: location,        // <-- ADDED
             name: productName,
             name_lowercase: productName.toLowerCase(),
             price: Number(document.getElementById('product-price').value),
@@ -155,6 +160,8 @@ productForm.addEventListener('submit', async (e) => {
             sellerIsVerified: userData.isVerified || false,
             sellerBadges: userData.badges || []
         };
+        // --- END MODIFICATION ---
+        
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
 
         if (editingProductId) {
