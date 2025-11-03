@@ -56,7 +56,9 @@
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            --ko-success: #28a745; /* Green for progress */
+            --ko-success: #28a745; 
+            --ko-danger: #dc3545;
+            --ko-info: #17a2b8;
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
@@ -87,7 +89,6 @@
             color: var(--text-main); 
             line-height: 1.6; 
         }
-        /* Container centers content */
         .container { 
             max-width: 1200px; 
             margin: 0 auto;
@@ -100,7 +101,7 @@
             margin: 0;
         }
         main {
-            padding-top: 20px; /* Space below hero */
+            padding-top: 20px;
         }
 
         /* --- SCROLL PROGRESS BAR --- */
@@ -185,24 +186,25 @@
         }
         
         /* --- SINGLE COLUMN FULL-WIDTH LAYOUT --- */
-        /* Sections have full-width backgrounds */
-        .product-carousel-section,
-        .how-to-section,
-        .category-section,
-        .recent-products-section {
+        /* All sections are full-width, centered by a container */
+        .section-wrapper {
             background-color: var(--bg-card);
             border-radius: var(--border-radius);
             padding: 20px;
             margin-bottom: 20px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
+            box-sizing: border-box;
+        }
+        /* Carousel sections have no horizontal padding */
+        .product-carousel-section {
+            padding-left: 0;
+            padding-right: 0;
             overflow: hidden;
         }
-        /* The container centers the content INSIDE the full-width sections */
-        .main-content-wrapper {
-            max-width: 1200px;
-            margin: 20px auto 0;
-            padding: 0 15px;
+        .product-carousel-section .section-header {
+             padding-left: 20px;
+             padding-right: 20px;
         }
         
         /* --- SECTION HEADER WITH "SEE MORE" --- */
@@ -234,19 +236,12 @@
         }
         
         /* --- PRODUCT CAROUSEL --- */
-        .product-carousel-section {
-            padding: 20px 0; /* Full width bg */
-        }
-        .product-carousel-section .section-header {
-            padding-left: 15px;
-            padding-right: 15px;
-        }
         .product-carousel-wrapper { 
             overflow-x: auto; 
             padding-bottom: 15px; 
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
-            padding-left: 15px; 
+            padding-left: 20px; 
         }
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
@@ -265,7 +260,7 @@
         /* Expanded Grid style */
         .product-carousel-wrapper.expanded {
             overflow-x: hidden;
-            padding-right: 15px; 
+            padding-right: 20px; 
         }
         .product-carousel-wrapper.expanded .product-carousel {
             display: grid;
@@ -278,101 +273,62 @@
             }
         }
 
-        /* --- HOW-TO SECTION --- */
-        .how-to-section {
-            padding: 20px 0;
+        /* --- NEW: HOW-TO SECTION (NUMBERED) --- */
+        .how-to-section-numbered .section-header {
+             border-bottom: none; /* No border for this header */
+             padding-bottom: 0;
         }
-        .how-to-section .section-header { padding: 0 15px 10px; }
-        
-        .how-to-carousel-wrapper {
-            overflow-x: auto; 
-            padding-bottom: 15px; 
-            scrollbar-width: none; 
-            -webkit-overflow-scrolling: touch;
-            padding-left: 15px;
-            padding-right: 15px;
+        .how-to-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2x2 on mobile */
+            gap: 15px;
         }
-        .how-to-carousel-wrapper::-webkit-scrollbar { display: none; }
-        .how-to-carousel { display: flex; gap: 15px; }
-        .how-to-card {
-            flex: 0 0 160px;
-            width: 160px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
+        .how-to-step {
             background: var(--bg-main);
             border: 1px solid var(--border-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .how-to-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .how-to-card img {
-            width: 100%;
-            display: block;
-            aspect-ratio: 1/1; /* Square format */
-            object-fit: cover;
-            background-color: var(--border-color);
-        }
-        .how-to-card h4 {
-            font-size: 1em;
-            margin: 10px 15px;
-            color: var(--text-main);
-        }
-        /* How-To Controls */
-        .how-to-controls {
+            border-radius: var(--border-radius);
+            padding: 20px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            padding: 10px 15px 0;
+            text-align: center;
         }
-        .how-to-controls button {
-            background-color: var(--bg-main);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 50%;
+        .how-to-number {
             width: 40px;
             height: 40px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .how-to-controls button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .how-to-dots {
-            display: flex;
-            gap: 8px;
-            position: relative; /* For progress bar */
-            overflow: hidden;
-            border-radius: 5px;
-        }
-        .how-to-dot {
-            width: 10px;
-            height: 10px;
             border-radius: 50%;
-            background-color: var(--border-color);
-            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
         }
-        .how-to-dot.active {
-            background-color: var(--ko-primary);
-        }
-        .how-to-progress-bar {
-            width: calc(100% - 30px);
-            margin: 10px auto 0;
-            height: 4px;
-            background-color: var(--border-color);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        .how-to-progress {
-            width: 0%;
-            height: 100%;
-            background-color: var(--ko-success); /* Green progress */
-            transition: width 0.3s ease;
-        }
-
+        /* Colored backgrounds for numbers */
+        .how-to-step.color-1 .how-to-number { background-color: var(--ko-primary); }
+        .how-to-step.color-2 .how-to-number { background-color: var(--ko-success); }
+        .how-to-step.color-3 .how-to-number { background-color: var(--ko-accent); color: var(--text-main-light); }
+        .how-to-step.color-4 .how-to-number { background-color: var(--ko-info); }
         
+        .how-to-step h4 {
+            font-size: 1.1em;
+            margin: 0 0 5px 0;
+            color: var(--text-main);
+        }
+        .how-to-step p {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        @media (min-width: 768px) {
+            .how-to-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4x1 on desktop */
+            }
+        }
+        /* --- END HOW-TO --- */
+
+
         /* --- CATEGORY SECTION --- */
         .category-grid {
             display: grid;
@@ -515,7 +471,7 @@
         
         .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
         
-        /* --- STOCK CSS --- */
+        /* --- STOCK CSS (ADDED BACK) --- */
         .stock-info { 
             font-size: 0.85em; 
             font-weight: bold; 
@@ -530,8 +486,32 @@
         body.dark-mode .low-stock { color: #ffeeba; background-color: #493f1b; }
         .out-of-stock, .sold-out { color: #721c24; background-color: #f8d7da; }
         body.dark-mode .out-of-stock, body.dark-mode .sold-out { color: #f5c6cb; background-color: #4a1c24; }
+        
+        /* --- SOLD OVERLAY CSS (ADDED BACK) --- */
+        .product-card.is-sold { position: relative; cursor: not-allowed; }
         .product-card.is-sold img { filter: grayscale(90%); }
-        /* --- END STOCK CSS --- */
+        .product-card-sold-overlay { 
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background-color: rgba(44, 62, 80, 0.7); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2; 
+            pointer-events: none; 
+        }
+        .product-card-sold-overlay span { 
+            color: #dc3545; 
+            font-size: 1.8em; 
+            font-weight: bold; 
+            border: 3px solid #dc3545; 
+            padding: 5px 15px; 
+            border-radius: 5px; 
+            transform: rotate(-15deg); 
+            background-color: rgba(255, 255, 255, 0.9); 
+        }
+        /* --- END SOLD CSS --- */
 
         .skeleton-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; border: 1px solid var(--border-color); }
         .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
@@ -548,7 +528,6 @@
             margin-top: 30px; 
             border-top: 4px solid var(--ko-primary);
         }
-        /* MODIFIED: This centers the grid */
         .footer-grid-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -725,12 +704,14 @@
             </div>
         </section>
 
-        <div class="main-content-wrapper">
+        <div class="container main-content-wrapper">
         
             <section id="featured-section" class="product-carousel-section" style="display: none;">
-                <div class="section-header">
-                    <h2 class="section-title">Featured Items</h2>
-                    <button class="see-more-btn" data-section="featured" data-expanded="false">See More &darr;</button>
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Featured Items</h2>
+                        <button class="see-more-btn" data-section="featured" data-expanded="false">See More &darr;</button>
+                    </div>
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="featured-products-grid">
@@ -740,9 +721,11 @@
             </section>
             
             <section id="deals-section" class="product-carousel-section" style="display: none;">
-                 <div class="section-header">
-                    <h2 class="section-title">Today's Deals</h2>
-                    <button class="see-more-btn" data-section="deals" data-expanded="false">See More &darr;</button>
+                 <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Today's Deals</h2>
+                        <button class="see-more-btn" data-section="deals" data-expanded="false">See More &darr;</button>
+                    </div>
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="deals-grid">
@@ -751,9 +734,11 @@
             </section>
             
             <section id="sponsored-section" class="product-carousel-section" style="display: none;">
-                 <div class="section-header">
-                    <h2 class="section-title">Sponsored</h2>
-                    <button class="see-more-btn" data-section="sponsored" data-expanded="false">See More &darr;</button>
+                 <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Sponsored</h2>
+                        <button class="see-more-btn" data-section="sponsored" data-expanded="false">See More &darr;</button>
+                    </div>
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="sponsored-grid">
@@ -762,9 +747,11 @@
             </section>
             
             <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
-                 <div class="section-header">
-                    <h2 class="section-title">Save On More</h2>
-                    <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
+                 <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Save On More</h2>
+                        <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
+                    </div>
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="save-on-more-grid">
@@ -772,66 +759,35 @@
                 </div>
             </section>
             
-            <section id="how-to-section" class="how-to-section">
+            <section class="section-wrapper how-to-section-numbered">
                 <div class="section-header">
-                    <h2 class="section-title">How To Get Started</h2>
+                    <h2 class="section-title">How It Works</h2>
                 </div>
-                <div class="how-to-carousel-wrapper">
-                    <div class="how-to-carousel" id="how-to-grid">
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?profile" alt="Step 1">
-                            <h4>1. Create Account</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?upload" alt="Step 2">
-                            <h4>2. Post Your Item</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?chat" alt="Step 3">
-                            <h4>3. Get Messages</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?money,cash" alt="Step 4">
-                            <h4>4. Meet & Get Paid</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?search,find" alt="Step 5">
-                            <h4>5. Find What You Need</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?cart" alt="Step 6">
-                            <h4>6. Add to Cart</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?call,phone" alt="Step 7">
-                            <h4>7. Contact Seller</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?delivery,box" alt="Step 8">
-                            <h4>8. Arrange Pickup</h4>
-                        </div>
-                        <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?rent" alt="Step 9">
-                            <h4>9. Rent an Item</h4>
-                        </div>
-                         <div class="how-to-card">
-                            <img src="https://source.unsplash.com/200x200/?happy,smile" alt="Step 10">
-                            <h4>10. Enjoy!</h4>
-                        </div>
+                <div class="how-to-grid">
+                    <div class="how-to-step color-1">
+                        <div class="how-to-number">1</div>
+                        <h4>Create Account</h4>
+                        <p>Sign up for free in under a minute.</p>
                     </div>
-                </div>
-                <div class="how-to-controls">
-                    <button id="how-to-prev" aria-label="Previous Step"><i class="fa-solid fa-chevron-left"></i></button>
-                    <div class="how-to-dots" id="how-to-dots-container">
-                        </div>
-                    <button id="how-to-next" aria-label="Next Step"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-                <div class="how-to-progress-bar">
-                    <div class="how-to-progress" id="how-to-progress"></div>
+                    <div class="how-to-step color-2">
+                        <div class="how-to-number">2</div>
+                        <h4>Post Your Ad</h4>
+                        <p>List your item or service with photos and a price.</p>
+                    </div>
+                    <div class="how-to-step color-3">
+                        <div class="how-to-number">3</div>
+                        <h4>Get Messages</h4>
+                        <p>Buyers or renters will contact you directly.</p>
+                    </div>
+                    <div class="how-to-step color-4">
+                        <div class="how-to-number">4</div>
+                        <h4>Meet & Get Paid</h4>
+                        <p>Arrange a safe meetup and complete your deal.</p>
+                    </div>
                 </div>
             </section>
 
-            <section class="category-section">
+            <section class="section-wrapper category-section">
                 <div class="section-header">
                     <h2 class="section-title">Browse by Category</h2>
                 </div>
@@ -857,7 +813,7 @@
                 </div>
             </section>
 
-            <section class="recent-products-section">
+            <section class="section-wrapper recent-products-section">
                 <div class="section-header">
                     <h2 class="section-title">Recent Items</h2>
                     <a href="/shop/" class="see-all-btn">See All &rarr;</a>
@@ -893,13 +849,13 @@
                     <a href="/" class="footer-logo">Kabale <span>Online</span></a>
                     <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
                     <div class="footer-socials">
-                        <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
+                        <a href="https.chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                             <span>WhatsApp Group</span>
                         </a>
-                        <a href="https://wa.me/256770535000" target="_blank" aria-label="WhatsApp Support">
+                        <a href="https://wa.me/256784655792" target="_blank" aria-label="WhatsApp Support">
                             <i class="fab fa-whatsapp"></i>
-                            <span>+256 770 535 000</span>
+                            <span>+256784655792</span>
                         </a>
                         <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">
                             <i class="fab fa-twitter"></i>
