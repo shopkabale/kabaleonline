@@ -73,13 +73,17 @@ function renderProducts(gridElement, products) {
     if (!products || products.length === 0) {
         const section = gridElement.closest('.product-carousel-section, .recent-products-section');
         if (section) {
-            // Don't hide the recent section, just show a message
+            
+            // --- THIS IS THE BUG FIX ---
+            // We check the CLASS, not the ID
             if (section.classList.contains('recent-products-section')) {
+                // For "Recent Items", show a message instead of hiding
                 gridElement.innerHTML = `<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>`;
             } else {
-                // Hide the other (e.g., deals, sponsored) sections
+                // For all other sections (Deals, Sponsored), hide them
                 section.style.display = 'none';
             }
+            // --- END OF BUG FIX ---
         }
         return;
     }
@@ -248,57 +252,63 @@ document.addEventListener('DOMContentLoaded', () => {
         state.currentUser = user;
         await fetchUserWishlist(); // Load wishlist first
         
-        // --- !!! THIS IS THE FIX !!! ---
-        // We use Promise.allSettled. This will NOT crash if one
-        // section fails. It will try to load all of them.
+        // --- THIS IS THE ROBUST LOADING LOGIC ---
+        // It will not crash if one section fails.
         
-        const results = await Promise.allSettled([
-            fetchProductSection('hero', 8),
-            fetchProductSection('deals', 8),
-            fetchProductSection('sponsored', 8),
-            fetchProductSection('save', 8),
-            fetchProductSection('recent', 10)
-        ]);
+        try {
+            const results = await Promise.allSettled([
+                fetchProductSection('hero', 8),
+                fetchProductSection('deals', 8),
+                fetchProductSection('sponsored', 8),
+                fetchProductSection('save', 8),
+                fetchProductSection('recent', 10)
+            ]);
 
-        // Now we render each section that "fulfilled" (loaded successfully)
-        
-        if (results[0].status === 'fulfilled') {
-            const products = results[0].value;
-            if (products.length > 0) {
-                document.getElementById('featured-section').style.display = 'block';
-                renderProducts(document.getElementById('featured-products-grid'), products);
+            // Now we render each section that "fulfilled" (loaded successfully)
+            
+            if (results[0].status === 'fulfilled') {
+                const products = results[0].value;
+                // We only show the section if it has products
+                if (products && products.length > 0) {
+                    document.getElementById('featured-section').style.display = 'block';
+                    renderProducts(document.getElementById('featured-products-grid'), products);
+                }
             }
-        }
 
-        if (results[1].status === 'fulfilled') {
-            const products = results[1].value;
-            if (products.length > 0) {
-                document.getElementById('deals-section').style.display = 'block';
-                renderProducts(document.getElementById('deals-grid'), products);
+            if (results[1].status === 'fulfilled') {
+                const products = results[1].value;
+                if (products && products.length > 0) {
+                    document.getElementById('deals-section').style.display = 'block';
+                    renderProducts(document.getElementById('deals-grid'), products);
+                }
             }
-        }
-        
-        if (results[2].status === 'fulfilled') {
-            const products = results[2].value;
-            if (products.length > 0) {
-                document.getElementById('sponsored-section').style.display = 'block';
-                renderProducts(document.getElementById('sponsored-grid'), products);
+            
+            if (results[2].status === 'fulfilled') {
+                const products = results[2].value;
+                if (products && products.length > 0) {
+                    document.getElementById('sponsored-section').style.display = 'block';
+                    renderProducts(document.getElementById('sponsored-grid'), products);
+                }
             }
-        }
 
-        if (results[3].status === 'fulfilled') {
-            const products = results[3].value;
-            if (products.length > 0) {
-                document.getElementById('save-on-more-section').style.display = 'block';
-                renderProducts(document.getElementById('save-on-more-grid'), products);
+            if (results[3].status === 'fulfilled') {
+                const products = results[3].value;
+                if (products && products.length > 0) {
+                    document.getElementById('save-on-more-section').style.display = 'block';
+                    renderProducts(document.getElementById('save-on-more-grid'), products);
+                }
             }
-        }
+            
+            if (results[4].status === 'fulfilled') {
+                const products = results[4].value;
+                // This will render even if empty (to show the "No products" message)
+                renderProducts(document.getElementById('recent-products-grid'), products);
+            }
         
-        if (results[4].status === 'fulfilled') {
-            const products = results[4].value;
-            renderProducts(document.getElementById('recent-products-grid'), products);
+        } catch (error) {
+            console.error("A critical error occurred during page load:", error);
+            // If Promise.allSettled itself fails (which is rare), log it.
         }
-        // --- !!! END OF FIX !!! ---
     });
 
     // ==================================================== //
@@ -359,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chatModalContainer) chatModalContainer.classList.remove('active');
     };
 
-    // Check if the bubble was dismissed before
     if (localStorage.getItem('ai_bubble_dismissed') === 'true') {
         if (aiChatBubble) aiChatBubble.classList.add('dismissed');
     }
@@ -370,9 +379,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (aiBubbleClose) {
         aiBubbleClose.addEventListener('click', (e) => {
-            e.stopPropagation(); // Stop the bubble click from opening the modal
+            e.stopPropagation(); 
             if (aiChatBubble) aiChatBubble.classList.add('dismissed');
-            localStorage.setItem('ai_bubble_dismissed', 'true'); // Remember dismissal
+            localStorage.setItem('ai_bubble_dismissed', 'true'); 
         });
     }
 
@@ -384,8 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeToggle) {
         themeToggle.addEventListener('change', () => {
             const theme = themeToggle.checked ? 'dark-mode' : 'light-mode';
-            document.body.className = theme; // Set theme on body
-            localStorage.setItem('theme', theme); // Save theme preference
+            document.body.className = theme; 
+            localStorage.setItem('theme', theme); 
         });
     }
 });
