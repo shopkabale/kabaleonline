@@ -8,14 +8,10 @@
       gtag('js', new Date());
       gtag('config', 'G-5XQRYNC9TW');
     </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>Shop Deals on Electronics, Textbooks & More in Kabale | Kabale Online</title>
-    
     <meta name="description" content="Find top deals on electronics, phones, textbooks & more in Kabale. Kabale Online is the #1 marketplace for students & residents to buy & sell new or used items locally. Shop now!">
-    
     <meta name="keywords" content="
         Kabale, Kabale Online, Kabale Online shop, buy and sell Kabale, shop in Kabale, Kabale marketplace, Kabale e-commerce, 
         online shopping Kabale, Kabale deals, Kabale classifieds, Kigezi marketplace, Western Uganda shopping,
@@ -53,7 +49,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.kabaleonline.com/shop/">
     
-    <meta name="google-site-verification" content="Hrdoz4h9X4bKfIy48qn-kTlSFse05MnOMqbrF4ENq-Y" />
+    <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
     
     <meta name="geo.region" content="UG-W" />
     <meta name="geo.placename" content="Kabale" />
@@ -93,16 +89,22 @@
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
             --ko-danger: #dc3545; 
+            --ko-success: #28a745; /* (NEW) Added for colors */
+            --ko-info: #17a2b8; /* (NEW) Added for colors */
+            --ko-purple: #6f42c1; /* (NEW) Added for colors */
+            
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
+            
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
+            
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
@@ -151,11 +153,11 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
             margin-top: 25px;
-            overflow: hidden; /* This prevents the carousel from breaking layout */
+            overflow: hidden;
         }
         .carousel-section .deals-carousel-wrapper {
             padding: 15px;
-            overflow-x: auto; /* This allows internal scroll */
+            overflow-x: auto;
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
         }
@@ -185,15 +187,17 @@
             font-size: 0.9em;
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.3s ease; /* Added box-shadow to transition */
         }
+        
         .image-category-card:hover {
             transform: translateY(-5px);
         }
         .image-category-card i {
             font-size: 2em;
-            color: var(--ko-primary);
+            color: var(--ko-primary); /* Default color */
             margin-bottom: 10px;
+            transition: color 0.3s ease; /* Added transition for icon color */
         }
         .image-category-card h3 {
             margin: 0;
@@ -215,6 +219,45 @@
         /* === END JUMIA STYLES === */
         
         
+        /* --- === NEW: CATEGORY ANIMATIONS === --- */
+        
+        /* 1. The "Thunder" (Lightning Flash) Animation */
+        @keyframes lightning-flash {
+            0%, 100% {
+                /* Start/end state: subtle glow */
+                box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                /* Mid-animation: bright flash */
+                box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7), /* Outer white glow */
+                            0 0 8px 3px rgba(var(--ko-primary-rgb), 0.5) inset; /* Inner blue glow */
+            }
+        }
+        
+        /* 2. Apply the animation to all cards */
+        .image-category-card {
+            animation: lightning-flash 3s infinite; /* 3-second loop */
+        }
+
+        /* 3. Define the different colors for the icons */
+        .image-category-card.cat-color-1 i { color: var(--ko-primary); }
+        .image-category-card.cat-color-2 i { color: var(--ko-success); }
+        .image-category-card.cat-color-3 i { color: var(--ko-accent); }
+        .image-category-card.cat-color-4 i { color: var(--ko-danger); }
+        .image-category-card.cat-color-5 i { color: var(--ko-info); }
+        .image-category-card.cat-color-6 i { color: var(--ko-purple); }
+
+        /* 4. Stagger the animations with different delays */
+        .image-category-card.cat-color-1 { animation-delay: 0s; }
+        .image-category-card.cat-color-2 { animation-delay: 0.5s; }
+        .image-category-card.cat-color-3 { animation-delay: 1.0s; }
+        .image-category-card.cat-color-4 { animation-delay: 1.5s; }
+        .image-category-card.cat-color-5 { animation-delay: 2.0s; }
+        .image-category-card.cat-color-6 { animation-delay: 2.5s; }
+
+        /* --- === END CATEGORY ANIMATIONS === --- */
+
+
         /* --- === CSS FOR "SEE MORE" BUTTON === --- */
         .see-more-btn {
             color: var(--ko-primary);
@@ -246,11 +289,11 @@
         /* The Expanded Carousel State */
         .deals-carousel-wrapper.expanded {
             overflow-x: hidden;
-            padding-right: 15px; /* Match the side padding */
+            padding-right: 15px;
         }
         .deals-carousel-wrapper.expanded .product-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2-col on mobile */
+            grid-template-columns: repeat(2, 1fr);
             flex-wrap: wrap; 
         }
         @media (min-width: 768px) {
@@ -267,8 +310,6 @@
 
 
         /* --- ALL YOUR ORIGINAL STYLES --- */
-        
-        /* === THIS IS THE FIX === */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
@@ -534,26 +575,28 @@ footer {
         </div>
 
         <section class="collection-section">
-            <div class="image-category-grid"> <a href="/shop/?category=Electronics" class="image-category-card"> <i class="fa-solid fa-laptop"></i>
+            <div class="image-category-grid">
+                <a href="/shop/?category=Electronics" class="image-category-card cat-color-1">
+                    <i class="fa-solid fa-laptop"></i>
                     <h3>Electronics</h3>
                 </a>
-                <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
+                <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card cat-color-2">
                     <i class="fa-solid fa-shirt"></i>
                     <h3>Clothing</h3>
                 </a>
-                <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
+                <a href="/shop/?category=Home+%26+Furniture" class="image-category-card cat-color-3">
                     <i class="fa-solid fa-couch"></i>
                     <h3>Furniture</h3>
                 </a>
-                <a href="/rentals/" class="image-category-card">
+                <a href="/rentals/" class="image-category-card cat-color-4">
                     <i class="fa-solid fa-building"></i>
                     <h3>Rentals</h3>
                 </a>
-                <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
+                <a href="https://gigs.kabaleonline.com" class="image-category-card cat-color-5 service-link">
                     <i class="fa-solid fa-screwdriver-wrench"></i>
                     <h3>Services</h3>
                 </a>
-                <a href="/shop/?category=Other" class="image-category-card">
+                <a href="/shop/?category=Other" class="image-category-card cat-color-6">
                     <i class="fa-solid fa-ellipsis"></i>
                     <h3>Other</h3>
                 </a>
