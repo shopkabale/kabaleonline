@@ -196,16 +196,16 @@
             transform: translateY(-5px);
         }
         
-        /* === NEW CSS FOR CATEGORY IMAGES === */
+        /* === CSS FOR CATEGORY IMAGES - CLEANED UP === */
         .image-category-card .category-card-image {
-            height: 50px; /* Small image height */
-            width: 50px;  /* Small image width */
-            object-fit: contain; /* Prevents stretching */
+            height: 50px; 
+            width: 50px;  
+            object-fit: contain; 
             margin-bottom: 10px;
             position: relative;
-            z-index: 2; /* Keep image above the flash */
+            z-index: 2; 
         }
-        /* === END NEW CSS === */
+        /* === END CSS === */
 
         .image-category-card h3 {
             margin: 0;
@@ -229,36 +229,18 @@
         /* === END JUMIA STYLES === */
         
         
-        /* --- === REVISED CATEGORY ANIMATIONS === --- */
-        @keyframes lightning-flash {
-            0%, 5%, 15%, 25%, 35%, 100% {
-                box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) inset;
-            }
-            10% {
-                box-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.9),
-                            0 0 10px 4px rgba(0, 191, 255, 0.7) inset;
-            }
-            20% {
-                box-shadow: 0 0 15px 6px rgba(173, 216, 230, 0.8),
-                            0 0 8px 3px rgba(0, 191, 255, 0.6) inset;
-            }
-            30% {
-                box-shadow: 0 0 8px 2px rgba(173, 216, 230, 0.3),
-                            0 0 4px 1px rgba(0, 191, 255, 0.2) inset;
-            }
-        }
-        
-        .image-category-card {
-            animation: lightning-flash 6s infinite;
-        }
-
+        /* --- === REMOVED ALL CATEGORY ANIMATIONS === --- */
+        /*
+        @keyframes lightning-flash { ... }
+        .image-category-card { animation: lightning-flash 6s infinite; }
         .image-category-grid a:nth-child(1) { animation-delay: 0s; }
         .image-category-grid a:nth-child(2) { animation-delay: 1s; }
         .image-category-grid a:nth-child(3) { animation-delay: 2s; }
         .image-category-grid a:nth-child(4) { animation-delay: 3s; }
         .image-category-grid a:nth-child(5) { animation-delay: 4s; }
         .image-category-grid a:nth-child(6) { animation-delay: 5s; }
-        /* --- === END CATEGORY ANIMATIONS === --- */
+        */
+        /* --- === END REMOVED CATEGORY ANIMATIONS === --- */
 
 
         /* --- === CSS FOR "SEE MORE" BUTTON === --- */
@@ -580,27 +562,27 @@ footer {
         <section class="collection-section">
             <div class="image-category-grid">
                 <a href="/shop/?category=Electronics" class="image-category-card">
-                    <img src="https://placehold.co/60x60/e9ecef/e9ecef.png" alt="Electronics" class="category-card-image">
+                    <img src="https://images.unsplash.com/photo-1593642702821-9f9392305540?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Electronics" class="category-card-image">
                     <h3>Electronics</h3>
                 </a>
                 <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
-                    <img src="https://placehold.co/60x60/e9ecef/e9ecef.png" alt="Clothing" class="category-card-image">
+                    <img src="https://images.unsplash.com/photo-1552323719-756775679c1e?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Clothing" class="category-card-image">
                     <h3>Clothing</h3>
                 </a>
                 <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
-                    <img src="https://placehold.co/60x60/e9ecef/e9ecef.png" alt="Furniture" class="category-card-image">
+                    <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Furniture" class="category-card-image">
                     <h3>Furniture</h3>
                 </a>
                 <a href="/rentals/" class="image-category-card">
-                    <img src="https://placehold.co/60x60/e9ecef/e9ecef.png" alt="Rentals" class="category-card-image">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Rentals" class="category-card-image">
                     <h3>Rentals</h3>
                 </a>
                 <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
-                    <img src="https://placehold.co/60x60/e9ecef/e9ecef.png" alt="Services" class="category-card-image">
+                    <img src="https://images.unsplash.com/photo-1505373877841-8e2b7a0f6266?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Services" class="category-card-image">
                     <h3>Services</h3>
                 </a>
                 <a href="/shop/?category=Other" class="image-category-card">
-                    <img src="httpsClick here to enter text.https://placehold.co/60x60/e9ecef/6c757d.png?text=..." alt="Other" class="category-card-image">
+                    <img src="https://images.unsplash.com/photo-1549492423-f368f547c1f0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Other" class="category-card-image">
                     <h3>Other</h3>
                 </a>
             </div>
@@ -671,7 +653,7 @@ footer {
     
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
-        <div classs="chat-modal-content">
+        <div class="chat-modal-content">
             <div class="chat-modal-header">
                 <h3>KabaleOnline Assistant</h3>
                 <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
