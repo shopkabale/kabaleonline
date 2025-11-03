@@ -380,7 +380,11 @@
         @media (min-width: 768px) { .cta-container { grid-template-columns: repeat(2, 1fr); } }
 
         /* 1400px media query from new CSS */
-        @media (min-width: 1400px) { .container { max-width: 95%; } .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } .category-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+        @media (min-width: 1400px) {
+    .container { max-width: 95%; }
+    .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    /* The category-grid line has been removed */
+}
         
         /* Load more from new CSS */
         .load-more-container { text-align: center; padding: 30px 0; display: none; }
@@ -950,11 +954,11 @@
 
     <main>
         <section class="hero">
-            <div class="hero-search-form"> 
-                <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
-                <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
-            </div>
-        </section>
+    <form action="/shop/" method="get" class="hero-search-form"> 
+        <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
+        <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
+    </form>
+</section>
 
         <div class="container main-content-wrapper">
         
