@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Kabale Online: Buy & Sell, Find Hostels, Services & More</title>
+    
+    <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
+    <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online">
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" href="/favicon.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. ROOT VARIABLES & THEME --- */
+        :root {
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
+            --ko-success: #28a745; 
+            --ko-danger: #dc3545;
+            
+            --bg-light: #f4f6f8; /* Lighter gray, cleaner feel */
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e293b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --border-radius: 8px;
+        }
+        
+        body.light-mode {
+            --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
+        }
+        
+        body.dark-mode {
+            --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
+        }
+
+        /* --- 2. GLOBAL STYLES --- */
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-top: 118px; /* Fixed header + top bar height */
+        }
+        .container {
+            width: 100%;
+            max-width: 1240px; /* Slightly wider for this layout */
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        a {
+            color: var(--ko-primary);
+            text-decoration: none;
+        }
+        
+        /* --- 3. TOP UTILITY BAR --- */
+        .top-bar {
+            background-color: #333; /* Dark background as in screenshot */
+            color: #eee;
+            padding: 8px 0;
+            font-size: 0.8rem;
+            font-weight: 500;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1002;
+        }
+        .top-bar .container {
+            display: flex;
+            justify-content: flex-end; /* Align to right */
+            align-items: center;
+            gap: 20px;
+        }
+        .top-bar a {
+            color: #eee;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .top-bar a:hover {
+            color: var(--ko-accent);
+        }
+
+        /* --- 4. MAIN HEADER --- */
+        .main-header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            height: 80px;
+            position: fixed;
+            top: 38px; /* Height of the top-bar */
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .main-header .header-content {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            gap: 25px;
+        }
+        .main-header .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .main-header .logo span {
+            color: var(--ko-primary);
+        }
+        
+        .categories-btn {
+            background-color: var(--ko-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px 15px;
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .categories-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .search-bar-wrapper {
+            flex-grow: 1;
+            display: flex;
+        }
+        .search-bar-wrapper .search-bar {
+            flex-grow: 1;
+            display: flex;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background-color: var(--bg-main);
+            max-width: 600px; /* Limit search bar width */
+        }
+        .search-bar input {
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 15px;
+            font-size: 1em;
+            color: var(--text-main);
+        }
+        .search-bar input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(var(--ko-primary-rgb), 0.3) inset;
+        }
+        .search-bar button {
+            border: none;
+            background-color: transparent;
+            padding: 0 18px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            transition: color 0.2s;
+        }
+        .search-bar button:hover {
+            color: var(--ko-primary);
+        }
+        
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 25px; /* Slightly more space */
+        }
+        .header-nav .icon-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .header-nav .icon-link:hover {
+            color: var(--ko-primary);
+        }
+        .header-nav .icon-link i {
+            font-size: 1.4em;
+        }
+        .header-nav .icon-link span {
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .mobile-menu-btn, .mobile-search-bar-wrapper {
+            display: none; /* Hide on desktop */
+        }
+
+        /* --- 5. HERO SECTION --- */
+        .hero-slider {
+            position: relative;
+            background-color: #e0e0e0; /* Neutral background for the hero */
+        }
+        .hero-slider .slide {
+            display: block; /* Only one slide for now */
+            min-height: 400px;
+            position: relative;
+        }
+        .hero-slider .slide-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .hero-slider .hero-content {
+            position: relative; /* Make content appear over image */
+            z-index: 2;
+            height: 400px; /* Same height as image */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            color: #333; /* Default text color, consider adding a text shadow for readability */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            max-width: 500px; /* Constrain text width */
+        }
+        .hero-slider .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0 0 20px 0;
+            line-height: 1.2;
+        }
+        .hero-slider .cta-button {
+            background-color: var(--ko-primary);
+            color: white;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hero-slider .cta-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        /* Hide slider arrows for now as there's only one slide */
+        .slide-arrow { display: none; }
+        
+        /* --- 6. INFO BAR (3-column layout) --- */
+        .info-bar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px; /* Space below info bar */
+        }
+        .info-bar .info-content {
+            display: flex;
+            justify-content: space-around; /* Distribute items */
+            align-items: center;
+            padding: 15px 0;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .info-bar .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-secondary);
+            padding: 10px 0; /* Add some vertical padding */
+        }
+        .info-bar .info-item i {
+            font-size: 1.5em;
+            color: var(--ko-primary);
+        }
+
+        /* --- 7. DEALS SECTION --- */
+        .deals-section {
+            padding: 40px 0;
+        }
+        .section-title {
+            font-size: 1.8rem; /* Larger title as in screenshot */
+            font-weight: 700;
+            margin: 0 0 25px 0; /* More space below title */
+            text-align: center; /* Centered title */
+            color: var(--text-main);
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
+            gap: 20px;
+        }
+
+        /* --- 8. PRODUCT CARD STYLES (from your files, no discount tags) --- */
+        .product-card-link { text-decoration: none; color: inherit; }
+        .product-card { 
+            background: var(--bg-card); 
+            border-radius: var(--border-radius); 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100%; 
+            box-shadow: var(--shadow); 
+            position: relative; 
+            transition: all 0.3s ease-out; 
+            border: 1px solid var(--border-color);
+        }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .product-card img { 
+            width: 100%; 
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; 
+            background-color: var(--border-color); /* Placeholder background */
+        }
+        .product-card-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card h3 { 
+            margin: 0 0 5px 0; 
+            font-size: 0.95rem; 
+            flex-grow: 1; 
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+        .product-card .price { 
+            margin: 5px 0; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            color: var(--ko-primary); 
+        }
+        .product-card .location-name { 
+            font-size: 0.85em; 
+            color: var(--text-secondary); 
+            margin: 5px 0;
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+        .product-card .location-name i { margin-right: 5px; }
+        .product-card .seller-name { 
+            font-size: 0.85em; 
+            color: var(--text-secondary); 
+            margin: 0 0 10px 0;
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+        .product-card .verified-text {
+            font-size: 0.8em;
+            font-weight: 700;
+            color: var(--ko-primary);
+            background-color: rgba(var(--ko-primary-rgb), 0.1);
+            border: 1px solid rgba(var(--ko-primary-rgb), 0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+        .product-card .wishlist-btn { 
+            position: absolute; 
+            top: 12px; 
+            right: 12px; 
+            background-color: rgba(255, 255, 255, 0.8); 
+            border: none; border-radius: 50%; 
+            width: 36px; height: 36px; 
+            display: flex; justify-content: center; align-items: center; 
+            cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; 
+        }
+        
+        /* --- 9. FOOTER --- */
+        footer {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            padding: 60px 0 20px;
+            margin-top: 50px; /* More space above footer */
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            padding-bottom: 40px;
+        }
+        .footer-column { text-align: left; }
+        .footer-column h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background-color: var(--ko-accent);
+        }
+        .footer-column a {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            margin-bottom: 12px;
+            transition: color 0.2s ease, padding-left 0.2s ease;
+        }
+        .footer-column a:hover { color: #ffffff; padding-left: 5px; }
+        .footer-logo-footer {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: #ffffff;
+            display: inline-block;
+        }
+        .footer-logo-footer span { color: var(--ko-accent); }
+        .footer-tagline { color: #94a3b8; line-height: 1.7; margin-bottom: 20px; }
+        .footer-socials a {
+            color: #e2e8f0;
+            font-size: 22px;
+            margin-right: 20px;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .footer-socials a:hover { color: var(--ko-primary); }
+        .footer-bottom { border-top: 1px solid #334155; padding-top: 20px; text-align: center; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; margin: 0; }
+
+        /* --- 10. MOBILE NAV MENU & OVERLAY (from your existing files) --- */
+        .mobile-nav-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.5); z-index: 1090; 
+            opacity: 0; visibility: hidden; 
+            transition: opacity 0.3s;
+        }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-nav { 
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%; 
+            background-color: var(--bg-card); z-index: 1100; 
+            transition: transform 0.3s ease; display: flex; flex-direction: column; 
+        }
+        .mobile-nav.active { transform: translateX(280px); }
+        .mobile-nav-header { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mobile-nav-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .mobile-nav-links a { 
+            display: flex; align-items: center; 
+            padding: 16px 20px; 
+            color: var(--text-main); 
+            text-decoration: none; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .mobile-nav-links a i { margin-right: 15px; color: var(--ko-primary); }
+        .mobile-nav-footer { padding: 15px; }
+        .mobile-nav .post-button { 
+            background-color: var(--ko-accent); 
+            color: #212529; 
+            font-weight: bold; 
+            border-radius: 25px; 
+            text-align: center; 
+            display: block; 
+            padding: 12px; 
+            text-decoration: none; 
+            transition: background-color 0.2s;
+        }
+        .mobile-nav .post-button:hover { background-color: #ffda6a; }
+
+
+        /* --- 11. RESPONSIVE (MOBILE) STYLES --- */
+        @media (max-width: 1024px) {
+            body {
+                padding-top: 60px; /* Only main header on top, search below */
+            }
+            .top-bar {
+                display: none; /* Hide top bar on mobile */
+            }
+            .main-header {
+                height: 60px;
+                top: 0; /* Stick to very top */
+            }
+            .main-header .header-content {
+                justify-content: space-between;
+                gap: 15px;
+                padding-right: 20px; /* Add some padding on the right */
+            }
+            .categories-btn,
+            .search-bar-wrapper {
+                display: none; /* Hide desktop elements */
+            }
+            .mobile-menu-btn {
+                display: block; /* Show hamburger */
+                font-size: 1.6em;
+                background: none;
+                border: none;
+                color: var(--text-main);
+                cursor: pointer;
+            }
+            .header-nav {
+                gap: 15px; /* Reduce gap for icons */
+            }
+
+            .mobile-search-bar-wrapper {
+                display: block; /* Show mobile search below header */
+                background-color: var(--bg-card);
+                padding: 10px 20px;
+                border-bottom: 1px solid var(--border-color);
+                position: fixed;
+                top: 60px; /* Below main header */
+                left: 0;
+                right: 0;
+                z-index: 1000;
+            }
+            .mobile-search-bar-wrapper .search-bar {
+                width: 100%;
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                max-width: none; /* Allow full width */
+            }
+
+            .hero-slider .hero-content {
+                align-items: center; /* Center hero text on mobile */
+                text-align: center;
+                padding: 0 20px;
+            }
+            .hero-slider .hero-content h1 {
+                font-size: 2.2rem; /* Smaller hero title */
+            }
+            .hero-slider .slide-image {
+                height: 300px; /* Shorter hero image */
+            }
+            .hero-slider .slide {
+                min-height: 300px;
+            }
+
+            .info-bar .info-content {
+                flex-direction: column; /* Stack info items */
+                align-items: flex-start; /* Align left */
+            }
+            .info-bar .info-item {
+                width: 100%;
+                justify-content: flex-start; /* Align icon and text left */
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+                gap: 15px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr; /* Stack footer columns */
+                text-align: center;
+            }
+            .footer-column h3::after {
+                left: 50%; /* Center underline */
+                transform: translateX(-50%);
+            }
+            .footer-socials {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+            }
+            .footer-socials a {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                padding-top: 110px; /* Adjust for potentially shorter mobile header on smaller phones */
+            }
+            .main-header {
+                height: 50px;
+            }
+            .mobile-search-bar-wrapper {
+                top: 50px;
+            }
+        }
+        
+        /* Skeleton loaders (from your main.js) */
+        .skeleton-card {
+            background-color: #e0e0e0;
+            background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0);
+            background-size: 250px;
+            animation: skeleton-shimmer 1.5s infinite linear;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid #ddd;
+        }
+        body.dark-mode .skeleton-card {
+            background-color: #334155;
+            background-image: linear-gradient(90deg, #334155, #475569, #334155);
+        }
+        .skeleton-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #c4c4c4;
+            display: block;
+        }
+        body.dark-mode .skeleton-image {
+            background-color: #4b5563;
+        }
+        .skeleton-text {
+            height: 1.2rem;
+            margin: 12px 15px 0;
+            border-radius: 4px;
+            background-color: #c4c4c4;
+        }
+        .skeleton-text.w-75 { width: 75%; }
+        .skeleton-text.w-50 { width: 50%; }
+        @keyframes skeleton-shimmer {
+            0% { background-position: -250px 0; }
+            100% { background-position: 250px 0; }
+        }
+        
+        /* Other utility styles that might be in your shared.js or ui.js */
+        #back-to-top-btn {
+            position: fixed; bottom: 100px; right: 25px; width: 45px; height: 45px;
+            background-color: rgba(var(--ko-primary-rgb), 0.8); color: white; border: none;
+            border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 998;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; visibility: hidden;
+            transform: translateY(20px); transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+        }
+        #back-to-top-btn.visible {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+        #open-chat-button {
+            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
+            background-color: var(--ko-primary); color: white; border: none;
+            border-radius: 50%; font-size: 24px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999;
+            display: flex; align-items: center; justify-content: center;
+            animation: bounce 2s ease infinite 4s;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+        #chat-modal-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        #chat-modal-container.active { display: flex; }
+        .chat-modal-overlay {
+            position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
+        .chat-modal-content {
+            position: relative; z-index: 1001; width: 90%; max-width: 420px;
+            height: 80%; max-height: 700px; background-color: var(--bg-card);
+            border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+        .chat-modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+        }
+        .chat-modal-header h3 { margin: 0; font-size: 1.2em; color: var(--text-main); }
+        #close-chat-button {
+            background: none; border: none; font-size: 24px;
+            color: var(--text-secondary); cursor: pointer; padding: 5px;
+        }
+        #chat-iframe { width: 100%; height: 100%; border: none; }
+
+    </style>
+</head>
+<body>
+    <script src="/theme.js"></script>
+
+    <div class="top-bar">
+        <div class="container">
+            <a href="/upload/">Sell on KabaleOnline</a>
+            <a href="/contact.html">Help & Contact</a>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-content container">
+            <a href="/" class="logo">Kabale<span>Online</span></a>
+            
+            <button class="mobile-menu-btn" aria-label="Open menu">&#9776;</button>
+
+            <button class="categories-btn">CATEGORIES <i class="fas fa-chevron-down"></i></button>
+            
+            <div class="search-bar-wrapper">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search for products, categories or shops">
+                    <button id="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <nav class="header-nav">
+                <a href="/login/" class="icon-link">
+                    <i class="fas fa-user"></i>
+                    <span>Log In</span>
+                </a>
+                <a href="/cart.html" class="icon-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="mobile-search-bar-wrapper">
+        <div class="container">
+            <div class="search-bar">
+                <input type="text" id="mobile-search-input" placeholder="Search for products, categories or shops">
+                <button id="mobile-search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">
+            Kabale Online
+            <button class="close-btn" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="https://gigs.kabaleonline.com" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
+            <a href="stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
+            <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
+            <a href="/cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            <a href="/my-orders.html" class="nav-link"><i class="fa-solid fa-box"></i> My Orders</a>
+            <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass-plus"></i> Lost & Found</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="/dashboard/" class="post-button">Post Something Free</a>
+        </div>
+    </nav>
+    <div class="mobile-nav-overlay"></div>
+
+    <section class="hero-slider">
+        <div class="slide active">
+            <img src="https://res.cloudinary.com/dxgbxchqk/image/upload/v1709665809/kabale-online/hero-sky-garden-bg.jpg" alt="Present Your Products to Millions" class="slide-image">
+            <div class="container hero-content">
+                <h1>Present Your Products to Millions</h1>
+                <a href="/upload/" class="cta-button">
+                    Open a Shop Now <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+        <button class="slide-arrow prev" aria-label="Previous Slide"><i class="fas fa-chevron-left"></i></button>
+        <button class="slide-arrow next" aria-label="Next Slide"><i class="fas fa-chevron-right"></i></button>
+    </section>
+
+    <section class="info-bar">
+        <div class="container info-content">
+            <div class="info-item">
+                <i class="fas fa-truck"></i>
+                <span>Same Day Delivery on All Kabale Orders</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Pay with Mobile Money OR Upon Delivery</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-headset"></i>
+                <span>24/7 Kabale-based customer service</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="deals-section">
+        <div class="container">
+            <h2 class="section-title">Deals of the Month</h2>
+            <div id="deals-product-grid" class="product-grid">
+                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text w-75"></div><div class="skeleton-text w-50"></div></div>
+                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text w-75"></div><div class="skeleton-text w-50"></div></div>
+                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text w-75"></div><div class="skeleton-text w-50"></div></div>
+                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text w-75"></div><div class="skeleton-text w-50"></div></div>
+                </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-column about-column">
+                <a href="/" class="footer-logo-footer">Kabale <span>Online</span></a>
+                <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.</p>
+                <div class="footer-socials">
+                    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <h3>Explore</h3>
+                <a href="/shop/">Shop Items</a>
+                <a href="/rentals/">Hostels & Rentals</a>
+                <a href="https://gigs.kabaleonline.com" class="service-link">Find Services</a>
+                <a href="/events/">Local Events</a>
+                <a href="/lost-and-found/">Lost & Found</a>
+            </div>
+
+            <div class="footer-column">
+                <h3>For Sellers</h3>
+                <a href="/upload/">Sell an Item</a>
+                <a href="/dashboard/">My Dashboard</a>
+                <a href="https://gigs.kabaleonline.com" class="service-link">Offer a Service</a>
+                <a href="/blog/">Seller Tips</a>
+            </div>
+
+            <div class="footer-column">
+                <h3>Company</h3>
+                <a href="/about.html">About Us</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/blog/">Blog & News</a>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <button id="back-to-top-btn" aria-label="Back to Top"><i class="fa-solid fa-arrow-up"></i></button>
+    <button id="open-chat-button" aria-label="Open AI Assistant"><i class="fa-solid fa-robot"></i></button>
+    
+    <div id="chat-modal-container">
+        <div class="chat-modal-overlay"></div>
+        <div class="chat-modal-content">
+            <div class="chat-modal-header">
+                <h3>KabaleOnline Assistant</h3>
+                <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <iframe id="chat-iframe" src="/ai/" title="Amara"></iframe>
+        </div>
+    </div>
+    
+    <script type="module" src="./index.js"></script>
+    <script type="module" src="./shared.js"></script>
+    <script type="module" src="./firebase.js"></script> 
+    
+    <script>
+        // Theme toggler (from your theme.js) - assuming it's linked
+        // Chat modal logic (from your shared.js or ui.js)
+        document.addEventListener('DOMContentLoaded', function() {
+            const openChatButton = document.getElementById('open-chat-button');
+            const closeChatButton = document.getElementById('close-chat-button');
+            const chatModalContainer = document.getElementById('chat-modal-container');
+            const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+            function openModal() { if (chatModalContainer) chatModalContainer.classList.add('active'); }
+            function closeModal() { if (chatModalContainer) chatModalContainer.classList.remove('active'); }
+            if (openChatButton) openChatButton.addEventListener('click', openModal);
+            if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
+            if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+
+            // Mobile menu logic
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+            const mobileNavCloseBtn = document.querySelector('.mobile-nav-header .close-btn');
+
+            function toggleMobileMenu() {
+                mobileNav.classList.toggle('active');
+                mobileNavOverlay.classList.toggle('active');
+                document.body.classList.toggle('no-scroll'); // Optional: prevent scrolling when menu is open
+            }
+
+            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            if (mobileNavOverlay) mobileNavOverlay.addEventListener('click', toggleMobileMenu);
+            if (mobileNavCloseBtn) mobileNavCloseBtn.addEventListener('click', toggleMobileMenu);
+
+            // Handle mobile search button (if you want separate logic for mobile search)
+            const mobileSearchInput = document.getElementById('mobile-search-input');
+            const mobileSearchBtn = document.getElementById('mobile-search-btn');
+            if (mobileSearchBtn) {
+                mobileSearchBtn.addEventListener('click', function() {
+                    const searchTerm = mobileSearchInput.value.trim();
+                    if (searchTerm) {
+                        window.location.href = `/shop/?q=${encodeURIComponent(searchTerm)}`;
+                    }
+                });
+                mobileSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        mobileSearchBtn.click();
+                    }
+                });
+            }
+
+            // Handle desktop search button (already in main.js, but duplicated here for clarity if main.js isn't loaded yet)
+            const desktopSearchInput = document.getElementById('search-input');
+            const desktopSearchBtn = document.getElementById('search-btn');
+            if (desktopSearchBtn) {
+                desktopSearchBtn.addEventListener('click', function() {
+                    const searchTerm = desktopSearchInput.value.trim();
+                    if (searchTerm) {
+                        window.location.href = `/shop/?q=${encodeURIComponent(searchTerm)}`;
+                    }
+                });
+                desktopSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        desktopSearchBtn.click();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
