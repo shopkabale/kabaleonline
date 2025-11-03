@@ -495,3 +495,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+// --- "SEE MORE" EXPAND LOGIC (FROM HOME PAGE) ---
+document.body.addEventListener('click', async (e) => {
+    const seeMoreBtn = e.target.closest('.see-more-btn');
+    if (!seeMoreBtn) return;
+    
+    const sectionName = seeMoreBtn.dataset.section;
+    if (!sectionName) return; 
+
+    // Get the correct grid element based on the button
+    let grid, wrapper;
+    if (sectionName === 'deals') {
+        grid = document.getElementById('deals-grid');
+    } else if (sectionName === 'sponsored') {
+        grid = document.getElementById('sponsored-grid');
+    } else if (sectionName === 'save') {
+        grid = document.getElementById('save-on-more-grid');
+    } else {
+        return; // Not a valid section
+    }
+
+    // Find the wrapper for the grid
+    wrapper = grid.closest('.deals-carousel-wrapper');
+    if (!wrapper) return;
+
+    // --- Check if already expanded (this was the home page logic) ---
+    if (seeMoreBtn.dataset.expanded === 'true') {
+        return; // Do nothing if already expanded
+    }
+    
+    seeMoreBtn.disabled = true;
+    seeMoreBtn.textContent = 'Loading...';
+
+    try {
+        let q;
+        // Build the query, just like in your fetchDeals/fetchSponsored functions
+        if (sectionName === 'deals') {
+            q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+        } else if (sectionName === 'sponsored') {
+            q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+        } else if (sectionName === 'save') {
+            q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+        }
+
+        // Fetch the data
+        const snapshot = await getDocs(q);
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (products && products.length > 0) {
+            // Render the new products (uses the renderProducts from main.js)
+            renderProducts(grid, products); 
+            
+            // Apply expansion classes
+            wrapper.classList.add('expanded');
+            grid.classList.remove('deals-grid'); // Remove carousel class
+            grid.classList.add('product-grid');  // Add main grid class
+            
+            seeMoreBtn.textContent = 'Showing All';
+            seeMoreBtn.dataset.expanded = 'true';
+            // Button remains disabled
+        } else {
+            seeMoreBtn.textContent = 'No More Items';
+            seeMoreBtn.dataset.expanded = 'true';
+        }
+    } catch (error) {
+        console.error(`Error expanding section ${sectionName}:`, error);
+        seeMoreBtn.textContent = 'Error';
+        seeMoreBtn.disabled = false;
+    }
+});
