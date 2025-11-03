@@ -283,27 +283,14 @@ async function fetchSponsoredItems() {
     } catch (error) { console.error("Error fetching Sponsored Items:", error); sponsoredSection.style.display = 'none'; }
 }
 
+// --- === THIS FUNCTION IS NOW REMOVED === ---
+/*
 async function fetchAndDisplayCategoryCounts() {
-    try {
-        const response = await fetch('/.netlify/functions/count-categories');
-        if (!response.ok) return;
-        const counts = await response.json();
-        const categoryMapping = {
-            'Electronics': document.querySelector('a[href="/?category=Electronics"] span'),
-            'Clothing & Apparel': document.querySelector('a[href="/?category=Clothing+%26+Apparel"] span'),
-            'Home & Furniture': document.querySelector('a[href="/?category=Home+%26+Furniture"] span'),
-            'Other': document.querySelector('a[href="/?category=Other"] span'),
-            'Rentals': document.querySelector('a[href="/rentals/"] span'),
-            'Services': document.querySelector('a[href="https://gigs.kabaleonline.com"] span')
-        };
-        for (const category in counts) {
-            const span = categoryMapping[category];
-            if (counts[category] > 0 && span && !span.querySelector('.category-count')) {
-                span.innerHTML += ` <span class="category-count">(${counts[category]})</span>`;
-            }
-        }
-    } catch (error) { console.error('Error fetching category counts:', error); }
+    // ... (This function is no longer here) ...
 }
+*/
+// --- === END REMOVAL === ---
+
 
 // --- UI & EVENT HANDLERS ---
 function updateLoadMoreUI() {
@@ -445,7 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
-        fetchAndDisplayCategoryCounts();
+        // --- === THIS CALL IS NOW REMOVED === ---
+        // fetchAndDisplayCategoryCounts(); 
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
@@ -495,7 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 
 // --- "SEE MORE" EXPAND LOGIC (FROM HOME PAGE) ---
 document.body.addEventListener('click', async (e) => {
