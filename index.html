@@ -401,6 +401,20 @@
         #chat-modal-container.active { display: flex; }
         #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
         #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+/* --- ADD THIS CSS --- */
+
+/* Fix for the "Light mode is ON" text overlap */
+.theme-hint-text {
+    display: none; /* This will hide the text */
+}
+
+/* Fix for the hamburger menu on desktop */
+@media (min-width: 1024px) { 
+    .hamburger-menu { 
+        display: none !important; /* Hide hamburger on desktop */
+    } 
+}
+/* --- END OF FIX --- */
 /* --- ADD THIS CSS TO FIX THE BUTTON --- */
         
         .shop-cta-container {
@@ -651,6 +665,6 @@
         </div>
     </div>
 
-    <script type.module" src="index.js"></script>
+    <script type="module" src="index.js"></script>
 </body>
 </html>
