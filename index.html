@@ -401,6 +401,43 @@
         #chat-modal-container.active { display: flex; }
         #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
         #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+/* --- ADD THIS CSS TO FIX THE BUTTON --- */
+        
+        .shop-cta-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 0 10px; /* Add padding for mobile */
+        }
+        .shop-cta-btn {
+            display: block; /* Make it full-width */
+            width: 100%;
+            background-color: var(--ko-primary);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 14px 30px; /* Make it taller */
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box; /* Important for 100% width */
+        }
+        .shop-cta-btn:hover {
+            background-color: #0056b3; /* Darker primary */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* On desktop, make it centered and not full-width */
+        @media (min-width: 992px) {
+            .shop-cta-container {
+                padding: 0; /* Remove mobile padding */
+            }
+            .shop-cta-btn {
+                display: inline-block; /* Back to normal */
+                width: auto;
+            }
+        }
+        /* --- END OF BUTTON FIX --- */
     </style>
 </head>
 <body class="light-mode"> <script src="theme.js"></script>
