@@ -65,7 +65,10 @@ function observeLazyImages() {
  * Renders a list of product objects into a specified grid container.
  */
 function renderProducts(gridElement, products) {
-    if (!gridElement) return;
+    if (!gridElement) {
+        console.warn("RenderProducts: gridElement is missing for", products);
+        return;
+    }
 
     gridElement.innerHTML = ""; // Clear skeletons
     
@@ -73,17 +76,11 @@ function renderProducts(gridElement, products) {
     if (!products || products.length === 0) {
         const section = gridElement.closest('.product-carousel-section, .recent-products-section');
         if (section) {
-            
-            // --- THIS IS THE BUG FIX ---
-            // We check the CLASS, not the ID
             if (section.classList.contains('recent-products-section')) {
-                // For "Recent Items", show a message instead of hiding
                 gridElement.innerHTML = `<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>`;
             } else {
-                // For all other sections (Deals, Sponsored), hide them
                 section.style.display = 'none';
             }
-            // --- END OF BUG FIX ---
         }
         return;
     }
@@ -147,7 +144,7 @@ function renderProducts(gridElement, products) {
     });
 
     gridElement.appendChild(fragment);
-    observeLazyImages(); // Set up lazy loading for new images
+    observeLazyImages(); 
 }
 
 
@@ -165,18 +162,12 @@ async function fetchProductSection(filter, count = 8) {
         url += `&filter=${filter}`;
     }
     
-    // We are NOT using the 'isSold:false' filter anymore, as requested
-    
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for filter ${filter}`);
-        const { products } = await response.json();
-        return products;
-    } catch (error) {
-        console.error(`Error fetching filter=${filter}:`, error);
-        // On failure, return an empty array so the page doesn't crash
-        return []; 
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status} for filter ${filter}`);
     }
+    const { products } = await response.json();
+    return products;
 }
 
 // ==================================================== //
@@ -199,12 +190,12 @@ async function fetchUserWishlist() {
 }
 
 async function handleWishlistClick(event) {
-    event.preventDefault(); // Stop link navigation
-    event.stopPropagation(); // Stop card click
+    event.preventDefault(); 
+    event.stopPropagation(); 
     
     if (!state.currentUser) {
         alert("Please log in to add items to your wishlist.");
-        window.location.href = '/login/'; // Redirect to login
+        window.location.href = '/login/'; 
         return;
     }
 
@@ -213,17 +204,15 @@ async function handleWishlistClick(event) {
     const productName = button.dataset.productName;
     const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
     
-    button.disabled = true; // Prevent double-click
+    button.disabled = true; 
     
     try {
         if (state.wishlist.has(productId)) {
-            // Remove from wishlist
             await deleteDoc(wishlistRef);
             state.wishlist.delete(productId);
             button.classList.remove('active');
             button.querySelector('i').classList.replace('fa-solid', 'fa-regular');
         } else {
-            // Add to wishlist
             await setDoc(wishlistRef, { 
                 name: productName,
                 addedAt: serverTimestamp() 
@@ -240,81 +229,15 @@ async function handleWishlistClick(event) {
     }
 }
 
-
 // ==================================================== //
-//           WAIT FOR DOM TO BE FULLY LOADED            //
+//             *** NEW *** UI INITIALIZER             //
 // ==================================================== //
 
-document.addEventListener('DOMContentLoaded', () => {
-
-    // --- Authentication and Initial Data Load ---
-    onAuthStateChanged(auth, async (user) => {
-        state.currentUser = user;
-        await fetchUserWishlist(); // Load wishlist first
-        
-        // --- THIS IS THE ROBUST LOADING LOGIC ---
-        // It will not crash if one section fails.
-        
-        try {
-            const results = await Promise.allSettled([
-                fetchProductSection('hero', 8),
-                fetchProductSection('deals', 8),
-                fetchProductSection('sponsored', 8),
-                fetchProductSection('save', 8),
-                fetchProductSection('recent', 10)
-            ]);
-
-            // Now we render each section that "fulfilled" (loaded successfully)
-            
-            if (results[0].status === 'fulfilled') {
-                const products = results[0].value;
-                // We only show the section if it has products
-                if (products && products.length > 0) {
-                    document.getElementById('featured-section').style.display = 'block';
-                    renderProducts(document.getElementById('featured-products-grid'), products);
-                }
-            }
-
-            if (results[1].status === 'fulfilled') {
-                const products = results[1].value;
-                if (products && products.length > 0) {
-                    document.getElementById('deals-section').style.display = 'block';
-                    renderProducts(document.getElementById('deals-grid'), products);
-                }
-            }
-            
-            if (results[2].status === 'fulfilled') {
-                const products = results[2].value;
-                if (products && products.length > 0) {
-                    document.getElementById('sponsored-section').style.display = 'block';
-                    renderProducts(document.getElementById('sponsored-grid'), products);
-                }
-            }
-
-            if (results[3].status === 'fulfilled') {
-                const products = results[3].value;
-                if (products && products.length > 0) {
-                    document.getElementById('save-on-more-section').style.display = 'block';
-                    renderProducts(document.getElementById('save-on-more-grid'), products);
-                }
-            }
-            
-            if (results[4].status === 'fulfilled') {
-                const products = results[4].value;
-                // This will render even if empty (to show the "No products" message)
-                renderProducts(document.getElementById('recent-products-grid'), products);
-            }
-        
-        } catch (error) {
-            console.error("A critical error occurred during page load:", error);
-            // If Promise.allSettled itself fails (which is rare), log it.
-        }
-    });
-
-    // ==================================================== //
-    //              INTERACTIVE UI COMPONENTS               //
-    // ==================================================== //
-
+/**
+ * Initializes all non-data-dependent UI elements.
+ * This runs immediately and will NOT be blocked by data loading.
+ */
+function initializeUI() {
     // --- Wishlist Button Click Listener (Event Delegation) ---
     document.body.addEventListener('click', function(event) {
         const wishlistButton = event.target.closest('.wishlist-btn');
@@ -328,12 +251,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileNav = document.querySelector('.mobile-nav');
     const overlay = document.querySelector('.mobile-nav-overlay');
 
-    const toggleMenu = () => {
-        mobileNav.classList.toggle('active');
-        overlay.classList.toggle('active');
-    };
-    if (hamburger) hamburger.addEventListener('click', toggleMenu);
-    if (overlay) overlay.addEventListener('click', toggleMenu);
+    if (hamburger && mobileNav && overlay) {
+        const toggleMenu = () => {
+            mobileNav.classList.toggle('active');
+            overlay.classList.toggle('active');
+        };
+        hamburger.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+    } else {
+        console.warn("Mobile nav elements not found.");
+    }
 
     // --- External Navigation Modal ---
     const navModal = document.getElementById('nav-modal');
@@ -341,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const navModalMessage = document.getElementById('nav-modal-message');
         const navConfirmBtn = document.getElementById('nav-confirm-btn');
         const navCancelBtn = document.getElementById('nav-cancel-btn');
+        
         document.body.addEventListener('click', (e) => {
             const trigger = e.target.closest('.service-link');
             if (trigger) {
@@ -361,32 +289,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiChatBubble = document.getElementById('ai-chat-bubble');
     const aiBubbleClose = document.getElementById('ai-bubble-close');
 
-    const openChatModal = () => {
-        if (chatModalContainer) chatModalContainer.classList.add('active');
-    };
-    
-    const closeChatModal = () => {
-        if (chatModalContainer) chatModalContainer.classList.remove('active');
-    };
+    if (chatModalContainer && aiChatBubble) {
+        const openChatModal = () => chatModalContainer.classList.add('active');
+        const closeChatModal = () => chatModalContainer.classList.remove('active');
 
-    if (localStorage.getItem('ai_bubble_dismissed') === 'true') {
-        if (aiChatBubble) aiChatBubble.classList.add('dismissed');
-    }
+        if (localStorage.getItem('ai_bubble_dismissed') === 'true') {
+            aiChatBubble.classList.add('dismissed');
+        }
 
-    if (aiChatBubble) {
         aiChatBubble.addEventListener('click', openChatModal);
-    }
-    
-    if (aiBubbleClose) {
-        aiBubbleClose.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            if (aiChatBubble) aiChatBubble.classList.add('dismissed');
-            localStorage.setItem('ai_bubble_dismissed', 'true'); 
-        });
-    }
+        
+        if (aiBubbleClose) {
+            aiBubbleClose.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                aiChatBubble.classList.add('dismissed');
+                localStorage.setItem('ai_bubble_dismissed', 'true'); 
+            });
+        }
 
-    if (closeChatBtn) closeChatBtn.addEventListener('click', closeChatModal);
-    if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeChatModal);
+        if (closeChatBtn) closeChatBtn.addEventListener('click', closeChatModal);
+        if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeChatModal);
+    } else {
+        console.warn("AI Chat elements not found.");
+    }
     
     // --- Theme Switcher ---
     const themeToggle = document.getElementById('theme-toggle');
@@ -397,4 +322,77 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('theme', theme); 
         });
     }
+}
+
+/**
+ * Initializes all data-dependent parts of the page.
+ * Runs after the UI is set up.
+ */
+async function initializeData() {
+    onAuthStateChanged(auth, async (user) => {
+        state.currentUser = user;
+        await fetchUserWishlist(); // Load wishlist first
+        
+        // Use Promise.allSettled to ensure all requests try to complete
+        // This will not crash the page if one filter fails.
+        
+        try {
+            const results = await Promise.allSettled([
+                fetchProductSection('hero', 8),
+                fetchProductSection('deals', 8),
+                fetchProductSection('sponsored', 8),
+                fetchProductSection('save', 8),
+                fetchProductSection('recent', 10)
+            ]);
+
+            // Render "Featured"
+            if (results[0].status === 'fulfilled' && results[0].value.length > 0) {
+                document.getElementById('featured-section').style.display = 'block';
+                renderProducts(document.getElementById('featured-products-grid'), results[0].value);
+            }
+
+            // Render "Deals"
+            if (results[1].status === 'fulfilled' && results[1].value.length > 0) {
+                document.getElementById('deals-section').style.display = 'block';
+                renderProducts(document.getElementById('deals-grid'), results[1].value);
+            }
+            
+            // Render "Sponsored"
+            if (results[2].status === 'fulfilled' && results[2].value.length > 0) {
+                document.getElementById('sponsored-section').style.display = 'block';
+                renderProducts(document.getElementById('sponsored-grid'), results[2].value);
+            }
+
+            // Render "Save on More"
+            if (results[3].status === 'fulfilled' && results[3].value.length > 0) {
+                document.getElementById('save-on-more-section').style.display = 'block';
+                renderProducts(document.getElementById('save-on-more-grid'), results[3].value);
+            }
+            
+            // Render "Recent"
+            if (results[4].status === 'fulfilled') {
+                renderProducts(document.getElementById('recent-products-grid'), results[4].value);
+            }
+        
+        } catch (error) {
+            console.error("A critical error occurred during data load:", error);
+            // This will catch errors in Promise.allSettled itself, which is rare.
+            document.getElementById('recent-products-grid').innerHTML = '<p>Could not load products. Please check your connection.</p>';
+        }
+    });
+}
+
+
+// ==================================================== //
+//           START THE APPLICATION                      //
+// ==================================================== //
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Initialize all UI elements immediately.
+    // This will make the hamburger, theme, and chat buttons work.
+    initializeUI();
+    
+    // 2. Start loading data from Algolia.
+    // This will run in the background and fill in the product sections.
+    initializeData();
 });
