@@ -68,7 +68,6 @@
             font-weight: 700;
         }
         
-        /* "See All" link (no longer used by carousels, but kept for main grid) */
         .section-header-jumia .see-all-link {
             text-decoration: none;
             color: var(--ko-primary);
@@ -85,11 +84,11 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
             margin-top: 25px;
-            overflow: hidden;
+            overflow: hidden; /* This prevents the carousel from breaking layout */
         }
         .carousel-section .deals-carousel-wrapper {
             padding: 15px;
-            overflow-x: auto;
+            overflow-x: auto; /* This allows internal scroll */
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
         }
@@ -149,7 +148,7 @@
         /* === END JUMIA STYLES === */
         
         
-        /* --- === NEW CSS FOR "SEE MORE" BUTTON (ADDED) === --- */
+        /* --- === CSS FOR "SEE MORE" BUTTON === --- */
         .see-more-btn {
             color: var(--ko-primary);
             font-weight: 600;
@@ -183,12 +182,10 @@
             padding-right: 15px; /* Match the side padding */
         }
         .deals-carousel-wrapper.expanded .product-grid {
-            /* This overrides the .deals-grid 'display: flex' */
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* 2-col on mobile */
             flex-wrap: wrap; 
         }
-        /* Match the main grid on tablet and desktop */
         @media (min-width: 768px) {
             .deals-carousel-wrapper.expanded .product-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -202,8 +199,17 @@
         /* --- === END "SEE MORE" CSS === --- */
 
 
-        /* --- ALL YOUR ORIGINAL STYLES (Unchanged) --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
+        /* --- ALL YOUR ORIGINAL STYLES --- */
+        
+        /* === THIS IS THE FIX === */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+            overflow-x: hidden; /* <-- PREVENTS HORIZONTAL SCROLL */
+        }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .sticky-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
@@ -381,7 +387,7 @@ footer {
 .product-tag.condition-used { background-color: var(--ko-accent); color: #212529; }
 .product-card h3,
 .product-card .location-name,
-.product-card .seller-.product-card .seller-name {
+.product-card .seller-name {
     overflow-wrap: break-word;
     word-break: break-all;
 }
