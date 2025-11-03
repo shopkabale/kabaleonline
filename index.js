@@ -1,88 +1,235 @@
-// Import Firebase functions at the top of the module
-import { db } from './firebase.js'; // Ensure you have firebase.js configured
-import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+// Import Firebase functions
+import { db, auth } from './firebase.js'; 
+import { collection, query, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
 
 // ==================================================== //
-//               DYNAMIC DATA FETCHING                  //
+//               GLOBAL STATE & HELPERS                 //
 // ==================================================== //
+
+const state = {
+    currentUser: null,
+    wishlist: new Set()
+};
 
 /**
- * Generates a Cloudinary URL with specified transformations.
- * @param {string} url The original Cloudinary URL.
- * @returns {string} The transformed URL or a placeholder.
+ * Creates an optimized and transformed Cloudinary URL.
  */
-function getCloudinaryTransformedUrl(url) {
+function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
-    const transformString = 'c_fill,g_auto,w_400,h_400,f_auto,q_auto';
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
+        placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
     const urlParts = url.split('/upload/');
-    return urlParts.length === 2 ? `${urlParts[0]}/upload/${transformString}/${urlParts[1]}` : url;
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
 
-/** Fetches and displays trending products from Firestore. */
-async function fetchTrendingProducts() {
-    const trendingGrid = document.getElementById('trending-products-grid');
-    if (!trendingGrid) return;
+// ==================================================== //
+//           PRODUCT RENDERING & LAZY LOAD              //
+// ==================================================== //
 
-    try {
-        const q = query(collection(db, 'products'), where('isHero', '==', true), where('isSold', '==', false), orderBy('heroTimestamp', 'desc'), limit(8));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-            trendingGrid.innerHTML = '<p style="padding: 0 15px;">No trending products found.</p>';
-            return;
+const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            // Use placeholder as background for a smoother load
+            img.style.backgroundImage = `url(${img.dataset.placeholder})`;
+            
+            img.src = img.dataset.src;
+            img.onload = () => {
+                img.classList.add('loaded');
+                img.style.backgroundImage = ''; // Remove placeholder bg
+            }
+            img.onerror = () => { 
+                img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error'; 
+                img.classList.add('loaded');
+            };
+            observer.unobserve(img);
         }
+    });
+}, { rootMargin: "0px 0px 200px 0px" });
 
-        trendingGrid.innerHTML = "";
-        const fragment = document.createDocumentFragment();
-        snapshot.forEach(doc => {
-            const product = { id: doc.id, ...doc.data() };
-            const productCard = document.createElement('a');
-            productCard.href = `/product.html?id=${product.id}`;
-            productCard.className = "product-card";
-            productCard.innerHTML = `
-                <img src="${getCloudinaryTransformedUrl(product.imageUrls?.[0])}" alt="${product.name}" loading="lazy">
-                <div class="product-card-content">
-                    <h3>${product.name}</h3>
-                    <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-                </div>`;
-            fragment.appendChild(productCard);
-        });
-        trendingGrid.appendChild(fragment);
+function observeLazyImages() {
+    const imagesToLoad = document.querySelectorAll('img.lazy-load');
+    imagesToLoad.forEach(img => lazyImageObserver.observe(img));
+}
 
+/**
+ * Renders a list of product objects into a specified grid container.
+ * @param {HTMLElement} gridElement The container to append products to.
+ * @param {Array} products An array of product objects.
+ */
+function renderProducts(gridElement, products) {
+    if (!gridElement) return;
+
+    gridElement.innerHTML = ""; // Clear skeletons
+    if (!products || products.length === 0) {
+        // Find the whole section and hide it
+        const section = gridElement.closest('.product-carousel-section, .recent-products-section');
+        if (section) {
+            section.style.display = 'none';
+        }
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    products.forEach(product => {
+        const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
+        const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
+        
+        const isVerified = (product.sellerBadges?.includes('verified') || product.sellerIsVerified);
+        const verifiedClass = isVerified ? 'is-verified' : '';
+
+        const isInWishlist = state.wishlist.has(product.id);
+        const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
+        const wishlistClass = isInWishlist ? 'active' : '';
+
+        const isActuallySold = product.isSold; // Relies on our Algolia filter
+        const soldClass = isActuallySold ? 'is-sold' : '';
+        
+        let stockStatusHTML = '';
+        if (product.quantity > 0 && product.quantity <= 5) {
+            stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
+        }
+        
+        let tagsHTML = '';
+        if (product.listing_type === 'rent') {
+            tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+        } else if (product.listing_type === 'sale') {
+            tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+        }
+        if (product.condition === 'new') {
+            tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+        } else if (product.condition === 'used') {
+            tagsHTML += '<span class="product-tag condition-used">USED</span>';
+        }
+        const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
+        
+        const productLink = document.createElement("a");
+        productLink.href = `/product.html?id=${product.id}`;
+        productLink.className = "product-card-link";
+
+        productLink.innerHTML = `
+          <div class="product-card ${soldClass}">
+             ${tagsContainerHTML}
+             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name.replace(/"/g, '&quot;')}" aria-label="Add to wishlist">
+                <i class="${wishlistIcon} fa-heart"></i>
+            </button>
+            
+            <img data-placeholder="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name.replace(/"/g, '&quot;')}" class="lazy-load">
+            
+            <h3>${product.name}</h3>
+            ${stockStatusHTML}
+            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
+            ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
+            ${product.sellerName ? `<p class="seller-name ${verifiedClass}">by ${product.sellerName}</p>` : ''} 
+          </div>
+        `;
+        fragment.appendChild(productLink);
+    });
+
+    gridElement.appendChild(fragment);
+    observeLazyImages(); // Set up lazy loading for new images
+}
+
+
+// ==================================================== //
+//                DATA FETCHING (ALGOLIA)               //
+// ==================================================== //
+
+/**
+ * Generic function to fetch products from our Algolia search function
+ * @param {string} filter - 'deals', 'hero', 'sponsored', 'save', or 'recent'
+ * @param {number} count - Number of items to fetch
+ * @returns {Array} An array of product objects
+ */
+async function fetchProductSection(filter, count = 8) {
+    let url = `/.netlify/functions/search?limit=${count}`;
+    
+    // "recent" doesn't need a filter, it just uses the default sort (createdAt)
+    if (filter !== 'recent') {
+        url += `&filter=${filter}`;
+    }
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const { products } = await response.json();
+        return products;
     } catch (error) {
-        console.error("Error fetching trending products:", error);
-        trendingGrid.innerHTML = '<p style="padding: 0 15px;">Could not load products at this time.</p>';
+        console.error(`Error fetching filter=${filter}:`, error);
+        return []; // Return an empty array on failure
     }
 }
 
-/** Fetches and displays approved testimonials from Firestore. */
-async function fetchTestimonials() {
-    const testimonialGrid = document.getElementById('testimonial-grid');
-    if (!testimonialGrid) return;
+// ==================================================== //
+//               WISHLIST & AUTH LOGIC                  //
+// ==================================================== //
 
+async function fetchUserWishlist() {
+    if (!state.currentUser) { 
+        state.wishlist.clear(); 
+        return; 
+    }
     try {
-        const q = query(collection(db, 'testimonials'), where('status', '==', 'approved'), orderBy('order', 'asc'), limit(2));
-        const snapshot = await getDocs(q);
+        const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
+        const wishlistSnapshot = await getDocs(wishlistCol);
+        const wishlistIds = wishlistSnapshot.docs.map(doc => doc.id);
+        state.wishlist = new Set(wishlistIds);
+    } catch (error) { 
+        console.error("Could not fetch user wishlist:", error); 
+    }
+}
 
-        if (snapshot.empty) {
-            testimonialGrid.closest('.testimonial-section').style.display = 'none';
-            return;
+async function handleWishlistClick(event) {
+    event.preventDefault(); // Stop link navigation
+    event.stopPropagation(); // Stop card click
+    
+    if (!state.currentUser) {
+        alert("Please log in to add items to your wishlist.");
+        window.location.href = '/login/'; // Redirect to login
+        return;
+    }
+
+    const button = event.currentTarget;
+    const productId = button.dataset.productId;
+    const productName = button.dataset.productName;
+    const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
+    
+    button.disabled = true; // Prevent double-click
+    
+    try {
+        if (state.wishlist.has(productId)) {
+            // Remove from wishlist
+            await deleteDoc(wishlistRef);
+            state.wishlist.delete(productId);
+            button.classList.remove('active');
+            button.querySelector('i').classList.replace('fa-solid', 'fa-regular');
+        } else {
+            // Add to wishlist
+            // We fetch product data to store in the wishlist
+            // Note: This is a simplified version. Ideally, you'd get price/image too.
+            await setDoc(wishlistRef, { 
+                name: productName,
+                addedAt: serverTimestamp() 
+            });
+            state.wishlist.add(productId);
+            button.classList.add('active');
+            button.querySelector('i').classList.replace('fa-regular', 'fa-solid');
         }
-
-        testimonialGrid.innerHTML = '';
-        snapshot.forEach(doc => {
-            const testimonial = doc.data();
-            const card = document.createElement('div');
-            card.className = 'testimonial-card';
-            card.innerHTML = `
-                <p class="testimonial-text">"${testimonial.quote}"</p>
-                <p class="testimonial-author">&ndash; ${testimonial.authorName}</p>`;
-            testimonialGrid.appendChild(card);
-        });
     } catch (error) {
-        console.error("Error fetching testimonials:", error);
+        console.error("Error updating wishlist:", error);
+        alert("Could not update your wishlist. Please try again.");
+    } finally {
+        button.disabled = false;
     }
 }
 
@@ -93,100 +240,49 @@ async function fetchTestimonials() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- INITIALIZE DYNAMIC CONTENT ---
-    fetchTrendingProducts();
-    fetchTestimonials();
-
-    // ==================================================== //
-    //                  UI ANIMATIONS                       //
-    // ==================================================== //
-
-    // --- Heading Typing Animation ---
-    const typingTextElement = document.getElementById('typing-text');
-    if (typingTextElement) {
-        const words = ["Shoes", "Electronics", "Clothes", "Laptops", "Text Books", "Smartphones", "Furniture", "anything"];
-        let i = 0;
-        let j = 0;
-        let isDeleting = false;
-
-        function type() {
-            const currentWord = words[i];
-            const speed = isDeleting ? 100 : 200;
-
-            if (isDeleting) {
-                typingTextElement.textContent = currentWord.substring(0, j - 1);
-                j--;
-                if (j === 0) {
-                    isDeleting = false;
-                    i = (i + 1) % words.length;
-                }
-            } else {
-                typingTextElement.textContent = currentWord.substring(0, j + 1);
-                j++;
-                if (j === currentWord.length) {
-                    isDeleting = true;
-                    setTimeout(type, 2000); // Pause at end of word
-                    return;
-                }
-            }
-            setTimeout(type, speed);
-        }
-        type();
-    }
-    
-    // --- Search Bar Placeholder Animation ---
-    const searchBar = document.getElementById('hero-search-input');
-    if (searchBar) {
-        const placeholders = ["Search for laptops...", "Try 'iPhone X'...", "Find textbooks..."];
-        let i = 0, j = 0, isDeleting = false, timeout;
+    // --- Authentication and Initial Data Load ---
+    onAuthStateChanged(auth, async (user) => {
+        state.currentUser = user;
+        await fetchUserWishlist(); // Load wishlist first
         
-        function typePlaceholder() {
-            const current = placeholders[i];
-            const speed = isDeleting ? 75 : 150;
-            searchBar.placeholder = current.substring(0, j);
-
-            if (!isDeleting && j < current.length) { j++; } 
-            else if (isDeleting && j > 0) { j--; } 
-            else {
-                isDeleting = !isDeleting;
-                if (!isDeleting) i = (i + 1) % placeholders.length;
-                timeout = isDeleting ? 1500 : 500;
-            }
-            setTimeout(typePlaceholder, timeout || speed);
-        }
-        typePlaceholder();
-    }
-
-    // --- Animated Number Counters ---
-    const counters = document.querySelectorAll('.stat-number[data-target]');
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const counter = entry.target;
-                const target = +counter.getAttribute('data-target');
-                let count = 0;
-                const updateCount = () => {
-                    const increment = target / 100;
-                    if (count < target) {
-                        count += increment;
-                        counter.innerText = Math.ceil(count).toLocaleString();
-                        setTimeout(updateCount, 15);
-                    } else {
-                        counter.innerText = target.toLocaleString();
-                    }
-                };
-                updateCount();
-                observer.unobserve(counter);
-            }
+        // Now fetch all product sections in parallel
+        Promise.all([
+            fetchProductSection('hero', 8).then(products => {
+                if(products.length > 0) document.getElementById('featured-section').style.display = 'block';
+                renderProducts(document.getElementById('featured-products-grid'), products);
+            }),
+            fetchProductSection('deals', 8).then(products => {
+                if(products.length > 0) document.getElementById('deals-section').style.display = 'block';
+                renderProducts(document.getElementById('deals-grid'), products);
+            }),
+            fetchProductSection('sponsored', 8).then(products => {
+                if(products.length > 0) document.getElementById('sponsored-section').style.display = 'block';
+                renderProducts(document.getElementById('sponsored-grid'), products);
+            }),
+            fetchProductSection('save', 8).then(products => {
+                if(products.length > 0) document.getElementById('save-on-more-section').style.display = 'block';
+                renderProducts(document.getElementById('save-on-more-grid'), products);
+            }),
+            fetchProductSection('recent', 10).then(products => renderProducts(document.getElementById('recent-products-grid'), products))
+        ]).catch(err => {
+            console.error("Error loading homepage product sections:", err);
+            // Handle a total failure if needed
         });
-    }, { threshold: 0.5 });
-    counters.forEach(counter => observer.observe(counter));
-
+    });
 
     // ==================================================== //
     //              INTERACTIVE UI COMPONENTS               //
     // ==================================================== //
-    
+
+    // --- Wishlist Button Click Listener (Event Delegation) ---
+    // We attach one listener to the body that waits for clicks on .wishlist-btn
+    document.body.addEventListener('click', function(event) {
+        const wishlistButton = event.target.closest('.wishlist-btn');
+        if (wishlistButton) {
+            handleWishlistClick(event);
+        }
+    });
+
     // --- Mobile Menu ---
     const hamburger = document.querySelector('.hamburger-menu');
     const mobileNav = document.querySelector('.mobile-nav');
@@ -228,8 +324,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const openModal = () => chatModalContainer.classList.add('active');
         const closeModal = () => chatModalContainer.classList.remove('active');
 
-        openChatBtn.addEventListener('click', openModal);
-        closeChatBtn.addEventListener('click', closeModal);
-        chatModalOverlay.addEventListener('click', closeModal);
+        if(openChatBtn) openChatBtn.addEventListener('click', openModal);
+        if(closeChatBtn) closeChatBtn.addEventListener('click', closeModal);
+        if(chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+    }
+    
+    // --- Theme Switcher ---
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('change', () => {
+            const theme = themeToggle.checked ? 'dark-mode' : 'light-mode';
+            document.body.className = theme; // Set theme on body
+            localStorage.setItem('theme', theme); // Save theme preference
+        });
     }
 });
