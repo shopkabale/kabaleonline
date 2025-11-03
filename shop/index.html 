@@ -89,9 +89,9 @@
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
             --ko-danger: #dc3545; 
-            --ko-success: #28a745; /* (NEW) Added for colors */
-            --ko-info: #17a2b8; /* (NEW) Added for colors */
-            --ko-purple: #6f42c1; /* (NEW) Added for colors */
+            --ko-success: #28a745; 
+            --ko-info: #17a2b8; 
+            --ko-purple: #6f42c1; 
             
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
@@ -99,12 +99,14 @@
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
             
-            --bg-dark: #0f172a;
-            --bg-card-dark: #1e2b3b;
+            /* --- REVISED DARK MODE COLORS --- */
+            --bg-dark: #0A0A1F; /* Much darker background */
+            --bg-card-dark: #1A1A3F; /* Darker card background */
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
+            /* --- END REVISED DARK MODE COLORS --- */
+
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
@@ -187,7 +189,9 @@
             font-size: 0.9em;
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
-            transition: transform 0.2s ease, box-shadow 0.3s ease; /* Added box-shadow to transition */
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            position: relative; /* Needed for pseudo-elements */
+            overflow: hidden; /* Ensures glow stays within card */
         }
         
         .image-category-card:hover {
@@ -195,13 +199,22 @@
         }
         .image-category-card i {
             font-size: 2em;
-            color: var(--ko-primary); /* Default color */
+            color: #6495ED; /* Darker blue, but distinct */
             margin-bottom: 10px;
-            transition: color 0.3s ease; /* Added transition for icon color */
+            transition: color 0.3s ease; 
+            position: relative;
+            z-index: 2; /* Keep icon above the flash effect */
         }
+        /* Make icon color more dynamic in dark mode */
+        body.dark-mode .image-category-card i {
+            color: #87CEFA; /* A slightly lighter, more visible blue */
+        }
+
         .image-category-card h3 {
             margin: 0;
             font-size: 1em;
+            position: relative;
+            z-index: 2; /* Keep text above the flash effect */
         }
         
         @media (min-width: 768px) {
@@ -219,41 +232,44 @@
         /* === END JUMIA STYLES === */
         
         
-        /* --- === NEW: CATEGORY ANIMATIONS === --- */
+        /* --- === NEW: CATEGORY ANIMATIONS (REVISED) === --- */
         
-        /* 1. The "Thunder" (Lightning Flash) Animation */
+        /* 1. The "Thunder" (Lightning Flash) Animation - REVISED */
         @keyframes lightning-flash {
-            0%, 100% {
-                /* Start/end state: subtle glow */
-                box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+            0%, 5%, 15%, 25%, 35%, 100% {
+                /* Off state: subtle inner glow for depth */
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) inset;
             }
-            50% {
-                /* Mid-animation: bright flash */
-                box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7), /* Outer white glow */
-                            0 0 8px 3px rgba(var(--ko-primary-rgb), 0.5) inset; /* Inner blue glow */
+            10% {
+                /* Flash state 1: bright white-blue glow */
+                box-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.9), /* Intense white outer glow */
+                            0 0 10px 4px rgba(0, 191, 255, 0.7) inset; /* Electric blue inner glow */
+            }
+            20% {
+                /* Flash state 2: slightly less intense, more blue */
+                box-shadow: 0 0 15px 6px rgba(173, 216, 230, 0.8), /* Lighter blue outer glow */
+                            0 0 8px 3px rgba(0, 191, 255, 0.6) inset; /* Electric blue inner glow */
+            }
+            30% {
+                /* Flash state 3: very subtle residual glow */
+                box-shadow: 0 0 8px 2px rgba(173, 216, 230, 0.3),
+                            0 0 4px 1px rgba(0, 191, 255, 0.2) inset;
             }
         }
         
         /* 2. Apply the animation to all cards */
         .image-category-card {
-            animation: lightning-flash 3s infinite; /* 3-second loop */
+            animation: lightning-flash 6s infinite; /* Longer loop for a more sporadic thunder effect */
         }
 
-        /* 3. Define the different colors for the icons */
-        .image-category-card.cat-color-1 i { color: var(--ko-primary); }
-        .image-category-card.cat-color-2 i { color: var(--ko-success); }
-        .image-category-card.cat-color-3 i { color: var(--ko-accent); }
-        .image-category-card.cat-color-4 i { color: var(--ko-danger); }
-        .image-category-card.cat-color-5 i { color: var(--ko-info); }
-        .image-category-card.cat-color-6 i { color: var(--ko-purple); }
-
-        /* 4. Stagger the animations with different delays */
-        .image-category-card.cat-color-1 { animation-delay: 0s; }
-        .image-category-card.cat-color-2 { animation-delay: 0.5s; }
-        .image-category-card.cat-color-3 { animation-delay: 1.0s; }
-        .image-category-card.cat-color-4 { animation-delay: 1.5s; }
-        .image-category-card.cat-color-5 { animation-delay: 2.0s; }
-        .image-category-card.cat-color-6 { animation-delay: 2.5s; }
+        /* 3. Stagger the animations with different delays */
+        /* Each card will flash at a different point in the 6-second cycle */
+        .image-category-grid a:nth-child(1) { animation-delay: 0s; }
+        .image-category-grid a:nth-child(2) { animation-delay: 1s; }
+        .image-category-grid a:nth-child(3) { animation-delay: 2s; }
+        .image-category-grid a:nth-child(4) { animation-delay: 3s; }
+        .image-category-grid a:nth-child(5) { animation-delay: 4s; }
+        .image-category-grid a:nth-child(6) { animation-delay: 5s; }
 
         /* --- === END CATEGORY ANIMATIONS === --- */
 
@@ -576,27 +592,27 @@ footer {
 
         <section class="collection-section">
             <div class="image-category-grid">
-                <a href="/shop/?category=Electronics" class="image-category-card cat-color-1">
+                <a href="/shop/?category=Electronics" class="image-category-card">
                     <i class="fa-solid fa-laptop"></i>
                     <h3>Electronics</h3>
                 </a>
-                <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card cat-color-2">
+                <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
                     <i class="fa-solid fa-shirt"></i>
                     <h3>Clothing</h3>
                 </a>
-                <a href="/shop/?category=Home+%26+Furniture" class="image-category-card cat-color-3">
+                <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
                     <i class="fa-solid fa-couch"></i>
                     <h3>Furniture</h3>
                 </a>
-                <a href="/rentals/" class="image-category-card cat-color-4">
+                <a href="/rentals/" class="image-category-card">
                     <i class="fa-solid fa-building"></i>
                     <h3>Rentals</h3>
                 </a>
-                <a href="https://gigs.kabaleonline.com" class="image-category-card cat-color-5 service-link">
+                <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
                     <i class="fa-solid fa-screwdriver-wrench"></i>
                     <h3>Services</h3>
                 </a>
-                <a href="/shop/?category=Other" class="image-category-card cat-color-6">
+                <a href="/shop/?category=Other" class="image-category-card">
                     <i class="fa-solid fa-ellipsis"></i>
                     <h3>Other</h3>
                 </a>
