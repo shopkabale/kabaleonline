@@ -64,8 +64,6 @@ function observeLazyImages() {
 
 /**
  * Renders a list of product objects into a specified grid container.
- * @param {HTMLElement} gridElement The container to append products to.
- * @param {Array} products An array of product objects.
  */
 function renderProducts(gridElement, products) {
     if (!gridElement) return;
@@ -75,7 +73,12 @@ function renderProducts(gridElement, products) {
         // Find the whole section and hide it
         const section = gridElement.closest('.product-carousel-section, .recent-products-section');
         if (section) {
-            section.style.display = 'none';
+            // Don't hide the recent section, just show a message
+            if (section.id === 'recent-products-section') {
+                gridElement.innerHTML = `<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>`;
+            } else {
+                section.style.display = 'none';
+            }
         }
         return;
     }
@@ -96,8 +99,10 @@ function renderProducts(gridElement, products) {
         const soldClass = isActuallySold ? 'is-sold' : '';
         
         let stockStatusHTML = '';
-        if (product.quantity > 0 && product.quantity <= 5) {
+        if (!isActuallySold && product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
+        } else if (isActuallySold) {
+             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
         }
         
         let tagsHTML = '';
@@ -152,9 +157,10 @@ function renderProducts(gridElement, products) {
  * @returns {Array} An array of product objects
  */
 async function fetchProductSection(filter, count = 8) {
+    // We will use the 'isSold:false' filter again for the homepage
+    // but not for 'recent' items, as per your last request.
     let url = `/.netlify/functions/search?limit=${count}`;
     
-    // "recent" doesn't need a filter, it just uses the default sort (createdAt)
     if (filter !== 'recent') {
         url += `&filter=${filter}`;
     }
@@ -215,8 +221,6 @@ async function handleWishlistClick(event) {
             button.querySelector('i').classList.replace('fa-solid', 'fa-regular');
         } else {
             // Add to wishlist
-            // We fetch product data to store in the wishlist
-            // Note: This is a simplified version. Ideally, you'd get price/image too.
             await setDoc(wishlistRef, { 
                 name: productName,
                 addedAt: serverTimestamp() 
@@ -275,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================================================== //
 
     // --- Wishlist Button Click Listener (Event Delegation) ---
-    // We attach one listener to the body that waits for clicks on .wishlist-btn
     document.body.addEventListener('click', function(event) {
         const wishlistButton = event.target.closest('.wishlist-btn');
         if (wishlistButton) {
@@ -314,20 +317,46 @@ document.addEventListener('DOMContentLoaded', () => {
         navModal.addEventListener('click', (e) => { if (e.target === navModal) navModal.style.display = 'none'; });
     }
 
-    // --- AI Chat Modal ---
-    const openChatBtn = document.getElementById('open-chat-button');
-    const closeChatBtn = document.getElementById('close-chat-button');
+    // --- NEW: AI Chat Bubble and Modal Logic ---
     const chatModalContainer = document.getElementById('chat-modal-container');
+    const closeChatBtn = document.getElementById('close-chat-button');
     const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+    const aiChatBubble = document.getElementById('ai-chat-bubble');
+    const aiBubbleClose = document.getElementById('ai-bubble-close');
 
-    if (chatModalContainer) {
-        const openModal = () => chatModalContainer.classList.add('active');
-        const closeModal = () => chatModalContainer.classList.remove('active');
+    // Function to open the main chat modal
+    const openChatModal = () => {
+        if (chatModalContainer) chatModalContainer.classList.add('active');
+    };
+    
+    // Function to close the main chat modal
+    const closeChatModal = () => {
+        if (chatModalContainer) chatModalContainer.classList.remove('active');
+    };
 
-        if(openChatBtn) openChatBtn.addEventListener('click', openModal);
-        if(closeChatBtn) closeChatBtn.addEventListener('click', closeModal);
-        if(chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+    // Check if the bubble was dismissed before
+    if (localStorage.getItem('ai_bubble_dismissed') === 'true') {
+        if (aiChatBubble) aiChatBubble.classList.add('dismissed');
     }
+
+    // Click bubble to open modal
+    if (aiChatBubble) {
+        aiChatBubble.addEventListener('click', openChatModal);
+    }
+    
+    // Click 'X' on bubble to dismiss it
+    if (aiBubbleClose) {
+        aiBubbleClose.addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop the bubble click from opening the modal
+            if (aiChatBubble) aiChatBubble.classList.add('dismissed');
+            localStorage.setItem('ai_bubble_dismissed', 'true'); // Remember dismissal
+        });
+    }
+
+    // Main modal close buttons
+    if (closeChatBtn) closeChatBtn.addEventListener('click', closeChatModal);
+    if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeChatModal);
+    // --- END NEW CHAT LOGIC ---
     
     // --- Theme Switcher ---
     const themeToggle = document.getElementById('theme-toggle');
