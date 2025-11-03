@@ -1,8 +1,7 @@
-// Import Firebase functions
-import { db, auth } from './firebase.js'; 
-import { collection, query, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+// --- FIREBASE IMPORTS ---
+import { db, auth } from "./firebase.js";
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-
 
 // ==================================================== //
 //               GLOBAL STATE & HELPERS                 //
@@ -15,6 +14,7 @@ const state = {
 
 /**
  * Creates an optimized and transformed Cloudinary URL.
+ * (This is the exact function from your main.js)
  */
 function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     if (!url || !url.includes('res.cloudinary.com')) {
@@ -22,6 +22,7 @@ function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     }
     const transformations = {
         thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
+        full: 'c_limit,w_1200,h_675,f_auto,q_auto',
         placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -45,7 +46,7 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
             img.src = img.dataset.src;
             img.onload = () => {
                 img.classList.add('loaded');
-                img.style.backgroundImage = ''; // Remove placeholder bg
+                img.style.backgroundImage = ''; 
             }
             img.onerror = () => { 
                 img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error'; 
@@ -62,7 +63,7 @@ function observeLazyImages() {
 }
 
 /**
- * Renders a list of product objects into a specified grid container.
+ * Renders products using the EXACT logic from your main.js
  */
 function renderProducts(gridElement, products) {
     if (!gridElement) {
@@ -72,7 +73,6 @@ function renderProducts(gridElement, products) {
 
     gridElement.innerHTML = ""; // Clear skeletons
     
-    // Check for empty or undefined products
     if (!products || products.length === 0) {
         const section = gridElement.closest('.product-carousel-section, .recent-products-section');
         if (section) {
@@ -90,19 +90,24 @@ function renderProducts(gridElement, products) {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         
-        const isVerified = (product.sellerBadges?.includes('verified') || product.sellerIsVerified);
-        const verifiedClass = isVerified ? 'is-verified' : '';
+        // --- NOTE: Using your main.js logic for 'Verified Seller' TEXT ---
+        // This is less secure, but it's the logic you asked for.
+        const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) 
+            ? `<p class="verified-text">✓ Verified Seller</p>` 
+            : '';
+        // --- End of specific logic ---
 
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
 
-        const isActuallySold = product.isSold;
+        const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
         const soldClass = isActuallySold ? 'is-sold' : '';
+        const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         
         let stockStatusHTML = '';
         if (isActuallySold) {
-             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
+            stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
@@ -126,6 +131,7 @@ function renderProducts(gridElement, products) {
 
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
+             ${soldOverlayHTML}
              ${tagsContainerHTML}
              <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name.replace(/"/g, '&quot;')}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
@@ -137,7 +143,10 @@ function renderProducts(gridElement, products) {
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
             ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
-            ${product.sellerName ? `<p class="seller-name ${verifiedClass}">by ${product.sellerName}</p>` : ''} 
+            
+            ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
+            
+            ${verifiedTextHTML}
           </div>
         `;
         fragment.appendChild(productLink);
@@ -149,26 +158,90 @@ function renderProducts(gridElement, products) {
 
 
 // ==================================================== //
-//                DATA FETCHING (ALGOLIA)               //
+//                DATA FETCHING (FIREBASE)              //
 // ==================================================== //
 
 /**
- * Generic function to fetch products from our Algolia search function
+ * Generic function to fetch products from Firebase
  */
-async function fetchProductSection(filter, count = 8) {
-    let url = `/.netlify/functions/search?limit=${count}`;
-    
-    if (filter !== 'recent') {
-        url += `&filter=${filter}`;
+async function fetchProductsFromFirebase(gridId, sectionId, q) {
+    const gridElement = document.getElementById(gridId);
+    const sectionElement = document.getElementById(sectionId);
+
+    try {
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            if (sectionElement) sectionElement.style.display = 'none';
+            return;
+        }
+        
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(gridElement, products);
+        if (sectionElement) sectionElement.style.display = 'block';
+
+    } catch (error) {
+        console.error(`Error fetching Firebase section ${sectionId}:`, error);
+        if (sectionElement) sectionElement.style.display = 'none';
     }
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status} for filter ${filter}`);
-    }
-    const { products } = await response.json();
-    return products;
 }
+
+// --- Specific Fetchers ---
+
+function fetchFeaturedProducts() {
+    const q = query(
+        collection(db, 'products'), 
+        where('isHero', '==', true), 
+        where('isSold', '==', false), // We only show available items
+        orderBy('heroTimestamp', 'desc'), 
+        limit(8)
+    );
+    fetchProductsFromFirebase('featured-products-grid', 'featured-section', q);
+}
+
+function fetchDeals() {
+    const q = query(
+        collection(db, 'products'), 
+        where('isDeal', '==', true), 
+        where('isSold', '==', false), 
+        orderBy('createdAt', 'desc'), 
+        limit(8)
+    );
+    fetchProductsFromFirebase('deals-grid', 'deals-section', q);
+}
+
+function fetchSponsoredItems() {
+    const q = query(
+        collection(db, 'products'), 
+        where('isSponsored', '==', true), 
+        where('isSold', '==', false), 
+        orderBy('createdAt', 'desc'), 
+        limit(8)
+    );
+    fetchProductsFromFirebase('sponsored-grid', 'sponsored-section', q);
+}
+
+function fetchSaveOnMore() {
+    const q = query(
+        collection(db, 'products'), 
+        where('isSaveOnMore', '==', true), 
+        where('isSold', '==', false), 
+        orderBy('createdAt', 'desc'), 
+        limit(8)
+    );
+    fetchProductsFromFirebase('save-on-more-grid', 'save-on-more-section', q);
+}
+
+function fetchRecentProducts() {
+    const q = query(
+        collection(db, 'products'), 
+        // We show all recent items, even sold (as per your request)
+        orderBy('createdAt', 'desc'), 
+        limit(10)
+    );
+    // Note: 'recent-products-section' doesn't have a sectionId to hide, it just shows the message
+    fetchProductsFromFirebase('recent-products-grid', null, q);
+}
+
 
 // ==================================================== //
 //               WISHLIST & AUTH LOGIC                  //
@@ -230,7 +303,7 @@ async function handleWishlistClick(event) {
 }
 
 // ==================================================== //
-//             *** NEW *** UI INITIALIZER             //
+//             UI & APP INITIALIZATION                  //
 // ==================================================== //
 
 /**
@@ -326,57 +399,24 @@ function initializeUI() {
 
 /**
  * Initializes all data-dependent parts of the page.
- * Runs after the UI is set up.
  */
 async function initializeData() {
     onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
         await fetchUserWishlist(); // Load wishlist first
         
-        // Use Promise.allSettled to ensure all requests try to complete
-        // This will not crash the page if one filter fails.
-        
+        // Now fetch all product sections from FIREBASE
+        // We run them all at the same time for speed
         try {
-            const results = await Promise.allSettled([
-                fetchProductSection('hero', 8),
-                fetchProductSection('deals', 8),
-                fetchProductSection('sponsored', 8),
-                fetchProductSection('save', 8),
-                fetchProductSection('recent', 10)
+            Promise.allSettled([
+                fetchFeaturedProducts(),
+                fetchDeals(),
+                fetchSponsoredItems(),
+                fetchSaveOnMore(),
+                fetchRecentProducts()
             ]);
-
-            // Render "Featured"
-            if (results[0].status === 'fulfilled' && results[0].value.length > 0) {
-                document.getElementById('featured-section').style.display = 'block';
-                renderProducts(document.getElementById('featured-products-grid'), results[0].value);
-            }
-
-            // Render "Deals"
-            if (results[1].status === 'fulfilled' && results[1].value.length > 0) {
-                document.getElementById('deals-section').style.display = 'block';
-                renderProducts(document.getElementById('deals-grid'), results[1].value);
-            }
-            
-            // Render "Sponsored"
-            if (results[2].status === 'fulfilled' && results[2].value.length > 0) {
-                document.getElementById('sponsored-section').style.display = 'block';
-                renderProducts(document.getElementById('sponsored-grid'), results[2].value);
-            }
-
-            // Render "Save on More"
-            if (results[3].status === 'fulfilled' && results[3].value.length > 0) {
-                document.getElementById('save-on-more-section').style.display = 'block';
-                renderProducts(document.getElementById('save-on-more-grid'), results[3].value);
-            }
-            
-            // Render "Recent"
-            if (results[4].status === 'fulfilled') {
-                renderProducts(document.getElementById('recent-products-grid'), results[4].value);
-            }
-        
         } catch (error) {
             console.error("A critical error occurred during data load:", error);
-            // This will catch errors in Promise.allSettled itself, which is rare.
             document.getElementById('recent-products-grid').innerHTML = '<p>Could not load products. Please check your connection.</p>';
         }
     });
@@ -392,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // This will make the hamburger, theme, and chat buttons work.
     initializeUI();
     
-    // 2. Start loading data from Algolia.
+    // 2. Start loading data from Firebase.
     // This will run in the background and fill in the product sections.
     initializeData();
 });
