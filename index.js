@@ -1,6 +1,6 @@
 // --- FIREBASE IMPORTS ---
 import { db, auth } from "./firebase.js";
-import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, getCountFromServer, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 // ==================================================== //
@@ -9,12 +9,16 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 
 const state = {
     currentUser: null,
-    wishlist: new Set()
+    wishlist: new Set(),
+    recentItems: {
+        lastVisible: null, // For pagination
+        isLoading: false,
+        isExpanded: false
+    }
 };
 
 /**
  * Creates an optimized and transformed Cloudinary URL.
- * (This is the exact function from your main.js)
  */
 function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     if (!url || !url.includes('res.cloudinary.com')) {
@@ -22,7 +26,6 @@ function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     }
     const transformations = {
         thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
-        full: 'c_limit,w_1200,h_675,f_auto,q_auto',
         placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
     };
     const transformString = transformations[type] || transformations.thumbnail;
@@ -63,23 +66,26 @@ function observeLazyImages() {
 }
 
 /**
- * Renders products using the EXACT logic from your main.js
+ * Renders products, with a new option to append instead of replace.
  */
-function renderProducts(gridElement, products) {
-    if (!gridElement) {
-        console.warn("RenderProducts: gridElement is missing for", products);
-        return;
-    }
+function renderProducts(gridElement, products, append = false) {
+    if (!gridElement) return;
 
-    gridElement.innerHTML = ""; // Clear skeletons
+    // Clear skeletons ONLY if we are not appending
+    if (!append) {
+        gridElement.innerHTML = ""; 
+    }
     
     if (!products || products.length === 0) {
-        const section = gridElement.closest('.product-carousel-section, .recent-products-section');
-        if (section) {
-            if (section.classList.contains('recent-products-section')) {
-                gridElement.innerHTML = `<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>`;
-            } else {
-                section.style.display = 'none';
+        if (!append) {
+            // Only show "No products" if we're not appending
+            const section = gridElement.closest('.product-carousel-section, .recent-products-section');
+            if (section) {
+                if (section.classList.contains('recent-products-section')) {
+                    gridElement.innerHTML = `<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>`;
+                } else {
+                    section.style.display = 'none';
+                }
             }
         }
         return;
@@ -90,12 +96,9 @@ function renderProducts(gridElement, products) {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
         
-        // --- NOTE: Using your main.js logic for 'Verified Seller' TEXT ---
-        // This is less secure, but it's the logic you asked for.
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) 
             ? `<p class="verified-text">✓ Verified Seller</p>` 
             : '';
-        // --- End of specific logic ---
 
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
@@ -143,9 +146,7 @@ function renderProducts(gridElement, products) {
             ${stockStatusHTML}
             <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
             ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
-            
             ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
-            
             ${verifiedTextHTML}
           </div>
         `;
@@ -172,7 +173,7 @@ async function fetchProductsFromFirebase(gridId, sectionId, q) {
         const snapshot = await getDocs(q);
         if (snapshot.empty) {
             if (sectionElement) sectionElement.style.display = 'none';
-            return;
+            return; // Return empty to stop
         }
         
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -191,7 +192,7 @@ function fetchFeaturedProducts() {
     const q = query(
         collection(db, 'products'), 
         where('isHero', '==', true), 
-        where('isSold', '==', false), // We only show available items
+        where('isSold', '==', false),
         orderBy('heroTimestamp', 'desc'), 
         limit(8)
     );
@@ -231,15 +232,86 @@ function fetchSaveOnMore() {
     fetchProductsFromFirebase('save-on-more-grid', 'save-on-more-section', q);
 }
 
-function fetchRecentProducts() {
-    const q = query(
-        collection(db, 'products'), 
-        // We show all recent items, even sold (as per your request)
-        orderBy('createdAt', 'desc'), 
-        limit(10)
-    );
-    // Note: 'recent-products-section' doesn't have a sectionId to hide, it just shows the message
-    fetchProductsFromFirebase('recent-products-grid', null, q);
+/**
+ * NEW: Fetches the first 4 recent products
+ */
+async function fetchRecentProducts() {
+    const grid = document.getElementById('recent-products-grid');
+    if (!grid) return;
+    
+    try {
+        const q = query(
+            collection(db, 'products'), 
+            orderBy('createdAt', 'desc'), 
+            limit(4) // Only fetch 4 items
+        );
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            grid.innerHTML = '<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>';
+            return;
+        }
+        
+        // Save the last visible document for pagination
+        state.recentItems.lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(grid, products, false); // Render (don't append)
+
+    } catch (error) {
+        console.error("Error fetching initial recent products:", error);
+    }
+}
+
+/**
+ * NEW: Fetches 8 more recent products for "See More"
+ */
+async function fetchMoreRecentProducts() {
+    const grid = document.getElementById('recent-products-grid');
+    const button = document.getElementById('see-more-recent');
+    if (!grid || !button || state.recentItems.isLoading || !state.recentItems.lastVisible) return;
+
+    state.recentItems.isLoading = true;
+    button.disabled = true;
+    button.textContent = 'Loading...';
+
+    try {
+        const q = query(
+            collection(db, 'products'), 
+            orderBy('createdAt', 'desc'),
+            startAfter(state.recentItems.lastVisible), // Start after the last item
+            limit(8) // Fetch 8 more
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            button.textContent = 'No More Items';
+            button.disabled = true;
+            return;
+        }
+
+        // Save the new last visible document
+        state.recentItems.lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(grid, products, true); // Append these new products
+
+        // Check if there might be even more
+        const countSnap = await getCountFromServer(q);
+        if (countSnap.data().count < 8) {
+             button.textContent = 'End of List';
+             button.disabled = true;
+        } else {
+             button.textContent = 'See More ↓';
+             button.disabled = false;
+        }
+
+    } catch (error) {
+        console.error("Error fetching more recent products:", error);
+        button.textContent = 'Error';
+    } finally {
+        state.recentItems.isLoading = false;
+    }
 }
 
 
@@ -308,10 +380,9 @@ async function handleWishlistClick(event) {
 
 /**
  * Initializes all non-data-dependent UI elements.
- * This runs immediately and will NOT be blocked by data loading.
  */
 function initializeUI() {
-    // --- Wishlist Button Click Listener (Event Delegation) ---
+    // --- Wishlist Button Click Listener ---
     document.body.addEventListener('click', function(event) {
         const wishlistButton = event.target.closest('.wishlist-btn');
         if (wishlistButton) {
@@ -331,8 +402,6 @@ function initializeUI() {
         };
         hamburger.addEventListener('click', toggleMenu);
         overlay.addEventListener('click', toggleMenu);
-    } else {
-        console.warn("Mobile nav elements not found.");
     }
 
     // --- External Navigation Modal ---
@@ -382,8 +451,6 @@ function initializeUI() {
 
         if (closeChatBtn) closeChatBtn.addEventListener('click', closeChatModal);
         if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeChatModal);
-    } else {
-        console.warn("AI Chat elements not found.");
     }
     
     // --- Theme Switcher ---
@@ -395,6 +462,82 @@ function initializeUI() {
             localStorage.setItem('theme', theme); 
         });
     }
+
+    // --- NEW: Scroll Progress Bar ---
+    const scrollProgressBar = document.getElementById('scroll-progress-bar');
+    if (scrollProgressBar) {
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = (scrollTop / scrollHeight) * 100;
+            scrollProgressBar.style.width = `${scrollPercentage}%`;
+        });
+    }
+
+    // --- NEW: Search Placeholder Animation ---
+    const searchInput = document.getElementById('hero-search-input');
+    if (searchInput) {
+        const placeholders = [
+            "Search laptops...",
+            "Type 'iPhone'...",
+            "Find textbooks...",
+            "Rent a suit...",
+            "Search for shoes..."
+        ];
+        let i = 0;
+        
+        const animatePlaceholder = () => {
+            searchInput.classList.add('placeholder-hidden');
+            setTimeout(() => {
+                i = (i + 1) % placeholders.length;
+                searchInput.placeholder = placeholders[i];
+                searchInput.classList.remove('placeholder-hidden');
+            }, 300); // Wait for fade out
+        };
+        setInterval(animatePlaceholder, 2500); // Change every 2.5 seconds
+    }
+    
+    // --- NEW: "See More" Button for Recent Items ---
+    const seeMoreBtn = document.getElementById('see-more-recent');
+    const recentGrid = document.getElementById('recent-products-grid');
+    if (seeMoreBtn && recentGrid) {
+        seeMoreBtn.addEventListener('click', () => {
+            const isExpanded = seeMoreBtn.dataset.expanded === 'true';
+            
+            if (isExpanded) {
+                // Collapse the grid
+                recentGrid.classList.remove('expanded');
+                // Remove all but the first 4 items
+                const allItems = recentGrid.querySelectorAll('.product-card-link');
+                for (let i = 4; i < allItems.length; i++) {
+                    allItems[i].remove();
+                }
+                seeMoreBtn.dataset.expanded = 'false';
+                seeMoreBtn.textContent = 'See More ↓';
+                seeMoreBtn.disabled = false; // Re-enable
+            } else {
+                // Expand the grid
+                recentGrid.classList.add('expanded');
+                fetchMoreRecentProducts(); // Fetch and append 8 more
+                seeMoreBtn.dataset.expanded = 'true';
+                seeMoreBtn.textContent = 'Show Less ↑';
+            }
+        });
+    }
+
+    // --- NEW: Footer Scroll Animation ---
+    const footer = document.querySelector('.footer-grid');
+    if (footer) {
+        const footerObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    footer.classList.add('in-view');
+                    footerObserver.unobserve(footer);
+                }
+            });
+        }, { threshold: 0.1 });
+        footerObserver.observe(footer);
+    }
 }
 
 /**
@@ -405,19 +548,18 @@ async function initializeData() {
         state.currentUser = user;
         await fetchUserWishlist(); // Load wishlist first
         
-        // Now fetch all product sections from FIREBASE
-        // We run them all at the same time for speed
         try {
-            Promise.allSettled([
+            // We use Promise.allSettled to prevent one error from
+            // stopping all sections from loading.
+            await Promise.allSettled([
                 fetchFeaturedProducts(),
                 fetchDeals(),
                 fetchSponsoredItems(),
                 fetchSaveOnMore(),
-                fetchRecentProducts()
+                fetchRecentProducts() // This loads the first 4
             ]);
         } catch (error) {
             console.error("A critical error occurred during data load:", error);
-            document.getElementById('recent-products-grid').innerHTML = '<p>Could not load products. Please check your connection.</p>';
         }
     });
 }
@@ -429,10 +571,8 @@ async function initializeData() {
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize all UI elements immediately.
-    // This will make the hamburger, theme, and chat buttons work.
     initializeUI();
     
     // 2. Start loading data from Firebase.
-    // This will run in the background and fill in the product sections.
     initializeData();
 });
