@@ -1021,118 +1021,7 @@
         
         // ** NEW STYLES END HERE ** //
         
-/* === STYLES FOR EXPLORE MARKETPLACE SECTION === */
-.explore-section {
-    background-color: var(--bg-card);
-    padding: 40px 0;
-    margin: 30px 0;
-    text-align: center;
-}
 
-.explore-section .section-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    color: var(--text-main);
-}
-
-.explore-section .section-subtitle {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin: 0 auto 30px auto;
-    max-width: 450px;
-}
-
-.explore-action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.explore-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 1.1em;
-    font-weight: 600;
-    padding: 14px 25px;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-.explore-action-btn.btn-primary {
-    background-color: var(--ko-primary);
-    color: white;
-}
-.explore-action-btn.btn-primary:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-}
-
-.explore-action-btn.btn-secondary {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-}
-.explore-action-btn.btn-secondary:hover {
-    background-color: var(--border-color);
-    transform: translateY(-2px);
-}
-
-.explore-image-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-}
-
-.explore-image-card {
-    position: relative;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    display: block;
-    box-shadow: var(--shadow);
-    transition: transform 0.3s ease;
-}
-.explore-image-card:hover {
-    transform: scale(1.03);
-}
-
-.explore-image-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    aspect-ratio: 16 / 9;
-}
-
-.explore-image-card-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40px 20px 20px 20px;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
-    color: white;
-}
-
-.explore-image-card-overlay h3 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-/* Responsive layout for desktop */
-@media (min-width: 768px) {
-    .explore-action-buttons {
-        flex-direction: row;
-        justify-content: center;
-    }
-    
-    .explore-image-cards {
-        grid-template-columns: 1fr 1fr; /* 2 columns on desktop */
-    }
-}
 /* === START: INVISIBLE EMOJI CATEGORY STYLES === */
 .category-section {
     padding: 30px 0;
@@ -1242,31 +1131,26 @@
 
         <div class="container main-content-wrapper">
         
-            <section class="explore-section">
+            <section class="shop-by-image-section">
     <div class="container">
-        <h2 class="section-title">Explore Our Marketplace</h2>
-        <p class="section-subtitle">Find great deals from local sellers or post your own item in minutes.</p>
-        
-        <div class="explore-action-buttons">
-            <a href="/shop/" class="explore-action-btn btn-primary">
-                <i class="fas fa-shopping-bag"></i> Browse All Items
-            </a>
-            <a href="/upload/" class="explore-action-btn btn-secondary">
-                <i class="fas fa-plus-circle"></i> Sell Your Item
-            </a>
+        <h2>Explore Our Marketplace</h2>
+        <p>FIND GREAT DEALS and SELL EASILY</p>
+        <div class="shop-by-image-buttons">
+            <button class="shop-by-image-btn"><i class="fas fa-shopping-bag"></i>Buy</button>
+            <button class="shop-by-image-btn">
+<i class="fas fa-plus-circle"></i>Sell</button>
         </div>
-        
-        <div class="explore-image-cards">
-            <a href="/shop/?category=Electronics" class="explore-image-card">
-                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1000" alt="Electronics Deals">
-                <div class="explore-image-card-overlay">
-                    <h3>Shop Electronics</h3>
+        <div class="shop-by-image-cards">
+            <a href="/shop/?filter=sales" class="shop-by-image-card">
+                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop" alt="Sales">
+                <div class="shop-by-image-card-overlay">
+                    <h3>Electronics</h3>
                 </div>
             </a>
-            <a href="/rentals/" class="explore-image-card">
-                <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1000" alt="Hostels and Rentals">
-                <div class="explore-image-card-overlay">
-                    <h3>Find Rentals</h3>
+            <a href="/shop/?filter=new" class="shop-by-image-card">
+                <img src="https://images.unsplash.com/photo-1523381210434-271e81a94d0e?q=80&w=1200&auto=format&fit=crop" alt="New In">
+                <div class="shop-by-image-card-overlay">
+                    <h3>New In</h3>
                 </div>
             </a>
         </div>
