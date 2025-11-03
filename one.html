@@ -1021,7 +1021,164 @@
         
         // ** NEW STYLES END HERE ** //
         
+/* === STYLES FOR EXPLORE MARKETPLACE SECTION === */
+.explore-section {
+    background-color: var(--bg-card);
+    padding: 40px 0;
+    margin: 30px 0;
+    text-align: center;
+}
 
+.explore-section .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    color: var(--text-main);
+}
+
+.explore-section .section-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0 auto 30px auto;
+    max-width: 450px;
+}
+
+.explore-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.explore-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    padding: 14px 25px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.explore-action-btn.btn-primary {
+    background-color: var(--ko-primary);
+    color: white;
+}
+.explore-action-btn.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.explore-action-btn.btn-secondary {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+.explore-action-btn.btn-secondary:hover {
+    background-color: var(--border-color);
+    transform: translateY(-2px);
+}
+
+.explore-image-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.explore-image-card {
+    position: relative;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    display: block;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+.explore-image-card:hover {
+    transform: scale(1.03);
+}
+
+.explore-image-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+}
+
+.explore-image-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40px 20px 20px 20px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+    color: white;
+}
+
+.explore-image-card-overlay h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+/* Responsive layout for desktop */
+@media (min-width: 768px) {
+    .explore-action-buttons {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    .explore-image-cards {
+        grid-template-columns: 1fr 1fr; /* 2 columns on desktop */
+    }
+}
+/* === START: INVISIBLE EMOJI CATEGORY STYLES === */
+.category-section {
+    padding: 30px 0;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on mobile */
+    gap: 10px;
+}
+
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent; /* No background */
+    border: none; /* No border */
+    box-shadow: none; /* No shadow */
+    border-radius: var(--border-radius);
+    padding: 10px 5px;
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 500; /* Use 500 for a cleaner look */
+    text-align: center;
+    font-size: 0.9em;
+    transition: transform 0.2s ease;
+    overflow: visible;
+}
+.category-card:hover {
+    transform: translateY(-5px);
+}
+
+.category-emoji {
+    font-size: 2.5em; /* Large emoji */
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+/* On desktop, show 6 columns */
+@media (min-width: 768px) {
+    .category-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+/* === END: INVISIBLE EMOJI CATEGORY STYLES === */
     </style>
 </head>
 <body class="light-mode">
@@ -1085,28 +1242,36 @@
 
         <div class="container main-content-wrapper">
         
-            <section class="shop-by-image-section">
-                <h2>Shop Your Screenshots</h2>
-                <p>UPLOAD YOUR PHOTOS TO FIND A STYLE MATCH</p>
-                <div class="shop-by-image-buttons">
-                    <button class="shop-by-image-btn"><i class="fas fa-camera"></i> Camera</button>
-                    <button class="shop-by-image-btn"><i class="fas fa-images"></i> Photos</button>
+            <section class="explore-section">
+    <div class="container">
+        <h2 class="section-title">Explore Our Marketplace</h2>
+        <p class="section-subtitle">Find great deals from local sellers or post your own item in minutes.</p>
+        
+        <div class="explore-action-buttons">
+            <a href="/shop/" class="explore-action-btn btn-primary">
+                <i class="fas fa-shopping-bag"></i> Browse All Items
+            </a>
+            <a href="/upload/" class="explore-action-btn btn-secondary">
+                <i class="fas fa-plus-circle"></i> Sell Your Item
+            </a>
+        </div>
+        
+        <div class="explore-image-cards">
+            <a href="/shop/?category=Electronics" class="explore-image-card">
+                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1000" alt="Electronics Deals">
+                <div class="explore-image-card-overlay">
+                    <h3>Shop Electronics</h3>
                 </div>
-                <div class="shop-by-image-cards">
-                    <a href="/shop/?filter=sales" class="shop-by-image-card">
-                        <img src="https://assets.website-files.com/622c158ba6d56d5e695d7e63/622c158ba6d56d9a265d7f4e_Placeholder-Image-Large-1.png" alt="Sales">
-                        <div class="shop-by-image-card-overlay">
-                            <h3>Sales</h3>
-                        </div>
-                    </a>
-                    <a href="/shop/?filter=new" class="shop-by-image-card">
-                        <img src="https://assets.website-files.com/622c158ba6d56d5e695d7e63/622c158ba6d56d9a265d7f4e_Placeholder-Image-Large-1.png" alt="New In">
-                        <div class="shop-by-image-card-overlay">
-                            <h3>New In</h3>
-                        </div>
-                    </a>
+            </a>
+            <a href="/rentals/" class="explore-image-card">
+                <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1000" alt="Hostels and Rentals">
+                <div class="explore-image-card-overlay">
+                    <h3>Find Rentals</h3>
                 </div>
-            </section>
+            </a>
+        </div>
+    </div>
+</section>
             <section id="featured-section" class="product-carousel-section" style="display: none;">
                 <div class="section-header">
                     <h2 class="section-title">Featured Items</h2>
@@ -1233,32 +1398,36 @@
                     <span class="how-to-dot active" data-slide="0"></span>
                     <span class="how-to-dot" data-slide="1"></span>
                 </div>
-            </section>
-            <section class="category-section">
-                <div class="section-header">
-                    <h2 class="section-title">Browse by Category</h2>
-                </div>
-                <div class="category-grid" id="category-grid">
-                     <a href="/shop/?category=Electronics" class="category-item">
-                        <i class="fa-solid fa-laptop"></i><span>Electronics</span>
-                     </a>
-                     <a href="/shop/?category=Clothing+%26+Apparel" class="category-item">
-                        <i class="fa-solid fa-shirt"></i><span>Clothing</span>
-                     </a>
-                     <a href="/shop/?category=Home+%26+Furniture" class="category-item">
-                        <i class="fa-solid fa-couch"></i><span>Furniture</span>
-                     </a>
-                     <a href="/rentals/" class="category-item">
-                        <i class="fa-solid fa-building"></i><span>Hostels</span>
-                     </a>
-                     <a href="https://gigs.kabaleonline.com" class="category-item service-link">
-                        <i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span>
-                     </a>
-                     <a href="/shop/?category=Other" class="category-item">
-                        <i class="fa-solid fa-ellipsis"></i><span>Other</span>
-                     </a>
-                </div>
-            </section>
+           <section class="category-section">
+    <div class="container">
+        <div class="category-grid">
+            <a href="/shop/?category=Electronics" class="category-card">
+                <span class="category-emoji">🎧</span>
+                <span>Electronics</span>
+            </a>
+            <a href="/shop/?category=Clothing+%26+Apparel" class="category-card">
+                <span class="category-emoji">👕</span>
+                <span>Clothing</span>
+            </a>
+            <a href="/shop/?category=Home+%26+Furniture" class="category-card">
+                <span class="category-emoji">🪑</span>
+                <span>Furniture</span>
+            </a>
+            <a href="/rentals/" class="category-card">
+                <span class="category-emoji">🏘️</span>
+                <span>Rentals</span>
+            </a>
+            <a href="https://gigs.kabaleonline.com" class="category-card service-link">
+                <span class="category-emoji">📡</span>
+                <span>Services</span>
+            </a>
+            <a href="/shop/?category=Other" class="category-card">
+                <span class="category-emoji">⚙️</span>
+                <span>Other</span>
+            </a>
+        </div>
+    </div>
+</section>
 
             <section class="recent-products-section">
                 <div class="section-header">
