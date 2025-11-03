@@ -56,6 +56,7 @@
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
+            --ko-success: #28a745; /* Green for progress */
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
@@ -86,13 +87,12 @@
             color: var(--text-main); 
             line-height: 1.6; 
         }
-        /* MODIFIED: Container is now just for padding */
+        /* Container centers content */
         .container { 
-            width: 100%;
-            max-width: 1200px; /* Kept max-width for large screens */
+            max-width: 1200px; 
             margin: 0 auto;
             padding: 0 15px; 
-            box-sizing: border-box; /* Ensures padding doesn't break layout */
+            box-sizing: border-box;
         }
         .section-title { 
             font-size: 1.5em; 
@@ -128,7 +128,7 @@
             justify-content: space-between; 
             height: 70px; 
             width: 100%;
-            max-width: 1200px;
+            max-width: 1200px; /* Header content is centered */
             margin: 0 auto;
             padding: 0 15px;
             box-sizing: border-box;
@@ -167,7 +167,6 @@
         .theme-hint-text { display: none; } 
         
         /* --- HERO SECTION --- */
-        /* MODIFIED: Full-width background */
         .hero { padding: 25px 0; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); margin-top: 70px; }
         .hero-search-form { display: flex; max-width: 600px; margin: 0 auto; position: relative; padding: 0 15px; }
         #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
@@ -185,13 +184,8 @@
             transform: translateY(0); /* Move up */
         }
         
-        /* --- SINGLE COLUMN PAGE LAYOUT --- */
-        .main-content-wrapper {
-            max-width: 1200px; /* This container centers all content */
-            margin: 20px auto 0;
-            padding: 0 15px;
-        }
-        /* All sections will be full-width within this container */
+        /* --- SINGLE COLUMN FULL-WIDTH LAYOUT --- */
+        /* Sections have full-width backgrounds */
         .product-carousel-section,
         .how-to-section,
         .category-section,
@@ -202,7 +196,13 @@
             margin-bottom: 20px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
-            overflow: hidden; /* Hide overflow */
+            overflow: hidden;
+        }
+        /* The container centers the content INSIDE the full-width sections */
+        .main-content-wrapper {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 15px;
         }
         
         /* --- SECTION HEADER WITH "SEE MORE" --- */
@@ -234,16 +234,23 @@
         }
         
         /* --- PRODUCT CAROUSEL --- */
+        .product-carousel-section {
+            padding: 20px 0; /* Full width bg */
+        }
+        .product-carousel-section .section-header {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
         .product-carousel-wrapper { 
             overflow-x: auto; 
             padding-bottom: 15px; 
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
+            padding-left: 15px; 
         }
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
         
-        /* MODIFIED: Wider cards on mobile */
         .product-carousel .product-card { 
             flex: 0 0 170px;
             width: 170px; 
@@ -251,14 +258,14 @@
         @media (min-width: 500px) {
             .product-carousel .product-card { flex: 0 0 200px; width: 200px; }
             .product-carousel-wrapper {
-                padding-right: 20px; /* "peek-a-boo" */
+                padding-right: 30px; /* "peek-a-boo" */
             }
         }
         
         /* Expanded Grid style */
         .product-carousel-wrapper.expanded {
             overflow-x: hidden;
-            padding-right: 0; 
+            padding-right: 15px; 
         }
         .product-carousel-wrapper.expanded .product-carousel {
             display: grid;
@@ -272,11 +279,18 @@
         }
 
         /* --- HOW-TO SECTION --- */
+        .how-to-section {
+            padding: 20px 0;
+        }
+        .how-to-section .section-header { padding: 0 15px 10px; }
+        
         .how-to-carousel-wrapper {
             overflow-x: auto; 
             padding-bottom: 15px; 
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
+            padding-left: 15px;
+            padding-right: 15px;
         }
         .how-to-carousel-wrapper::-webkit-scrollbar { display: none; }
         .how-to-carousel { display: flex; gap: 15px; }
@@ -287,6 +301,11 @@
             overflow: hidden;
             background: var(--bg-main);
             border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .how-to-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .how-to-card img {
             width: 100%;
@@ -300,6 +319,59 @@
             margin: 10px 15px;
             color: var(--text-main);
         }
+        /* How-To Controls */
+        .how-to-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px 0;
+        }
+        .how-to-controls button {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .how-to-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .how-to-dots {
+            display: flex;
+            gap: 8px;
+            position: relative; /* For progress bar */
+            overflow: hidden;
+            border-radius: 5px;
+        }
+        .how-to-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+        .how-to-dot.active {
+            background-color: var(--ko-primary);
+        }
+        .how-to-progress-bar {
+            width: calc(100% - 30px);
+            margin: 10px auto 0;
+            height: 4px;
+            background-color: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .how-to-progress {
+            width: 0%;
+            height: 100%;
+            background-color: var(--ko-success); /* Green progress */
+            transition: width 0.3s ease;
+        }
+
         
         /* --- CATEGORY SECTION --- */
         .category-grid {
@@ -345,7 +417,6 @@
             grid-template-columns: repeat(2, 1fr); 
         }
         @media (min-width: 768px) { 
-            /* 4 columns on desktop for 8 items */
             .product-grid { grid-template-columns: repeat(4, 1fr); } 
         }
         @media (max-width: 500px) { 
@@ -477,6 +548,7 @@
             margin-top: 30px; 
             border-top: 4px solid var(--ko-primary);
         }
+        /* MODIFIED: This centers the grid */
         .footer-grid-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -647,7 +719,8 @@
 
     <main>
         <section class="hero">
-            <div class="hero-search-form"> <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
+            <div class="hero-search-form"> 
+                <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
                 <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
             </div>
         </section>
@@ -706,28 +779,55 @@
                 <div class="how-to-carousel-wrapper">
                     <div class="how-to-carousel" id="how-to-grid">
                         <div class="how-to-card">
-                            <img src="https://placehold.co/200x200/007aff/white?text=1" alt="Step 1">
-                            <h4>Create Your Account</h4>
+                            <img src="https://source.unsplash.com/200x200/?profile" alt="Step 1">
+                            <h4>1. Create Account</h4>
                         </div>
                         <div class="how-to-card">
-                            <img src="https://placehold.co/200x200/007aff/white?text=2" alt="Step 2">
-                            <h4>Post Your Item</h4>
+                            <img src="https://source.unsplash.com/200x200/?upload" alt="Step 2">
+                            <h4>2. Post Your Item</h4>
                         </div>
                         <div class="how-to-card">
-                            <img src="https://placehold.co/200x200/007aff/white?text=3" alt="Step 3">
-                            <h4>Get Orders</h4>
+                            <img src="https://source.unsplash.com/200x200/?chat" alt="Step 3">
+                            <h4>3. Get Messages</h4>
                         </div>
                         <div class="how-to-card">
-                            <img src="https://placehold.co/200x200/007aff/white?text=4" alt="Step 4">
-                            <h4>Meet & Get Paid</h4>
+                            <img src="https://source.unsplash.com/200x200/?money,cash" alt="Step 4">
+                            <h4>4. Meet & Get Paid</h4>
                         </div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card">
+                            <img src="https://source.unsplash.com/200x200/?search,find" alt="Step 5">
+                            <h4>5. Find What You Need</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://source.unsplash.com/200x200/?cart" alt="Step 6">
+                            <h4>6. Add to Cart</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://source.unsplash.com/200x200/?call,phone" alt="Step 7">
+                            <h4>7. Contact Seller</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://source.unsplash.com/200x200/?delivery,box" alt="Step 8">
+                            <h4>8. Arrange Pickup</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://source.unsplash.com/200x200/?rent" alt="Step 9">
+                            <h4>9. Rent an Item</h4>
+                        </div>
+                         <div class="how-to-card">
+                            <img src="https://source.unsplash.com/200x200/?happy,smile" alt="Step 10">
+                            <h4>10. Enjoy!</h4>
+                        </div>
                     </div>
+                </div>
+                <div class="how-to-controls">
+                    <button id="how-to-prev" aria-label="Previous Step"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="how-to-dots" id="how-to-dots-container">
+                        </div>
+                    <button id="how-to-next" aria-label="Next Step"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="how-to-progress-bar">
+                    <div class="how-to-progress" id="how-to-progress"></div>
                 </div>
             </section>
 
