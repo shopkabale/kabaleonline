@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- (All your SEO and meta tags are preserved here) -->
     <title>Buy & Sell, Find Hostels, Services & Events in Kabale | Kabale Online</title>
     <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
     <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale, kabale Uganda, Campus Mart">
@@ -50,6 +51,7 @@
       });
     </script>
 
+    <!-- (Your schema.org scripts are preserved here) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -124,6 +126,24 @@
             margin: 0;
         }
 
+        /* --- NEW: SCROLL PROGRESS BAR --- */
+        #scroll-progress-bar {
+            position: fixed;
+            top: 70px; /* Below the sticky header */
+            left: 0;
+            width: 0%;
+            height: 4px;
+            background-color: var(--ko-primary);
+            z-index: 999;
+            transition: width 0.1s ease-out;
+        }
+        @media (max-width: 1023px) {
+            #scroll-progress-bar {
+                top: auto;
+                bottom: 0; /* At the bottom on mobile */
+            }
+        }
+
         /* --- HEADER & NAV --- */
         .sticky-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
@@ -141,7 +161,7 @@
         .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
         .desktop-nav { display: none; } 
         @media (min-width: 1024px) { 
-            .hamburger-menu { display: none !important; } /* <-- FIX: Hide hamburger on desktop */
+            .hamburger-menu { display: none !important; } 
             .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} 
             .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } 
         }
@@ -165,14 +185,24 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--ko-primary); }
         input:checked + .slider:before { transform: translateX(24px); }
-        .theme-hint-text { display: none; } /* <-- FIX: Hide "Light mode is ON" text */
+        .theme-hint-text { display: none; } 
         
         /* --- HERO SECTION --- */
         .hero { padding: 25px 0; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); margin-top: 70px; }
-        .hero-search-form { display: flex; max-width: 600px; margin: 0 auto; }
+        .hero-search-form { display: flex; max-width: 600px; margin: 0 auto; position: relative; }
         #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
         .hero-search-form button { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
 
+        /* --- NEW: Search Placeholder Animation --- */
+        #hero-search-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        #hero-search-input.placeholder-hidden::placeholder {
+            opacity: 0;
+        }
+        
         /* --- 2-COLUMN PAGE LAYOUT --- */
         .page-layout {
             display: flex;
@@ -201,7 +231,7 @@
         .category-list i { font-size: 1.1em; width: 20px; text-align: center; color: var(--text-secondary); }
         .category-list a:hover i { color: var(--ko-primary); }
         
-        /* --- SECTION HEADER WITH "SEE ALL" --- */
+        /* --- SECTION HEADER WITH "SEE MORE" --- */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -210,7 +240,7 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
         }
-        .see-all-btn {
+        .see-more-btn {
             color: var(--ko-primary);
             font-weight: 600;
             font-size: 0.9em;
@@ -219,8 +249,11 @@
             border-radius: 6px;
             transition: background-color 0.2s ease;
             white-space: nowrap; 
+            border: 1px solid transparent;
+            background-color: var(--bg-main);
+            cursor: pointer;
         }
-        .see-all-btn:hover { background-color: var(--border-color); }
+        .see-more-btn:hover { background-color: var(--border-color); }
         
         /* --- PRODUCT CAROUSEL --- */
         .product-carousel-section {
@@ -237,7 +270,7 @@
         .product-carousel .product-card { flex: 0 0 160px; width: 160px; }
         @media (min-width: 768px) { .product-carousel .product-card { flex: 0 0 200px; width: 200px; } }
 
-        /* --- RECENT ITEMS GRID --- */
+        /* --- RECENT ITEMS GRID (2x2) --- */
         .recent-products-section {
             background-color: var(--bg-card);
             border-radius: var(--border-radius);
@@ -245,38 +278,45 @@
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
         }
-        /* --- MODIFIED: Added more gap for spacing --- */
         .product-grid { 
             display: grid; 
-            gap: 20px; /* Increased spacing */
-            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            grid-template-columns: repeat(2, 1fr); /* 2x2 Grid */
         }
-        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+        /* MODIFIED: Don't change grid on desktop, keep it 2x2 unless more are loaded */
+        @media (min-width: 768px) { 
+            .product-grid { grid-template-columns: repeat(2, 1fr); } 
+            .product-grid.expanded {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
         
-        /* --- NEW: Description & Upgraded Button --- */
-        .shop-cta-container {
+        /* --- CTA Button & Description --- */
+        .shop-cta-container-spaced {
             text-align: center;
             margin-top: 20px;
-            padding: 0 10px; /* Padding for mobile */
+            margin-bottom: 60px; /* NEW: Added space above footer */
+            padding: 0 10px;
         }
         .shop-cta-description {
             font-size: 1em;
             color: var(--text-secondary);
             margin: 0 auto 20px;
             max-width: 500px;
+            line-height: 1.7;
         }
         .shop-cta-btn {
-            display: block; /* Full width on mobile */
+            display: block; 
             width: 100%;
             background-color: var(--ko-primary);
             color: white;
             font-weight: 600;
             font-size: 1.1em;
-            padding: 14px 30px; /* Taller button */
+            padding: 14px 30px; 
             border-radius: 8px;
             text-decoration: none;
             transition: all 0.2s ease;
-            box-sizing: border-box; /* Needed for 100% width */
+            box-sizing: border-box; 
         }
         .shop-cta-btn:hover {
             background-color: #0056b3; 
@@ -284,13 +324,12 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         @media (min-width: 992px) {
-            .shop-cta-container { padding: 0; }
+            .shop-cta-container-spaced { padding: 0; }
             .shop-cta-btn {
-                display: inline-block; /* Back to normal on desktop */
+                display: inline-block; 
                 width: auto;
             }
         }
-        /* --- END NEW --- */
         
         /* --- PRODUCT CARD STYLES --- */
         .product-card-link { text-decoration: none; color: inherit; }
@@ -321,14 +360,19 @@
         .product-card .location-name i { margin-right: 5px; color: var(--ko-primary); }
         .product-card .seller-name { font-size: 0.85em; color: var(--text-secondary); margin: 0 15px 10px; }
         
-        .seller-name.is-verified::after {
-            content: '\f058'; /* Font Awesome solid check-circle */
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
+        /* Using text-based verified badge as per last request */
+        .product-card .verified-text {
+            font-size: 0.8em;
+            font-weight: 700;
             color: var(--ko-primary);
-            font-size: 0.9em;
-            margin-left: 6px;
-            user-select: none;
+            background-color: rgba(var(--ko-primary-rgb), 0.1);
+            border: 1px solid rgba(var(--ko-primary-rgb), 0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 0 15px 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .product-tags { position: absolute; top: 12px; left: 12px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
@@ -353,22 +397,61 @@
         .skeleton-text { height: 1.2rem; margin: 12px 15px 0; border-radius: 4px; }
         @keyframes skeleton-shimmer { 100% { background-position: 250px; } }
         
-        /* --- FOOTER (PRESERVED) --- */
-        footer { background-color: #0f172a; color: #e2e8f0; padding: 60px 0 20px; margin-top: 30px; }
-        .footer-grid { display: grid; grid-template-columns: 1fr; gap: 40px; padding-bottom: 40px; }
+        /* --- NEW: MASSIVE FOOTER STYLES --- */
+        footer { 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+            padding: 60px 0 20px; 
+            margin-top: 30px; 
+            border-top: 4px solid var(--ko-primary);
+        }
+        .footer-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 40px; 
+            padding-bottom: 40px; 
+            /* NEW: Scroll Animation */
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .footer-grid.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
         .footer-column { text-align: left; }
         .footer-column h3 { font-size: 1.1em; font-weight: 600; color: #ffffff; margin-top: 0; margin-bottom: 20px; position: relative; padding-bottom: 10px; }
         .footer-column h3::after { content: ''; position: absolute; bottom: 0; left: 0; width: 30px; height: 2px; background-color: var(--ko-accent); }
         .footer-column a { display: block; color: #94a3b8; text-decoration: none; margin-bottom: 12px; }
         .footer-column a:hover { color: #ffffff; }
+        
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; text-decoration: none; color: #ffffff; display: inline-block; }
         .footer-logo span { color: var(--ko-accent); }
         .footer-tagline { color: #94a3b8; line-height: 1.7; margin-bottom: 20px; }
-        .footer-socials a { color: #e2e8f0; font-size: 22px; margin-right: 20px; text-decoration: none; }
+        
+        /* NEW: Social Links Redesign */
+        .footer-socials a { 
+            display: flex; 
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0; 
+            font-size: 1.1em; 
+            margin-bottom: 15px; 
+            text-decoration: none; 
+            transition: color 0.2s ease;
+        }
+        .footer-socials a i {
+            font-size: 1.6em;
+            width: 30px;
+        }
+        .footer-socials a:hover { color: var(--ko-primary); }
+
         .footer-bottom { border-top: 1px solid #334155; padding-top: 20px; text-align: center; }
         .footer-copyright { font-size: 0.9em; color: #64748b; margin: 0; }
+        
         @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+        /* --- END FOOTER --- */
         
         /* --- MODALS (PRESERVED) --- */
         .nav-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
@@ -398,15 +481,8 @@
             opacity: 0;
             animation: slideUp 0.5s 1s ease forwards;
         }
-        @keyframes slideUp {
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        .ai-chat-bubble.dismissed {
-            display: none;
-        }
+        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+        .ai-chat-bubble.dismissed { display: none; }
         .ai-chat-bubble-avatar {
             flex-shrink: 0;
             width: 40px;
@@ -419,11 +495,7 @@
             justify-content: center;
             font-size: 1.3em;
         }
-        .ai-chat-bubble-text {
-            font-size: 0.9em;
-            font-weight: 500;
-            margin-right: 15px; /* Space for close button */
-        }
+        .ai-chat-bubble-text { font-size: 0.9em; font-weight: 500; margin-right: 15px; }
         #ai-bubble-close {
             position: absolute;
             top: 6px;
@@ -436,7 +508,6 @@
             padding: 2px;
         }
         
-        /* The modal that the bubble opens */
         #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
         .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
         .chat-modal-content { position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%; max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
@@ -449,7 +520,12 @@
         #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
     </style>
 </head>
-<body class="light-mode"> <script src="theme.js"></script>
+<body class="light-mode">
+
+    <!-- NEW: Scroll Progress Bar -->
+    <div id="scroll-progress-bar"></div>
+
+    <script src="theme.js"></script>
 
     <header class="sticky-header">
         <div class="container">
@@ -479,6 +555,7 @@
     </header>
 
     <nav class="mobile-nav">
+        <!-- (Your mobile nav links) -->
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
@@ -500,17 +577,20 @@
     <div class="mobile-nav-overlay"></div>
 
     <main>
+        <!-- HERO WITH ANIMATED SEARCH -->
         <section class="hero">
             <div class="container">
                 <form class="hero-search-form" action="/shop/" method="get">
-                    <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search for anything...">
+                    <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
                     <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
                 </form>
             </div>
         </section>
 
+        <!-- NEW 2-COLUMN LAYOUT -->
         <div class="container page-layout">
         
+            <!-- NEW SIDEBAR -->
             <aside class="sidebar">
                 <div class="category-widget">
                     <h3>Categories</h3>
@@ -525,20 +605,23 @@
                 </div>
             </aside>
             
+            <!-- NEW MAIN CONTENT AREA -->
             <main class="main-content">
             
-                <section id="featured-section" class="product-carousel-section"> <div class="section-header">
+                <!-- FEATURED ITEMS -->
+                <section id="featured-section" class="product-carousel-section" style="display: none;">
+                    <div class="section-header">
                         <h2 class="section-title">Featured Items</h2>
                         <a href="/shop/?filter=hero" class="see-all-btn">See All &rarr;</a>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="featured-products-grid">
-                            <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                            <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                            <!-- JS will populate this -->
                         </div>
                     </div>
                 </section>
                 
+                <!-- DEALS SECTION -->
                 <section id="deals-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Today's Deals</h2>
@@ -546,10 +629,12 @@
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="deals-grid">
-                            </div>
+                            <!-- JS will populate this -->
+                        </div>
                     </div>
                 </section>
                 
+                <!-- SPONSORED SECTION -->
                 <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Sponsored</h2>
@@ -557,10 +642,12 @@
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="sponsored-grid">
-                            </div>
+                            <!-- JS will populate this -->
+                        </div>
                     </div>
                 </section>
                 
+                <!-- SAVE ON MORE SECTION -->
                 <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Save On More</h2>
@@ -568,16 +655,22 @@
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="save-on-more-grid">
-                            </div>
+                            <!-- JS will populate this -->
+                        </div>
                     </div>
                 </section>
                 
+                <!-- RECENT ITEMS SECTION (2x2 GRID) -->
                 <section class="recent-products-section">
                     <div class="section-header">
                         <h2 class="section-title">Recent Items</h2>
-                        <a href="/shop/" class="see-all-btn">See All &rarr;</a>
+                        <!-- NEW "See More" button -->
+                        <button class="see-more-btn" id="see-more-recent" data-next-page="1" data-expanded="false">
+                            See More &darr;
+                        </button>
                     </div>
                     <div class="product-grid" id="recent-products-grid">
+                        <!-- Skeletons for loading -->
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
@@ -585,10 +678,14 @@
                     </div>
                 </section>
 
-                <div class="shop-cta-container">
+                <!-- NEW: CTA Button to Shop Page (with new spacing class) -->
+                <div class="shop-cta-container-spaced">
+                    <!-- NEW: Description added -->
                     <p class="shop-cta-description">
-                        You've seen our top picks. Ready to see everything? 
-                        Dive into the full marketplace to find exactly what you're looking for.
+                        Welcome to the Kabale Online marketplace.
+                        We connect students and residents to buy, sell, and rent items.
+                        Find textbooks, electronics, or even a new hostel.
+                        Click below to explore all items available right now.
                     </p>
                     <a href="/shop/" class="shop-cta-btn">
                         Browse All Products
@@ -597,17 +694,35 @@
                 
             </main>
         
-        </div> </main>
+        </div> <!-- End .page-layout -->
+
+    </main>
 
     <footer class="container">
+        <!-- NEW: "Massive" Footer Design -->
         <div class="footer-grid">
             <div class="footer-column about-column">
                 <a href="/" class="footer-logo">Kabale <span>Online</span></a>
                 <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
                 <div class="footer-socials">
-                    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                    <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <!-- NEW: Redesigned Socials -->
+                    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>WhatsApp Group</span>
+                    </a>
+                    <!-- Add your real number here -->
+                    <a href="https://wa.me/256700000000" target="_blank" aria-label="WhatsApp Support">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>+256 700 000 000</span>
+                    </a>
+                    <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                        <span>Kabale Online on X</span>
+                    </a>
+                    <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                        <span>Kabale Online on Facebook</span>
+                    </a>
                 </div>
             </div>
             <div class="footer-column">
@@ -638,6 +753,7 @@
         </div>
     </footer>
 
+    <!-- (Modals) -->
     <div id="nav-modal" class="nav-modal">
         <div class="nav-modal-content">
             <h3>Confirm Navigation</h3>
@@ -649,13 +765,16 @@
         </div>
     </div>
 
+    <!-- NEW: AI Chat Bubble -->
     <div id="ai-chat-bubble" class="ai-chat-bubble">
         <div class="ai-chat-bubble-avatar">
-            <i class="fa-solid fa-headset"></i> </div>
+            <i class="fa-solid fa-headset"></i> <!-- Female avatar icon -->
+        </div>
         <span class="ai-chat-bubble-text">Ask me anything...</span>
         <button id="ai-bubble-close" aria-label="Dismiss chat bubble">&times;</button>
     </div>
 
+    <!-- AI Chat Modal -->
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
         <div class="chat-modal-content">
