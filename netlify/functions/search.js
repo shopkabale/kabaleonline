@@ -11,11 +11,8 @@ if (!APP_ID || !SEARCH_KEY) {
 const algoliaClient = algoliasearch(APP_ID, SEARCH_KEY);
 
 // --- INDEX DEFINITIONS ---
-// The main index, sorted by relevance
 const mainIndex = algoliaClient.initIndex('products');
-// Replica for browsing, sorted by date
 const replicaIndex = algoliaClient.initIndex('products_createdAt_desc');
-// Replica for "Featured" section, sorted by when you featured it
 const heroReplicaIndex = algoliaClient.initIndex('products_heroTimestamp_desc');
 
 
@@ -30,14 +27,13 @@ exports.handler = async (event) => {
     }
 
     // --- 1. Get All Parameters ---
-    // These parameters now serve BOTH the homepage and the shop page
     const { 
-        searchTerm = "",    // For search bar
-        category,           // For category sidebar
-        type,               // For "rent" or "sale"
-        page = 0,           // For shop page "Load More"
-        filter,             // For homepage carousels ('deals', 'hero', etc.)
-        limit = 16          // Homepage requests 8 or 10, shop page defaults to 16
+        searchTerm = "",
+        category,
+        type,
+        page = 0,
+        filter,
+        limit = 16 
     } = event.queryStringParameters;
 
     try {
@@ -72,12 +68,10 @@ exports.handler = async (event) => {
             filterClauses.push('isSaveOnMore:true');
         }
         
-        // --- CRITICAL: isSold Logic ---
-        // We always hide sold items when browsing (homepage or shop categories)
-        // But we MUST show sold items if a user is searching for something specific
-        if (!searchTerm) {
-             filterClauses.push('isSold:false');
-        }
+        // --- MODIFICATION ---
+        // The 'isSold:false' filter has been REMOVED as requested.
+        // All products will now be shown.
+        // --- END MODIFICATION ---
 
         // Apply all filters
         if (filterClauses.length > 0) {
@@ -88,20 +82,16 @@ exports.handler = async (event) => {
         let indexToUse;
 
         if (filter === 'hero') {
-            // 1. Homepage "Featured" section: Use the Hero-sorted replica
             indexToUse = heroReplicaIndex;
         } else if (!searchTerm) {
-            // 2. Browsing (Homepage or Shop categories): Use the Date-sorted replica
             indexToUse = replicaIndex;
         } else {
-            // 3. Searching (User typed in search bar): Use the Main (relevance) index
             indexToUse = mainIndex;
         }
 
         // --- 5. Perform Search ---
         const { hits, nbPages } = await indexToUse.search(searchTerm, searchOptions);
 
-        // Re-format products to include the objectID as 'id'
         const products = hits.map(hit => {
             const { objectID, ...data } = hit;
             return { id: objectID, ...data };
