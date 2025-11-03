@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- (All your SEO and meta tags are preserved here) -->
     <title>Buy & Sell, Find Hostels, Services & Events in Kabale | Kabale Online</title>
     <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
     <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale, kabale Uganda, Campus Mart">
@@ -50,6 +51,7 @@
       });
     </script>
 
+    <!-- (Your schema.org scripts are preserved here) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -123,6 +125,9 @@
             font-weight: 700;
             margin: 0;
         }
+        main {
+            padding-top: 20px; /* Space below hero */
+        }
 
         /* --- SCROLL PROGRESS BAR --- */
         #scroll-progress-bar {
@@ -185,61 +190,35 @@
         #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
         .hero-search-form button { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
 
-        /* --- Search Placeholder Animation --- */
+        /* --- NEW: Smooth Search Placeholder Animation --- */
         #hero-search-input::placeholder {
             color: var(--text-secondary);
-            opacity: 1;
-            transition: opacity 0.3s ease;
+            opacity: 0; /* Start hidden */
+            transform: translateY(10px); /* Start below */
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        #hero-search-input.placeholder-hidden {
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: none;
-        }
-        
-        /* --- 2-COLUMN PAGE LAYOUT --- */
-        .page-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .sidebar { flex-basis: 260px; flex-shrink: 0; }
-        .main-content { flex-grow: 1; }
-        @media (min-width: 992px) {
-            .page-layout { flex-direction: row; }
+        #hero-search-input.placeholder-visible::placeholder {
+            opacity: 1; /* Fade in */
+            transform: translateY(0); /* Move up */
         }
         
-        /* --- CATEGORY SIDEBAR STYLES --- */
-        .category-widget {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
+        /* --- SINGLE COLUMN PAGE LAYOUT (Replaced 2-column) --- */
+        .main-content-wrapper {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 15px;
         }
-        .category-widget h3 { margin: 0; padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.1em; }
-        .category-list { list-style: none; padding: 0; margin: 0; }
-        .category-list a { display: flex; align-items: center; gap: 12px; padding: 14px 20px; text-decoration: none; color: var(--text-main); border-bottom: 1px solid var(--border-color); font-weight: 500; }
-        .category-list li:last-child a { border-bottom: none; }
-        .category-list a:hover { background-color: var(--bg-main); }
-        .category-list i { font-size: 1.1em; width: 20px; text-align: center; color: var(--text-secondary); }
-        .category-list a:hover i { color: var(--ko-primary); }
         
-        /* --- SECTION HEADER WITH "SEE ALL" LINK --- */
+        /* --- SECTION HEADER WITH "SEE MORE" --- */
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
-            padding: 0 20px 10px 20px;
+            padding: 0 0 10px 0; /* Removed side padding */
         }
-        /* Make Recent Items header match */
-        .recent-products-section .section-header {
-            padding-left: 0; 
-            padding-right: 0;
-        }
-        .see-all-btn {
+        .see-more-btn, .see-all-btn {
             color: var(--ko-primary);
             font-weight: 600;
             font-size: 0.9em;
@@ -248,29 +227,35 @@
             border-radius: 6px;
             transition: background-color 0.2s ease;
             white-space: nowrap; 
-            border: 1px solid var(--border-color);
+            border: 1px solid transparent;
             background-color: var(--bg-main);
             cursor: pointer;
         }
-        .see-all-btn:hover { background-color: var(--border-color); }
+        .see-more-btn:hover, .see-all-btn:hover { background-color: var(--border-color); }
+        .see-more-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
         
         /* --- PRODUCT CAROUSEL --- */
         .product-carousel-section {
             background-color: var(--bg-card);
             border-radius: var(--border-radius);
-            padding: 20px 0; /* No horizontal padding */
+            padding: 20px;
             margin-bottom: 20px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
             overflow: hidden; /* Hide overflow */
+        }
+        .product-carousel-section .section-header {
+            padding-left: 0;
+            padding-right: 0;
         }
         .product-carousel-wrapper { 
             overflow-x: auto; 
             padding-bottom: 15px; 
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
-            padding-left: 20px; 
-            padding-right: 20px; 
         }
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
@@ -282,10 +267,115 @@
         @media (min-width: 500px) {
             .product-carousel .product-card { flex: 0 0 200px; width: 200px; }
             .product-carousel-wrapper {
-                padding-right: 40px; /* This makes the last card cut off */
+                padding-right: 20px; /* "peek-a-boo" */
             }
         }
         
+        /* Expanded Grid style */
+        .product-carousel-wrapper.expanded {
+            overflow-x: hidden;
+            padding-right: 0; 
+        }
+        .product-carousel-wrapper.expanded .product-carousel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            flex-wrap: wrap; 
+        }
+        @media (min-width: 768px) {
+            .product-carousel-wrapper.expanded .product-carousel {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        /* --- NEW: HOW-TO SECTION --- */
+        .how-to-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .how-to-section .section-header {
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .how-to-carousel-wrapper {
+            overflow-x: auto; 
+            padding-bottom: 15px; 
+            scrollbar-width: none; 
+            -webkit-overflow-scrolling: touch;
+        }
+        .how-to-carousel-wrapper::-webkit-scrollbar { display: none; }
+        .how-to-carousel { display: flex; gap: 15px; }
+        .how-to-card {
+            flex: 0 0 160px;
+            width: 160px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+        }
+        .how-to-card img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+        }
+        .how-to-card h4 {
+            font-size: 1em;
+            margin: 10px 15px;
+            color: var(--text-main);
+        }
+        
+        /* --- NEW: CATEGORY SECTION --- */
+        .category-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .category-section .section-header {
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+            gap: 15px;
+        }
+        .category-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px 10px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-color: var(--ko-primary);
+        }
+        .category-card i {
+            font-size: 2em;
+            color: var(--ko-primary);
+            margin-bottom: 12px;
+        }
+        @media (min-width: 768px) {
+            .category-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns on desktop */
+            }
+        }
+
         /* --- RECENT ITEMS GRID --- */
         .recent-products-section {
             background-color: var(--bg-card);
@@ -293,6 +383,10 @@
             padding: 20px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
+        }
+        .recent-products-section .section-header {
+            padding-left: 0; 
+            padding-right: 0;
         }
         .product-grid { 
             display: grid; 
@@ -304,7 +398,6 @@
             .product-grid { grid-template-columns: repeat(4, 1fr); } 
         }
         @media (max-width: 500px) { 
-            /* For very small screens, 2 columns is still best */
             .product-grid { grid-template-columns: repeat(2, 1fr); } 
         }
         
@@ -400,11 +493,20 @@
         
         .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
         
-        .stock-info { font-size: 0.85em; font-weight: bold; margin: -10px 15px 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+        /* --- STOCK CSS --- */
+        .stock-info { 
+            font-size: 0.85em; 
+            font-weight: bold; 
+            margin: -10px 15px 10px; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            display: inline-block; 
+        }
         .in-stock { color: #155724; background-color: #d4edda; }
         .low-stock { color: #856404; background-color: #fff3cd; }
         .out-of-stock, .sold-out { color: #721c24; background-color: #f8d7da; }
         .product-card.is-sold img { filter: grayscale(90%); }
+        /* --- END STOCK CSS --- */
 
         .skeleton-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; border: 1px solid var(--border-color); }
         .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
@@ -535,6 +637,7 @@
 </head>
 <body class="light-mode">
 
+    <!-- NEW: Scroll Progress Bar -->
     <div id="scroll-progress-bar"></div>
 
     <script src="theme.js"></script>
@@ -567,6 +670,7 @@
     </header>
 
     <nav class="mobile-nav">
+        <!-- (Your mobile nav links) -->
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
@@ -588,6 +692,7 @@
     <div class="mobile-nav-overlay"></div>
 
     <main>
+        <!-- HERO WITH ANIMATED SEARCH -->
         <section class="hero">
             <div class="container">
                 <form class="hero-search-form" action="/shop/" method="get">
@@ -597,154 +702,206 @@
             </div>
         </section>
 
-        <div class="container page-layout">
+        <!-- SINGLE COLUMN LAYOUT WRAPPER -->
+        <div class="container main-content-wrapper">
         
-            <aside class="sidebar">
-                <div class="category-widget">
-                    <h3>Categories</h3>
-                    <ul class="category-list">
-                        <li><a href="/shop/?category=Electronics"><i class="fa-solid fa-laptop"></i> Electronics</a></li>
-                        <li><a href="/shop/?category=Clothing+%26+Apparel"><i class="fa-solid fa-shirt"></i> Clothing</a></li>
-                        <li><a href="/shop/?category=Home+%26+Furniture"><i class="fa-solid fa-couch"></i> Furniture</a></li>
-                        <li><a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a></li>
-                        <li><a href="https://gigs.kabaleonline.com" class="service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a></li>
-                        <li><a href="/shop/?category=Other"><i class="fa-solid fa-ellipsis"></i> Other</a></li>
-                    </ul>
+            <!-- FEATURED ITEMS (HORIZONTAL + EXPAND) -->
+            <section id="featured-section" class="product-carousel-section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Items</h2>
+                    <button class="see-more-btn" data-section="featured" data-expanded="false">See More &darr;</button>
                 </div>
-            </aside>
+                <div class="product-carousel-wrapper">
+                    <div class="product-carousel" id="featured-products-grid">
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    </div>
+                </div>
+            </section>
             
-            <main class="main-content">
+            <!-- DEALS SECTION (HORIZONTAL + EXPAND) -->
+            <section id="deals-section" class="product-carousel-section" style="display: none;">
+                 <div class="section-header">
+                    <h2 class="section-title">Today's Deals</h2>
+                    <button class="see-more-btn" data-section="deals" data-expanded="false">See More &darr;</button>
+                </div>
+                <div class="product-carousel-wrapper">
+                    <div class="product-carousel" id="deals-grid">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </section>
             
-                <section id="featured-section" class="product-carousel-section" style="display: none;">
-                    <div class="section-header">
-                        <h2 class="section-title">Featured Items</h2>
-                        <button class="see-more-btn" data-section="featured" data-expanded="false">See More &darr;</button>
-                    </div>
-                    <div class="product-carousel-wrapper">
-                        <div class="product-carousel" id="featured-products-grid">
-                            <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        </div>
-                    </div>
-                </section>
-                
-                <section id="deals-section" class="product-carousel-section" style="display: none;">
-                     <div class="section-header">
-                        <h2 class="section-title">Today's Deals</h2>
-                        <button class="see-more-btn" data-section="deals" data-expanded="false">See More &darr;</button>
-                    </div>
-                    <div class="product-carousel-wrapper">
-                        <div class="product-carousel" id="deals-grid">
-                            </div>
-                    </div>
-                </section>
-                
-                <section id="sponsored-section" class="product-carousel-section" style="display: none;">
-                     <div class="section-header">
-                        <h2 class="section-title">Sponsored</h2>
-                        <button class="see-more-btn" data-section="sponsored" data-expanded="false">See More &darr;</button>
-                    </div>
-                    <div class="product-carousel-wrapper">
-                        <div class="product-carousel" id="sponsored-grid">
-                            </div>
-                    </div>
-                </section>
-                
-                <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
-                     <div class="section-header">
-                        <h2 class="section-title">Save On More</h2>
-                        <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
-                    </div>
-                    <div class="product-carousel-wrapper">
-                        <div class="product-carousel" id="save-on-more-grid">
-                            </div>
-                    </div>
-                </section>
-                
-                <section class="recent-products-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Recent Items</h2>
-                        <a href="/shop/" class="see-all-btn">See All &rarr;</a>
-                    </div>
-                    <div class="product-grid" id="recent-products-grid">
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                    </div>
-                </section>
-
-                <div class="shop-cta-container-spaced">
-                    <p class="shop-cta-description">
-                        Welcome to the Kabale Online marketplace.
-                        We connect students and residents to buy, sell, and rent items.
-                        Find textbooks, electronics, or even a new hostel.
-                        Click below to explore all items available right now.
-                    </p>
-                    <a href="/shop/" class="shop-cta-btn">
-                        Browse All Products
-                    </a>
+            <!-- SPONSORED SECTION (HORIZONTAL + EXPAND) -->
+            <section id="sponsored-section" class="product-carousel-section" style="display: none;">
+                 <div class="section-header">
+                    <h2 class="section-title">Sponsored</h2>
+                    <button class="see-more-btn" data-section="sponsored" data-expanded="false">See More &darr;</button>
                 </div>
-                
-            </main>
-        
-        </div> </main>
+                <div class="product-carousel-wrapper">
+                    <div class="product-carousel" id="sponsored-grid">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SAVE ON MORE SECTION (HORIZONTAL + EXPAND) -->
+            <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
+                 <div class="section-header">
+                    <h2 class="section-title">Save On More</h2>
+                    <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
+                </div>
+                <div class="product-carousel-wrapper">
+                    <div class="product-carousel" id="save-on-more-grid">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- NEW: HOW-TO SECTION -->
+            <section id="how-to-section" class="how-to-section">
+                <div class="section-header">
+                    <h2 class="section-title">How To Get Started</h2>
+                </div>
+                <div class="how-to-carousel-wrapper">
+                    <div class="how-to-carousel" id="how-to-grid">
+                        <!-- JS will populate this, for now, here are 10 skeletons -->
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    </div>
+                </div>
+            </section>
 
-    <footer class="container">
-        <div class="footer-grid">
-            <div class="footer-column about-column">
-                <a href="/" class="footer-logo">Kabale <span>Online</span></a>
-                <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
-                <div class="footer-socials">
-                    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>WhatsApp Group</span>
-                    </a>
-                    <a href="https://wa.me/256770535000" target="_blank" aria-label="WhatsApp Support">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>+256 770 535 000</span>
-                    </a>
-                    <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">
-                        <i class="fab fa-twitter"></i>
-                        <span>Kabale Online on X</span>
-                    </a>
-                    <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook">
-                        <i class="fab fa-facebook-f"></i>
-                        <span>Kabale Online on Facebook</span>
-                    </a>
+            <!-- NEW: CATEGORY SECTION (MOVED) -->
+            <section class="category-section">
+                <div class="section-header">
+                    <h2 class="section-title">Browse by Category</h2>
+                </div>
+                <div class="category-grid" id="category-grid">
+                     <a href="/shop/?category=Electronics" class="category-card">
+                        <i class="fa-solid fa-laptop"></i><span>Electronics</span>
+                     </a>
+                     <a href="/shop/?category=Clothing+%26+Apparel" class="category-card">
+                        <i class="fa-solid fa-shirt"></i><span>Clothing</span>
+                     </a>
+                     <a href="/shop/?category=Home+%26+Furniture" class="category-card">
+                        <i class="fa-solid fa-couch"></i><span>Furniture</span>
+                     </a>
+                     <a href="/rentals/" class="category-card">
+                        <i class="fa-solid fa-building"></i><span>Hostels & Rentals</span>
+                     </a>
+                     <a href="https://gigs.kabaleonline.com" class="category-card service-link">
+                        <i class="fa-solid fa-screwdriver-wrench"></i><span>Services</span>
+                     </a>
+                     <a href="/shop/?category=Other" class="category-card">
+                        <i class="fa-solid fa-ellipsis"></i><span>Other</span>
+                     </a>
+                </div>
+            </section>
+
+            <!-- RECENT ITEMS SECTION -->
+            <section class="recent-products-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Items</h2>
+                    <!-- MODIFIED: Simple link -->
+                    <a href="/shop/" class="see-all-btn">See All &rarr;</a>
+                </div>
+                <!-- MODIFIED: 8 Skeletons for 8 items -->
+                <div class="product-grid" id="recent-products-grid">
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                </div>
+            </section>
+
+            <!-- CTA Button to Shop Page (with new spacing class) -->
+            <div class="shop-cta-container-spaced">
+                <!-- NEW: Description added -->
+                <p class="shop-cta-description">
+                    Welcome to the Kabale Online marketplace.
+                    We connect students and residents to buy, sell, and rent items.
+                    Find textbooks, electronics, or even a new hostel.
+                    Click below to explore all items available right now.
+                </p>
+                <a href="/shop/" class="shop-cta-btn">
+                    Browse All Products
+                </a>
+            </div>
+            
+        </div> <!-- End .main-content-wrapper -->
+
+    </main>
+
+    <footer>
+        <div class="container"> <!-- Footer is now inside its own container -->
+            <!-- NEW: "Massive" Footer Design -->
+            <div class="footer-grid">
+                <div class="footer-column about-column">
+                    <a href="/" class="footer-logo">Kabale <span>Online</span></a>
+                    <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
+                    <div class="footer-socials">
+                        <!-- NEW: Redesigned Socials -->
+                        <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp Group</span>
+                        </a>
+                        <!-- NOTE: Add your real number here -->
+                        <a href="https://wa.me/256770535000" target="_blank" aria-label="WhatsApp Support">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>+256 770 535 000</span>
+                        </a>
+                        <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                            <span>Kabale Online on X</span>
+                        </a>
+                        <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Kabale Online on Facebook</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Explore</h3>
+                    <a href="/shop/">Shop Items</a>
+                    <a href="/rentals/">Hostels & Rentals</a>
+                    <a href="https://gigs.kabaleonline.com" class="service-link">Find Services</a>
+                    <a href="/events/">Local Events</a>
+                    <a href="/lost-and-found/">Lost & Found</a>
+                </div>
+                <div class="footer-column">
+                    <h3>For Sellers</h3>
+                    <a href="/upload/">Sell an Item</a>
+                    <a href="/dashboard/">My Dashboard</a>
+                    <a href="https://gigs.kabaleonline.com" class="service-link">Offer a Service</a>
+                    <a href="/blog/">Seller Tips</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <a href="/about.html">About Us</a>
+                    <a href="/contact.html">Contact</a>
+                    <a href="/terms.html">Terms of Service</a>
+                    <a href="/blog/">Blog & News</a>
                 </div>
             </div>
-            <div class="footer-column">
-                <h3>Explore</h3>
-                <a href="/shop/">Shop Items</a>
-                <a href="/rentals/">Hostels & Rentals</a>
-                <a href="https://gigs.kabaleonline.com" class="service-link">Find Services</a>
-                <a href="/events/">Local Events</a>
-                <a href="/lost-and-found/">Lost & Found</a>
+            <div class="footer-bottom">
+                <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
             </div>
-            <div class="footer-column">
-                <h3>For Sellers</h3>
-                <a href="/upload/">Sell an Item</a>
-                <a href="/dashboard/">My Dashboard</a>
-                <a href="https://gigs.kabaleonline.com" class="service-link">Offer a Service</a>
-                <a href="/blog/">Seller Tips</a>
-            </div>
-            <div class="footer-column">
-                <h3>Company</h3>
-                <a href="/about.html">About Us</a>
-                <a href="/contact.html">Contact</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/blog/">Blog & News</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
 
+    <!-- (Modals) -->
     <div id="nav-modal" class="nav-modal">
         <div class="nav-modal-content">
             <h3>Confirm Navigation</h3>
@@ -756,13 +913,16 @@
         </div>
     </div>
 
+    <!-- NEW: AI Chat Bubble -->
     <div id="ai-chat-bubble" class="ai-chat-bubble">
         <div class="ai-chat-bubble-avatar">
-            <i class="fa-solid fa-headset"></i> </div>
+            <i class="fa-solid fa-headset"></i> <!-- Female avatar icon -->
+        </div>
         <span class="ai-chat-bubble-text">Ask me anything...</span>
         <button id="ai-bubble-close" aria-label="Dismiss chat bubble">&times;</button>
     </div>
 
+    <!-- AI Chat Modal -->
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
         <div class="chat-modal-content">
