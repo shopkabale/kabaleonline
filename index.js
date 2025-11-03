@@ -245,6 +245,16 @@ async function fetchRecentProducts() {
     }
 }
 
+// --- "How To" Section (Placeholder) ---
+// You can build this out later just like the product fetchers
+function fetchHowToSteps() {
+    const grid = document.getElementById('how-to-grid');
+    if (!grid) return;
+    // For now, it just shows the 10 skeletons in the HTML.
+    // To load real data, you would create a "how-to-steps" collection
+    // in Firebase and fetch/render it here.
+}
+
 
 // ==================================================== //
 //               WISHLIST & AUTH LOGIC                  //
@@ -418,23 +428,33 @@ function initializeUI() {
         ];
         let i = 0;
         
+        // This is a "drop-in" animation
         const animatePlaceholder = () => {
+            // 1. Add class to hide and move up
             searchInput.classList.add('placeholder-hidden'); 
+            
+            // 2. After 0.3s, change text and remove class to drop in
             setTimeout(() => {
                 i = (i + 1) % placeholders.length;
                 searchInput.placeholder = placeholders[i];
                 searchInput.classList.remove('placeholder-hidden'); 
-            }, 300); // Wait for fade out
+            }, 300); // This must match the CSS transition time
         };
-        setInterval(animatePlaceholder, 2500);
+        // Show first placeholder immediately
+        searchInput.classList.add('placeholder-visible');
+        searchInput.placeholder = placeholders[0];
+        
+        setInterval(animatePlaceholder, 2500); // Change every 2.5 seconds
     }
     
-    // --- MODIFIED: "See More" Button Logic for Carousels ---
+    // --- "See More" / "Show Less" Button Logic for Carousels ---
     document.body.addEventListener('click', async (e) => {
-        const seeMoreBtn = e.target.closest('.see-more-btn[data-section]');
-        if (!seeMoreBtn) return;
+        const seeMoreBtn = e.target.closest('.see-more-btn');
+        if (!seeMoreBtn) return; // Only target buttons with this class
         
         const sectionName = seeMoreBtn.dataset.section;
+        if (!sectionName) return; // Skip if it's not a section button
+        
         const isExpanded = seeMoreBtn.dataset.expanded === 'true';
         const wrapper = seeMoreBtn.closest('.product-carousel-section').querySelector('.product-carousel-wrapper');
         const grid = wrapper.querySelector('.product-carousel');
@@ -461,7 +481,6 @@ function initializeUI() {
             } else {
                 // --- EXPAND ---
                 let q;
-                const baseQuery = [collection(db, 'products'), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20)];
                 
                 if (sectionName === 'featured') {
                     q = query(collection(db, 'products'), where('isHero', '==', true), where('isSold', '==', false), orderBy('heroTimestamp', 'desc'), limit(20));
@@ -485,14 +504,17 @@ function initializeUI() {
                     seeMoreBtn.dataset.expanded = 'true';
                 } else {
                     seeMoreBtn.textContent = 'No More Items';
+                    seeMoreBtn.disabled = true; // No need to click again
                 }
             }
         } catch (error) {
-            console.error(`Error expanding section ${sectionName}:`, error);
+            console.error(`Error toggling section ${sectionName}:`, error);
             seeMoreBtn.textContent = 'Error';
         } finally {
-            // --- BUG FIX: This guarantees the button is re-enabled ---
-            seeMoreBtn.disabled = false;
+            // This ensures the button is re-enabled even if an error occurs
+            if (seeMoreBtn.textContent !== 'No More Items') {
+                 seeMoreBtn.disabled = false;
+            }
         }
     });
 
@@ -525,7 +547,8 @@ async function initializeData() {
                 fetchDeals(),
                 fetchSponsoredItems(),
                 fetchSaveOnMore(),
-                fetchRecentProducts() // This loads the first 8
+                fetchRecentProducts(), // This loads the first 8
+                fetchHowToSteps() // Loads the "How To" section (currently skeletons)
             ]);
         } catch (error) {
             console.error("A critical error occurred during data load:", error);
