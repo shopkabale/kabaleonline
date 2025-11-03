@@ -40,7 +40,6 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             const img = entry.target;
-            // Use placeholder as background for a smoother load
             img.style.backgroundImage = `url(${img.dataset.placeholder})`;
             
             img.src = img.dataset.src;
@@ -69,14 +68,16 @@ function renderProducts(gridElement, products) {
     if (!gridElement) return;
 
     gridElement.innerHTML = ""; // Clear skeletons
+    
+    // Check for empty or undefined products
     if (!products || products.length === 0) {
-        // Find the whole section and hide it
         const section = gridElement.closest('.product-carousel-section, .recent-products-section');
         if (section) {
             // Don't hide the recent section, just show a message
-            if (section.id === 'recent-products-section') {
+            if (section.classList.contains('recent-products-section')) {
                 gridElement.innerHTML = `<p style="padding: 0 15px; color: var(--text-secondary);">No recent products found.</p>`;
             } else {
+                // Hide the other (e.g., deals, sponsored) sections
                 section.style.display = 'none';
             }
         }
@@ -95,14 +96,14 @@ function renderProducts(gridElement, products) {
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
         const wishlistClass = isInWishlist ? 'active' : '';
 
-        const isActuallySold = product.isSold; // Relies on our Algolia filter
+        const isActuallySold = product.isSold;
         const soldClass = isActuallySold ? 'is-sold' : '';
         
         let stockStatusHTML = '';
-        if (!isActuallySold && product.quantity > 0 && product.quantity <= 5) {
-            stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
-        } else if (isActuallySold) {
+        if (isActuallySold) {
              stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
+        } else if (product.quantity > 0 && product.quantity <= 5) {
+            stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
         
         let tagsHTML = '';
@@ -152,27 +153,25 @@ function renderProducts(gridElement, products) {
 
 /**
  * Generic function to fetch products from our Algolia search function
- * @param {string} filter - 'deals', 'hero', 'sponsored', 'save', or 'recent'
- * @param {number} count - Number of items to fetch
- * @returns {Array} An array of product objects
  */
 async function fetchProductSection(filter, count = 8) {
-    // We will use the 'isSold:false' filter again for the homepage
-    // but not for 'recent' items, as per your last request.
     let url = `/.netlify/functions/search?limit=${count}`;
     
     if (filter !== 'recent') {
         url += `&filter=${filter}`;
     }
     
+    // We are NOT using the 'isSold:false' filter anymore, as requested
+    
     try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for filter ${filter}`);
         const { products } = await response.json();
         return products;
     } catch (error) {
         console.error(`Error fetching filter=${filter}:`, error);
-        return []; // Return an empty array on failure
+        // On failure, return an empty array so the page doesn't crash
+        return []; 
     }
 }
 
@@ -249,29 +248,57 @@ document.addEventListener('DOMContentLoaded', () => {
         state.currentUser = user;
         await fetchUserWishlist(); // Load wishlist first
         
-        // Now fetch all product sections in parallel
-        Promise.all([
-            fetchProductSection('hero', 8).then(products => {
-                if(products.length > 0) document.getElementById('featured-section').style.display = 'block';
+        // --- !!! THIS IS THE FIX !!! ---
+        // We use Promise.allSettled. This will NOT crash if one
+        // section fails. It will try to load all of them.
+        
+        const results = await Promise.allSettled([
+            fetchProductSection('hero', 8),
+            fetchProductSection('deals', 8),
+            fetchProductSection('sponsored', 8),
+            fetchProductSection('save', 8),
+            fetchProductSection('recent', 10)
+        ]);
+
+        // Now we render each section that "fulfilled" (loaded successfully)
+        
+        if (results[0].status === 'fulfilled') {
+            const products = results[0].value;
+            if (products.length > 0) {
+                document.getElementById('featured-section').style.display = 'block';
                 renderProducts(document.getElementById('featured-products-grid'), products);
-            }),
-            fetchProductSection('deals', 8).then(products => {
-                if(products.length > 0) document.getElementById('deals-section').style.display = 'block';
+            }
+        }
+
+        if (results[1].status === 'fulfilled') {
+            const products = results[1].value;
+            if (products.length > 0) {
+                document.getElementById('deals-section').style.display = 'block';
                 renderProducts(document.getElementById('deals-grid'), products);
-            }),
-            fetchProductSection('sponsored', 8).then(products => {
-                if(products.length > 0) document.getElementById('sponsored-section').style.display = 'block';
+            }
+        }
+        
+        if (results[2].status === 'fulfilled') {
+            const products = results[2].value;
+            if (products.length > 0) {
+                document.getElementById('sponsored-section').style.display = 'block';
                 renderProducts(document.getElementById('sponsored-grid'), products);
-            }),
-            fetchProductSection('save', 8).then(products => {
-                if(products.length > 0) document.getElementById('save-on-more-section').style.display = 'block';
+            }
+        }
+
+        if (results[3].status === 'fulfilled') {
+            const products = results[3].value;
+            if (products.length > 0) {
+                document.getElementById('save-on-more-section').style.display = 'block';
                 renderProducts(document.getElementById('save-on-more-grid'), products);
-            }),
-            fetchProductSection('recent', 10).then(products => renderProducts(document.getElementById('recent-products-grid'), products))
-        ]).catch(err => {
-            console.error("Error loading homepage product sections:", err);
-            // Handle a total failure if needed
-        });
+            }
+        }
+        
+        if (results[4].status === 'fulfilled') {
+            const products = results[4].value;
+            renderProducts(document.getElementById('recent-products-grid'), products);
+        }
+        // --- !!! END OF FIX !!! ---
     });
 
     // ==================================================== //
@@ -317,19 +344,17 @@ document.addEventListener('DOMContentLoaded', () => {
         navModal.addEventListener('click', (e) => { if (e.target === navModal) navModal.style.display = 'none'; });
     }
 
-    // --- NEW: AI Chat Bubble and Modal Logic ---
+    // --- AI Chat Bubble and Modal Logic ---
     const chatModalContainer = document.getElementById('chat-modal-container');
     const closeChatBtn = document.getElementById('close-chat-button');
     const chatModalOverlay = document.querySelector('.chat-modal-overlay');
     const aiChatBubble = document.getElementById('ai-chat-bubble');
     const aiBubbleClose = document.getElementById('ai-bubble-close');
 
-    // Function to open the main chat modal
     const openChatModal = () => {
         if (chatModalContainer) chatModalContainer.classList.add('active');
     };
     
-    // Function to close the main chat modal
     const closeChatModal = () => {
         if (chatModalContainer) chatModalContainer.classList.remove('active');
     };
@@ -339,12 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (aiChatBubble) aiChatBubble.classList.add('dismissed');
     }
 
-    // Click bubble to open modal
     if (aiChatBubble) {
         aiChatBubble.addEventListener('click', openChatModal);
     }
     
-    // Click 'X' on bubble to dismiss it
     if (aiBubbleClose) {
         aiBubbleClose.addEventListener('click', (e) => {
             e.stopPropagation(); // Stop the bubble click from opening the modal
@@ -353,10 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Main modal close buttons
     if (closeChatBtn) closeChatBtn.addEventListener('click', closeChatModal);
     if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeChatModal);
-    // --- END NEW CHAT LOGIC ---
     
     // --- Theme Switcher ---
     const themeToggle = document.getElementById('theme-toggle');
