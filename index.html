@@ -8,13 +8,13 @@
       gtag('js', new Date());
       gtag('config', 'G-5XQRYNC9TW');
     </script>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Buy & Sell, Find Hostels, Services & Events in Kabale | Kabale Online</title>
-    <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks,rent out your items , equipment or gadgets , find student hostels and rentals, discover local services, post events, and check the lost & found.">
-    <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale,rent , rent something, kabale Uganda, Campus Mart">
+    <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
+    <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale, kabale Uganda, Campus Mart">
     <meta name="author" content="Kabale Online">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.kabaleonline.com/">
@@ -36,13 +36,10 @@
     <meta name="theme-color" content="#007bff">
     <link rel="icon" href="/favicon.webp" type="image/webp">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="index.css">
 
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
@@ -82,10 +79,331 @@
       ]
     }
     </script>
-</head>
-<body>
+    <style>
+        /* --- THEME-AWARE CSS VARIABLES --- */
+        :root {
+            --ko-primary: #007aff;
+            --ko-primary-rgb: 0, 122, 255;
+            --ko-accent: #ffc107;
+            --bg-light: #f8f9fa;
+            --bg-card-light: #ffffff;
+            --text-main-light: #212529;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e2b3b;
+            --text-main-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-color-dark: #334155;
+            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --border-radius: 12px;
+        }
+        body.light-mode {
+            --bg-main: var(--bg-light); --bg-card: var(--bg-card-light); --text-main: var(--text-main-light);
+            --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light);
+        }
+        body.dark-mode {
+            --bg-main: var(--bg-dark); --bg-card: var(--bg-card-dark); --text-main: var(--text-main-dark);
+            --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark);
+        }
 
-    <script src="theme.js"></script>
+        /* --- GLOBAL STYLES --- */
+        body { 
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .section-title { 
+            font-size: 1.5em; 
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* --- HEADER & NAV --- */
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) { .hamburger-menu { display: none; } .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } }
+        
+        /* Mobile Nav */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav.active { transform: translateX(280px); }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
+        .mobile-nav a i { margin-right: 15px; color: var(--ko-primary); }
+        .mobile-nav-footer { padding: 15px; }
+        .mobile-nav .post-button { background-color: var(--ko-accent); color: #212529; font-weight: bold; border-radius: 25px; text-align: center; display: block; padding: 12px; text-decoration: none; }
+
+        /* Theme Toggle */
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--ko-primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        
+        /* --- HERO SECTION --- */
+        .hero { padding: 25px 0; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); margin-top: 70px; }
+        .hero-search-form { display: flex; max-width: 600px; margin: 0 auto; }
+        #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
+        .hero-search-form button { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
+
+        /* --- NEW: 2-COLUMN PAGE LAYOUT --- */
+        .page-layout {
+            display: flex; /* Mobile-first, this will be flex-column */
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .sidebar {
+            flex-basis: 260px; /* Desktop width */
+            flex-shrink: 0;
+        }
+        
+        .main-content {
+            flex-grow: 1; /* Takes up remaining space */
+        }
+        
+        @media (min-width: 992px) {
+            .page-layout {
+                flex-direction: row; /* Go side-by-side on desktop */
+            }
+        }
+        
+        /* --- NEW: CATEGORY SIDEBAR STYLES --- */
+        .category-widget {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .category-widget h3 {
+            margin: 0;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.1em;
+        }
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .category-list a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            text-decoration: none;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+        .category-list li:last-child a {
+            border-bottom: none;
+        }
+        .category-list a:hover {
+            background-color: var(--bg-main);
+        }
+        .category-list i {
+            font-size: 1.1em;
+            width: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        .category-list a:hover i {
+            color: var(--ko-primary);
+        }
+        
+        /* --- NEW: SECTION HEADER WITH "SEE ALL" --- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .see-all-btn {
+            color: var(--ko-primary);
+            font-weight: 600;
+            font-size: 0.9em;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            white-space: nowrap; /* Prevents wrap */
+        }
+        .see-all-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        /* --- PRODUCT CAROUSEL --- */
+        .product-carousel-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .product-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -webkit-overflow-scrolling: touch;}
+        .product-carousel-wrapper::-webkit-scrollbar { display: none; }
+        .product-carousel { display: flex; gap: 15px; }
+        .product-carousel .product-card { flex: 0 0 160px; width: 160px; }
+        @media (min-width: 768px) { .product-carousel .product-card { flex: 0 0 200px; width: 200px; } }
+
+        /* --- RECENT ITEMS GRID --- */
+        .recent-products-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+        
+        /* --- SHOP PAGE CTA BUTTON --- */
+        .shop-cta-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .shop-cta-btn {
+            display: inline-block;
+            background-color: var(--ko-primary);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+        .shop-cta-btn:hover {
+            background-color: #0056b3; /* Darker primary */
+        }
+        
+        /* --- PRODUCT CARD STYLES --- */
+        .product-card-link { text-decoration: none; color: inherit; }
+        .product-card { background: var(--bg-main); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; transition: all 0.3s ease-out; border: 1px solid var(--border-color); }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .product-card img.lazy-load { 
+            width: 100%; 
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; 
+            background-color: var(--border-color);
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .product-card img.loaded {
+            opacity: 1;
+        }
+        .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
+        .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
+        
+        .product-card h3,
+        .product-card .location-name,
+        .product-card .seller-name {
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .product-card .location-name { font-size: 0.85em; color: var(--text-secondary); margin: -10px 15px 5px; }
+        .product-card .location-name i { margin-right: 5px; color: var(--ko-primary); }
+        .product-card .seller-name { font-size: 0.85em; color: var(--text-secondary); margin: 0 15px 10px; }
+        
+        .seller-name.is-verified::after {
+            content: '\f058'; /* Font Awesome solid check-circle */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: var(--ko-primary);
+            font-size: 0.9em;
+            margin-left: 6px;
+            user-select: none;
+        }
+        
+        .product-tags { position: absolute; top: 12px; left: 12px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
+        .product-tag { background-color: rgba(0, 0, 0, 0.7); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700; text-transform: uppercase; }
+        .product-tag.type-rent { background-color: var(--ko-primary); }
+        .product-tag.type-sale { background-color: #6c757d; }
+        .product-tag.condition-new { background-color: #28a745; }
+        .product-tag.condition-used { background-color: var(--ko-accent); color: #212529; }
+        
+        .product-card .wishlist-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: var(--text-main); z-index: 3; }
+        
+        .stock-info { font-size: 0.85em; font-weight: bold; margin: -10px 15px 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+        .in-stock { color: #155724; background-color: #d4edda; }
+        .low-stock { color: #856404; background-color: #fff3cd; }
+        .out-of-stock, .sold-out { color: #721c24; background-color: #f8d7da; }
+        .product-card.is-sold img { filter: grayscale(90%); }
+
+        .skeleton-card { background: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-shadow: var(--shadow); position: relative; border: 1px solid var(--border-color); }
+        .skeleton-image, .skeleton-text { background-color: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0); background-size: 250px; animation: skeleton-shimmer 1.5s infinite linear; }
+        body.dark-mode .skeleton-card, body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color: #334155; background-image: linear-gradient(90deg, #334155, #475569, #334155); }
+        .skeleton-image { width: 100%; aspect-ratio: 1 / 1; }
+        .skeleton-text { height: 1.2rem; margin: 12px 15px 0; border-radius: 4px; }
+        @keyframes skeleton-shimmer { 100% { background-position: 250px; } }
+        
+        /* --- FOOTER (PRESERVED) --- */
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 60px 0 20px; margin-top: 30px; }
+        .footer-grid { display: grid; grid-template-columns: 1fr; gap: 40px; padding-bottom: 40px; }
+        .footer-column { text-align: left; }
+        .footer-column h3 { font-size: 1.1em; font-weight: 600; color: #ffffff; margin-top: 0; margin-bottom: 20px; position: relative; padding-bottom: 10px; }
+        .footer-column h3::after { content: ''; position: absolute; bottom: 0; left: 0; width: 30px; height: 2px; background-color: var(--ko-accent); }
+        .footer-column a { display: block; color: #94a3b8; text-decoration: none; margin-bottom: 12px; }
+        .footer-column a:hover { color: #ffffff; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; text-decoration: none; color: #ffffff; display: inline-block; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-tagline { color: #94a3b8; line-height: 1.7; margin-bottom: 20px; }
+        .footer-socials a { color: #e2e8f0; font-size: 22px; margin-right: 20px; text-decoration: none; }
+        .footer-bottom { border-top: 1px solid #334155; padding-top: 20px; text-align: center; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; margin: 0; }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+        
+        /* --- MODALS (PRESERVED) --- */
+        .nav-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .nav-modal-content { background-color: var(--bg-card); padding: 30px; border-radius: var(--border-radius); text-align: center; max-width: 400px; width: 90%; }
+        .nav-modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .nav-modal-btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; }
+        .btn-cancel { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-confirm { background-color: var(--ko-primary); color: white; }
+        
+        #open-chat-button { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background-color: var(--ko-primary); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; }
+        #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
+        .chat-modal-content { position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%; max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .chat-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .chat-modal-header h3 { margin: 0; font-size: 1.2em; color: var(--text-main); }
+        #close-chat-button { background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; padding: 5px; }
+        #chat-iframe { width: 100%; height: 100%; border: none; }
+        #chat-modal-container.active { display: flex; }
+        #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
+        #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+    </style>
+</head>
+<body class="light-mode"> <script src="theme.js"></script>
 
     <header class="sticky-header">
         <div class="container">
@@ -138,241 +456,100 @@
     <main>
         <section class="hero">
             <div class="container">
-                <h1>Buy, Sell & Rent</h1>
-                <div class="hero-typing-container">
-                    <span id="typing-text"></span><span class="typing-cursor"></span>
-                </div>
-                <p>The #1 marketplace for students and residents in Kabale. Discover cheap items , Sell your items ,Rent out your items , find a place to stay, or offer your skills.</p>
                 <form class="hero-search-form" action="/shop/" method="get">
-                    <input type="search" name="q" id="hero-search-input" aria-label="Search">
+                    <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search for anything...">
                     <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
                 </form>
             </div>
         </section>
 
-        <section class="ai-cta-section">
-            <div class="container ai-cta-buttons">
-                <div class="ai-cta-item">
-                    <a href="/ai/" id="open-chat-cta-btn" class="ai-cta-btn btn-ai">
-                        <i class="fa-solid fa-comments"></i> Chat with Amara
-                    </a>
-                    <p class="ai-cta-subtext">
-                        Click here to chat with Amara, your 24/7 personal AI assistant. Amara can help you find specific products, answer your questions about Kabale Online, or upload your product for you 
-                    </p>
+        <div class="container page-layout">
+        
+            <aside class="sidebar">
+                <div class="category-widget">
+                    <h3>Categories</h3>
+                    <ul class="category-list">
+                        <li><a href="/shop/?category=Electronics"><i class="fa-solid fa-laptop"></i> Electronics</a></li>
+                        <li><a href="/shop/?category=Clothing+%26+Apparel"><i class="fa-solid fa-shirt"></i> Clothing</a></li>
+                        <li><a href="/shop/?category=Home+%26+Furniture"><i class="fa-solid fa-couch"></i> Furniture</a></li>
+                        <li><a href="/rentals/"><i class="fa-solid fa-building"></i> Hostels & Rentals</a></li>
+                        <li><a href="https://gigs.kabaleonline.com" class="service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a></li>
+                        <li><a href="/shop/?category=Other"><i class="fa-solid fa-ellipsis"></i> Other</a></li>
+                    </ul>
                 </div>
-                <div class="ai-cta-item">
-                    <a href="/shop/" class="ai-cta-btn btn-shop">
-                        <i class="fa-solid fa-store"></i> Start Shopping
-                    </a>
-                    <p class="ai-cta-subtext">
-                        Dive into our marketplace and discover what the Kabale community is selling. You can browse everything from electronics and textbooks to clothing and household items.
-                    </p>
-                </div>
-                <div class="ai-cta-item">
-                    <a href="/upload/" class="ai-cta-btn btn-sell">
-                        <i class="fa-solid fa-plus-circle"></i> Start Selling
-                    </a>
-                    <p class="ai-cta-subtext">
-                        Turn your extra stuff into cash. It's fast, free, and easy to create a listing. Snap a photo, add a description, and connect with buyers right here on campus.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <section class="stats-section">
-    <div class="container">
-        <h2 class="section-title">Trusted by the <span style="color: var(--ko-primary);">Kabale</span> Community</h2>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="icon"><i class="fas fa-users"></i></div>
-                <div class="stat-number" data-target="127">0</div>
-                <div class="stat-label">Registered Users last month </div>
-            </div>
-            <div class="stat-card">
-                <div class="icon"><i class="fas fa-box"></i></div>
-                <div class="stat-number" data-target="68">0</div>
-                <div class="stat-label">Items Listed last month</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon"><i class="fas fa-star"></i></div>
-                <div class="stat-number">4.8</div>
-                <div class="stat-label">Average Rating</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon"><i class="fas fa-chart-line"></i></div>
-                <div class="stat-number">3.8K+</div>
-                <div class="stat-label">Visitors last month</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-        <section class="image-category-section">
-            <div class="container">
-                <h2 class="section-title">Shop by Category</h2>
-                <div class="image-category-grid">
-                    <a href="/shop/?category=Electronics" class="image-category-card">
-                        <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Electronics category">
-                        <h3>Electronics</h3>
-                    </a>
-                    <a href="/shop/?category=Clothing+%26+Apparel" class="image-category-card">
-                        <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Clothing & Apparel category">
-                        <h3>Clothing</h3>
-                    </a>
-                    <a href="/shop/?category=Home+%26+Furniture" class="image-category-card">
-                        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Home & Furniture category">
-                        <h3>Furniture</h3>
-                    </a>
-                    <a href="/rentals/" class="image-category-card">
-                        <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Hostels & Rentals category">
-                        <h3>Rentals</h3>
-                    </a>
-                    <a href="https://gigs.kabaleonline.com" class="image-category-card service-link">
-                        <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Services category">
-                        <h3>Services</h3>
-                    </a>
-                    <a href="/shop/?category=Other" class="image-category-card">
-                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Other categories">
-                        <h3>Other</h3>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="top-sections" id="top-sections">
-            <div class="container">
-                <h2 class="section-title">What We Offer</h2>
-                <div class="sections-grid">
-                    <a href="/shop/" class="section-card">
-                        <i class="fas fa-store"></i>
-                        <h3>Buy or Rent Items</h3>
-                        <p>Discover deals, or rent items like textbooks, electronics, and more from students and residents in Kabale.</p>
-                    </a>
-                    <a href="/upload/" class="section-card">
-                        <i class="fas fa-cash-register"></i>
-                        <h3>Sell Your Stuff</h3>
-                        <p>Turn your unused items into cash and connect with buyers in your campus community.</p>
-                    </a>
-
-<a href="/shop/?type=rent" class="section-card">
-                <i class="fas fa-hand-holding-dollar"></i>
-                <h3>Rent Your Stuff</h3>
-                <p>Earn extra cash by renting out items you own, like tools, cameras, or event gear.</p>
-            </a>
-                    <a href="/rentals/" class="section-card">
-                        <i class="fas fa-house-user"></i>
-                        <h3>Find Hostels</h3>
-                        <p>Browse listings for student hostels and rentals near campus, with details and contacts.</p>
-                    </a>
-                    <a href="https://gigs.kabaleonline.com" class="section-card service-link">
-                        <i class="fas fa-concierge-bell"></i>
-                        <h3>Offer a Service</h3>
-                        <p>Promote your skills, from tutoring to repairs, on our services hub.</p>
-                    </a>
-                    <a href="/events/" class="section-card">
-                        <i class="fas fa-calendar-days"></i>
-                        <h3>Promote your event</h3>
-                        <p>Promote your event , and sell tickets to the kabale community easily .</p>
-                    </a>
-                    <a href="/lost-and-found/" class="section-card">
-                        <i class="fas fa-magnifying-glass-plus"></i>
-                        <h3>Lost & Found</h3>
-                        <p>Post a notice for a lost item or report something you've found to help our community.</p>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="action-menu-section">
-            <div class="container">
-                <div class="action-menu-card">
-                    <h2 style="text-align: center;">What would you like to do?</h2>
-                    <div class="action-buttons-grid">
-                        <a href="/upload/" class="action-button"><i class="fa-solid fa-plus-circle"></i> Upload an item</a>
-                        <a href="/events/" class="action-button"><i class="fa-solid fa-calendar-days"></i> Explore Events</a>
-                        <a href="/shop/" class="action-button"><i class="fa-solid fa-store"></i> Start Buying</a>
-<a href="/shop/?type=rent" class="action-button"><i class="fa-solid fa-retweet"></i> Rent an Item</a>
-                        <a href="https://gigs.kabaleonline.com" class="action-button"><i class="fa-solid fa-utensils"></i> Explore Services</a>
-                        <a href="https://gigs.kabaleonline.com" class="action-button"><i class="fa-solid fa-bullhorn"></i> Offer a Service</a>
-                        <a href="/blog/" class="action-button"><i class="fa-solid fa-book"></i> Read Our Blog</a>
-                        <a href="/requests/" class="action-button"><i class="fa-solid fa-clipboard-list"></i> Request an Item</a>
-                        <a href="stories.html" class="action-button"><i class="fa-solid fa-edit"></i> Share a Story</a>
-                        <a href="submit-testimonial.html" class="action-button"><i class="fa-solid fa-comment-dots"></i> Share Feedback</a>
-                        <a href="/lost-and-found/" class="action-button"><i class="fa-solid fa-magnifying-glass"></i> Report Lost & Found</a>
-                        <a href="/rentals/" class="action-button"><i class="fa-solid fa-home"></i> List a Rental</a>
+            </aside>
+            
+            <main class="main-content">
+            
+                <section id="featured-section" class="product-carousel-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Featured Items</h2>
+                        <a href="/shop/?filter=hero" class="see-all-btn">See All &rarr;</a>
                     </div>
-                </div>
-            </div>
-        </section>
+                    <div class="product-carousel-wrapper">
+                        <div class="product-carousel" id="featured-products-grid">
+                            </div>
+                    </div>
+                </section>
+                
+                <section id="deals-section" class="product-carousel-section" style="display: none;">
+                     <div class="section-header">
+                        <h2 class="section-title">Today's Deals</h2>
+                        <a href="/shop/?filter=deals" class="see-all-btn">See All &rarr;</a>
+                    </div>
+                    <div class="product-carousel-wrapper">
+                        <div class="product-carousel" id="deals-grid">
+                            </div>
+                    </div>
+                </section>
+                
+                <section id="sponsored-section" class="product-carousel-section" style="display: none;">
+                     <div class="section-header">
+                        <h2 class="section-title">Sponsored</h2>
+                        <a href="/shop/?filter=sponsored" class="see-all-btn">See All &rarr;</a>
+                    </div>
+                    <div class="product-carousel-wrapper">
+                        <div class="product-carousel" id="sponsored-grid">
+                            </div>
+                    </div>
+                </section>
+                
+                <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
+                     <div class="section-header">
+                        <h2 class="section-title">Save On More</h2>
+                        <a href="/shop/?filter=save" class="see-all-btn">See All &rarr;</a>
+                    </div>
+                    <div class="product-carousel-wrapper">
+                        <div class="product-carousel" id="save-on-more-grid">
+                            </div>
+                    </div>
+                </section>
+                
+                <section class="recent-products-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Items</h2>
+                        <a href="/shop/" class="see-all-btn">See All &rarr;</a>
+                    </div>
+                    <div class="product-grid" id="recent-products-grid">
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    </div>
+                </section>
 
-        <section class="trending-section">
-            <h2 class="section-title">Trending Products</h2>
-            <div class="product-carousel-wrapper">
-                <div class="product-carousel" id="trending-products-grid">
-                    <p style="padding: 0 15px;">Loading trending products...</p>
+                <div class="shop-cta-container">
+                    <a href="/shop/" class="shop-cta-btn">
+                        Browse All Products
+                    </a>
                 </div>
-            </div>
-        </section>
+                
+            </main>
+        
+        </div> </main>
 
-        <section class="how-to-section">
-            <div class="container">
-                <div class="how-to-card buy-card">
-                    <div class="how-to-icon"><i class="fas fa-shopping-bag"></i></div>
-                    <h3>How to Buy on Kabale Online</h3>
-                    <ol class="how-to-list">
-                        <li><strong>Browse & Discover:</strong> Explore the shop or use the search bar to find exactly what you're looking for.</li>
-                        <li><strong>Add to Cart:</strong> Found something you like? Add it to your cart.</li>
-                        <li><strong>Confirm Your Order:</strong> When ready, checkout. Your order details will be sent to the seller.</li>
-                        <li><strong>Arrange Delivery:</strong> The seller will contact you to arrange payment and a safe meetup.</li>
-                    </ol>
-                    <a href="/shop/" class="how-to-btn">Start Browsing</a>
-                </div>
-                <div class="how-to-card sell-card">
-                    <div class="how-to-icon"><i class="fas fa-store"></i></div>
-                    <h3>How to Sell in Minutes</h3>
-                    <ol class="how-to-list">
-                        <li><strong>Create a Listing:</strong> Upload your item in under 60 seconds. Add clear photos and an honest description.</li>
-                        <li><strong>Get Notified:</strong> You'll be notified when a buyer places an order.</li>
-                        <li><strong>Contact the Buyer:</strong> Use the buyer's contact info to arrange a time and place for the exchange.</li>
-                        <li><strong>Get Paid & Deliver:</strong> Meet the buyer, get paid, and hand over the item. Mark the order as "Delivered."</li>
-                    </ol>
-                    <a href="/upload/" class="how-to-btn">Start Selling Now</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="contact-section">
-            <div class="container">
-                <div class="contact-form">
-                    <h2>Send Us a Message</h2>
-                    <form action="https://formspree.io/f/xnngyovw" method="POST">
-                        <div class="form-group">
-                            <label for="name">Your Name</label>
-                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Your Email</label>
-                            <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" name="message" class="form-control" placeholder="Type your message here..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn-submit">Send Message</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <section class="testimonial-section" id="testimonials">
-            <h2 class="section-title">Community Voices</h2>
-            <div id="testimonial-grid" class="testimonial-grid"></div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container footer-grid">
+    <footer class="container">
+        <div class="footer-grid">
             <div class="footer-column about-column">
                 <a href="/" class="footer-logo">Kabale <span>Online</span></a>
                 <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
@@ -405,7 +582,7 @@
                 <a href="/blog/">Blog & News</a>
             </div>
         </div>
-        <div class="container footer-bottom">
+        <div class="footer-bottom">
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
@@ -420,7 +597,7 @@
             </div>
         </div>
     </div>
-    
+
     <button id="open-chat-button" aria-label="Open AI Assistant">
         <i class="fa-solid fa-robot"></i>
     </button>
@@ -433,10 +610,10 @@
                 <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <iframe id="chat-iframe" src="/ai/" title="KabaleOnline AI Assistant"></iframe>
-            <div id="resize-handle"></div>
+            <div id="resize-handle"></div> 
         </div>
     </div>
-    
-    <script type="module" src="index.js"></script>
+
+    <script type.module" src="index.js"></script>
 </body>
 </html>
