@@ -8,18 +8,85 @@
       gtag('js', new Date());
       gtag('config', 'G-5XQRYNC9TW');
     </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Shop Deals on Electronics, Textbooks & More in Kabale | Kabale Online</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <meta name="description" content="Find top deals on electronics, phones, textbooks & more in Kabale. Kabale Online is the #1 marketplace for students & residents to buy & sell new or used items locally. Shop now!">
+    
+    <meta name="keywords" content="
+        Kabale, Kabale Online, Kabale Online shop, buy and sell Kabale, shop in Kabale, Kabale marketplace, Kabale e-commerce, 
+        online shopping Kabale, Kabale deals, Kabale classifieds, Kigezi marketplace, Western Uganda shopping,
+        
+        electronics Kabale, phones Kabale, smartphones Kabale, used phones Kabale, buy used phone Kabale,
+        laptops Kabale, used laptop Kabale, computers Kabale, computer repair Kabale, phone accessories Kabale,
+        TVs Kabale, appliances Kabale, kitchen appliances Kabale,
+        
+        textbooks Kabale, university textbooks Kabale, Kabale University market, KAB market, KAB students,
+        used textbooks Kabale, cheap textbooks Kabale, student market Kabale, Kabale campus market, 
+        Campus Mart Kabale, student deals Kabale, student supplies Kabale, school supplies Kabale,
+        
+        clothing Kabale, fashion Kabale, shoes Kabale, men's clothing Kabale, women's fashion Kabale, 
+        buy clothes online Kabale, second-hand clothing Kabale,
+        
+        furniture Kabale, home goods Kabale, used furniture Kabale, second-hand furniture Kabale, 
+        furniture for sale in Kabale, student furniture Kabale, room decor Kabale,
+        
+        new items Kabale, used items Kabale, second-hand Kabale, pre-owned Kabale, for sale Kabale,
+        buy electronics Kabale, sell phone Kabale, find textbooks Kabale, shop for furniture Kabale, 
+        order online Kabale, Kabale delivery, best deals in Kabale, local deals Kabale,
+        
+        gaming consoles Kabale, PS5 Kabale, PS4 Kabale, Xbox Kabale, video games Kabale, books Kabale,
+        rentals Kabale, items for rent Kabale, hostels Kabale, student hostel supplies Kabale,
+        
+        shop near Kabale University, shopping near KAB, online shop in Kigezi, market in Kabale,
+        local sellers Kabale, Kabale residents, local shopping Kabale, community marketplace Kabale,
+        
+        buy used iPhone in Kabale, affordable student laptop Kabale, second-hand textbooks for Kabale University,
+        Kabale Online electronics shop, how to sell items in Kabale, best place to buy a phone in Kabale,
+        Kabale classifieds electronics, local shopping app Kabale
+    ">
+    
+    <meta name="author" content="Kabale Online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.kabaleonline.com/shop/">
+    
+    <meta name="google-site-verification" content="Hrdoz4h9X4bKfIy48qn-kTlSFse05MnOMqbrF4ENq-Y" />
+    
+    <meta name="geo.region" content="UG-W" />
+    <meta name="geo.placename" content="Kabale" />
+    <meta name="geo.position" content="-1.25;29.9833" />
+    <meta name="ICBM" content="-1.25, 29.9833" />
+
+    <meta property="og:title" content="Shop Deals in Kabale | Kabale Online">
+    <meta property="og:description" content="Find the best deals on electronics, phones, textbooks, clothing, and more from local sellers in Kabale, Uganda.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.kabaleonline.com/shop/">
+    <meta property="og:site_name" content="Kabale Online">
+    <meta property="og:locale" content="en_UG">
+    <meta property="og:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Shop Deals in Kabale | Kabale Online">
+    <meta name="twitter:description" content="Find the best deals on electronics, phones, textbooks, clothing, and more from local sellers in Kabale, Uganda.">
+    <meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg">
+    <meta name="twitter:site" content="@kabaleonline">
 
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    
     <link rel="icon" href="/favicon.webp" type="image/webp">
-    
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007aff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kabale Online">
 
- 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
         :root {
             --ko-primary: #007aff;
