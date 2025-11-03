@@ -25,6 +25,7 @@ const eventsIndex = algoliaClient.initIndex('events');
 exports.handler = async (event) => {
     try {
         if (event.httpMethod === 'POST' && event.body) {
+            // (Your delete logic is preserved)
             const body = JSON.parse(event.body);
             if (body.action === 'delete' && body.objectID) {
                 await productsIndex.deleteObject(body.objectID);
@@ -35,7 +36,7 @@ exports.handler = async (event) => {
             }
         }
         
-        // Sync Products
+        // --- Sync Products (UPDATED) ---
         const productsSnapshot = await db.collection('products').get();
         const algoliaObjects = productsSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -47,23 +48,34 @@ exports.handler = async (event) => {
                 category: data.category,
                 price: data.price,
                 quantity: data.quantity,
-                listing_type: data.listing_type,
                 
-                // --- ADDED THESE TWO LINES ---
+                // All new fields:
+                listing_type: data.listing_type,
                 condition: data.condition,
                 location: data.location,
-                // -----------------------------
                 
                 sellerId: data.sellerId,
                 sellerName: data.sellerName,
+                sellerIsVerified: data.sellerIsVerified || false,
+                sellerBadges: data.badges || [],
+
                 imageUrls: data.imageUrls,
                 isSold: data.isSold || false,
-                createdAt: data.createdAt ? data.createdAt.toMillis() : null
+                
+                // Homepage fields:
+                isDeal: data.isDeal || false,
+                isSponsored: data.isSponsored || false,
+                isSaveOnMore: data.isSaveOnMore || false,
+                isHero: data.isHero || false,
+                
+                // Timestamp fields:
+                createdAt: data.createdAt ? data.createdAt.toMillis() : Date.now(),
+                heroTimestamp: data.heroTimestamp ? data.heroTimestamp.toMillis() : null
             };
         });
         await productsIndex.saveObjects(algoliaObjects);
 
-        // Sync Events (This section remains the same)
+        // --- Sync Events (Unchanged) ---
         const eventsSnapshot = await db.collection('events').get();
         const algoliaEventObjects = eventsSnapshot.docs.map(doc => {
             const data = doc.data();
