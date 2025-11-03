@@ -10,12 +10,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 const state = {
     currentUser: null,
     wishlist: new Set(),
-    howTo: {
-        currentIndex: 0,
-        totalItems: 10,
-        autoScrollTimer: null,
-        userInteracted: false
-    }
+    // REMOVED: state.howTo is no longer needed for the new 2-page slider
 };
 
 /**
@@ -414,6 +409,24 @@ function initializeUI() {
         });
     }
 
+    // --- ADDED: Back to Top Button Logic ---
+    const backToTopBtn = document.getElementById('back-to-top-btn');
+    if (backToTopBtn) {
+        // Show/hide button on scroll
+        window.addEventListener('scroll', () => {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        // Scroll to top on click
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
     // --- Search Placeholder Animation ---
     const searchInput = document.getElementById('hero-search-input');
     if (searchInput) {
@@ -495,84 +508,75 @@ function initializeUI() {
         }
     });
 
-    // --- "How-To" Carousel Logic ---
-    const howToWrapper = document.querySelector('.how-to-carousel-wrapper');
-    const howToCarousel = document.querySelector('.how-to-carousel');
+    // --- REPLACED: "How-To" 2-Page Slider Logic ---
+    const slider = document.getElementById('how-to-slider');
     const prevBtn = document.getElementById('how-to-prev');
     const nextBtn = document.getElementById('how-to-next');
-    const dotsContainer = document.getElementById('how-to-dots-container');
-    const progressBar = document.getElementById('how-to-progress');
-    
-    if (howToCarousel) {
-        const totalItems = 10;
-        let currentIndex = 0;
-        let autoScrollTimer = setInterval(scrollNext, 5000); // Auto-scroll every 5 seconds
+    const dotsContainer = document.getElementById('how-to-dots');
 
-        // Create dots
-        for (let i = 0; i < totalItems; i++) {
-            const dot = document.createElement('span');
-            dot.classList.add('how-to-dot');
-            dot.dataset.index = i;
-            if (i === 0) dot.classList.add('active');
-            dotsContainer.appendChild(dot);
-        }
-        const dots = document.querySelectorAll('.how-to-dot');
+    if (slider && prevBtn && nextBtn && dotsContainer) {
+        let currentSlide = 0;
+        const totalSlides = 2; // We have 2 slides: "How to Sell" and "How to Buy"
+        const dots = dotsContainer.querySelectorAll('.how-to-dot');
+        let autoScrollTimer = setInterval(slideNext, 5000); // Auto-scroll every 5 seconds
 
-        function updateCarousel() {
-            const cardWidth = howToCarousel.querySelector('.how-to-card').offsetWidth;
-            const gap = 15;
-            const scrollAmount = currentIndex * (cardWidth + gap);
-            
-            howToWrapper.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+        function updateSlider() {
+            // 1. Move the slider
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 
-            // Update dots
+            // 2. Update dots
             dots.forEach(dot => dot.classList.remove('active'));
-            dots[currentIndex].classList.add('active');
+            dots[currentSlide].classList.add('active');
 
-            // Update progress bar
-            const progressPercent = (currentIndex / (totalItems - 1)) * 100;
-            progressBar.style.width = `${progressPercent}%`;
-
-            // Update buttons
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex === totalItems - 1;
+            // 3. Update arrow buttons
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
         }
 
-        function scrollNext() {
-            currentIndex++;
-            if (currentIndex >= totalItems) {
-                currentIndex = 0; // Loop back to start
-            }
-            updateCarousel();
+        function slideNext() {
+            currentSlide = (currentSlide + 1) % totalSlides; // Loop to start
+            updateSlider();
         }
 
-        function scrollPrev() {
-            currentIndex--;
-            if (currentIndex < 0) {
-                currentIndex = totalItems - 1; // Loop to end
-            }
-            updateCarousel();
+        function slidePrev() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; // Loop to end
+            updateSlider();
         }
 
         function resetTimer() {
             clearInterval(autoScrollTimer);
-            autoScrollTimer = setInterval(scrollNext, 5000);
+            autoScrollTimer = setInterval(slideNext, 5000);
         }
 
-        prevBtn.addEventListener('click', () => { scrollPrev(); resetTimer(); });
-        nextBtn.addEventListener('click', () => { scrollNext(); resetTimer(); });
+        // --- Event Listeners ---
+        nextBtn.addEventListener('click', () => {
+            // On manual click, just go to the next slide, don't loop
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlider();
+                resetTimer();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            // On manual click, just go to the previous slide
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+                resetTimer();
+            }
+        });
+
         dots.forEach(dot => {
             dot.addEventListener('click', (e) => {
-                currentIndex = parseInt(e.target.dataset.index);
-                updateCarousel();
+                currentSlide = parseInt(e.target.dataset.slide);
+                updateSlider();
                 resetTimer();
             });
         });
-        
-        howToWrapper.addEventListener('touchstart', () => clearInterval(autoScrollTimer));
-        howToWrapper.addEventListener('touchend', () => resetTimer());
 
-        updateCarousel(); // Set initial state
+        // Set initial state
+        updateSlider();
     }
 
     // --- Footer Scroll Animation ---
@@ -605,7 +609,7 @@ async function initializeData() {
                 fetchSponsoredItems(),
                 fetchSaveOnMore(),
                 fetchRecentProducts(), // This loads the first 8
-                fetchHowToSteps() // This just runs (currently no data)
+                // REMOVED: fetchHowToSteps() call
             ]);
         } catch (error) {
             console.error("A critical error occurred during data load:", error);
