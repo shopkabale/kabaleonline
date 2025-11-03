@@ -36,6 +36,7 @@
     <meta name="theme-color" content="#007bff">
     <link rel="icon" href="/favicon.webp" type="image/webp">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,6 +80,7 @@
       ]
     }
     </script>
+
     <style>
         /* --- THEME-AWARE CSS VARIABLES --- */
         :root {
@@ -138,7 +140,11 @@
         .header-icons { display: flex; align-items: center; gap: 20px; }
         .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
         .desktop-nav { display: none; } 
-        @media (min-width: 1024px) { .hamburger-menu { display: none; } .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } }
+        @media (min-width: 1024px) { 
+            .hamburger-menu { display: none !important; } /* <-- FIX: Hide hamburger on desktop */
+            .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} 
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } 
+        }
         
         /* Mobile Nav */
         .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; }
@@ -159,6 +165,7 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--ko-primary); }
         input:checked + .slider:before { transform: translateX(24px); }
+        .theme-hint-text { display: none; } /* <-- FIX: Hide "Light mode is ON" text */
         
         /* --- HERO SECTION --- */
         .hero { padding: 25px 0; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); margin-top: 70px; }
@@ -166,74 +173,35 @@
         #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
         .hero-search-form button { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
 
-        /* --- NEW: 2-COLUMN PAGE LAYOUT --- */
+        /* --- 2-COLUMN PAGE LAYOUT --- */
         .page-layout {
-            display: flex; /* Mobile-first, this will be flex-column */
+            display: flex;
             flex-direction: column;
             gap: 20px;
             margin-top: 20px;
         }
-        
-        .sidebar {
-            flex-basis: 260px; /* Desktop width */
-            flex-shrink: 0;
-        }
-        
-        .main-content {
-            flex-grow: 1; /* Takes up remaining space */
-        }
-        
+        .sidebar { flex-basis: 260px; flex-shrink: 0; }
+        .main-content { flex-grow: 1; }
         @media (min-width: 992px) {
-            .page-layout {
-                flex-direction: row; /* Go side-by-side on desktop */
-            }
+            .page-layout { flex-direction: row; }
         }
         
-        /* --- NEW: CATEGORY SIDEBAR STYLES --- */
+        /* --- CATEGORY SIDEBAR STYLES --- */
         .category-widget {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
         }
-        .category-widget h3 {
-            margin: 0;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 1.1em;
-        }
-        .category-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .category-list a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            text-decoration: none;
-            color: var(--text-main);
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 500;
-        }
-        .category-list li:last-child a {
-            border-bottom: none;
-        }
-        .category-list a:hover {
-            background-color: var(--bg-main);
-        }
-        .category-list i {
-            font-size: 1.1em;
-            width: 20px;
-            text-align: center;
-            color: var(--text-secondary);
-        }
-        .category-list a:hover i {
-            color: var(--ko-primary);
-        }
+        .category-widget h3 { margin: 0; padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.1em; }
+        .category-list { list-style: none; padding: 0; margin: 0; }
+        .category-list a { display: flex; align-items: center; gap: 12px; padding: 14px 20px; text-decoration: none; color: var(--text-main); border-bottom: 1px solid var(--border-color); font-weight: 500; }
+        .category-list li:last-child a { border-bottom: none; }
+        .category-list a:hover { background-color: var(--bg-main); }
+        .category-list i { font-size: 1.1em; width: 20px; text-align: center; color: var(--text-secondary); }
+        .category-list a:hover i { color: var(--ko-primary); }
         
-        /* --- NEW: SECTION HEADER WITH "SEE ALL" --- */
+        /* --- SECTION HEADER WITH "SEE ALL" --- */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -250,11 +218,9 @@
             padding: 5px 10px;
             border-radius: 6px;
             transition: background-color 0.2s ease;
-            white-space: nowrap; /* Prevents wrap */
+            white-space: nowrap; 
         }
-        .see-all-btn:hover {
-            background-color: var(--border-color);
-        }
+        .see-all-btn:hover { background-color: var(--border-color); }
         
         /* --- PRODUCT CAROUSEL --- */
         .product-carousel-section {
@@ -279,28 +245,52 @@
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
         }
-        .product-grid { display: grid; gap: 15px; grid-template-columns: repeat(2, 1fr); }
+        /* --- MODIFIED: Added more gap for spacing --- */
+        .product-grid { 
+            display: grid; 
+            gap: 20px; /* Increased spacing */
+            grid-template-columns: repeat(2, 1fr); 
+        }
         @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
         
-        /* --- SHOP PAGE CTA BUTTON --- */
+        /* --- NEW: Description & Upgraded Button --- */
         .shop-cta-container {
             text-align: center;
             margin-top: 20px;
+            padding: 0 10px; /* Padding for mobile */
+        }
+        .shop-cta-description {
+            font-size: 1em;
+            color: var(--text-secondary);
+            margin: 0 auto 20px;
+            max-width: 500px;
         }
         .shop-cta-btn {
-            display: inline-block;
+            display: block; /* Full width on mobile */
+            width: 100%;
             background-color: var(--ko-primary);
             color: white;
             font-weight: 600;
             font-size: 1.1em;
-            padding: 12px 30px;
+            padding: 14px 30px; /* Taller button */
             border-radius: 8px;
             text-decoration: none;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
+            box-sizing: border-box; /* Needed for 100% width */
         }
         .shop-cta-btn:hover {
-            background-color: #0056b3; /* Darker primary */
+            background-color: #0056b3; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+        @media (min-width: 992px) {
+            .shop-cta-container { padding: 0; }
+            .shop-cta-btn {
+                display: inline-block; /* Back to normal on desktop */
+                width: auto;
+            }
+        }
+        /* --- END NEW --- */
         
         /* --- PRODUCT CARD STYLES --- */
         .product-card-link { text-decoration: none; color: inherit; }
@@ -316,9 +306,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .product-card img.loaded {
-            opacity: 1;
-        }
+        .product-card img.loaded { opacity: 1; }
         .product-card h3 { margin: 10px 15px; font-size: 0.95rem; flex-grow: 1; }
         .product-card .price { margin: 0 15px 15px; font-size: 1.1rem; font-weight: bold; color: var(--ko-primary); }
         
@@ -390,7 +378,65 @@
         .btn-cancel { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-confirm { background-color: var(--ko-primary); color: white; }
         
-        #open-chat-button { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background-color: var(--ko-primary); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; }
+        /* --- NEW: AI Chat Bubble --- */
+        .ai-chat-bubble {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 998;
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.5s 1s ease forwards;
+        }
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .ai-chat-bubble.dismissed {
+            display: none;
+        }
+        .ai-chat-bubble-avatar {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--ko-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+        }
+        .ai-chat-bubble-text {
+            font-size: 0.9em;
+            font-weight: 500;
+            margin-right: 15px; /* Space for close button */
+        }
+        #ai-bubble-close {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 2px;
+        }
+        
+        /* The modal that the bubble opens */
         #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
         .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
         .chat-modal-content { position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%; max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
@@ -401,57 +447,6 @@
         #chat-modal-container.active { display: flex; }
         #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
         #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
-/* --- ADD THIS CSS --- */
-
-/* Fix for the "Light mode is ON" text overlap */
-.theme-hint-text {
-    display: none; /* This will hide the text */
-}
-
-/* Fix for the hamburger menu on desktop */
-@media (min-width: 1024px) { 
-    .hamburger-menu { 
-        display: none !important; /* Hide hamburger on desktop */
-    } 
-}
-/* --- END OF FIX --- */
-/* --- ADD THIS CSS TO FIX THE BUTTON --- */
-        
-        .shop-cta-container {
-            text-align: center;
-            margin-top: 20px;
-            padding: 0 10px; /* Add padding for mobile */
-        }
-        .shop-cta-btn {
-            display: block; /* Make it full-width */
-            width: 100%;
-            background-color: var(--ko-primary);
-            color: white;
-            font-weight: 600;
-            font-size: 1.1em;
-            padding: 14px 30px; /* Make it taller */
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box; /* Important for 100% width */
-        }
-        .shop-cta-btn:hover {
-            background-color: #0056b3; /* Darker primary */
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        
-        /* On desktop, make it centered and not full-width */
-        @media (min-width: 992px) {
-            .shop-cta-container {
-                padding: 0; /* Remove mobile padding */
-            }
-            .shop-cta-btn {
-                display: inline-block; /* Back to normal */
-                width: auto;
-            }
-        }
-        /* --- END OF BUTTON FIX --- */
     </style>
 </head>
 <body class="light-mode"> <script src="theme.js"></script>
@@ -532,14 +527,15 @@
             
             <main class="main-content">
             
-                <section id="featured-section" class="product-carousel-section" style="display: none;">
-                    <div class="section-header">
+                <section id="featured-section" class="product-carousel-section"> <div class="section-header">
                         <h2 class="section-title">Featured Items</h2>
                         <a href="/shop/?filter=hero" class="see-all-btn">See All &rarr;</a>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="featured-products-grid">
-                            </div>
+                            <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                            <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        </div>
                     </div>
                 </section>
                 
@@ -590,6 +586,10 @@
                 </section>
 
                 <div class="shop-cta-container">
+                    <p class="shop-cta-description">
+                        You've seen our top picks. Ready to see everything? 
+                        Dive into the full marketplace to find exactly what you're looking for.
+                    </p>
                     <a href="/shop/" class="shop-cta-btn">
                         Browse All Products
                     </a>
@@ -649,9 +649,12 @@
         </div>
     </div>
 
-    <button id="open-chat-button" aria-label="Open AI Assistant">
-        <i class="fa-solid fa-robot"></i>
-    </button>
+    <div id="ai-chat-bubble" class="ai-chat-bubble">
+        <div class="ai-chat-bubble-avatar">
+            <i class="fa-solid fa-headset"></i> </div>
+        <span class="ai-chat-bubble-text">Ask me anything...</span>
+        <button id="ai-bubble-close" aria-label="Dismiss chat bubble">&times;</button>
+    </div>
 
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
