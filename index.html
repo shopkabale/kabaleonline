@@ -12,7 +12,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- (All your SEO and meta tags are preserved here) -->
     <title>Buy & Sell, Find Hostels, Services & Events in Kabale | Kabale Online</title>
     <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
     <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale, kabale Uganda, Campus Mart">
@@ -51,38 +50,6 @@
       });
     </script>
 
-    <!-- (Your schema.org scripts are preserved here) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Kabale Online",
-      "url": "https://www.kabaleonline.com/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://www.kabaleonline.com/?q={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Kabale Online",
-      "url": "https://www.kabaleonline.com/",
-      "logo": "https://www.kabaleonline.com/icons/512.png",
-      "sameAs": [
-        "https://facebook.com/kabaleonline",
-        "https://twitter.com/kabaleonline",
-        "https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c"
-      ]
-    }
-    </script>
-
     <style>
         /* --- THEME-AWARE CSS VARIABLES --- */
         :root {
@@ -119,7 +86,14 @@
             color: var(--text-main); 
             line-height: 1.6; 
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        /* MODIFIED: Container is now just for padding */
+        .container { 
+            width: 100%;
+            max-width: 1200px; /* Kept max-width for large screens */
+            margin: 0 auto;
+            padding: 0 15px; 
+            box-sizing: border-box; /* Ensures padding doesn't break layout */
+        }
         .section-title { 
             font-size: 1.5em; 
             font-weight: 700;
@@ -132,12 +106,12 @@
         /* --- SCROLL PROGRESS BAR --- */
         #scroll-progress-bar {
             position: fixed;
-            top: 70px; /* Below the sticky header */
+            top: 70px;
             left: 0;
             width: 0%;
             height: 4px;
             background-color: var(--ko-primary);
-            z-index: 1001; /* Above header */
+            z-index: 1001;
             transition: width 0.1s ease-out;
         }
 
@@ -148,9 +122,17 @@
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
         }
-        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
-        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
-        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .header-content { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            height: 70px; 
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
         .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
         .site-title span { color: var(--ko-accent); }
         .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
@@ -185,12 +167,13 @@
         .theme-hint-text { display: none; } 
         
         /* --- HERO SECTION --- */
+        /* MODIFIED: Full-width background */
         .hero { padding: 25px 0; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); margin-top: 70px; }
-        .hero-search-form { display: flex; max-width: 600px; margin: 0 auto; position: relative; }
+        .hero-search-form { display: flex; max-width: 600px; margin: 0 auto; position: relative; padding: 0 15px; }
         #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
         .hero-search-form button { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
 
-        /* --- NEW: Smooth Search Placeholder Animation --- */
+        /* --- Smooth Search Placeholder Animation --- */
         #hero-search-input::placeholder {
             color: var(--text-secondary);
             opacity: 0; /* Start hidden */
@@ -202,11 +185,24 @@
             transform: translateY(0); /* Move up */
         }
         
-        /* --- SINGLE COLUMN PAGE LAYOUT (Replaced 2-column) --- */
+        /* --- SINGLE COLUMN PAGE LAYOUT --- */
         .main-content-wrapper {
-            max-width: 1200px;
+            max-width: 1200px; /* This container centers all content */
             margin: 20px auto 0;
             padding: 0 15px;
+        }
+        /* All sections will be full-width within this container */
+        .product-carousel-section,
+        .how-to-section,
+        .category-section,
+        .recent-products-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            overflow: hidden; /* Hide overflow */
         }
         
         /* --- SECTION HEADER WITH "SEE MORE" --- */
@@ -216,7 +212,7 @@
             align-items: center;
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
-            padding: 0 0 10px 0; /* Removed side padding */
+            padding-bottom: 10px;
         }
         .see-more-btn, .see-all-btn {
             color: var(--ko-primary);
@@ -238,19 +234,6 @@
         }
         
         /* --- PRODUCT CAROUSEL --- */
-        .product-carousel-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            overflow: hidden; /* Hide overflow */
-        }
-        .product-carousel-section .section-header {
-            padding-left: 0;
-            padding-right: 0;
-        }
         .product-carousel-wrapper { 
             overflow-x: auto; 
             padding-bottom: 15px; 
@@ -260,9 +243,10 @@
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
         
+        /* MODIFIED: Wider cards on mobile */
         .product-carousel .product-card { 
-            flex: 0 0 150px; /* Smaller base for mobile */
-            width: 150px; 
+            flex: 0 0 170px;
+            width: 170px; 
         }
         @media (min-width: 500px) {
             .product-carousel .product-card { flex: 0 0 200px; width: 200px; }
@@ -287,19 +271,7 @@
             }
         }
 
-        /* --- NEW: HOW-TO SECTION --- */
-        .how-to-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-        }
-        .how-to-section .section-header {
-            padding-left: 0;
-            padding-right: 0;
-        }
+        /* --- HOW-TO SECTION --- */
         .how-to-carousel-wrapper {
             overflow-x: auto; 
             padding-bottom: 15px; 
@@ -318,8 +290,10 @@
         }
         .how-to-card img {
             width: 100%;
-            aspect-ratio: 1/1;
+            display: block;
+            aspect-ratio: 1/1; /* Square format */
             object-fit: cover;
+            background-color: var(--border-color);
         }
         .how-to-card h4 {
             font-size: 1em;
@@ -327,19 +301,7 @@
             color: var(--text-main);
         }
         
-        /* --- NEW: CATEGORY SECTION --- */
-        .category-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-        }
-        .category-section .section-header {
-            padding-left: 0;
-            padding-right: 0;
-        }
+        /* --- CATEGORY SECTION --- */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
@@ -377,24 +339,13 @@
         }
 
         /* --- RECENT ITEMS GRID --- */
-        .recent-products-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-        }
-        .recent-products-section .section-header {
-            padding-left: 0; 
-            padding-right: 0;
-        }
         .product-grid { 
             display: grid; 
             gap: 20px; 
             grid-template-columns: repeat(2, 1fr); 
         }
         @media (min-width: 768px) { 
-            /* MODIFIED: Show 4 columns on desktop for 8 items */
+            /* 4 columns on desktop for 8 items */
             .product-grid { grid-template-columns: repeat(4, 1fr); } 
         }
         @media (max-width: 500px) { 
@@ -503,8 +454,11 @@
             display: inline-block; 
         }
         .in-stock { color: #155724; background-color: #d4edda; }
+        body.dark-mode .in-stock { color: #c3e6cb; background-color: #1f3c2b; }
         .low-stock { color: #856404; background-color: #fff3cd; }
+        body.dark-mode .low-stock { color: #ffeeba; background-color: #493f1b; }
         .out-of-stock, .sold-out { color: #721c24; background-color: #f8d7da; }
+        body.dark-mode .out-of-stock, body.dark-mode .sold-out { color: #f5c6cb; background-color: #4a1c24; }
         .product-card.is-sold img { filter: grayscale(90%); }
         /* --- END STOCK CSS --- */
 
@@ -522,6 +476,11 @@
             padding: 60px 0 20px; 
             margin-top: 30px; 
             border-top: 4px solid var(--ko-primary);
+        }
+        .footer-grid-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
         }
         .footer-grid { 
             display: grid; 
@@ -637,40 +596,35 @@
 </head>
 <body class="light-mode">
 
-    <!-- NEW: Scroll Progress Bar -->
     <div id="scroll-progress-bar"></div>
 
     <script src="theme.js"></script>
 
     <header class="sticky-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="site-title">Kabale <span>Online</span></a>
-                <nav class="desktop-nav">
-                    <a href="/shop/" class="nav-link active">Shop</a>
-                    <a href="/rentals/" class="nav-link">Hostels</a>
-                    <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
-                    <a href="/events/" class="nav-link">Events</a>
-                    <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
-                </nav>
-                <div class="header-icons">
-                    <div class="theme-switch-wrapper">
-                        <label class="theme-switch" for="theme-toggle">
-                            <input type="checkbox" id="theme-toggle" />
-                            <span class="slider"></span>
-                            <span id="theme-hint" class="theme-hint-text"></span>
-                        </label>
-                    </div>
-                    <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
-                    <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
-                    <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+        <div class="header-content"> <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link active">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+            </nav>
+            <div class="header-icons">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <span class="slider"></span>
+                        <span id="theme-hint" class="theme-hint-text"></span>
+                    </label>
                 </div>
+                <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
+                <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             </div>
         </div>
     </header>
 
     <nav class="mobile-nav">
-        <!-- (Your mobile nav links) -->
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
@@ -692,20 +646,14 @@
     <div class="mobile-nav-overlay"></div>
 
     <main>
-        <!-- HERO WITH ANIMATED SEARCH -->
         <section class="hero">
-            <div class="container">
-                <form class="hero-search-form" action="/shop/" method="get">
-                    <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
-                    <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
-                </form>
+            <div class="hero-search-form"> <input type="search" name="q" id="hero-search-input" aria-label="Search" placeholder="Search laptops...">
+                <button type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
             </div>
         </section>
 
-        <!-- SINGLE COLUMN LAYOUT WRAPPER -->
-        <div class="container main-content-wrapper">
+        <div class="main-content-wrapper">
         
-            <!-- FEATURED ITEMS (HORIZONTAL + EXPAND) -->
             <section id="featured-section" class="product-carousel-section" style="display: none;">
                 <div class="section-header">
                     <h2 class="section-title">Featured Items</h2>
@@ -718,7 +666,6 @@
                 </div>
             </section>
             
-            <!-- DEALS SECTION (HORIZONTAL + EXPAND) -->
             <section id="deals-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
                     <h2 class="section-title">Today's Deals</h2>
@@ -726,12 +673,10 @@
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="deals-grid">
-                        <!-- JS will populate this -->
-                    </div>
+                        </div>
                 </div>
             </section>
             
-            <!-- SPONSORED SECTION (HORIZONTAL + EXPAND) -->
             <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
                     <h2 class="section-title">Sponsored</h2>
@@ -739,12 +684,10 @@
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="sponsored-grid">
-                        <!-- JS will populate this -->
-                    </div>
+                        </div>
                 </div>
             </section>
             
-            <!-- SAVE ON MORE SECTION (HORIZONTAL + EXPAND) -->
             <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
                     <h2 class="section-title">Save On More</h2>
@@ -752,23 +695,32 @@
                 </div>
                 <div class="product-carousel-wrapper">
                     <div class="product-carousel" id="save-on-more-grid">
-                        <!-- JS will populate this -->
-                    </div>
+                        </div>
                 </div>
             </section>
             
-            <!-- NEW: HOW-TO SECTION -->
             <section id="how-to-section" class="how-to-section">
                 <div class="section-header">
                     <h2 class="section-title">How To Get Started</h2>
                 </div>
                 <div class="how-to-carousel-wrapper">
                     <div class="how-to-carousel" id="how-to-grid">
-                        <!-- JS will populate this, for now, here are 10 skeletons -->
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                        <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="how-to-card">
+                            <img src="https://placehold.co/200x200/007aff/white?text=1" alt="Step 1">
+                            <h4>Create Your Account</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://placehold.co/200x200/007aff/white?text=2" alt="Step 2">
+                            <h4>Post Your Item</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://placehold.co/200x200/007aff/white?text=3" alt="Step 3">
+                            <h4>Get Orders</h4>
+                        </div>
+                        <div class="how-to-card">
+                            <img src="https://placehold.co/200x200/007aff/white?text=4" alt="Step 4">
+                            <h4>Meet & Get Paid</h4>
+                        </div>
                         <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="how-to-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
@@ -779,7 +731,6 @@
                 </div>
             </section>
 
-            <!-- NEW: CATEGORY SECTION (MOVED) -->
             <section class="category-section">
                 <div class="section-header">
                     <h2 class="section-title">Browse by Category</h2>
@@ -806,14 +757,11 @@
                 </div>
             </section>
 
-            <!-- RECENT ITEMS SECTION -->
             <section class="recent-products-section">
                 <div class="section-header">
                     <h2 class="section-title">Recent Items</h2>
-                    <!-- MODIFIED: Simple link -->
                     <a href="/shop/" class="see-all-btn">See All &rarr;</a>
                 </div>
-                <!-- MODIFIED: 8 Skeletons for 8 items -->
                 <div class="product-grid" id="recent-products-grid">
                     <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                     <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
@@ -826,9 +774,7 @@
                 </div>
             </section>
 
-            <!-- CTA Button to Shop Page (with new spacing class) -->
             <div class="shop-cta-container-spaced">
-                <!-- NEW: Description added -->
                 <p class="shop-cta-description">
                     Welcome to the Kabale Online marketplace.
                     We connect students and residents to buy, sell, and rent items.
@@ -840,24 +786,17 @@
                 </a>
             </div>
             
-        </div> <!-- End .main-content-wrapper -->
+        </div> </main>
 
-    </main>
-
-    <footer>
-        <div class="container"> <!-- Footer is now inside its own container -->
-            <!-- NEW: "Massive" Footer Design -->
-            <div class="footer-grid">
+    <footer> <div class="footer-grid-container"> <div class="footer-grid">
                 <div class="footer-column about-column">
                     <a href="/" class="footer-logo">Kabale <span>Online</span></a>
                     <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
                     <div class="footer-socials">
-                        <!-- NEW: Redesigned Socials -->
                         <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                             <span>WhatsApp Group</span>
                         </a>
-                        <!-- NOTE: Add your real number here -->
                         <a href="https://wa.me/256770535000" target="_blank" aria-label="WhatsApp Support">
                             <i class="fab fa-whatsapp"></i>
                             <span>+256 770 535 000</span>
@@ -901,7 +840,6 @@
         </div>
     </footer>
 
-    <!-- (Modals) -->
     <div id="nav-modal" class="nav-modal">
         <div class="nav-modal-content">
             <h3>Confirm Navigation</h3>
@@ -913,16 +851,13 @@
         </div>
     </div>
 
-    <!-- NEW: AI Chat Bubble -->
     <div id="ai-chat-bubble" class="ai-chat-bubble">
         <div class="ai-chat-bubble-avatar">
-            <i class="fa-solid fa-headset"></i> <!-- Female avatar icon -->
-        </div>
+            <i class="fa-solid fa-headset"></i> </div>
         <span class="ai-chat-bubble-text">Ask me anything...</span>
         <button id="ai-bubble-close" aria-label="Dismiss chat bubble">&times;</button>
     </div>
 
-    <!-- AI Chat Modal -->
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
         <div class="chat-modal-content">
