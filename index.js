@@ -10,6 +10,12 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 const state = {
     currentUser: null,
     wishlist: new Set(),
+    howTo: {
+        currentIndex: 0,
+        totalItems: 10,
+        autoScrollTimer: null,
+        userInteracted: false
+    }
 };
 
 /**
@@ -101,9 +107,12 @@ function renderProducts(gridElement, products, append = false) {
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         
+        // --- STOCK STATUS LOGIC ---
         let stockStatusHTML = '';
         if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
+        } else if (product.quantity > 5) {
+            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`; // <-- IN STOCK (GREEN)
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
@@ -243,30 +252,6 @@ async function fetchRecentProducts() {
         console.error("Error fetching initial recent products:", error);
         grid.innerHTML = '<p style="padding: 0 15px; color: var(--text-secondary);">Could not load recent items.</p>';
     }
-}
-
-// --- "How To" Section (Placeholder) ---
-function fetchHowToSteps() {
-    const grid = document.getElementById('how-to-grid');
-    if (!grid) return;
-    // This just uses the 4 skeletons in the HTML for now.
-    // To load real data, you can create a "how-to-steps" collection
-    // in Firebase and fetch/render it here.
-    // Example:
-    /*
-    const steps = [
-        { title: "Create Account", img: "https://...1.jpg" },
-        { title: "Post Your Item", img: "https://...2.jpg" },
-        { title: "Get Orders", img: "https://...3.jpg" },
-        { title: "Meet & Get Paid", img: "https://...4.jpg" }
-    ];
-    grid.innerHTML = steps.map(step => `
-        <div class="how-to-card">
-            <img src="${step.img}" alt="${step.title}">
-            <h4>${step.title}</h4>
-        </div>
-    `).join('');
-    */
 }
 
 
@@ -424,7 +409,6 @@ function initializeUI() {
         window.addEventListener('scroll', () => {
             const scrollTop = document.documentElement.scrollTop;
             const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            // Prevent NaN on pages with no scroll
             const scrollPercentage = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
             scrollProgressBar.style.width = `${scrollPercentage}%`;
         });
@@ -442,7 +426,6 @@ function initializeUI() {
         ];
         let i = 0;
         
-        // This is a "drop-in" animation
         const animatePlaceholder = () => {
             searchInput.classList.remove('placeholder-visible'); // Fade out
             setTimeout(() => {
@@ -458,15 +441,19 @@ function initializeUI() {
         setInterval(animatePlaceholder, 2500);
     }
     
-    // --- MODIFIED: "See More" Button Logic (NO "Show Less") ---
+    // --- "See More" Button Logic (EXPAND-ONCE) ---
     document.body.addEventListener('click', async (e) => {
         const seeMoreBtn = e.target.closest('.see-more-btn');
-        if (!seeMoreBtn) return; // Only target buttons with this class
+        if (!seeMoreBtn) return;
         
         const sectionName = seeMoreBtn.dataset.section;
-        if (!sectionName) return; // Skip if it's not a section button
+        if (!sectionName) return; // Not a carousel button
         
-        // This button now ONLY expands. It does not collapse.
+        // --- THIS IS THE FIX: NO "Show Less" logic ---
+        // If it's already expanded, do nothing.
+        if (seeMoreBtn.dataset.expanded === 'true') {
+            return;
+        }
         
         const wrapper = seeMoreBtn.closest('.product-carousel-section').querySelector('.product-carousel-wrapper');
         const grid = wrapper.querySelector('.product-carousel');
@@ -486,7 +473,6 @@ function initializeUI() {
                 q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             }
             
-            // Fetch the 20 items, re-render, and expand the grid
             const { products } = await fetchProductsFromFirebase(q, grid.id, null);
             
             if (products && products.length > 0) {
@@ -494,12 +480,13 @@ function initializeUI() {
                 wrapper.classList.add('expanded');
                 grid.classList.remove('product-carousel');
                 grid.classList.add('product-grid');
-                seeMoreBtn.textContent = 'Showing All'; // Change text
+                seeMoreBtn.textContent = 'Showing All';
                 seeMoreBtn.dataset.expanded = 'true';
                 // Button remains disabled
             } else {
                 seeMoreBtn.textContent = 'No More Items';
-                seeMoreBtn.disabled = true; // No need to click again
+                seeMoreBtn.dataset.expanded = 'true';
+                // Button remains disabled
             }
         } catch (error) {
             console.error(`Error expanding section ${sectionName}:`, error);
@@ -507,6 +494,86 @@ function initializeUI() {
             seeMoreBtn.disabled = false; // Re-enable on error
         }
     });
+
+    // --- "How-To" Carousel Logic ---
+    const howToWrapper = document.querySelector('.how-to-carousel-wrapper');
+    const howToCarousel = document.querySelector('.how-to-carousel');
+    const prevBtn = document.getElementById('how-to-prev');
+    const nextBtn = document.getElementById('how-to-next');
+    const dotsContainer = document.getElementById('how-to-dots-container');
+    const progressBar = document.getElementById('how-to-progress');
+    
+    if (howToCarousel) {
+        const totalItems = 10;
+        let currentIndex = 0;
+        let autoScrollTimer = setInterval(scrollNext, 5000); // Auto-scroll every 5 seconds
+
+        // Create dots
+        for (let i = 0; i < totalItems; i++) {
+            const dot = document.createElement('span');
+            dot.classList.add('how-to-dot');
+            dot.dataset.index = i;
+            if (i === 0) dot.classList.add('active');
+            dotsContainer.appendChild(dot);
+        }
+        const dots = document.querySelectorAll('.how-to-dot');
+
+        function updateCarousel() {
+            const cardWidth = howToCarousel.querySelector('.how-to-card').offsetWidth;
+            const gap = 15;
+            const scrollAmount = currentIndex * (cardWidth + gap);
+            
+            howToWrapper.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+
+            // Update dots
+            dots.forEach(dot => dot.classList.remove('active'));
+            dots[currentIndex].classList.add('active');
+
+            // Update progress bar
+            const progressPercent = (currentIndex / (totalItems - 1)) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            // Update buttons
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === totalItems - 1;
+        }
+
+        function scrollNext() {
+            currentIndex++;
+            if (currentIndex >= totalItems) {
+                currentIndex = 0; // Loop back to start
+            }
+            updateCarousel();
+        }
+
+        function scrollPrev() {
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = totalItems - 1; // Loop to end
+            }
+            updateCarousel();
+        }
+
+        function resetTimer() {
+            clearInterval(autoScrollTimer);
+            autoScrollTimer = setInterval(scrollNext, 5000);
+        }
+
+        prevBtn.addEventListener('click', () => { scrollPrev(); resetTimer(); });
+        nextBtn.addEventListener('click', () => { scrollNext(); resetTimer(); });
+        dots.forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                currentIndex = parseInt(e.target.dataset.index);
+                updateCarousel();
+                resetTimer();
+            });
+        });
+        
+        howToWrapper.addEventListener('touchstart', () => clearInterval(autoScrollTimer));
+        howToWrapper.addEventListener('touchend', () => resetTimer());
+
+        updateCarousel(); // Set initial state
+    }
 
     // --- Footer Scroll Animation ---
     const footer = document.querySelector('.footer-grid');
@@ -538,7 +605,7 @@ async function initializeData() {
                 fetchSponsoredItems(),
                 fetchSaveOnMore(),
                 fetchRecentProducts(), // This loads the first 8
-                fetchHowToSteps() // Loads the "How To" section
+                fetchHowToSteps() // This just runs (currently no data)
             ]);
         } catch (error) {
             console.error("A critical error occurred during data load:", error);
