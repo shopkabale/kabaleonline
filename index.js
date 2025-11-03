@@ -66,14 +66,12 @@ function observeLazyImages() {
 function renderProducts(gridElement, products, append = false) {
     if (!gridElement) return;
 
-    // Clear skeletons ONLY if we are not appending
     if (!append) {
         gridElement.innerHTML = ""; 
     }
     
     if (!products || products.length === 0) {
         if (!append) {
-            // Only show "No products" if we're not appending
             const section = gridElement.closest('.product-carousel-section, .recent-products-section');
             if (section) {
                 if (section.classList.contains('recent-products-section')) {
@@ -164,26 +162,21 @@ async function fetchProductsFromFirebase(q, gridId, sectionId) {
     const gridElement = document.getElementById(gridId);
     const sectionElement = document.getElementById(sectionId);
 
-    try {
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            if (sectionElement) sectionElement.style.display = 'none';
-            return { products: [], lastVisible: null }; // Return empty
-        }
-        
-        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-        
-        renderProducts(gridElement, products);
-        if (sectionElement) sectionElement.style.display = 'block';
-        
-        return { products, lastVisible }; // Return data
-
-    } catch (error) {
-        console.error(`Error fetching Firebase section ${sectionId}:`, error);
+    // This function will throw an error if it fails, to be caught by the caller
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
         if (sectionElement) sectionElement.style.display = 'none';
         return { products: [], lastVisible: null }; // Return empty
     }
+    
+    const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+    
+    renderProducts(gridElement, products);
+    if (sectionElement) sectionElement.style.display = 'block';
+    
+    return { products, lastVisible }; // Return data
 }
 
 // --- Specific Fetchers ---
@@ -232,13 +225,82 @@ function fetchSaveOnMore() {
     return fetchProductsFromFirebase(q, 'save-on-more-grid', 'save-on-more-section');
 }
 
-function fetchRecentProducts() {
+async function fetchRecentProducts() {
+    const grid = document.getElementById('recent-products-grid');
+    if (!grid) return;
+    
     const q = query(
         collection(db, 'products'), 
         orderBy('createdAt', 'desc'), 
         limit(4) // Only fetch 4 items
     );
-    return fetchProductsFromFirebase(q, 'recent-products-grid', null);
+    
+    // We wrap this in its own try/catch to be safe
+    try {
+        const { lastVisible } = await fetchProductsFromFirebase(q, 'recent-products-grid', null);
+        // Save the last visible document for pagination
+        if(lastVisible) {
+            state.recentItems.lastVisible = lastVisible;
+        }
+    } catch (error) {
+        console.error("Error fetching initial recent products:", error);
+        grid.innerHTML = '<p style="padding: 0 15px; color: var(--text-secondary);">Could not load recent items.</p>';
+    }
+}
+
+/**
+ * NEW: Fetches 8 more recent products for "See More"
+ */
+async function fetchMoreRecentProducts() {
+    const grid = document.getElementById('recent-products-grid');
+    const button = document.getElementById('see-more-recent');
+    if (!grid || !button || state.recentItems.isLoading) return;
+
+    // Special check if we're out of items
+    if (!state.recentItems.lastVisible) {
+        button.textContent = 'No More Items';
+        button.disabled = true;
+        return;
+    }
+
+    state.recentItems.isLoading = true;
+    button.disabled = true;
+    button.textContent = 'Loading...';
+
+    try {
+        const q = query(
+            collection(db, 'products'), 
+            orderBy('createdAt', 'desc'),
+            startAfter(state.recentItems.lastVisible), // Start after the last item
+            limit(8) // Fetch 8 more
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            state.recentItems.lastVisible = null; // No more items
+            button.textContent = 'No More Items';
+            button.disabled = true;
+            return;
+        }
+
+        // Save the new last visible document
+        state.recentItems.lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(grid, products, true); // Append these new products
+
+        button.textContent = 'See More ↓';
+
+    } catch (error) {
+        console.error("Error fetching more recent products:", error);
+        button.textContent = 'Error';
+    } finally {
+        state.recentItems.isLoading = false;
+        // Re-enable button ONLY if it's not at the end
+        if (state.recentItems.lastVisible) {
+             button.disabled = false;
+        }
+    }
 }
 
 
@@ -390,7 +452,7 @@ function initializeUI() {
         });
     }
 
-    // --- NEW: Scroll Progress Bar ---
+    // --- Scroll Progress Bar ---
     const scrollProgressBar = document.getElementById('scroll-progress-bar');
     if (scrollProgressBar) {
         window.addEventListener('scroll', () => {
@@ -401,7 +463,7 @@ function initializeUI() {
         });
     }
 
-    // --- NEW: Search Placeholder Animation ---
+    // --- Search Placeholder Animation ---
     const searchInput = document.getElementById('hero-search-input');
     if (searchInput) {
         const placeholders = [
@@ -413,21 +475,45 @@ function initializeUI() {
         ];
         let i = 0;
         
-        // This is a "drop-in" animation
         const animatePlaceholder = () => {
-            searchInput.classList.add('placeholder-hidden'); // Make text invisible and move up
+            searchInput.classList.add('placeholder-hidden'); 
             setTimeout(() => {
                 i = (i + 1) % placeholders.length;
                 searchInput.placeholder = placeholders[i];
-                searchInput.classList.remove('placeholder-hidden'); // Make text visible and drop in
+                searchInput.classList.remove('placeholder-hidden'); 
             }, 300); // Wait for fade out
         };
         setInterval(animatePlaceholder, 2500);
     }
     
-    // --- NEW: "See More" Button Logic for Carousels ---
+    // --- "See More" Button for Recent Items ---
+    const seeMoreRecentBtn = document.getElementById('see-more-recent');
+    const recentGrid = document.getElementById('recent-products-grid');
+    if (seeMoreRecentBtn && recentGrid) {
+        seeMoreRecentBtn.addEventListener('click', () => {
+            const isExpanded = seeMoreRecentBtn.dataset.expanded === 'true';
+            
+            if (isExpanded) {
+                // --- COLLAPSE RECENT ---
+                recentGrid.classList.remove('expanded');
+                // Re-fetch the original 4 items
+                fetchRecentProducts();
+                seeMoreRecentBtn.dataset.expanded = 'false';
+                seeMoreRecentBtn.textContent = 'See More ↓';
+                seeMoreRecentBtn.disabled = false;
+            } else {
+                // --- EXPAND RECENT ---
+                recentGrid.classList.add('expanded');
+                fetchMoreRecentProducts(); // Fetch and append 8 more
+                seeMoreRecentBtn.dataset.expanded = 'true';
+                seeMoreRecentBtn.textContent = 'Show Less ↑';
+            }
+        });
+    }
+
+    // --- "See More" Button Logic for Carousels ---
     document.body.addEventListener('click', async (e) => {
-        const seeMoreBtn = e.target.closest('.see-more-btn');
+        const seeMoreBtn = e.target.closest('.see-more-btn[data-section]');
         if (!seeMoreBtn) return;
         
         const sectionName = seeMoreBtn.dataset.section;
@@ -436,56 +522,61 @@ function initializeUI() {
         const grid = wrapper.querySelector('.product-carousel');
         
         seeMoreBtn.disabled = true;
+        seeMoreBtn.textContent = 'Loading...';
 
-        if (isExpanded) {
-            // --- COLLAPSE ---
-            seeMoreBtn.textContent = 'Loading...';
-            wrapper.classList.remove('expanded');
-            grid.classList.add('product-carousel');
-            grid.classList.remove('product-grid');
-            
-            // Re-fetch the original 8 items
-            if (sectionName === 'featured') await fetchFeaturedProducts();
-            if (sectionName === 'deals') await fetchDeals();
-            if (sectionName === 'sponsored') await fetchSponsoredItems();
-            if (sectionName === 'save') await fetchSaveOnMore();
-            
-            seeMoreBtn.textContent = 'See More ↓';
-            seeMoreBtn.dataset.expanded = 'false';
-            seeMoreBtn.disabled = false;
-        } else {
-            // --- EXPAND ---
-            seeMoreBtn.textContent = 'Loading...';
-            let q;
-            const baseQuery = [collection(db, 'products'), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20)];
-            
-            if (sectionName === 'featured') {
-                q = query(collection(db, 'products'), where('isHero', '==', true), where('isSold', '==', false), orderBy('heroTimestamp', 'desc'), limit(20));
-            } else if (sectionName === 'deals') {
-                q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
-            } else if (sectionName === 'sponsored') {
-                q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
-            } else if (sectionName === 'save') {
-                q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
-            }
-            
-            // Fetch the 20 items, re-render, and expand the grid
-            const { products } = await fetchProductsFromFirebase(q, grid.id, null);
-            if (products.length > 0) {
-                renderProducts(grid, products);
-                wrapper.classList.add('expanded');
-                grid.classList.remove('product-carousel');
-                grid.classList.add('product-grid');
-                seeMoreBtn.textContent = 'Show Less ↑';
-                seeMoreBtn.dataset.expanded = 'true';
+        try {
+            if (isExpanded) {
+                // --- COLLAPSE ---
+                wrapper.classList.remove('expanded');
+                grid.classList.add('product-carousel');
+                grid.classList.remove('product-grid');
+                
+                // Re-fetch the original 8 items
+                if (sectionName === 'featured') await fetchFeaturedProducts();
+                if (sectionName === 'deals') await fetchDeals();
+                if (sectionName === 'sponsored') await fetchSponsoredItems();
+                if (sectionName === 'save') await fetchSaveOnMore();
+                
+                seeMoreBtn.textContent = 'See More ↓';
+                seeMoreBtn.dataset.expanded = 'false';
+
             } else {
-                seeMoreBtn.textContent = 'No More Items';
+                // --- EXPAND ---
+                let q;
+                const baseQuery = [collection(db, 'products'), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20)];
+                
+                if (sectionName === 'featured') {
+                    q = query(collection(db, 'products'), where('isHero', '==', true), where('isSold', '==', false), orderBy('heroTimestamp', 'desc'), limit(20));
+                } else if (sectionName === 'deals') {
+                    q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+                } else if (sectionName === 'sponsored') {
+                    q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+                } else if (sectionName === 'save') {
+                    q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+                }
+                
+                const { products } = await fetchProductsFromFirebase(q, grid.id, null);
+                
+                if (products.length > 0) {
+                    renderProducts(grid, products);
+                    wrapper.classList.add('expanded');
+                    grid.classList.remove('product-carousel');
+                    grid.classList.add('product-grid');
+                    seeMoreBtn.textContent = 'Show Less ↑';
+                    seeMoreBtn.dataset.expanded = 'true';
+                } else {
+                    seeMoreBtn.textContent = 'No More Items';
+                }
             }
+        } catch (error) {
+            console.error(`Error expanding section ${sectionName}:`, error);
+            seeMoreBtn.textContent = 'Error';
+        } finally {
             seeMoreBtn.disabled = false;
         }
     });
 
-    // --- NEW: Footer Scroll Animation ---
+    // --- Footer Scroll Animation ---
     const footer = document.querySelector('.footer-grid');
     if (footer) {
         const footerObserver = new IntersectionObserver(entries => {
@@ -529,8 +620,10 @@ async function initializeData() {
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize all UI elements immediately.
+    // This will make the hamburger, theme, and chat buttons work.
     initializeUI();
     
     // 2. Start loading data from Firebase.
+    // This will run in the background and fill in the product sections.
     initializeData();
 });
