@@ -124,7 +124,7 @@
             margin: 0;
         }
 
-        /* --- NEW: SCROLL PROGRESS BAR --- */
+        /* --- SCROLL PROGRESS BAR --- */
         #scroll-progress-bar {
             position: fixed;
             top: 70px; /* Below the sticky header */
@@ -185,17 +185,16 @@
         #hero-search-input { width: 100%; padding: 12px 20px; font-size: 1em; border: 1px solid var(--border-color); border-right: none; border-radius: 25px 0 0 25px; background-color: var(--bg-main); color: var(--text-main); }
         .hero-search-form button { padding: 12px 22px; border: 1px solid var(--ko-primary); background-color: var(--ko-primary); color: white; cursor: pointer; border-radius: 0 25px 25px 0; }
 
-        /* --- NEW: Search Placeholder Animation --- */
+        /* --- Search Placeholder Animation --- */
         #hero-search-input::placeholder {
             color: var(--text-secondary);
             opacity: 1;
             transition: opacity 0.3s ease;
         }
-        /* This class will be toggled by JS to create the "drop" effect */
         #hero-search-input.placeholder-hidden {
             opacity: 0;
             transform: translateY(-10px);
-            transition: none; /* No transition on the way out */
+            transition: none;
         }
         
         /* --- 2-COLUMN PAGE LAYOUT --- */
@@ -226,7 +225,7 @@
         .category-list i { font-size: 1.1em; width: 20px; text-align: center; color: var(--text-secondary); }
         .category-list a:hover i { color: var(--ko-primary); }
         
-        /* --- SECTION HEADER WITH "SEE MORE" --- */
+        /* --- SECTION HEADER WITH "SEE ALL" LINK --- */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -235,7 +234,12 @@
             border-bottom: 2px solid var(--border-color);
             padding: 0 20px 10px 20px;
         }
-        .see-more-btn, .see-all-btn {
+        /* Make Recent Items header match */
+        .recent-products-section .section-header {
+            padding-left: 0; 
+            padding-right: 0;
+        }
+        .see-all-btn {
             color: var(--ko-primary);
             font-weight: 600;
             font-size: 0.9em;
@@ -244,11 +248,11 @@
             border-radius: 6px;
             transition: background-color 0.2s ease;
             white-space: nowrap; 
-            border: 1px solid transparent;
+            border: 1px solid var(--border-color);
             background-color: var(--bg-main);
             cursor: pointer;
         }
-        .see-more-btn:hover, .see-all-btn:hover { background-color: var(--border-color); }
+        .see-all-btn:hover { background-color: var(--border-color); }
         
         /* --- PRODUCT CAROUSEL --- */
         .product-carousel-section {
@@ -265,38 +269,24 @@
             padding-bottom: 15px; 
             scrollbar-width: none; 
             -webkit-overflow-scrolling: touch;
-            padding-left: 20px; /* Match header padding */
-            padding-right: 20px; /* Add padding to the end */
+            padding-left: 20px; 
+            padding-right: 20px; 
         }
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
-        .product-carousel .product-card { flex: 0 0 160px; width: 160px; }
         
-        /* --- NEW: "PEEK-A-BOO" & EXPANDED STYLES --- */
+        .product-carousel .product-card { 
+            flex: 0 0 150px; /* Smaller base for mobile */
+            width: 150px; 
+        }
         @media (min-width: 500px) {
             .product-carousel .product-card { flex: 0 0 200px; width: 200px; }
-            /* This makes the last card cut off ("peek-a-boo") */
             .product-carousel-wrapper {
-                padding-right: 40px; 
+                padding-right: 40px; /* This makes the last card cut off */
             }
         }
-        /* This is the new style for the "expanded" grid */
-        .product-carousel-wrapper.expanded {
-            overflow-x: hidden;
-            padding-right: 20px; /* Match left padding */
-        }
-        .product-carousel-wrapper.expanded .product-carousel {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            flex-wrap: wrap; /* Allow wrapping */
-        }
-        @media (min-width: 768px) {
-            .product-carousel-wrapper.expanded .product-carousel {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
-        }
-
-        /* --- RECENT ITEMS GRID (2x2) --- */
+        
+        /* --- RECENT ITEMS GRID --- */
         .recent-products-section {
             background-color: var(--bg-card);
             border-radius: var(--border-radius);
@@ -304,26 +294,25 @@
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
         }
-        .recent-products-section .section-header {
-            padding-left: 0; /* Remove padding */
-            padding-right: 0;
-        }
         .product-grid { 
             display: grid; 
             gap: 20px; 
             grid-template-columns: repeat(2, 1fr); 
         }
-        /* Make 2x2 grid on all screen sizes */
         @media (min-width: 768px) { 
+            /* MODIFIED: Show 4 columns on desktop for 8 items */
+            .product-grid { grid-template-columns: repeat(4, 1fr); } 
+        }
+        @media (max-width: 500px) { 
+            /* For very small screens, 2 columns is still best */
             .product-grid { grid-template-columns: repeat(2, 1fr); } 
         }
-
         
         /* --- CTA Button & Description --- */
         .shop-cta-container-spaced {
             text-align: center;
             margin-top: 20px;
-            margin-bottom: 60px; /* NEW: Added space above footer */
+            margin-bottom: 60px; /* Space above footer */
             padding: 0 10px;
         }
         .shop-cta-description {
@@ -388,7 +377,6 @@
         .product-card .location-name i { margin-right: 5px; color: var(--ko-primary); }
         .product-card .seller-name { font-size: 0.85em; color: var(--text-secondary); margin: 0 15px 10px; }
         
-        /* Using text-based verified badge */
         .product-card .verified-text {
             font-size: 0.8em;
             font-weight: 700;
@@ -425,7 +413,7 @@
         .skeleton-text { height: 1.2rem; margin: 12px 15px 0; border-radius: 4px; }
         @keyframes skeleton-shimmer { 100% { background-position: 250px; } }
         
-        /* --- NEW: MASSIVE FOOTER STYLES --- */
+        /* --- MASSIVE FOOTER STYLES --- */
         footer { 
             background-color: #0f172a; 
             color: #e2e8f0; 
@@ -438,7 +426,6 @@
             grid-template-columns: 1fr; 
             gap: 40px; 
             padding-bottom: 40px; 
-            /* NEW: Scroll Animation */
             opacity: 0;
             transform: translateY(30px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -457,7 +444,6 @@
         .footer-logo span { color: var(--ko-accent); }
         .footer-tagline { color: #94a3b8; line-height: 1.7; margin-bottom: 20px; }
         
-        /* NEW: Social Links Redesign */
         .footer-socials a { 
             display: flex; 
             align-items: center;
@@ -479,9 +465,8 @@
         
         @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
-        /* --- END FOOTER --- */
         
-        /* --- MODALS (PRESERVED) --- */
+        /* --- MODALS --- */
         .nav-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
         .nav-modal-content { background-color: var(--bg-card); padding: 30px; border-radius: var(--border-radius); text-align: center; max-width: 400px; width: 90%; }
         .nav-modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
@@ -489,7 +474,7 @@
         .btn-cancel { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-confirm { background-color: var(--ko-primary); color: white; }
         
-        /* --- NEW: AI Chat Bubble --- */
+        /* --- AI Chat Bubble --- */
         .ai-chat-bubble {
             position: fixed;
             bottom: 25px;
@@ -633,7 +618,7 @@
                 <section id="featured-section" class="product-carousel-section" style="display: none;">
                     <div class="section-header">
                         <h2 class="section-title">Featured Items</h2>
-                        <button class="see-more-btn" data-section="featured" data-limit="8" data-expanded="false">See More &darr;</button>
+                        <button class="see-more-btn" data-section="featured" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="featured-products-grid">
@@ -645,7 +630,7 @@
                 <section id="deals-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Today's Deals</h2>
-                        <button class="see-more-btn" data-section="deals" data-limit="8" data-expanded="false">See More &darr;</button>
+                        <button class="see-more-btn" data-section="deals" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="deals-grid">
@@ -656,7 +641,7 @@
                 <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Sponsored</h2>
-                        <button class="see-more-btn" data-section="sponsored" data-limit="8" data-expanded="false">See More &darr;</button>
+                        <button class="see-more-btn" data-section="sponsored" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="sponsored-grid">
@@ -667,7 +652,7 @@
                 <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Save On More</h2>
-                        <button class="see-more-btn" data-section="save" data-limit="8" data-expanded="false">See More &darr;</button>
+                        <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="save-on-more-grid">
@@ -681,6 +666,10 @@
                         <a href="/shop/" class="see-all-btn">See All &rarr;</a>
                     </div>
                     <div class="product-grid" id="recent-products-grid">
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                        <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
@@ -714,9 +703,9 @@
                         <i class="fab fa-whatsapp"></i>
                         <span>WhatsApp Group</span>
                     </a>
-                    <a href="https://wa.me/256784655792" target="_blank" aria-label="WhatsApp Support">
+                    <a href="https://wa.me/256770535000" target="_blank" aria-label="WhatsApp Support">
                         <i class="fab fa-whatsapp"></i>
-                        <span>+256784655792</span>
+                        <span>+256 770 535 000</span>
                     </a>
                     <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">
                         <i class="fab fa-twitter"></i>
