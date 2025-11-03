@@ -12,14 +12,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- (All your SEO and meta tags are preserved here) -->
     <title>Buy & Sell, Find Hostels, Services & Events in Kabale | Kabale Online</title>
     <meta name="description" content="Your one-stop platform for Kabale. Buy & sell anything from electronics to textbooks, find student hostels and rentals, discover local services, post events, and check the lost & found.">
     <meta name="keywords" content="kabale student hostels, find a job in kabale, local services kabale, kabale events calendar, lost and found kabale uganda, buy used phone kabale, kigezi marketplace, Kabale campus market, buy and sell online, events in kabale, services in kabale, kabale Uganda, Campus Mart">
     <meta name="author" content="Kabale Online">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.kabaleonline.com/">
-
+    
     <meta property="og:title" content="Kabale Online: The #1 Platform for Items, Rentals, Services & More">
     <meta property="og:description" content="The community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.">
     <meta property="og:type" content="website">
@@ -51,7 +50,6 @@
       });
     </script>
 
-    <!-- (Your schema.org scripts are preserved here) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -134,14 +132,8 @@
             width: 0%;
             height: 4px;
             background-color: var(--ko-primary);
-            z-index: 999;
+            z-index: 1001; /* Above header */
             transition: width 0.1s ease-out;
-        }
-        @media (max-width: 1023px) {
-            #scroll-progress-bar {
-                top: auto;
-                bottom: 0; /* At the bottom on mobile */
-            }
         }
 
         /* --- HEADER & NAV --- */
@@ -199,8 +191,11 @@
             opacity: 1;
             transition: opacity 0.3s ease;
         }
-        #hero-search-input.placeholder-hidden::placeholder {
+        /* This class will be toggled by JS to create the "drop" effect */
+        #hero-search-input.placeholder-hidden {
             opacity: 0;
+            transform: translateY(-10px);
+            transition: none; /* No transition on the way out */
         }
         
         /* --- 2-COLUMN PAGE LAYOUT --- */
@@ -238,9 +233,9 @@
             align-items: center;
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
+            padding: 0 20px 10px 20px;
         }
-        .see-more-btn {
+        .see-more-btn, .see-all-btn {
             color: var(--ko-primary);
             font-weight: 600;
             font-size: 0.9em;
@@ -253,22 +248,53 @@
             background-color: var(--bg-main);
             cursor: pointer;
         }
-        .see-more-btn:hover { background-color: var(--border-color); }
+        .see-more-btn:hover, .see-all-btn:hover { background-color: var(--border-color); }
         
         /* --- PRODUCT CAROUSEL --- */
         .product-carousel-section {
             background-color: var(--bg-card);
             border-radius: var(--border-radius);
-            padding: 20px;
+            padding: 20px 0; /* No horizontal padding */
             margin-bottom: 20px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
+            overflow: hidden; /* Hide overflow */
         }
-        .product-carousel-wrapper { overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; -webkit-overflow-scrolling: touch;}
+        .product-carousel-wrapper { 
+            overflow-x: auto; 
+            padding-bottom: 15px; 
+            scrollbar-width: none; 
+            -webkit-overflow-scrolling: touch;
+            padding-left: 20px; /* Match header padding */
+            padding-right: 20px; /* Add padding to the end */
+        }
         .product-carousel-wrapper::-webkit-scrollbar { display: none; }
         .product-carousel { display: flex; gap: 15px; }
         .product-carousel .product-card { flex: 0 0 160px; width: 160px; }
-        @media (min-width: 768px) { .product-carousel .product-card { flex: 0 0 200px; width: 200px; } }
+        
+        /* --- NEW: "PEEK-A-BOO" & EXPANDED STYLES --- */
+        @media (min-width: 500px) {
+            .product-carousel .product-card { flex: 0 0 200px; width: 200px; }
+            /* This makes the last card cut off ("peek-a-boo") */
+            .product-carousel-wrapper {
+                padding-right: 40px; 
+            }
+        }
+        /* This is the new style for the "expanded" grid */
+        .product-carousel-wrapper.expanded {
+            overflow-x: hidden;
+            padding-right: 20px; /* Match left padding */
+        }
+        .product-carousel-wrapper.expanded .product-carousel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            flex-wrap: wrap; /* Allow wrapping */
+        }
+        @media (min-width: 768px) {
+            .product-carousel-wrapper.expanded .product-carousel {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
 
         /* --- RECENT ITEMS GRID (2x2) --- */
         .recent-products-section {
@@ -278,18 +304,20 @@
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
         }
+        .recent-products-section .section-header {
+            padding-left: 0; /* Remove padding */
+            padding-right: 0;
+        }
         .product-grid { 
             display: grid; 
             gap: 20px; 
-            grid-template-columns: repeat(2, 1fr); /* 2x2 Grid */
+            grid-template-columns: repeat(2, 1fr); 
         }
-        /* MODIFIED: Don't change grid on desktop, keep it 2x2 unless more are loaded */
+        /* Make 2x2 grid on all screen sizes */
         @media (min-width: 768px) { 
             .product-grid { grid-template-columns: repeat(2, 1fr); } 
-            .product-grid.expanded {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
         }
+
         
         /* --- CTA Button & Description --- */
         .shop-cta-container-spaced {
@@ -360,7 +388,7 @@
         .product-card .location-name i { margin-right: 5px; color: var(--ko-primary); }
         .product-card .seller-name { font-size: 0.85em; color: var(--text-secondary); margin: 0 15px 10px; }
         
-        /* Using text-based verified badge as per last request */
+        /* Using text-based verified badge */
         .product-card .verified-text {
             font-size: 0.8em;
             font-weight: 700;
@@ -522,7 +550,6 @@
 </head>
 <body class="light-mode">
 
-    <!-- NEW: Scroll Progress Bar -->
     <div id="scroll-progress-bar"></div>
 
     <script src="theme.js"></script>
@@ -555,7 +582,6 @@
     </header>
 
     <nav class="mobile-nav">
-        <!-- (Your mobile nav links) -->
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
@@ -577,7 +603,6 @@
     <div class="mobile-nav-overlay"></div>
 
     <main>
-        <!-- HERO WITH ANIMATED SEARCH -->
         <section class="hero">
             <div class="container">
                 <form class="hero-search-form" action="/shop/" method="get">
@@ -587,10 +612,8 @@
             </div>
         </section>
 
-        <!-- NEW 2-COLUMN LAYOUT -->
         <div class="container page-layout">
         
-            <!-- NEW SIDEBAR -->
             <aside class="sidebar">
                 <div class="category-widget">
                     <h3>Categories</h3>
@@ -605,72 +628,59 @@
                 </div>
             </aside>
             
-            <!-- NEW MAIN CONTENT AREA -->
             <main class="main-content">
             
-                <!-- FEATURED ITEMS -->
                 <section id="featured-section" class="product-carousel-section" style="display: none;">
                     <div class="section-header">
                         <h2 class="section-title">Featured Items</h2>
-                        <a href="/shop/?filter=hero" class="see-all-btn">See All &rarr;</a>
+                        <button class="see-more-btn" data-section="featured" data-limit="8" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="featured-products-grid">
-                            <!-- JS will populate this -->
+                            <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         </div>
                     </div>
                 </section>
                 
-                <!-- DEALS SECTION -->
                 <section id="deals-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Today's Deals</h2>
-                        <a href="/shop/?filter=deals" class="see-all-btn">See All &rarr;</a>
+                        <button class="see-more-btn" data-section="deals" data-limit="8" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="deals-grid">
-                            <!-- JS will populate this -->
-                        </div>
+                            </div>
                     </div>
                 </section>
                 
-                <!-- SPONSORED SECTION -->
                 <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Sponsored</h2>
-                        <a href="/shop/?filter=sponsored" class="see-all-btn">See All &rarr;</a>
+                        <button class="see-more-btn" data-section="sponsored" data-limit="8" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="sponsored-grid">
-                            <!-- JS will populate this -->
-                        </div>
+                            </div>
                     </div>
                 </section>
                 
-                <!-- SAVE ON MORE SECTION -->
                 <section id="save-on-more-section" class="product-carousel-section" style="display: none;">
                      <div class="section-header">
                         <h2 class="section-title">Save On More</h2>
-                        <a href="/shop/?filter=save" class="see-all-btn">See All &rarr;</a>
+                        <button class="see-more-btn" data-section="save" data-limit="8" data-expanded="false">See More &darr;</button>
                     </div>
                     <div class="product-carousel-wrapper">
                         <div class="product-carousel" id="save-on-more-grid">
-                            <!-- JS will populate this -->
-                        </div>
+                            </div>
                     </div>
                 </section>
                 
-                <!-- RECENT ITEMS SECTION (2x2 GRID) -->
                 <section class="recent-products-section">
                     <div class="section-header">
                         <h2 class="section-title">Recent Items</h2>
-                        <!-- NEW "See More" button -->
-                        <button class="see-more-btn" id="see-more-recent" data-next-page="1" data-expanded="false">
-                            See More &darr;
-                        </button>
+                        <a href="/shop/" class="see-all-btn">See All &rarr;</a>
                     </div>
                     <div class="product-grid" id="recent-products-grid">
-                        <!-- Skeletons for loading -->
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                         <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
@@ -678,9 +688,7 @@
                     </div>
                 </section>
 
-                <!-- NEW: CTA Button to Shop Page (with new spacing class) -->
                 <div class="shop-cta-container-spaced">
-                    <!-- NEW: Description added -->
                     <p class="shop-cta-description">
                         Welcome to the Kabale Online marketplace.
                         We connect students and residents to buy, sell, and rent items.
@@ -694,26 +702,21 @@
                 
             </main>
         
-        </div> <!-- End .page-layout -->
-
-    </main>
+        </div> </main>
 
     <footer class="container">
-        <!-- NEW: "Massive" Footer Design -->
         <div class="footer-grid">
             <div class="footer-column about-column">
                 <a href="/" class="footer-logo">Kabale <span>Online</span></a>
                 <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
                 <div class="footer-socials">
-                    <!-- NEW: Redesigned Socials -->
                     <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
                         <i class="fab fa-whatsapp"></i>
                         <span>WhatsApp Group</span>
                     </a>
-                    <!-- Add your real number here -->
-                    <a href="https://wa.me/256700000000" target="_blank" aria-label="WhatsApp Support">
+                    <a href="https://wa.me/256784655792" target="_blank" aria-label="WhatsApp Support">
                         <i class="fab fa-whatsapp"></i>
-                        <span>+256 700 000 000</span>
+                        <span>+256784655792</span>
                     </a>
                     <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">
                         <i class="fab fa-twitter"></i>
@@ -753,7 +756,6 @@
         </div>
     </footer>
 
-    <!-- (Modals) -->
     <div id="nav-modal" class="nav-modal">
         <div class="nav-modal-content">
             <h3>Confirm Navigation</h3>
@@ -765,16 +767,13 @@
         </div>
     </div>
 
-    <!-- NEW: AI Chat Bubble -->
     <div id="ai-chat-bubble" class="ai-chat-bubble">
         <div class="ai-chat-bubble-avatar">
-            <i class="fa-solid fa-headset"></i> <!-- Female avatar icon -->
-        </div>
+            <i class="fa-solid fa-headset"></i> </div>
         <span class="ai-chat-bubble-text">Ask me anything...</span>
         <button id="ai-bubble-close" aria-label="Dismiss chat bubble">&times;</button>
     </div>
 
-    <!-- AI Chat Modal -->
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
         <div class="chat-modal-content">
