@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | KabaleOnline</title> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0d2857; --bg-secondary: #10336d; --bg-card: #0a214d;
+            --text-primary: #ffffff; --text-secondary: #a7c0e8; --accent-primary: #007bff;
+            --border-color: #1f4287; --font-family: 'Poppins', sans-serif;
+        }
+        body.light-mode {
+            --bg-primary: #f0f4f9; --bg-secondary: #ffffff; --bg-card: #ffffff;
+            --text-primary: #0d2857; --text-secondary: #6c757d; --border-color: #e9ecef;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); background-color: var(--bg-primary); color: var(--text-secondary); line-height: 1.8; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 15px; }
+        .footer-container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+        /* --- HEADER & NAVIGATION --- */
+        .header { position: sticky; top: 0; z-index: 1000; background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 0; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .nav-logo { font-size: 1.6rem; font-weight: 800; color: var(--accent-primary); text-decoration: none; }
+        .nav-links { display: none; list-style: none; gap: 25px; }
+        @media (min-width: 992px) { .nav-links { display: flex; } }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; }
+        .nav-actions { display: flex; align-items: center; gap: 15px; }
+        .btn-header { display: inline-flex; align-items: center; padding: 8px 20px; font-size: 0.9rem; background-color: var(--accent-primary); color: #ffffff; border-radius: 50px; text-decoration: none; font-weight: 600; }
+        .theme-toggle { background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
+        .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.8rem; cursor: pointer; z-index: 1001; }
+        @media (max-width: 991px) {
+            .mobile-menu-btn { display: block; }
+            .nav-links { position: fixed; top: 0; right: -100%; width: 250px; height: 100vh; background-color: var(--bg-card); flex-direction: column; padding-top: 100px; align-items: center; transition: right 0.5s ease-in-out; }
+            .nav-links.active { right: 0; }
+        }
+
+        /* --- CONTENT STYLES --- */
+        h1 { font-size: 2.8rem; color: var(--text-primary); margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; color: var(--text-primary); margin-top: 40px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+        p, li { margin-bottom: 15px; }
+        ul { padding-left: 20px; }
+        a { color: var(--accent-primary); }
+
+        /* --- FOOTER --- */
+        footer { background-color: var(--bg-card); color: var(--text-primary); padding: 60px 0 20px 0; border-top: 1px solid var(--border-color); }
+        .footer-grid { display: grid; grid-template-columns: 1fr; gap: 40px; margin-bottom: 40px; text-align: center; }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; text-align: left; } }
+        .footer-grid h4 { color: var(--text-primary); font-size: 1.2rem; margin-bottom: 20px; }
+        .footer-about p { color: var(--text-secondary); margin-bottom: 20px; }
+        .footer-socials a { color: var(--text-primary); font-size: 1.3rem; margin: 0 10px; }
+        .footer-links ul { list-style: none; padding: 0; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: var(--text-secondary); text-decoration: none; }
+        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <header class="header">
+        <div class="navbar">
+            <a href="index.html" class="nav-logo">KabaleOnline</a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Browse</a></li>
+                <li><a href="browse-jobs.html">Jobs</a></li>
+                <li><a href="group-chat.html">Community</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="auth.html" class="btn-header" id="login-link">Login</a>
+                <a href="dashboard.html" class="btn-header" id="dashboard-link" style="display: none;">Dash</a>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle theme"></button>
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open Menu"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Terms of Service</h1>
+        <p>Last Updated: October 19, 2025</p>
+
+        <h2>1. Introduction & Acceptance</h2>
+        <p>Welcome to KabaleOnline Services ("the Platform"). These Terms of Service govern your use of our website and services. By creating an account or using the Platform, you agree to be bound by these terms. If you disagree with any part of the terms, you may not use our service.</p>
+
+        <h2>2. Our Role as a Platform</h2>
+        <p>KabaleOnline Services acts as a neutral venue to connect users seeking services ("Clients") with users offering services ("Providers") in Kabale and the Kigezi region. We are not a party to any agreement, contract, or transaction between users. We do not hire, employ, or endorse any user, and we are not responsible for the performance or quality of the services rendered.</p>
+
+        <h2>3. User Accounts & Responsibilities</h2>
+        <ul>
+            <li>You must be at least 18 years old to create an account.</li>
+            <li>You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate.</li>
+            <li>You are responsible for safeguarding your password and for any activities or actions under your account.</li>
+            <li>You agree not to impersonate any person or entity or misrepresent your affiliation with a person or entity.</li>
+        </ul>
+
+        <h2>4. Prohibited Conduct</h2>
+        <p>You agree not to engage in any of the following prohibited activities:</p>
+        <ul>
+            <li>Posting false, misleading, or fraudulent content.</li>
+            <li>Using the Platform for any illegal purpose or in violation of any local, national, or international law.</li>
+            <li>Harassing, threatening, or defrauding other users.</li>
+            <li>Attempting to circumvent any payment methods or communication tools provided by the Platform.</li>
+            <li>Distributing spam or collecting other users' information without their consent.</li>
+        </ul>
+
+        <h2>5. Payments and Fees</h2>
+        <p>All financial transactions are handled directly between the Client and the Provider. KabaleOnline Services is not involved in the payment process and does not charge any commission on services rendered. Users are solely responsible for agreeing on payment terms and ensuring payment is made or received.</p>
+
+        <h2>6. Disputes Between Users</h2>
+        <p>Any disputes that arise between a Client and a Provider regarding a service, payment, or any other matter are to be resolved directly between those parties. KabaleOnline Services may, but has no obligation to, provide mediation or assistance. We strongly encourage users to communicate clearly and use the review system to build trust within the community.</p>
+
+        <h2>7. Termination of Account</h2>
+        <p>We reserve the right to suspend or terminate your account at our sole discretion, without notice, for conduct that we believe violates these Terms of Service or is otherwise harmful to other users of the Platform, our partners, or us.</p>
+
+        <h2>8. Limitation of Liability</h2>
+        <p>The Platform is provided "as is." KabaleOnline Services and its team shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or other intangibles, resulting from your use of the service or any interaction between users.</p>
+
+        <h2>9. Governing Law</h2>
+        <p>These Terms shall be governed and construed in accordance with the laws of the Republic of Uganda, without regard to its conflict of law provisions.</p>
+        
+        <h2>10. Changes to Terms</h2>
+        <p>We reserve the right to modify these terms at any time. We will provide notice of any changes by posting the new Terms of Service on this page. Your continued use of the Platform after any such changes constitutes your acceptance of the new terms.</p>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <h4 class="nav-logo" style="font-size: 2rem;">KabaleOnline</h4>
+                    <p>Connecting our community by making it easy to find and offer skilled services across the Kigezi region.</p>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul id="footer-quick-links">
+                        <li><a href="services.html">Browse Services</a></li>
+                        <li><a href="browse-jobs.html">Browse Jobs</a></li>
+                        <li><a href="group-chat.html">Community Chat</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="faq.html">Help & FAQ</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                 <div class="footer-links">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Kabale, Uganda</li>
+                        <li><i class="fas fa-phone-alt"></i> +256 784 655 792</li>
+                        <li><a href="mailto:kabaleservices@gmail.com"><i class="fas fa-envelope"></i> kabaleservices@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 KabaleOnline Services. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="theme.js" defer></script>
+    <script src="global-auth.js" type="module"></script>
+    <script type="module">
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navLinks = document.getElementById('nav-links');
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
+
