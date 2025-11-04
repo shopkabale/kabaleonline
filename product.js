@@ -79,6 +79,11 @@ async function loadProductAndSeller() {
         const sellerRef = doc(db, 'users', productData.sellerId);
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
+        
+        // --- NEW: Add sellerName to productData for the share button ---
+        // This makes it easier to pass to the setupShareButton function
+        productData.sellerName = sellerData.name || 'Seller';
+        // --- END NEW ---
 
         renderProductDetails(productData, sellerData);
         loadQandA(productData.sellerId);
@@ -106,31 +111,26 @@ function renderProductDetails(product, seller) {
         stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left in stock - order soon!</p>`;
     }
 
-    // --- NEW: Product Specs (Location, Condition, Type) ---
+    // --- Product Specs (Location, Condition, Type) ---
     let specsHTML = '';
     if (product.location) {
         specsHTML += `<div class="product-spec"><i class="fa-solid fa-location-dot"></i><span><strong>Location:</strong> ${product.location}</span></div>`;
     }
     if (product.condition) {
-        // Capitalize the first letter (e.g., "new" -> "New")
         const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1);
         specsHTML += `<div class="product-spec"><i class="fa-solid fa-tag"></i><span><strong>Condition:</strong> ${conditionText}</span></div>`;
     }
     if (product.listing_type) {
-        // Make it user-friendly (e.g., "sale" -> "For Sale")
         const typeText = product.listing_type === 'sale' ? 'For Sale' : 'For Rent';
         specsHTML += `<div class="product-spec"><i class="fa-solid fa-clipboard-list"></i><span><strong>Type:</strong> ${typeText}</span></div>`;
     }
-    // Only show the grid if there is at least one spec to show
     const specsGridHTML = specsHTML ? `<div class="product-specs-grid">${specsHTML}</div>` : '';
-    // --- END NEW ---
 
-    // --- NEW: Create a prominent Verified Seller badge ---
+    // --- Create a prominent Verified Seller badge ---
     const isVerified = (seller.badges || []).includes('verified') || seller.isVerified; // Check both user data fields
     const prominentVerifiedBadgeHTML = isVerified 
         ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
         : '';
-    // --- END NEW ---
 
     productElement.innerHTML = `
         <div class="product-images">
@@ -142,8 +142,7 @@ function renderProductDetails(product, seller) {
         <div class="product-info">
             <div class="product-title-header">
                 <h1 id="product-name">${product.name}</h1>
-                <button id="share-btn" title="Share"><i class="fa-solid fa-share-alt"></i></button>
-            </div>
+                </div>
             <h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>
             
             ${prominentVerifiedBadgeHTML}
@@ -153,6 +152,10 @@ function renderProductDetails(product, seller) {
             ${specsGridHTML}
             
             <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
+            
+            <button id="share-btn" class="share-product-btn">
+                <i class="fa-solid fa-share-alt"></i> Share This Product
+            </button>
             
             <div class="seller-card">
                 <h4>About the Seller</h4>
@@ -172,7 +175,8 @@ function renderProductDetails(product, seller) {
                     <button id="wishlist-btn" class="cta-button wishlist-btn" style="display: none;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
                     <a href="/chat.html?recipientId=${product.sellerId}" id="contact-seller-btn" class="cta-button message-btn"><i class="fa-solid fa-comment-dots"></i> Message Seller</a>
                     <a href="${whatsappLink}" target="_blank" class="cta-button whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>
-                    <a href="/profile.html?sellerId=${product.sellerId}" class="cta-button profile-btn">View Public Profile</a>
+                    
+                    <a href="/profile.html?sellerId=${product.sellerId}" class="cta-button seller-profile-btn-prominent">View Public Profile</a>
                 </div>
             </div>
         </div>`;
@@ -180,7 +184,7 @@ function renderProductDetails(product, seller) {
     productDetailContent.appendChild(productElement);
 
     // --- SETUP ALL BUTTONS ---
-    setupShareButton(product);
+    setupShareButton(product); // Pass the whole product object
     setupAddToCartButton(product);
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
@@ -264,17 +268,57 @@ function setupAddToCartButton(product) {
     });
 }
 
+// --- UPDATED SHARE BUTTON FUNCTION ---
 function setupShareButton(product) {
     const shareBtn = document.getElementById('share-btn');
     if (!shareBtn) return;
     shareBtn.addEventListener('click', async () => {
-        const shareData = { title: product.name, text: `Check out this listing on Kabale Online: ${product.name}`, url: window.location.href };
+        // Use the sellerName we added in loadProductAndSeller
+        const sellerName = product.sellerName || 'Kabale Online Seller'; 
+        const productPrice = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price N/A';
+
+        // Construct the share text as requested
+        const shareText = `${product.name}\n${productPrice}\nSeller: ${sellerName}\nView details here:`;
+        const shareUrl = window.location.href;
+
+        const shareData = { 
+            title: product.name, 
+            text: shareText, 
+            url: shareUrl 
+        };
+
         try {
-            if (navigator.share) { await navigator.share(shareData); } 
-            else { await navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!'); }
-        } catch (err) { console.error("Share failed:", err); }
+            if (navigator.share) { 
+                // Use Web Share API
+                await navigator.share(shareData); 
+            } else { 
+                // Fallback for browsers that don't support Web Share API
+                // Copy the full share message to clipboard
+                await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); 
+                showModal({
+                    icon: '📋',
+                    title: 'Link Copied!',
+                    message: 'Product details and link copied to clipboard. You can now paste it anywhere!',
+                    theme: 'success',
+                    buttons: [{ text: 'Got It!', class: 'primary', onClick: hideModal }]
+                });
+            }
+        } catch (err) { 
+            console.error("Share failed:", err); 
+            // Only show an error if it's not a user-cancelled share operation
+            if (err.name !== 'AbortError') {
+                 showModal({
+                    icon: '⚠️',
+                    title: 'Share Failed',
+                    message: 'Could not share the product details. Please try again.',
+                    theme: 'error',
+                    buttons: [{ text: 'OK', class: 'primary', onClick: hideModal }]
+                });
+            }
+        }
     });
 }
+// --- END UPDATED FUNCTION ---
 
 async function setupWishlistButton(product) {
     const wishlistBtn = document.getElementById('wishlist-btn');
