@@ -1289,6 +1289,74 @@
 body, html {
   overflow-x: hidden; /* prevents horizontal scroll */
 }
+/* Link container reset */
+.animated-photo-link {
+  display: block;
+  text-decoration: none;
+}
+
+/* Photo container */
+.photo-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+/* Image styling */
+.photo-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  box-shadow: 0 0 5px rgba(255,255,255,0.2);
+  animation: glow 2s infinite alternate;
+}
+
+/* Glow animation */
+@keyframes glow {
+  0% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+  50% { box-shadow: 0 0 25px rgba(255,255,255,0.5); }
+  100% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+}
+
+/* Shimmer overlay */
+.photo-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.5) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-20deg);
+  animation: shine 2s infinite;
+}
+
+/* Shimmer animation */
+@keyframes shine {
+  0% { left: -75%; }
+  100% { left: 125%; }
+}
+
+/* Responsive sizes */
+@media (max-width: 768px) {
+  .photo-container {
+    height: 200px; /* small rectangle for mobile */
+  }
+}
+
+@media (min-width: 769px) {
+  .photo-container {
+    height: 400px; /* horizontal large format for desktop */
+    width: 100%; /* stretch left to right */
+  }
+}
     </style>
 </head>
 <body class="light-mode">
@@ -1625,7 +1693,13 @@ body, html {
                 </a>
             </div>
             
-        </div> </main>
+        </div> 
+<a href="/shop/" class="animated-photo-link">
+  <div class="photo-container">
+    <img src="icons/SHOP.png" alt="Shop Now">
+  </div>
+</a>
+</main>
 
     <button id="back-to-top-btn" aria-label="Back to top" class="visible">
         <i class="fa-solid fa-arrow-up"></i>
