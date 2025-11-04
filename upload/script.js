@@ -6,32 +6,109 @@ import { showMessage, toggleLoading, normalizeWhatsAppNumber, getCloudinaryTrans
 const productForm = document.getElementById('product-form');
 const productIdInput = document.getElementById('productId');
 const submitBtn = document.getElementById('submit-btn');
-const categorySelect = document.getElementById('product-category');
 const messageEl = document.getElementById('product-form-message');
-const serviceFieldsContainer = document.getElementById('service-fields-container'); // <-- ADDED
+
+// --- NEW FORM-SWITCHING ELEMENTS ---
+const formTypeRadios = document.querySelectorAll('input[name="listing_category_type"]');
+const productFieldsContainer = document.getElementById('product-fields-container');
+const serviceFieldsContainer = document.getElementById('service-fields-container');
+const productCategorySelect = document.getElementById('product-category');
+const serviceCategorySelect = document.getElementById('service-category');
 
 // --- DATA & STATE ---
-const itemCategories = { 
+const productCategories = { 
     "Electronics": "Electronics", 
     "Clothing & Apparel": "Clothing & Apparel", 
     "Home & Furniture": "Home & Furniture", 
     "Health & Beauty": "Health & Beauty", 
     "Vehicles": "Vehicles", 
     "Property": "Property",
-    "Services": "Services", // <-- ADDED
+    "Textbooks": "Textbooks",
     "Other": "Other" 
 };
+
+// --- NEW: SERVICE CATEGORIES ---
+const serviceCategories = {
+    "Tutoring & Academics": "Tutoring & Academics",
+    "Design & Creative": "Design & Creative",
+    "Writing & Translation": "Writing & Translation",
+    "Tech & Programming": "Tech & Programming",
+    "Repairs & Technicians": "Repairs & Technicians",
+    "Events & Photography": "Events & Photography",
+    "Health & Wellness": "Health & Wellness",
+    "Home & Errands": "Home & Errands",
+    "Other Services": "Other Services"
+};
+
 let editingProductId = null;
+let currentFormType = null; // 'product' or 'service'
 
 // --- FUNCTIONS ---
 
-function updateCategoryOptions() {
-    categorySelect.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
-    for (const key in itemCategories) {
+/**
+ * Populates a <select> dropdown with category options.
+ * @param {object} categories The category object (productCategories or serviceCategories)
+ * @param {HTMLElement} selectElement The <select> element to populate
+ */
+function updateCategoryOptions(categories, selectElement) {
+    if (!selectElement) return;
+    selectElement.innerHTML = '<option value="" disabled selected>-- Select a Category --</option>';
+    for (const key in categories) {
         const option = document.createElement('option');
         option.value = key;
-        option.textContent = itemCategories[key];
-        categorySelect.appendChild(option);
+        option.textContent = categories[key];
+        selectElement.appendChild(option);
+    }
+}
+
+/**
+ * Toggles the 'required' attribute on all inputs within a container.
+ * @param {HTMLElement} container The container to toggle
+ * @param {boolean} isRequired Set to true to add 'required', false to remove
+ */
+function toggleRequiredFields(container, isRequired) {
+    if (!container) return;
+    const inputs = container.querySelectorAll('input[data-required], textarea[data-required], select[data-required]');
+    inputs.forEach(input => {
+        input.required = isRequired;
+    });
+}
+
+/**
+ * Handles the logic when a user switches between 'Product' and 'Service'
+ */
+function handleFormTypeChange(event) {
+    currentFormType = event.target.value;
+    
+    if (currentFormType === 'product') {
+        // 1. Show/Hide containers
+        productFieldsContainer.style.display = 'block';
+        serviceFieldsContainer.style.display = 'none';
+
+        // 2. Populate correct categories
+        updateCategoryOptions(productCategories, productCategorySelect);
+
+        // 3. Set 'required' attributes
+        toggleRequiredFields(productFieldsContainer, true);
+        toggleRequiredFields(serviceFieldsContainer, false);
+
+        // 4. Update button text
+        submitBtn.textContent = 'Upload Product';
+
+    } else if (currentFormType === 'service') {
+        // 1. Show/Hide containers
+        productFieldsContainer.style.display = 'none';
+        serviceFieldsContainer.style.display = 'block';
+
+        // 2. Populate correct categories
+        updateCategoryOptions(serviceCategories, serviceCategorySelect);
+
+        // 3. Set 'required' attributes
+        toggleRequiredFields(productFieldsContainer, false);
+        toggleRequiredFields(serviceFieldsContainer, true);
+
+        // 4. Update button text
+        submitBtn.textContent = 'Upload Service';
     }
 }
 
@@ -57,71 +134,86 @@ async function uploadImageToCloudinary(file) {
 }
 
 async function populateFormForEdit(productId) {
+    // This function needs to be more robust to handle loading EITHER a product or service
     try {
         const productRef = doc(db, 'products', productId);
         const docSnap = await getDoc(productRef);
-        if (docSnap.exists() && docSnap.data().sellerId === auth.currentUser.uid) {
-            const product = docSnap.data();
-            productIdInput.value = productId;
+        if (!docSnap.exists() || docSnap.data().sellerId !== auth.currentUser.uid) {
+            showMessage(messageEl, 'Item not found or you do not have permission to edit it.', true);
+            return;
+        }
+
+        const product = docSnap.data();
+        productIdInput.value = productId;
+
+        // Determine if it's a product or service
+        const formType = product.listing_type === 'service' ? 'service' : 'product';
+
+        if (formType === 'product') {
+            // 1. Set the main radio button and trigger the form change
+            document.querySelector('input[name="listing_category_type"][value="product"]').checked = true;
+            currentFormType = 'product';
+            productFieldsContainer.style.display = 'block';
+            serviceFieldsContainer.style.display = 'none';
+            updateCategoryOptions(productCategories, productCategorySelect);
+            toggleRequiredFields(productFieldsContainer, true);
+            toggleRequiredFields(serviceFieldsContainer, false);
+
+            // 2. Populate product fields
             document.getElementById('product-name').value = product.name;
             document.getElementById('product-price').value = product.price;
             document.getElementById('product-category').value = product.category || '';
+            document.getElementById('product-quantity').value = product.quantity || 1;
+            document.getElementById('product-location').value = product.location || '';
             document.getElementById('product-description').value = product.description;
             document.getElementById('product-story').value = product.story || '';
-            document.getElementById('product-quantity').value = product.quantity || 1;
-            const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
-            document.getElementById('whatsapp-number').value = localNumber;
-            document.getElementById('product-location').value = product.location || ''; 
+            document.getElementById('product-whatsapp').value = normalizeWhatsAppNumber(product.whatsapp, true);
+            document.querySelector(`input[name="listing-type"][value="${product.listing_type || 'sale'}"]`).checked = true;
+            document.querySelector(`input[name="condition"][value="${product.condition || 'new'}"]`).checked = true;
 
-            if (product.listing_type === 'rent') {
-                document.getElementById('type-rent').checked = true;
-            } else {
-                document.getElementById('type-sale').checked = true;
-            }
-
-            if (product.condition === 'used') {
-                document.getElementById('condition-used').checked = true;
-            } else {
-                document.getElementById('condition-new').checked = true;
-            }
-
-            // --- NEW: Populate service fields if it's a service ---
-            if (product.category === 'Services') {
-                serviceFieldsContainer.style.display = 'block'; // Show the fields
-                document.getElementById('service-duration').value = product.service_duration || '';
-                document.getElementById('service-availability').value = product.service_availability || '';
-                
-                // Set service location radio
-                const serviceLocationType = product.service_location_type || 'Online';
-                if(document.getElementById(`service-location-${serviceLocationType.toLowerCase()}`)) {
-                    document.getElementById(`service-location-${serviceLocationType.toLowerCase()}`).checked = true;
-                }
-            }
-            // --- END NEW ---
-
-            submitBtn.textContent = 'Update Item';
-        } else {
-            showMessage(messageEl, 'Product not found or you do not have permission to edit it.', true);
+        } else if (formType === 'service') {
+            // 1. Set the main radio button and trigger the form change
+            document.querySelector('input[name="listing_category_type"][value="service"]').checked = true;
+            currentFormType = 'service';
+            productFieldsContainer.style.display = 'none';
+            serviceFieldsContainer.style.display = 'block';
+            updateCategoryOptions(serviceCategories, serviceCategorySelect);
+            toggleRequiredFields(productFieldsContainer, false);
+            toggleRequiredFields(serviceFieldsContainer, true);
+            
+            // 2. Populate service fields
+            document.getElementById('service-name').value = product.name;
+            document.getElementById('service-price').value = product.price;
+            document.getElementById('service-price-type').value = product.service_duration || '';
+            document.getElementById('service-category').value = product.category || '';
+            document.getElementById('service-description').value = product.description;
+            document.getElementById('service-story').value = product.story || '';
+            document.getElementById('service-whatsapp').value = normalizeWhatsAppNumber(product.whatsapp, true);
+            document.querySelector(`input[name="service-location-type"][value="${product.service_location_type || 'Online'}"]`).checked = true;
+            document.getElementById('service-availability').value = product.service_availability || '';
         }
+
+        // Disable the top radio buttons so user can't switch types during an edit
+        formTypeRadios.forEach(radio => radio.disabled = true);
+        document.querySelector('.product-type-selection').style.opacity = '0.7';
+        document.querySelector('.product-type-selection h2').textContent = "Editing Listing (Type cannot be changed)";
+
+
+        submitBtn.textContent = 'Update Item';
     } catch (error) {
-        showMessage(messageEl, 'Failed to load product data for editing.', true);
+        showMessage(messageEl, 'Failed to load item data for editing.', true);
+        console.error("Edit load error:", error);
     }
 }
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    updateCategoryOptions();
-
-    // --- NEW: Add event listener to show/hide service fields ---
-    categorySelect.addEventListener('change', () => {
-        if (categorySelect.value === 'Services') {
-            serviceFieldsContainer.style.display = 'block';
-        } else {
-            serviceFieldsContainer.style.display = 'none';
-        }
+    // 1. Listen for changes on the main type radio buttons
+    formTypeRadios.forEach(radio => {
+        radio.addEventListener('change', handleFormTypeChange);
     });
-    // --- END NEW ---
 
+    // 2. Check if we are editing
     const params = new URLSearchParams(window.location.search);
     editingProductId = params.get('editId');
     if (editingProductId) {
@@ -138,6 +230,10 @@ productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) return;
+    if (!currentFormType) {
+        showMessage(messageEl, 'Please select a listing type (Product or Service) first.', true);
+        return;
+    }
 
     toggleLoading(submitBtn, true, editingProductId ? 'Updating...' : 'Submitting...');
 
@@ -146,17 +242,74 @@ productForm.addEventListener('submit', async (e) => {
         const userDoc = await getDoc(userDocRef);
         const userData = userDoc.exists() ? userDoc.data() : {};
 
-        const productName = document.getElementById('product-name').value;
-        const imageFile1 = document.getElementById('product-image-1').files[0];
-        const imageFile2 = document.getElementById('product-image-2').files[0];
+        let productData = {};
+        let filesToUpload = [];
 
+        // --- GATHER DATA BASED ON FORM TYPE ---
+        if (currentFormType === 'product') {
+            const productName = document.getElementById('product-name').value;
+            filesToUpload = [
+                document.getElementById('product-image-1').files[0],
+                document.getElementById('product-image-2').files[0]
+            ].filter(f => f);
+
+            productData = {
+                listing_type: document.querySelector('input[name="listing-type"]:checked').value, // 'sale' or 'rent'
+                condition: document.querySelector('input[name="condition"]:checked').value, // 'new' or 'used'
+                location: document.getElementById('product-location').value || '',
+                name: productName,
+                name_lowercase: productName.toLowerCase(),
+                price: Number(document.getElementById('product-price').value),
+                quantity: Number(document.getElementById('product-quantity').value) || 1,
+                category: document.getElementById('product-category').value,
+                description: document.getElementById('product-description').value,
+                story: document.getElementById('product-story').value,
+                whatsapp: normalizeWhatsAppNumber(document.getElementById('product-whatsapp').value),
+            };
+
+        } else if (currentFormType === 'service') {
+            const serviceName = document.getElementById('service-name').value;
+            filesToUpload = [
+                document.getElementById('service-image-1').files[0],
+                document.getElementById('service-image-2').files[0]
+            ].filter(f => f);
+
+            productData = {
+                listing_type: "service", // <-- THIS IS THE CRUCIAL FIX
+                name: serviceName,
+                name_lowercase: serviceName.toLowerCase(),
+                price: Number(document.getElementById('service-price').value),
+                category: document.getElementById('service-category').value,
+                description: document.getElementById('service-description').value,
+                story: document.getElementById('service-story').value,
+                whatsapp: normalizeWhatsAppNumber(document.getElementById('service-whatsapp').value),
+                
+                // Service-specific fields
+                service_duration: document.getElementById('service-price-type').value || '',
+                service_location_type: document.querySelector('input[name="service-location-type"]:checked').value,
+                service_availability: document.getElementById('service-availability').value || '',
+                
+                // Set defaults for fields that don't apply
+                quantity: 1,
+                condition: 'new',
+                location: '',
+            };
+        }
+
+        // --- Common data for all types ---
+        productData.sellerId = user.uid;
+        productData.sellerEmail = user.email;
+        productData.sellerName = userData.name || user.email;
+        productData.sellerIsVerified = userData.isVerified || false;
+        productData.sellerBadges = userData.badges || [];
+
+        // --- Handle Image Uploads ---
         let finalImageUrls = [];
         if (editingProductId) {
             const docSnap = await getDoc(doc(db, 'products', editingProductId));
             if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
         }
 
-        const filesToUpload = [imageFile1, imageFile2].filter(f => f);
         if (filesToUpload.length > 0) {
             finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f)));
         }
@@ -164,52 +317,20 @@ productForm.addEventListener('submit', async (e) => {
         if (finalImageUrls.length === 0 && !editingProductId) {
             throw new Error('At least one image is required for a new listing.');
         }
-
-        const listingType = document.querySelector('input[name="listing-type"]:checked').value;
-        const condition = document.querySelector('input[name="condition"]:checked').value;
-        const location = document.getElementById('product-location').value || '';
-        const selectedCategory = document.getElementById('product-category').value; // Get category
-
-        // --- MODIFIED: Add new fields to productData object ---
-        const productData = {
-            listing_type: listingType,
-            condition: condition,
-            location: location,
-            name: productName,
-            name_lowercase: productName.toLowerCase(),
-            price: Number(document.getElementById('product-price').value),
-            quantity: Number(document.getElementById('product-quantity').value) || 1,
-            category: selectedCategory, // Use the variable
-            description: document.getElementById('product-description').value,
-            story: document.getElementById('product-story').value,
-            whatsapp: normalizeWhatsAppNumber(document.getElementById('whatsapp-number').value),
-            sellerId: user.uid,
-            sellerEmail: user.email,
-            sellerName: userData.name || user.email,
-            sellerIsVerified: userData.isVerified || false,
-            sellerBadges: userData.badges || []
-        };
-        // --- END MODIFICATION ---
-
-        // --- NEW: Add service-specific data if it's a service ---
-        if (selectedCategory === 'Services') {
-            productData.service_duration = document.getElementById('service-duration').value || '';
-            productData.service_location_type = document.querySelector('input[name="service-location-type"]:checked')?.value || 'Online';
-            productData.service_availability = document.getElementById('service-availability').value || '';
-            
-            // Optional: You might want to override/hide quantity for services
-            productData.quantity = 1; 
+        if (finalImageUrls.length > 0) {
+            productData.imageUrls = finalImageUrls;
         }
-        // --- END NEW ---
 
-        if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
-
+        // --- Save to Firestore and Sync to Algolia ---
+        let docId; 
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
+            docId = editingProductId;
         } else {
-            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false });
+            const newDocRef = await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false });
+            docId = newDocRef.id;
 
-            // Referral logic remains the same
+            // Referral logic (only for new listings)
             if (userData.referrerId && !userData.referralValidationRequested) {
                 const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
                 await addDoc(collection(db, "referralValidationRequests"), {
@@ -224,16 +345,26 @@ productForm.addEventListener('submit', async (e) => {
             }
         }
 
-        fetch('/.netlify/functions/syncToAlgolia').catch(err => console.error("Error triggering Algolia sync:", err));
+        // --- NEW, FAST ALGOLIA SYNC ---
+        if (docId) {
+            fetch('/.netlify/functions/syncToAlgolia', { 
+                method: 'POST',
+                body: JSON.stringify({ action: 'update', objectID: docId })
+            }).catch(err => console.error("Error triggering single sync:", err));
+        }
+        // --- END ALGOLIA SYNC ---
 
         showMessage(messageEl, 'Success! Your listing is live!', false);
         productForm.reset();
         
-        // --- NEW: Also hide service fields on reset ---
+        // Hide both containers
+        productFieldsContainer.style.display = 'none';
         serviceFieldsContainer.style.display = 'none';
-        // --- END NEW ---
+        // Re-enable radio buttons
+        formTypeRadios.forEach(radio => radio.disabled = false);
+        document.querySelector('.product-type-selection').style.opacity = '1';
 
-        setTimeout(() => { window.location.href = '/products/'; }, 2000);
+        setTimeout(() => { window.location.href = '/dashboard/'; }, 2000); // Redirect to dashboard
 
     } catch (error) {
         console.error("Error submitting product:", error);
