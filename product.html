@@ -123,9 +123,7 @@
         .product-title-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
         #product-name { margin-top: 0; color: var(--text-main); }
         
-        /* This is the style for your original circular share button. 
-           Your product.js will now create a button with a different id and class, 
-           but we'll keep this so nothing breaks if the old ID is somehow used. */
+        /* Original share-btn style - this is now overridden by .share-product-btn */
         #share-btn { 
             background-color: var(--bg-main); 
             color: var(--text-main); 
@@ -234,7 +232,7 @@
         /* --- END NEW CSS --- */
 
         
-        /* * --- THIS IS THE CSS YOU NEED FOR THE SHARE BUTTON ---
+        /* * --- THIS IS THE CSS FOR THE SHARE BUTTON ---
          * Your product.js file will add a button with the class ".share-product-btn"
          * These styles will apply to it.
          */
@@ -253,6 +251,10 @@
             width: 100%; /* Make it full width */
             margin-top: 15px; /* Space below other product info */
             transition: background-color 0.2s, border-color 0.2s; /* This creates the hover effect transition */
+            
+            /* This overrides the default circular button styles */
+            height: auto; 
+            font-size: 1em;
         }
 
         /* This is the hover effect */
@@ -515,6 +517,8 @@
 
     <script type="module" src="ui.js"></script>
     <script type="module" src="shared.js"></script>
-    <script type.module" src="product.js"></script>
+    
+    <!-- THIS LINE IS NOW CORRECTED (it has = instead of .) -->
+    <script type="module" src="product.js"></script>
 </body>
 </html>
