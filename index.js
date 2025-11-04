@@ -184,9 +184,12 @@ async function fetchProductsFromFirebase(q, gridId, sectionId) {
     
     // We check if it's a carousel AND it is NOT expanded
     if (wrapper && !wrapper.classList.contains('expanded')) {
-        // If there are 4 or fewer products, add the 'center-items' class
-        // (4 items on desktop is about the cutoff)
-        if (products.length <= 4) { 
+        
+        // --- 🔴 USER UPDATE: Center limit is now 8 for all carousels ---
+        const centerLimit = 8; 
+
+        // If there are 'centerLimit' or fewer products, add the class
+        if (products.length <= centerLimit) { 
             wrapper.classList.add('center-items');
         }
     }
@@ -205,7 +208,7 @@ function fetchFeaturedProducts() {
         where('isHero', '==', true), 
         where('isSold', '==', false),
         orderBy('heroTimestamp', 'desc'), 
-        limit(8)
+        limit(8) // <-- This is already 8, as requested
     );
     return fetchProductsFromFirebase(q, 'featured-products-grid', 'featured-section');
 }
