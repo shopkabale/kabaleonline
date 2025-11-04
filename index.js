@@ -325,19 +325,9 @@ function initializeUI() {
         }
     });
 
-    // --- Mobile Menu ---
-    const hamburger = document.querySelector('.hamburger-menu');
-    const mobileNav = document.querySelector('.mobile-nav');
-    const overlay = document.querySelector('.mobile-nav-overlay');
-
-    if (hamburger && mobileNav && overlay) {
-        const toggleMenu = () => {
-            mobileNav.classList.toggle('active');
-            overlay.classList.toggle('active');
-        };
-        hamburger.addEventListener('click', toggleMenu);
-        overlay.addEventListener('click', toggleMenu);
-    }
+    // --- (REMOVED) Mobile Menu Logic ---
+    // const hamburger = document.querySelector('.hamburger-menu');
+    // ... (all hamburger logic removed) ...
 
     // --- External Navigation Modal ---
     const navModal = document.getElementById('nav-modal');
