@@ -129,6 +129,10 @@ function renderProductDetails(product, seller) {
         ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
         : '';
 
+    // Primary and hover colors from your site's theme
+    const primaryColor = '#007aff';
+    const hoverColor = '#0056b3';
+
     productElement.innerHTML = `
         <div class="product-images">
             ${(product.imageUrls && product.imageUrls.length > 0) 
@@ -136,7 +140,10 @@ function renderProductDetails(product, seller) {
                 : `<img src="https://placehold.co/600x600/e0e0e0/777?text=No+Image" alt="No image available">`
             }
         </div>
-        <div classs="product-info">
+        
+        <!-- *** THIS IS THE FIX for the broken page *** My typo "classs" is now corrected to "class" -->
+        <div class="product-info">
+        
             <div class="product-title-header">
                 <h1 id="product-name">${product.name}</h1>
             </div>
@@ -152,16 +159,40 @@ function renderProductDetails(product, seller) {
             
             <!-- 
               *****************************************************************
-              * THIS IS THE FIX
-              * I am giving the button the same classes as your "Add to Cart" button:
-              * "cta-button" and "primary-action-btn"
-              * I also added a style for margin to give it space.
+              * THIS IS THE NEW SHARE BUTTON FIX
+              * All styles are INLINE to force them to apply and bypass caching.
+              * It has its "own unique everything" as you asked.
+              * Hover effects are done with onmouseover/onmouseout.
               *****************************************************************
             -->
-            <button id="share-btn" class="cta-button primary-action-btn" style="margin-top: 15px; margin-bottom: 10px;">
+            <button id="share-btn"
+                style="
+                    background-color: ${primaryColor};
+                    color: white;
+                    padding: 12px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: bold;
+                    text-align: center;
+                    border: none;
+                    font-family: inherit;
+                    font-size: 1em;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    width: 100%;
+                    margin-top: 15px;
+                    margin-bottom: 10px;
+                    transition: background-color 0.2s;
+                "
+                onmouseover="this.style.backgroundColor='${hoverColor}'"
+                onmouseout="this.style.backgroundColor='${primaryColor}'"
+            >
                 <i class="fa-solid fa-share-alt"></i> Share This Product
             </button>
-            <!-- * END OF FIX * -->
+            <!-- * END OF NEW SHARE BUTTON FIX * -->
             
             <div class="seller-card">
                 <h4>About the Seller</h4>
@@ -290,7 +321,7 @@ function setupShareButton(product) {
     const shareBtn = document.getElementById('share-btn'); 
     if (!shareBtn) return;
     
-    // The button is ALREADY STYLED by the classes we added in renderProductDetails.
+    // The button is ALREADY STYLED by the inline styles we added in renderProductDetails.
     // This function just adds the click logic.
     
     shareBtn.addEventListener('click', async () => {
