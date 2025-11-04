@@ -1595,13 +1595,16 @@ body.no-scroll {
     margin-bottom: 60px;
     padding: 0 10px;
 }
-/* --- CSS TO CENTER CAROUSELS WITH FEW ITEMS --- */
+/* --- CSS TO CENTER CAROUSELS WITH FEW ITEMS (DESKTOP ONLY) --- */
 .product-carousel-wrapper.center-items {
-    /* Disables the horizontal scrollbar */
+    /* Disables the horizontal scrollbar on all screens */
     overflow-x: hidden;
 }
 
-.product-carousel-wrapper.center-items .product-carousel {
-    /* This centers the cards */
+/* This media query applies the centering ONLY on wide screens */
+@media (min-width: 768px) {
+  .product-carousel-wrapper.center-items .product-carousel {
+    /* This centers the cards on desktop */
     justify-content: center;
+  }
 }
