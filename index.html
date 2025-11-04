@@ -204,11 +204,29 @@
                 </div>
             </section>
             
-<div class="start-selling-section" onclick="window.location.href='/upload/'">
-  <span class="arrow">➜</span>
-  <span class="start-text">Start</span>
-  <span class="selling-text">Selling</span>
-</div>
+<div class="shop-by-image-cards">
+            
+            <a href="/shop/" class="cta-card-animated cta-card-buyer">
+                <h2>Looking for...</h2>
+                <div class="cta-card-text-container">
+                    <span id="cta-animated-text-buyer">a Hostel?</span>
+                </div>
+                <div class="cta-card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="/upload/" class="cta-card-animated cta-card-seller">
+                <h2>Got Extra...</h2>
+                <div class="cta-card-text-container">
+                    <span id="cta-animated-text-seller">Textbooks?</span>
+                </div>
+                <div class="cta-card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+        </div>
 
             <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
@@ -516,7 +534,34 @@
     </div>
 <script type="module" src="ui.js"></script>
 <script type="module" src="index.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- Animated CTA Card Text ---
+        const buyerText = document.getElementById('cta-animated-text-buyer');
+        const sellerText = document.getElementById('cta-animated-text-seller');
 
+        if (buyerText && sellerText) {
+            const buyerItems = ["a Hostel?", "a good Deal?", "Electronics?", "a Service?"];
+            const sellerItems = ["Textbooks?", "that Old Phone?", "Your Skills?", "Furniture?"];
+            let buyerIndex = 0;
+            let sellerIndex = 0;
+            
+            // This timer must match the CSS animation duration (4s = 4000ms)
+            setInterval(() => {
+                // Update Buyer Text
+                buyerIndex = (buyerIndex + 1) % buyerItems.length;
+                buyerText.textContent = buyerItems[buyerIndex];
+                
+                // Update Seller Text
+                sellerIndex = (sellerIndex + 1) % sellerItems.length;
+                sellerText.textContent = sellerItems[sellerIndex];
+                
+            }, 4000); 
+        }
+
+    });
+</script>
 
 </body>
 </html>
