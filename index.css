@@ -1267,3 +1267,87 @@ body, html {
     width: 100%; /* stretch left to right */
   }
 }
+/* Container */
+.holiday-banner {
+  position: relative;
+  width: 100%;          /* Full width on all devices */
+  max-width: 100vw;     /* Prevent horizontal scroll */
+  height: 180px;        /* Fixed height under 200px */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 20px;      /* Padding for mobile */
+  text-align: center;
+
+  /* Animated background gradient */
+  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
+  background-size: 400% 400%;
+  animation: gradientBG 10s ease infinite;
+}
+
+/* Gradient background animation */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Text styling */
+.holiday-banner h2 {
+  font-family: 'Arial', sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1.2;
+  color: #fff;
+
+  /* Gradient text */
+  background: linear-gradient(90deg, #ffd700, #ff4500, #00ffff, #ff69b4);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Animations */
+  animation: textGradient 5s ease infinite, bounce 2s ease-in-out infinite;
+}
+
+/* Text gradient animation */
+@keyframes textGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Bounce animation */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Optional sparkle effect */
+.holiday-banner::after {
+  content: "✨";
+  position: absolute;
+  font-size: 1.5rem;
+  top: 20%;
+  left: 5%;
+  animation: sparkle 2s linear infinite;
+}
+
+/* Sparkle animation */
+@keyframes sparkle {
+  0% { transform: translate(0,0) scale(1); opacity: 0; }
+  50% { transform: translate(150px,50px) scale(1.5); opacity: 1; }
+  100% { transform: translate(300px,-30px) scale(1); opacity: 0; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .holiday-banner {
+    height: 160px;       /* Slightly smaller on mobile */
+    padding: 0 10px;
+  }
+  .holiday-banner h2 {
+    font-size: 1.5rem;   /* Text fits mobile screen */
+  }
+}
