@@ -10,7 +10,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 const state = {
     currentUser: null,
     wishlist: new Set(),
-    // REMOVED: state.howTo is no longer needed for the new 2-page slider
 };
 
 /**
@@ -107,7 +106,7 @@ function renderProducts(gridElement, products, append = false) {
         if (isActuallySold) {
             stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
         } else if (product.quantity > 5) {
-            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`; // <-- IN STOCK (GREEN)
+            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
         } else if (product.quantity > 0 && product.quantity <= 5) {
             stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
         }
@@ -123,6 +122,29 @@ function renderProducts(gridElement, products, append = false) {
         } else if (product.condition === 'used') {
             tagsHTML += '<span class="product-tag condition-used">USED</span>';
         }
+
+        // --- NEW: Service-Aware Logic ---
+        // We add this to the homepage as well so services look correct
+        let priceHTML = '';
+        let locationHTML = '';
+        if (product.category === 'Services') {
+            priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
+                ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
+            </p>`;
+
+            if (product.service_location_type) {
+                const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
+                locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
+            }
+            stockStatusHTML = ''; // Services don't have stock
+        } else {
+            priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
+            if (product.location) {
+                locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
+            }
+        }
+        // --- END NEW LOGIC ---
+
         const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
         
         const productLink = document.createElement("a");
@@ -141,8 +163,8 @@ function renderProducts(gridElement, products, append = false) {
             
             <h3>${product.name}</h3>
             ${stockStatusHTML}
-            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
-            ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
+            ${priceHTML}
+            ${locationHTML}
             ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
             ${verifiedTextHTML}
           </div>
@@ -178,22 +200,13 @@ async function fetchProductsFromFirebase(q, gridId, sectionId) {
     
     renderProducts(gridElement, products);
 
-    // --- NEW CODE TO CENTER CAROUSELS ---
-    // This finds the scrolling wrapper around the grid
     const wrapper = gridElement.closest('.product-carousel-wrapper');
-    
-    // We check if it's a carousel AND it is NOT expanded
     if (wrapper && !wrapper.classList.contains('expanded')) {
-        
-        // --- 🔴 USER UPDATE: Center limit is now 8 for all carousels ---
         const centerLimit = 8; 
-
-        // If there are 'centerLimit' or fewer products, add the class
         if (products.length <= centerLimit) { 
             wrapper.classList.add('center-items');
         }
     }
-    // --- END OF NEW CODE ---
 
     if (sectionElement) sectionElement.style.display = 'block';
     
@@ -208,7 +221,7 @@ function fetchFeaturedProducts() {
         where('isHero', '==', true), 
         where('isSold', '==', false),
         orderBy('heroTimestamp', 'desc'), 
-        limit(8) // <-- This is already 8, as requested
+        limit(8)
     );
     return fetchProductsFromFirebase(q, 'featured-products-grid', 'featured-section');
 }
@@ -246,9 +259,6 @@ function fetchSaveOnMore() {
     return fetchProductsFromFirebase(q, 'save-on-more-grid', 'save-on-more-section');
 }
 
-/**
- * MODIFIED: Fetches the first 8 recent products
- */
 async function fetchRecentProducts() {
     const grid = document.getElementById('recent-products-grid');
     if (!grid) return;
@@ -256,7 +266,7 @@ async function fetchRecentProducts() {
     const q = query(
         collection(db, 'products'), 
         orderBy('createdAt', 'desc'), 
-        limit(8) // --- CHANGED TO 8 ---
+        limit(8)
     );
     
     try {
@@ -343,13 +353,9 @@ function initializeUI() {
         }
     });
 
-    // --- (REMOVED) Mobile Menu Logic ---
-    // This is handled by ui.js now
-
-    // --- (REMOVED) External Navigation Modal ---
-    // This entire block of code has been deleted as it's no longer needed.
-    // const navModal = document.getElementById('nav-modal');
-    // ... all logic for navModal, navCancelBtn, and .service-link clicks is gone.
+    // --- External Navigation Modal (REMOVED) ---
+    // The old logic for 'nav-modal' and '.service-link' clicks is gone.
+    // Your 'ui.js' file handles the hamburger menu.
 
     // --- AI Chat Bubble and Modal Logic ---
     const chatModalContainer = document.getElementById('chat-modal-container');
@@ -404,7 +410,6 @@ function initializeUI() {
     // --- ADDED: Back to Top Button Logic ---
     const backToTopBtn = document.getElementById('back-to-top-btn');
     if (backToTopBtn) {
-        // Show/hide button on scroll
         window.addEventListener('scroll', () => {
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
                 backToTopBtn.classList.add('visible');
@@ -412,8 +417,6 @@ function initializeUI() {
                 backToTopBtn.classList.remove('visible');
             }
         });
-        
-        // Scroll to top on click
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
@@ -437,25 +440,22 @@ function initializeUI() {
                 i = (i + 1) % placeholders.length;
                 searchInput.placeholder = placeholders[i];
                 searchInput.classList.add('placeholder-visible'); // Fade in
-            }, 300); // This must match the CSS transition time
+            }, 300); 
         };
-        // Show first placeholder immediately
         searchInput.placeholder = placeholders[i];
         searchInput.classList.add('placeholder-visible');
         
         setInterval(animatePlaceholder, 2500);
     }
     
-    // --- "See More" Button Logic (EXPAND-ONCE) ---
+    // --- "See More" Button Logic ---
     document.body.addEventListener('click', async (e) => {
         const seeMoreBtn = e.target.closest('.see-more-btn');
         if (!seeMoreBtn) return;
         
         const sectionName = seeMoreBtn.dataset.section;
-        if (!sectionName) return; // Not a carousel button
+        if (!sectionName) return; 
         
-        // --- THIS IS THE FIX: NO "Show Less" logic ---
-        // If it's already expanded, do nothing.
         if (seeMoreBtn.dataset.expanded === 'true') {
             return;
         }
@@ -475,7 +475,7 @@ function initializeUI() {
             } else if (sectionName === 'sponsored') {
                 q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             } else if (sectionName === 'save') {
-                q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(2D));
+                q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             }
             
             const { products } = await fetchProductsFromFirebase(q, grid.id, null);
@@ -487,20 +487,18 @@ function initializeUI() {
                 grid.classList.add('product-grid');
                 seeMoreBtn.textContent = 'Showing All';
                 seeMoreBtn.dataset.expanded = 'true';
-                // Button remains disabled
             } else {
                 seeMoreBtn.textContent = 'No More Items';
                 seeMoreBtn.dataset.expanded = 'true';
-                // Button remains disabled
             }
         } catch (error) {
             console.error(`Error expanding section ${sectionName}:`, error);
             seeMoreBtn.textContent = 'Error';
-            seeMoreBtn.disabled = false; // Re-enable on error
+            seeMoreBtn.disabled = false; 
         }
     });
 
-    // --- REPLACED: "How-To" 2-Page Slider Logic ---
+    // --- "How-To" 2-Page Slider Logic ---
     const slider = document.getElementById('how-to-slider');
     const prevBtn = document.getElementById('how-to-prev');
     const nextBtn = document.getElementById('how-to-next');
@@ -508,30 +506,25 @@ function initializeUI() {
 
     if (slider && prevBtn && nextBtn && dotsContainer) {
         let currentSlide = 0;
-        const totalSlides = 2; // We have 2 slides: "How to Sell" and "How to Buy"
+        const totalSlides = 2; 
         const dots = dotsContainer.querySelectorAll('.how-to-dot');
-        let autoScrollTimer = setInterval(slideNext, 5000); // Auto-scroll every 5 seconds
+        let autoScrollTimer = setInterval(slideNext, 5000); 
 
         function updateSlider() {
-            // 1. Move the slider
             slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-            // 2. Update dots
             dots.forEach(dot => dot.classList.remove('active'));
             dots[currentSlide].classList.add('active');
-
-            // 3. Update arrow buttons
             prevBtn.disabled = currentSlide === 0;
             nextBtn.disabled = currentSlide === totalSlides - 1;
         }
 
         function slideNext() {
-            currentSlide = (currentSlide + 1) % totalSlides; // Loop to start
+            currentSlide = (currentSlide + 1) % totalSlides; 
             updateSlider();
         }
 
         function slidePrev() {
-            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; // Loop to end
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; 
             updateSlider();
         }
 
@@ -540,9 +533,7 @@ function initializeUI() {
             autoScrollTimer = setInterval(slideNext, 5000);
         }
 
-        // --- Event Listeners ---
         nextBtn.addEventListener('click', () => {
-            // On manual click, just go to the next slide, don't loop
             if (currentSlide < totalSlides - 1) {
                 currentSlide++;
                 updateSlider();
@@ -551,7 +542,6 @@ function initializeUI() {
         });
 
         prevBtn.addEventListener('click', () => {
-            // On manual click, just go to the previous slide
             if (currentSlide > 0) {
                 currentSlide--;
                 updateSlider();
@@ -567,7 +557,6 @@ function initializeUI() {
             });
         });
 
-        // Set initial state
         updateSlider();
     }
 
@@ -592,7 +581,7 @@ function initializeUI() {
 async function initializeData() {
     onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
-        await fetchUserWishlist(); // Load wishlist first
+        await fetchUserWishlist(); 
         
         try {
             await Promise.allSettled([
@@ -600,8 +589,7 @@ async function initializeData() {
                 fetchDeals(),
                 fetchSponsoredItems(),
                 fetchSaveOnMore(),
-                fetchRecentProducts(), // This loads the first 8
-                // REMOVED: fetchHowToSteps() call
+                fetchRecentProducts(), 
             ]);
         } catch (error) {
             console.error("A critical error occurred during data load:", error);
@@ -615,11 +603,6 @@ async function initializeData() {
 // ==================================================== //
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize all UI elements immediately.
-    // This will make the hamburger, theme, and chat buttons work.
     initializeUI();
-    
-    // 2. Start loading data from Firebase.
-    // This will run in the background and fill in the product sections.
     initializeData();
 });
