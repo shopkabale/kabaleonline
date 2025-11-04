@@ -8,9 +8,19 @@ const productIdInput = document.getElementById('productId');
 const submitBtn = document.getElementById('submit-btn');
 const categorySelect = document.getElementById('product-category');
 const messageEl = document.getElementById('product-form-message');
+const serviceFieldsContainer = document.getElementById('service-fields-container'); // <-- ADDED
 
 // --- DATA & STATE ---
-const itemCategories = { "Electronics": "Electronics", "Clothing & Apparel": "Clothing & Apparel", "Home & Furniture": "Home & Furniture", "Health & Beauty": "Health & Beauty", "Vehicles": "Vehicles", "Property": "Property", "Other": "Other" };
+const itemCategories = { 
+    "Electronics": "Electronics", 
+    "Clothing & Apparel": "Clothing & Apparel", 
+    "Home & Furniture": "Home & Furniture", 
+    "Health & Beauty": "Health & Beauty", 
+    "Vehicles": "Vehicles", 
+    "Property": "Property",
+    "Services": "Services", // <-- ADDED
+    "Other": "Other" 
+};
 let editingProductId = null;
 
 // --- FUNCTIONS ---
@@ -61,22 +71,31 @@ async function populateFormForEdit(productId) {
             document.getElementById('product-quantity').value = product.quantity || 1;
             const localNumber = product.whatsapp.startsWith('256') ? '0' + product.whatsapp.substring(3) : product.whatsapp;
             document.getElementById('whatsapp-number').value = localNumber;
-
-            // --- NEW: Populate all new fields ---
             document.getElementById('product-location').value = product.location || ''; 
 
-            // Set Listing Type radio
             if (product.listing_type === 'rent') {
                 document.getElementById('type-rent').checked = true;
             } else {
-                document.getElementById('type-sale').checked = true; // Default to 'sale'
+                document.getElementById('type-sale').checked = true;
             }
 
-            // Set Condition radio
             if (product.condition === 'used') {
                 document.getElementById('condition-used').checked = true;
             } else {
-                document.getElementById('condition-new').checked = true; // Default to 'new'
+                document.getElementById('condition-new').checked = true;
+            }
+
+            // --- NEW: Populate service fields if it's a service ---
+            if (product.category === 'Services') {
+                serviceFieldsContainer.style.display = 'block'; // Show the fields
+                document.getElementById('service-duration').value = product.service_duration || '';
+                document.getElementById('service-availability').value = product.service_availability || '';
+                
+                // Set service location radio
+                const serviceLocationType = product.service_location_type || 'Online';
+                if(document.getElementById(`service-location-${serviceLocationType.toLowerCase()}`)) {
+                    document.getElementById(`service-location-${serviceLocationType.toLowerCase()}`).checked = true;
+                }
             }
             // --- END NEW ---
 
@@ -92,6 +111,17 @@ async function populateFormForEdit(productId) {
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     updateCategoryOptions();
+
+    // --- NEW: Add event listener to show/hide service fields ---
+    categorySelect.addEventListener('change', () => {
+        if (categorySelect.value === 'Services') {
+            serviceFieldsContainer.style.display = 'block';
+        } else {
+            serviceFieldsContainer.style.display = 'none';
+        }
+    });
+    // --- END NEW ---
+
     const params = new URLSearchParams(window.location.search);
     editingProductId = params.get('editId');
     if (editingProductId) {
@@ -135,22 +165,21 @@ productForm.addEventListener('submit', async (e) => {
             throw new Error('At least one image is required for a new listing.');
         }
 
-        // --- NEW: Read all new field values ---
         const listingType = document.querySelector('input[name="listing-type"]:checked').value;
         const condition = document.querySelector('input[name="condition"]:checked').value;
         const location = document.getElementById('product-location').value || '';
-        // --- END NEW ---
+        const selectedCategory = document.getElementById('product-category').value; // Get category
 
         // --- MODIFIED: Add new fields to productData object ---
         const productData = {
-            listing_type: listingType, // <-- MODIFIED
-            condition: condition,      // <-- ADDED
-            location: location,        // <-- ADDED
+            listing_type: listingType,
+            condition: condition,
+            location: location,
             name: productName,
             name_lowercase: productName.toLowerCase(),
             price: Number(document.getElementById('product-price').value),
             quantity: Number(document.getElementById('product-quantity').value) || 1,
-            category: document.getElementById('product-category').value,
+            category: selectedCategory, // Use the variable
             description: document.getElementById('product-description').value,
             story: document.getElementById('product-story').value,
             whatsapp: normalizeWhatsAppNumber(document.getElementById('whatsapp-number').value),
@@ -161,7 +190,18 @@ productForm.addEventListener('submit', async (e) => {
             sellerBadges: userData.badges || []
         };
         // --- END MODIFICATION ---
-        
+
+        // --- NEW: Add service-specific data if it's a service ---
+        if (selectedCategory === 'Services') {
+            productData.service_duration = document.getElementById('service-duration').value || '';
+            productData.service_location_type = document.querySelector('input[name="service-location-type"]:checked')?.value || 'Online';
+            productData.service_availability = document.getElementById('service-availability').value || '';
+            
+            // Optional: You might want to override/hide quantity for services
+            productData.quantity = 1; 
+        }
+        // --- END NEW ---
+
         if (finalImageUrls.length > 0) productData.imageUrls = finalImageUrls;
 
         if (editingProductId) {
@@ -188,6 +228,11 @@ productForm.addEventListener('submit', async (e) => {
 
         showMessage(messageEl, 'Success! Your listing is live!', false);
         productForm.reset();
+        
+        // --- NEW: Also hide service fields on reset ---
+        serviceFieldsContainer.style.display = 'none';
+        // --- END NEW ---
+
         setTimeout(() => { window.location.href = '/products/'; }, 2000);
 
     } catch (error) {
