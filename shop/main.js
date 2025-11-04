@@ -85,6 +85,7 @@ function hideModal() {
 }
 
 function renderSkeletonLoaders(container, count) {
+    if (!container) return; // Add guard clause
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
@@ -117,6 +118,8 @@ function observeLazyImages() {
 // === MODIFIED RENDERPRODUCTS FUNCTION ============================
 // =================================================================
 function renderProducts(gridElement, products, append = false) {
+    if (!gridElement) return; // Add guard clause
+    
     if (!append) {
         gridElement.innerHTML = "";
     }
@@ -244,44 +247,66 @@ async function fetchAndRenderProducts(append = false) {
     }
 }
 
-async function fetchDeals() {
-    if (!dealsGrid || !dealsSection) return;
-    renderSkeletonLoaders(dealsGrid, 5);
-    dealsSection.style.display = 'block';
+// --- NEW: GENERIC FUNCTION TO FETCH CAROUSEL PRODUCTS ---
+/**
+ * Fetches products for carousels, renders them, and applies centering logic.
+ * @param {Query} q - The Firestore query to execute.
+ * @param {string} gridId - The ID of the grid element to render into.
+ * @param {string} sectionId - The ID of the section element to show/hide.
+ */
+async function fetchCarouselProducts(q, gridId, sectionId) {
+    const gridElement = document.getElementById(gridId);
+    const sectionElement = document.getElementById(sectionId);
+    
+    if (!gridElement || !sectionElement) return;
+
+    renderSkeletonLoaders(gridElement, 5);
+    sectionElement.style.display = 'block';
+
     try {
-        const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
-        const snapshot = await getDocs(dealsQuery);
-        if (snapshot.empty) { dealsSection.style.display = 'none'; return; }
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            sectionElement.style.display = 'none';
+            return;
+        }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProducts(dealsGrid, products);
-    } catch (error) { console.error("Error fetching deals:", error); dealsSection.style.display = 'none'; }
+
+        // --- THIS IS THE NEW CENTERING LOGIC ---
+        // We find the wrapper based on the grid element
+        const wrapper = gridElement.closest('.deals-carousel-wrapper'); 
+        if (wrapper && !wrapper.classList.contains('expanded')) {
+            const centerLimit = 8; // Center if 8 or fewer items
+            if (products.length <= centerLimit) {
+                wrapper.classList.add('center-items');
+            }
+        }
+        // --- END OF NEW CENTERING LOGIC ---
+
+        renderProducts(gridElement, products);
+
+    } catch (error) {
+        console.error(`Error fetching carousel for ${gridId}:`, error);
+        sectionElement.style.display = 'none';
+    }
 }
 
-async function fetchSaveOnMore() {
-    if (!saveOnMoreGrid || !saveOnMoreSection) return;
-    renderSkeletonLoaders(saveOnMoreGrid, 5);
-    saveOnMoreSection.style.display = 'block';
-    try {
-        const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) { saveOnMoreSection.style.display = 'none'; return; }
-        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProducts(saveOnMoreGrid, products);
-    } catch (error) { console.error("Error fetching Save on More:", error); saveOnMoreSection.style.display = 'none'; }
+// --- REFACTORED: Carousel fetch functions now use the generic function ---
+function fetchDeals() {
+    const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+    return fetchCarouselProducts(dealsQuery, 'deals-grid', 'deals-section');
 }
 
-async function fetchSponsoredItems() {
-    if (!sponsoredGrid || !sponsoredSection) return;
-    renderSkeletonLoaders(sponsoredGrid, 5);
-    sponsoredSection.style.display = 'block';
-    try {
-        const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) { sponsoredSection.style.display = 'none'; return; }
-        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProducts(sponsoredGrid, products);
-    } catch (error) { console.error("Error fetching Sponsored Items:", error); sponsoredSection.style.display = 'none'; }
+function fetchSaveOnMore() {
+    const q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+    return fetchCarouselProducts(q, 'save-on-more-grid', 'save-on-more-section');
 }
+
+function fetchSponsoredItems() {
+    const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
+    return fetchCarouselProducts(q, 'sponsored-grid', 'sponsored-section');
+}
+// --- END OF REFACTORED SECTION ---
+
 
 // --- === THIS FUNCTION IS NOW REMOVED === ---
 /*
@@ -305,6 +330,7 @@ function updateLoadMoreUI() {
 }
 
 function updateListingsTitle() {
+    if (!listingsTitle) return; // Add guard clause
     let title = "Recent Items";
     if (state.filters.category) { title = state.filters.category; }
     else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
@@ -429,6 +455,7 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
+        // Call the refactored functions
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
@@ -455,8 +482,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
     }
 
-    searchBtn.addEventListener('click', handleSearch);
-    searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
+    if(searchBtn) searchBtn.addEventListener('click', handleSearch);
+    if(searchInput) searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
     if(mobileNav) mobileNav.addEventListener('click', handleFilterLinkClick);
     if(categoryGrid) categoryGrid.addEventListener('click', handleFilterLinkClick);
     if(imageCategoryGrid) imageCategoryGrid.addEventListener('click', handleFilterLinkClick);
@@ -503,6 +530,8 @@ document.body.addEventListener('click', async (e) => {
     } else {
         return; // Not a valid section
     }
+
+    if (!grid) return; // Guard clause
 
     // Find the wrapper for the grid
     wrapper = grid.closest('.deals-carousel-wrapper');
