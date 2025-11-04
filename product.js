@@ -141,7 +141,6 @@ function renderProductDetails(product, seller) {
             }
         </div>
         
-        <!-- *** THIS IS THE FIX for the broken page *** My typo "classs" is now corrected to "class" -->
         <div class="product-info">
         
             <div class="product-title-header">
@@ -157,14 +156,6 @@ function renderProductDetails(product, seller) {
             
             <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
             
-            <!-- 
-              *****************************************************************
-              * THIS IS THE NEW SHARE BUTTON FIX
-              * All styles are INLINE to force them to apply and bypass caching.
-              * It has its "own unique everything" as you asked.
-              * Hover effects are done with onmouseover/onmouseout.
-              *****************************************************************
-            -->
             <button id="share-btn"
                 style="
                     background-color: ${primaryColor};
@@ -192,7 +183,6 @@ function renderProductDetails(product, seller) {
             >
                 <i class="fa-solid fa-share-alt"></i> Share This Product
             </button>
-            <!-- * END OF NEW SHARE BUTTON FIX * -->
             
             <div class="seller-card">
                 <h4>About the Seller</h4>
@@ -213,8 +203,9 @@ function renderProductDetails(product, seller) {
                     <a href="/chat.html?recipientId=${product.sellerId}" id="contact-seller-btn" class="cta-button message-btn"><i class="fa-solid fa-comment-dots"></i> Message Seller</a>
                     <a href="${whatsappLink}" target="_blank" class="cta-button whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>
                     
-                    <a href="/profile.html?sellerId=${product.sellerId}" class="cta-button seller-profile-btn-prominent">View Public Profile</a>
-                </div>
+                    <!-- *** THIS IS THE FIX for the View Public Profile button *** --><!-- Removed the explicit width: 100% and will let flexbox handle it --><a href="/profile.html?sellerId=${product.sellerId}" class="cta-button seller-profile-btn-prominent"
+                       style="padding: 14px 25px; font-size: 1.1em; border-radius: 10px; margin-top: 20px;">View Public Profile</a>
+                    <!-- *** END OF FIX *** --></div>
             </div>
         </div>`;
 
