@@ -180,7 +180,48 @@
         body.dark-mode .low-stock { color: #ffeeba; background-color: #493f1b; }
         body.dark-mode .out-of-stock { color: #f5c6cb; background-color: #4a1c24; }
 
-        /* --- ADD ALL THIS NEW CSS --- */
+        /* --- NEW CSS FOR SHARE BUTTON (Moved higher and added !important) --- */
+        .share-product-btn {
+            background-color: #f0f2f5 !important; /* A light, neutral background */
+            color: var(--text-main) !important;
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex; /* This makes the icon and text align on one line */
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* Space between icon and text */
+            width: 100%; /* Make it full width */
+            margin-top: 15px; /* Space below other product info */
+            transition: background-color 0.2s, border-color 0.2s; /* This creates the hover effect transition */
+            
+            /* This overrides the default circular button styles */
+            height: auto; 
+            font-size: 1em;
+        }
+
+        /* This is the hover effect */
+        .share-product-btn:hover {
+            background-color: #e0e2e5 !important;
+            border-color: #c0c2c5 !important;
+        }
+
+        /* Dark mode styles for the share button */
+        body.dark-mode .share-product-btn {
+            background-color: #2a3a4c !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color-dark) !important;
+        }
+
+        /* Dark mode hover effect */
+        body.dark-mode .share-product-btn:hover {
+            background-color: #3b4d61 !important;
+            border-color: #4a5c71 !important;
+        }
+        /* --- END NEW CSS FOR SHARE BUTTON --- */
+
 
         /* New Prominent Verified Badge Style */
         .prominent-verified-badge {
@@ -230,51 +271,6 @@
             margin-right: 5px;
         }
         /* --- END NEW CSS --- */
-
-        
-        /* * --- THIS IS THE CSS FOR THE SHARE BUTTON ---
-         * Your product.js file will add a button with the class ".share-product-btn"
-         * These styles will apply to it.
-         */
-        .share-product-btn {
-            background-color: #f0f2f5; /* A light, neutral background */
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex; /* This makes the icon and text align on one line */
-            align-items: center;
-            justify-content: center;
-            gap: 8px; /* Space between icon and text */
-            width: 100%; /* Make it full width */
-            margin-top: 15px; /* Space below other product info */
-            transition: background-color 0.2s, border-color 0.2s; /* This creates the hover effect transition */
-            
-            /* This overrides the default circular button styles */
-            height: auto; 
-            font-size: 1em;
-        }
-
-        /* This is the hover effect */
-        .share-product-btn:hover {
-            background-color: #e0e2e5;
-            border-color: #c0c2c5;
-        }
-
-        /* Dark mode styles for the share button */
-        body.dark-mode .share-product-btn {
-            background-color: #2a3a4c;
-            color: var(--text-main);
-            border-color: var(--border-color-dark);
-        }
-
-        /* Dark mode hover effect */
-        body.dark-mode .share-product-btn:hover {
-            background-color: #3b4d61;
-            border-color: #4a5c71;
-        }
 
         /* This style will be added to the profile link by your JS */
         .seller-profile-btn-prominent {
@@ -422,8 +418,7 @@
 
     <main class="container page-container">
         <!-- This div is intentionally left simple. 
-             product.js will populate it with the product details. -->
-        <div id="product-detail-content"><p style="text-align:center; padding: 40px;">Loading product...</p></div>
+             product.js will populate it with the product details. --><div id="product-detail-content"><p style="text-align:center; padding: 40px;">Loading product...</p></div>
 
         <div class="qa-section">
             <h2>Questions & Answers</h2>
@@ -462,21 +457,16 @@
       </div>
     </div>
 
-    <!-- This is the Modal HTML that your showModal() function in product.js needs -->
-    <div id="custom-modal" class="modal-overlay modal-theme-info">
+    <!-- This is the Modal HTML that your showModal() function in product.js needs --><div id="custom-modal" class="modal-overlay modal-theme-info">
         <div class="modal-content">
             <div id="modal-icon" class="modal-icon">ℹ️</div>
             <h3 id="modal-title" class->Modal Title</h3>
             <p id="modal-message">This is the modal message.</p>
             <div id="modal-buttons" class="modal-buttons">
-                <!-- Buttons are added here by JavaScript -->
-            </div>
+                <!-- Buttons are added here by JavaScript --></div>
         </div>
     </div>
-    <!-- End Modal HTML -->
-
-
-    <script>
+    <!-- End Modal HTML --><script>
     document.addEventListener('DOMContentLoaded', function() {
       // Logic for the service notice modal
       const serviceLinks = document.querySelectorAll('a.service-link, a[href="/?type=service"]');
@@ -518,7 +508,6 @@
     <script type="module" src="ui.js"></script>
     <script type="module" src="shared.js"></script>
     
-    <!-- THIS LINE IS NOW CORRECTED (it has = instead of .) -->
-    <script type="module" src="product.js"></script>
+    <!-- THIS LINE IS NOW CORRECTED --><script type="module" src="product.js"></script>
 </body>
 </html>
