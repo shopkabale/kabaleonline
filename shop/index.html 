@@ -498,11 +498,13 @@ footer {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-/* * This targets the carousel grid (which uses the .deals-grid class)
- * ONLY when its wrapper has the new .center-items class.
+/* * This new rule ONLY applies centering logic
+ * on screens wider than 768px (tablets/desktops).
 */
-.deals-carousel-wrapper.center-items .deals-grid {
-  justify-content: center;
+@media (min-width: 768px) {
+  .deals-carousel-wrapper.center-items .deals-grid {
+    justify-content: center;
+  }
 }
     </style>
 </head>
