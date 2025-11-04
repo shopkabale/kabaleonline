@@ -1,10 +1,10 @@
 // Filename: functions/fix-algolia-settings.js
-// --- NEW, SIMPLIFIED VERSION ---
+// --- COMPLETE & UPDATED VERSION ---
 
 const algoliasearch = require('algoliasearch');
 
 const APP_ID = process.env.ALGOLIA_APP_ID;
-const ADMIN_KEY = process.env.ALGOLIA_ADMIN_API_KEY; // The key you added
+const ADMIN_KEY = process.env.ALGOLIA_ADMIN_API_KEY;
 
 const client = algoliasearch(APP_ID, ADMIN_KEY);
 
@@ -18,49 +18,103 @@ exports.handler = async (event) => {
   }
 
   try {
-    console.log("Connecting to Algolia to fix price sorting...");
+    console.log("Connecting to Algolia to update all index settings...");
     
-    // --- 1. SETTINGS FOR PRICE SORTING REPLICAS ---
-    // This will create or update your price sorting.
+    // --- 1. SETTINGS FOR REPLICA INDICES ---
+    // These indices are *only* for sorting.
     
+    // Price Ascending Replica
     const ascIndex = client.initIndex('products_price_asc');
-    const ascSettings = {
-      ranking: ['asc(price)'] // <-- THE FIX: Forcing ascending price
-    };
-    
+    await ascIndex.setSettings({
+      ranking: ['asc(price)']
+    }).wait();
+    console.log("Applied settings to 'products_price_asc'");
+
+    // Price Descending Replica
     const descIndex = client.initIndex('products_price_desc');
-    const descSettings = {
-      ranking: ['desc(price)'] // <-- For descending price
-    };
+    await descIndex.setSettings({
+      ranking: ['desc(price)']
+    }).wait();
+    console.log("Applied settings to 'products_price_desc'");
 
-    console.log("Applying settings to 'products_price_asc'...");
-    await ascIndex.setSettings(ascSettings).wait();
+    // Newest (Default) Replica
+    const createdAtIndex = client.initIndex('products_createdAt_desc');
+    await createdAtIndex.setSettings({
+        ranking: ['desc(createdAt)'] // Sort by newest first
+    }).wait();
+    console.log("Applied settings to 'products_createdAt_desc'");
 
-    console.log("Applying settings to 'products_price_desc'...");
-    await descIndex.setSettings(descSettings).wait();
     
-    // --- 2. TELL MAIN INDEX THESE REPLICAS EXIST ---
-    // This connects them to your main 'products' index.
-    // We also INCLUDE your existing working replica so we don't break it.
+    // --- 2. SETTINGS FOR MAIN 'products' INDEX ---
+    // This index handles searching, filtering, and default ranking.
+    
     const mainIndex = client.initIndex('products');
-    const replicaSettings = {
-      replicas: [
-        'products_createdAt_desc', // <-- Your working one
-        'products_price_asc',      // <-- New one
-        'products_price_desc'      // <-- New one
-      ]
-    };
     
-    console.log("Updating main index replica list...");
-    await mainIndex.setSettings(replicaSettings).wait();
+    const mainIndexSettings = {
+      // --- Replicas ---
+      // This tells the main index which sorting replicas exist
+      replicas: [
+        'products_createdAt_desc', // For "Newest" sort
+        'products_price_asc',      // For "Price: Low to High"
+        'products_price_desc'      // For "Price: High to Low"
+      ],
 
-    console.log("✅ SUCCESS: Algolia PRICE SORTING is now fixed!");
+      // --- Searchable Attributes ---
+      // What fields to search in. 'name' is most important.
+      searchableAttributes: [
+        'name',
+        'name_lowercase',
+        'unordered(description)', // 'unordered' means matches can be anywhere
+        'unordered(category)',
+        'unordered(location)',
+        'unordered(sellerName)',
+        'unordered(service_duration)' // So people can search "per hour"
+      ],
+
+      // --- Filtering and Faceting ---
+      // What fields you can use to filter results (e.g., in a sidebar).
+      attributesForFaceting: [
+        'category',
+        'condition',
+        'listing_type',
+        'service_location_type',
+        'filterOnly(isSold)', // 'filterOnly' is efficient for booleans
+        'filterOnly(sellerIsVerified)',
+        'location'
+      ],
+
+      // --- Default Ranking ---
+      // How to rank results when no sort-by replica is used.
+      // We make the default sort by newest items first.
+      customRanking: [
+        'desc(createdAt)'
+      ],
+
+      // --- Snippeting & Highlighting ---
+      // Shows which part of the result matched the search
+      attributesToHighlight: [
+        'name',
+        'description'
+      ],
+      attributesToSnippet: [
+        'description:10' // Show a 10-word snippet from the description
+      ],
+      
+      // --- Typo Tolerance ---
+      // 'min' is strict for 1-3 char queries, more flexible for longer ones
+      typoTolerance: 'min' 
+    };
+
+    console.log("Applying all settings to main 'products' index...");
+    await mainIndex.setSettings(mainIndexSettings).wait();
+
+    console.log("✅ SUCCESS: All Algolia settings are now configured!");
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "SUCCESS: Algolia settings for price sorting are now configured.",
-        replicas_configured: replicaSettings.replicas
+        message: "SUCCESS: All Algolia settings (main index + 3 replicas) are now configured.",
+        settings_applied: mainIndexSettings
       })
     };
 
