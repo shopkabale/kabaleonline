@@ -344,28 +344,12 @@ function initializeUI() {
     });
 
     // --- (REMOVED) Mobile Menu Logic ---
-    // const hamburger = document.querySelector('.hamburger-menu');
-    // ... (all hamburger logic removed) ...
+    // This is handled by ui.js now
 
-    // --- External Navigation Modal ---
-    const navModal = document.getElementById('nav-modal');
-    if (navModal) {
-        const navModalMessage = document.getElementById('nav-modal-message');
-        const navConfirmBtn = document.getElementById('nav-confirm-btn');
-        const navCancelBtn = document.getElementById('nav-cancel-btn');
-        
-        document.body.addEventListener('click', (e) => {
-            const trigger = e.target.closest('.service-link');
-            if (trigger) {
-                e.preventDefault();
-                navModalMessage.textContent = "You are being redirected to our dedicated services platform, Gigs Hub. Continue?";
-                navConfirmBtn.href = trigger.href;
-                navModal.style.display = 'flex';
-            }
-        });
-        navCancelBtn.addEventListener('click', () => { navModal.style.display = 'none'; });
-        navModal.addEventListener('click', (e) => { if (e.target === navModal) navModal.style.display = 'none'; });
-    }
+    // --- (REMOVED) External Navigation Modal ---
+    // This entire block of code has been deleted as it's no longer needed.
+    // const navModal = document.getElementById('nav-modal');
+    // ... all logic for navModal, navCancelBtn, and .service-link clicks is gone.
 
     // --- AI Chat Bubble and Modal Logic ---
     const chatModalContainer = document.getElementById('chat-modal-container');
@@ -491,7 +475,7 @@ function initializeUI() {
             } else if (sectionName === 'sponsored') {
                 q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             } else if (sectionName === 'save') {
-                q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+                q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(2D));
             }
             
             const { products } = await fetchProductsFromFirebase(q, grid.id, null);
