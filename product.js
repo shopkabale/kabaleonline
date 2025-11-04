@@ -234,7 +234,7 @@ function renderProductDetails(product, seller) {
                             align-items: center;
                             justify-content: center;
                             gap: 8px;
-                            width: 100%; /* This is needed to match the other buttons */
+                            width: 80%; /* This is needed to match the other buttons */
                             margin-top: 10px; /* This was 20px, changing to 10px to match others */
                             transition: background-color 0.2s;
                         "
