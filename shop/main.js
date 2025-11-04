@@ -140,17 +140,41 @@ function renderProducts(gridElement, products, append = false) {
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         
-        // --- Stock Status Logic (Existing) ---
+        // --- NEW: Service-Aware Logic ---
+        let priceHTML = '';
+        let locationHTML = '';
         let stockStatusHTML = '';
-        if (isActuallySold) {
-            stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
-        } else if (product.quantity > 5) {
-            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
-        } else if (product.quantity > 0 && product.quantity <= 5) {
-            stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
+
+        if (product.category === 'Services') {
+            // --- Service Card Logic ---
+            priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
+                ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
+            </p>`;
+
+            if (product.service_location_type) {
+                const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
+                locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
+            }
+            stockStatusHTML = ''; // Services don't have stock
+        } else {
+            // --- Regular Product Card Logic ---
+            priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
+
+            if (product.location) {
+                locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
+            }
+
+            if (isActuallySold) {
+                stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
+            } else if (product.quantity > 5) {
+                stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+            } else if (product.quantity > 0 && product.quantity <= 5) {
+                stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
+            }
         }
+        // --- END NEW LOGIC ---
         
-        // --- NEW: Build Tags for Condition and Listing Type (with FOR SALE) ---
+        // --- Build Tags for Condition and Listing Type ---
         let tagsHTML = '';
         if (product.listing_type === 'rent') {
             tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
@@ -164,7 +188,6 @@ function renderProducts(gridElement, products, append = false) {
             tagsHTML += '<span class="product-tag condition-used">USED</span>';
         }
         const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
-        // --- END NEW ---
 
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
@@ -174,26 +197,26 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.cursor = 'default';
         }
 
-        // --- NEW: Updated innerHTML with all new fields ---
+        // --- UPDATED innerHTML with dynamic variables ---
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             ${tagsContainerHTML} <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+             ${tagsContainerHTML} 
+             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
-            ${stockStatusHTML}
-            <p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>
             
-            ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
+            ${stockStatusHTML}
+            ${priceHTML}
+            ${locationHTML}
             
             ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
-
             ${verifiedTextHTML}
           </div>
         `;
-        // --- END NEW ---
+        // --- END UPDATED innerHTML ---
         
         fragment.appendChild(productLink);
     });
@@ -271,16 +294,13 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
         }
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // --- THIS IS THE NEW CENTERING LOGIC ---
-        // We find the wrapper based on the grid element
         const wrapper = gridElement.closest('.deals-carousel-wrapper'); 
         if (wrapper && !wrapper.classList.contains('expanded')) {
-            const centerLimit = 8; // Center if 8 or fewer items
+            const centerLimit = 8; 
             if (products.length <= centerLimit) {
                 wrapper.classList.add('center-items');
             }
         }
-        // --- END OF NEW CENTERING LOGIC ---
 
         renderProducts(gridElement, products);
 
@@ -306,15 +326,6 @@ function fetchSponsoredItems() {
     return fetchCarouselProducts(q, 'sponsored-grid', 'sponsored-section');
 }
 // --- END OF REFACTORED SECTION ---
-
-
-// --- === THIS FUNCTION IS NOW REMOVED === ---
-/*
-async function fetchAndDisplayCategoryCounts() {
-    // ... (This function is no longer here) ...
-}
-*/
-// --- === END REMOVAL === ---
 
 
 // --- UI & EVENT HANDLERS ---
@@ -419,17 +430,18 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
+// --- THIS IS THE FULLY UPDATED FUNCTION ---
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
-    if (link.classList.contains('service-link')) {
-        window.location.href = link.href;
-        return;
-    }
+
+    // The 'service-link' check has been REMOVED.
+    
     event.preventDefault(); 
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
+    
     state.filters.type = type;
     state.filters.category = category;
     state.currentPage = 0;
@@ -437,11 +449,13 @@ function handleFilterLinkClick(event) {
     searchInput.value = '';
     document.getElementById('listings-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     fetchAndRenderProducts(false);
+    
     if (mobileNav) { 
         mobileNav.classList.remove('active'); 
         document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); 
     }
 }
+// --- END UPDATED FUNCTION ---
 
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
@@ -455,12 +469,9 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
-        // Call the refactored functions
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
-        // --- === THIS CALL IS NOW REMOVED === ---
-        // fetchAndDisplayCategoryCounts(); 
         initializeStateFromURL();
         fetchAndRenderProducts();
     }
@@ -519,7 +530,6 @@ document.body.addEventListener('click', async (e) => {
     const sectionName = seeMoreBtn.dataset.section;
     if (!sectionName) return; 
 
-    // Get the correct grid element based on the button
     let grid, wrapper;
     if (sectionName === 'deals') {
         grid = document.getElementById('deals-grid');
@@ -528,18 +538,16 @@ document.body.addEventListener('click', async (e) => {
     } else if (sectionName === 'save') {
         grid = document.getElementById('save-on-more-grid');
     } else {
-        return; // Not a valid section
+        return;
     }
 
-    if (!grid) return; // Guard clause
+    if (!grid) return; 
 
-    // Find the wrapper for the grid
     wrapper = grid.closest('.deals-carousel-wrapper');
     if (!wrapper) return;
 
-    // --- Check if already expanded (this was the home page logic) ---
     if (seeMoreBtn.dataset.expanded === 'true') {
-        return; // Do nothing if already expanded
+        return; 
     }
     
     seeMoreBtn.disabled = true;
@@ -547,7 +555,6 @@ document.body.addEventListener('click', async (e) => {
 
     try {
         let q;
-        // Build the query, just like in your fetchDeals/fetchSponsored functions
         if (sectionName === 'deals') {
             q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
         } else if (sectionName === 'sponsored') {
@@ -556,22 +563,17 @@ document.body.addEventListener('click', async (e) => {
             q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
         }
 
-        // Fetch the data
         const snapshot = await getDocs(q);
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         if (products && products.length > 0) {
-            // Render the new products (uses the renderProducts from main.js)
             renderProducts(grid, products); 
-            
-            // Apply expansion classes
             wrapper.classList.add('expanded');
-            grid.classList.remove('deals-grid'); // Remove carousel class
-            grid.classList.add('product-grid');  // Add main grid class
+            grid.classList.remove('deals-grid'); 
+            grid.classList.add('product-grid');  
             
             seeMoreBtn.textContent = 'Showing All';
             seeMoreBtn.dataset.expanded = 'true';
-            // Button remains disabled
         } else {
             seeMoreBtn.textContent = 'No More Items';
             seeMoreBtn.dataset.expanded = 'true';
