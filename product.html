@@ -124,8 +124,8 @@
         #product-name { margin-top: 0; color: var(--text-main); }
         
         /* This is the style for your original circular share button. 
-           Your product.js will now create a button with a different class (.share-product-btn),
-           so this style won't apply to the new button. */
+           Your product.js will now create a button with a different id and class, 
+           but we'll keep this so nothing breaks if the old ID is somehow used. */
         #share-btn { 
             background-color: var(--bg-main); 
             color: var(--text-main); 
@@ -234,8 +234,10 @@
         /* --- END NEW CSS --- */
 
         
-        /* --- NEW CSS for Share Button and Prominent Profile Button --- */
-        /* This style will be applied to the button your JS creates */
+        /* * --- THIS IS THE CSS YOU NEED FOR THE SHARE BUTTON ---
+         * Your product.js file will add a button with the class ".share-product-btn"
+         * These styles will apply to it.
+         */
         .share-product-btn {
             background-color: #f0f2f5; /* A light, neutral background */
             color: var(--text-main);
@@ -244,26 +246,29 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            display: flex;
+            display: flex; /* This makes the icon and text align on one line */
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 8px; /* Space between icon and text */
             width: 100%; /* Make it full width */
             margin-top: 15px; /* Space below other product info */
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: background-color 0.2s, border-color 0.2s; /* This creates the hover effect transition */
         }
 
+        /* This is the hover effect */
         .share-product-btn:hover {
             background-color: #e0e2e5;
             border-color: #c0c2c5;
         }
 
+        /* Dark mode styles for the share button */
         body.dark-mode .share-product-btn {
             background-color: #2a3a4c;
             color: var(--text-main);
             border-color: var(--border-color-dark);
         }
 
+        /* Dark mode hover effect */
         body.dark-mode .share-product-btn:hover {
             background-color: #3b4d61;
             border-color: #4a5c71;
@@ -461,7 +466,7 @@
             <div id="modal-icon" class="modal-icon">ℹ️</div>
             <h3 id="modal-title" class->Modal Title</h3>
             <p id="modal-message">This is the modal message.</p>
-            <div id="modal-buttons" classs="modal-buttons">
+            <div id="modal-buttons" class="modal-buttons">
                 <!-- Buttons are added here by JavaScript -->
             </div>
         </div>
@@ -510,6 +515,6 @@
 
     <script type="module" src="ui.js"></script>
     <script type="module" src="shared.js"></script>
-    <script type="module" src="product.js"></script>
+    <script type.module" src="product.js"></script>
 </body>
 </html>
