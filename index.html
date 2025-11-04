@@ -526,5 +526,33 @@
     </div>
 <script type="module" src="ui.js"></script>
     <script type="module" src="index.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all the elements needed
+            const hamburgerButton = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+
+            // Check if all elements exist before adding listeners
+            if (hamburgerButton && mobileNav && overlay) {
+                
+                // Function to open/close the menu
+                function toggleMenu() {
+                    mobileNav.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    // Optional: Prevent scrolling when menu is open
+                    document.body.classList.toggle('no-scroll');
+                }
+
+                // Listen for a click on the hamburger button
+                hamburgerButton.addEventListener('click', toggleMenu);
+
+                // Listen for a click on the dark overlay to close the menu
+                overlay.addEventListener('click', toggleMenu);
+            }
+        });
+    </script>
+    </body>
+</html>
 </body>
 </html>
