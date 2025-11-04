@@ -1611,3 +1611,8 @@ body.no-scroll {
     justify-content: center;
   }
 }
+.price-service span {
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
