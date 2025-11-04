@@ -1,5 +1,7 @@
 // functions/syncToAlgolia.js
-// This NEW, FAST version syncs ONE item at a time.
+// This function handles BOTH:
+// 1. GET requests (for a full, manual sync)
+// 2. POST requests (for a fast, single-item sync)
 
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
@@ -24,7 +26,8 @@ const algoliaClient = algoliasearch(
 );
 const productsIndex = algoliaClient.initIndex('products');
 
-// --- Helper function to format data for Algolia ---
+// --- Helper function to format ALL data for Algolia ---
+// This is the function you wanted updated. It now includes *all* fields.
 function formatProductForAlgolia(doc) {
     const data = doc.data();
     return {
@@ -38,9 +41,13 @@ function formatProductForAlgolia(doc) {
         listing_type: data.listing_type,
         condition: data.condition,
         location: data.location,
+        
+        // --- NEW SERVICE FIELDS ---
         service_duration: data.service_duration || '',
         service_location_type: data.service_location_type || '',
         service_availability: data.service_availability || '',
+        // --- END NEW FIELDS ---
+
         sellerId: data.sellerId,
         sellerName: data.sellerName,
         sellerIsVerified: data.sellerIsVerified || false,
@@ -58,19 +65,21 @@ function formatProductForAlgolia(doc) {
 
 // --- Main Function Handler ---
 exports.handler = async (event) => {
-    // --- THIS IS THE OLD "FULL SYNC" LOGIC ---
-    // We keep this in case you ever need to run it manually
+    
+    // --- THIS IS THE "FULL SYNC" for manual runs ---
+    // Visiting the URL in your browser triggers this GET request.
     if (event.httpMethod === 'GET') {
         try {
+            console.log("Starting FULL manual sync...");
             const productsSnapshot = await db.collection('products').get();
             const algoliaObjects = productsSnapshot.docs.map(formatProductForAlgolia);
-            await productsIndex.saveObjects(algoliaObjects);
             
-            // Note: We are no longer syncing 'events' here to keep it fast
+            await productsIndex.saveObjects(algoliaObjects);
+            console.log(`SUCCESS: Synced ${algoliaObjects.length} products.`);
             
             return {
                 statusCode: 200,
-                body: JSON.stringify({ message: "Full sync for Products completed." }),
+                body: JSON.stringify({ message: `Full sync completed. ${algoliaObjects.length} products synced.` }),
             };
         } catch (error) {
             console.error("Full Algolia sync error:", error);
@@ -81,7 +90,7 @@ exports.handler = async (event) => {
         }
     }
 
-    // --- THIS IS THE NEW "SINGLE ITEM SYNC" LOGIC ---
+    // --- THIS IS THE "SINGLE ITEM SYNC" for uploads/edits ---
     if (event.httpMethod === 'POST') {
         try {
             const body = JSON.parse(event.body);
@@ -92,15 +101,13 @@ exports.handler = async (event) => {
             }
 
             if (action === 'delete') {
-                // --- Handle DELETE ---
                 await productsIndex.deleteObject(objectID);
                 return {
                     statusCode: 200,
-                    body: JSON.stringify({ message: `Product ${objectID} deleted from Algolia.` }),
+                    body: JSON.stringify({ message: `Product ${objectID} deleted.` }),
                 };
 
             } else if (action === 'update') {
-                // --- Handle UPDATE or CREATE ---
                 const productDoc = await db.collection('products').doc(objectID).get();
                 if (!productDoc.exists) {
                     return { statusCode: 404, body: 'Product not found in Firestore' };
@@ -111,7 +118,7 @@ exports.handler = async (event) => {
                 
                 return {
                     statusCode: 200,
-                    body: JSON.stringify({ message: `Product ${objectID} saved to Algolia.` }),
+                    body: JSON.stringify({ message: `Product ${objectID} saved.` }),
                 };
             }
             
