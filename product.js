@@ -80,10 +80,7 @@ async function loadProductAndSeller() {
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
         
-        // --- NEW: Add sellerName to productData for the share button ---
-        // This makes it easier to pass to the setupShareButton function
         productData.sellerName = sellerData.name || 'Seller';
-        // --- END NEW ---
 
         renderProductDetails(productData, sellerData);
         loadQandA(productData.sellerId);
@@ -139,10 +136,9 @@ function renderProductDetails(product, seller) {
                 : `<img src="https://placehold.co/600x600/e0e0e0/777?text=No+Image" alt="No image available">`
             }
         </div>
-        <div class="product-info">
+        <div classs="product-info">
             <div class="product-title-header">
                 <h1 id="product-name">${product.name}</h1>
-                <!-- The old circular share button (id="share-btn") is replaced by the new button below -->
             </div>
             <h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>
             
@@ -154,10 +150,18 @@ function renderProductDetails(product, seller) {
             
             <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
             
-            <!-- NEW: Prominent Share Button Location. Note the id="share-btn" is reused here. -->
-            <button id="share-btn" class="share-product-btn">
+            <!-- 
+              *****************************************************************
+              * THIS IS THE FIX
+              * I am giving the button the same classes as your "Add to Cart" button:
+              * "cta-button" and "primary-action-btn"
+              * I also added a style for margin to give it space.
+              *****************************************************************
+            -->
+            <button id="share-btn" class="cta-button primary-action-btn" style="margin-top: 15px; margin-bottom: 10px;">
                 <i class="fa-solid fa-share-alt"></i> Share This Product
             </button>
+            <!-- * END OF FIX * -->
             
             <div class="seller-card">
                 <h4>About the Seller</h4>
@@ -178,7 +182,6 @@ function renderProductDetails(product, seller) {
                     <a href="/chat.html?recipientId=${product.sellerId}" id="contact-seller-btn" class="cta-button message-btn"><i class="fa-solid fa-comment-dots"></i> Message Seller</a>
                     <a href="${whatsappLink}" target="_blank" class="cta-button whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>
                     
-                    <!-- NEW: Prominent Profile Button -->
                     <a href="/profile.html?sellerId=${product.sellerId}" class="cta-button seller-profile-btn-prominent">View Public Profile</a>
                 </div>
             </div>
@@ -187,7 +190,7 @@ function renderProductDetails(product, seller) {
     productDetailContent.appendChild(productElement);
 
     // --- SETUP ALL BUTTONS ---
-    setupShareButton(product); // Pass the whole product object
+    setupShareButton(product); // This function is still needed for the *click action*
     setupAddToCartButton(product);
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
@@ -222,8 +225,7 @@ function setupAddToCartButton(product) {
 
     addToCartBtn.addEventListener('click', async () => {
         if (!currentUser) {
-            // Use modal for login prompt, or fallback to alert
-             showModal({
+            showModal({
                 icon: '🔑',
                 title: 'Please Log In',
                 message: 'You need to be logged in to add items to your cart.',
@@ -284,18 +286,17 @@ function setupAddToCartButton(product) {
     });
 }
 
-// --- UPDATED SHARE BUTTON FUNCTION ---
 function setupShareButton(product) {
-    // The button is now rendered with id="share-btn", so this selector works
     const shareBtn = document.getElementById('share-btn'); 
     if (!shareBtn) return;
     
+    // The button is ALREADY STYLED by the classes we added in renderProductDetails.
+    // This function just adds the click logic.
+    
     shareBtn.addEventListener('click', async () => {
-        // Use the sellerName we added in loadProductAndSeller
         const sellerName = product.sellerName || 'Kabale Online Seller'; 
         const productPrice = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price N/A';
 
-        // Construct the share text as requested
         const shareText = `${product.name}\n${productPrice}\nSeller: ${sellerName}\nView details here:`;
         const shareUrl = window.location.href;
 
@@ -307,11 +308,8 @@ function setupShareButton(product) {
 
         try {
             if (navigator.share) { 
-                // Use Web Share API
                 await navigator.share(shareData); 
             } else { 
-                // Fallback for browsers that don't support Web Share API
-                // Copy the full share message to clipboard
                 await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); 
                 showModal({
                     icon: '📋',
@@ -323,7 +321,6 @@ function setupShareButton(product) {
             }
         } catch (err) { 
             console.error("Share failed:", err); 
-            // Only show an error if it's not a user-cancelled share operation
             if (err.name !== 'AbortError') {
                  showModal({
                     icon: '⚠️',
@@ -336,7 +333,6 @@ function setupShareButton(product) {
         }
     });
 }
-// --- END UPDATED FUNCTION ---
 
 async function setupWishlistButton(product) {
     const wishlistBtn = document.getElementById('wishlist-btn');
