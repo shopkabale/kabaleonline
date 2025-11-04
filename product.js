@@ -142,7 +142,8 @@ function renderProductDetails(product, seller) {
         <div class="product-info">
             <div class="product-title-header">
                 <h1 id="product-name">${product.name}</h1>
-                </div>
+                <!-- The old circular share button (id="share-btn") is replaced by the new button below -->
+            </div>
             <h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>
             
             ${prominentVerifiedBadgeHTML}
@@ -153,6 +154,7 @@ function renderProductDetails(product, seller) {
             
             <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
             
+            <!-- NEW: Prominent Share Button Location. Note the id="share-btn" is reused here. -->
             <button id="share-btn" class="share-product-btn">
                 <i class="fa-solid fa-share-alt"></i> Share This Product
             </button>
@@ -176,6 +178,7 @@ function renderProductDetails(product, seller) {
                     <a href="/chat.html?recipientId=${product.sellerId}" id="contact-seller-btn" class="cta-button message-btn"><i class="fa-solid fa-comment-dots"></i> Message Seller</a>
                     <a href="${whatsappLink}" target="_blank" class="cta-button whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>
                     
+                    <!-- NEW: Prominent Profile Button -->
                     <a href="/profile.html?sellerId=${product.sellerId}" class="cta-button seller-profile-btn-prominent">View Public Profile</a>
                 </div>
             </div>
@@ -219,8 +222,17 @@ function setupAddToCartButton(product) {
 
     addToCartBtn.addEventListener('click', async () => {
         if (!currentUser) {
-            alert("Please log in to add items to your cart.");
-            window.location.href = `/login/?redirect=/product.html?id=${productId}`;
+            // Use modal for login prompt, or fallback to alert
+             showModal({
+                icon: '🔑',
+                title: 'Please Log In',
+                message: 'You need to be logged in to add items to your cart.',
+                theme: 'info',
+                buttons: [
+                    { text: 'Not Now', class: 'secondary', onClick: hideModal },
+                    { text: 'Log In', class: 'primary', onClick: () => { window.location.href = `/login/?redirect=/product.html?id=${productId}`; } }
+                ]
+            });
             return;
         }
 
@@ -259,19 +271,25 @@ function setupAddToCartButton(product) {
 
         } catch (error) {
             console.error("Error adding to cart:", error);
-            addToCartBtn.innerHTML = 'Error! Try Again';
-            setTimeout(() => {
-                addToCartBtn.disabled = false;
-                addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
-            }, 2000);
+            showModal({
+                icon: '⚠️',
+                title: 'Error',
+                message: 'Could not add item to cart. Please try again.',
+                theme: 'error',
+                buttons: [ { text: 'OK', class: 'primary', onClick: hideModal } ]
+            });
+            addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+            addToCartBtn.disabled = false;
         }
     });
 }
 
 // --- UPDATED SHARE BUTTON FUNCTION ---
 function setupShareButton(product) {
-    const shareBtn = document.getElementById('share-btn');
+    // The button is now rendered with id="share-btn", so this selector works
+    const shareBtn = document.getElementById('share-btn'); 
     if (!shareBtn) return;
+    
     shareBtn.addEventListener('click', async () => {
         // Use the sellerName we added in loadProductAndSeller
         const sellerName = product.sellerName || 'Kabale Online Seller'; 
