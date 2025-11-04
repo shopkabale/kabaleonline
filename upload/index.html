@@ -101,7 +101,7 @@
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--ko-primary); box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15); outline: none; }
         #submit-btn { width: 100%; }
         #submit-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
-        
+
         /* --- NEW RADIO BUTTON STYLES --- */
         .radio-group {
             display: flex;
@@ -185,14 +185,6 @@
         <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
         <h1>Add/Edit Your Item</h1>
 
-        <div class="info-box">
-            <p>
-                <strong>Looking to sell a service?</strong><br>
-                We've moved services to our new dedicated platform!
-            </p>
-            <a href="https://gigs.kabaleonline.com" target="_blank" class="cta-button" style="margin-top: 10px; display: inline-block;">Visit Gigs Hub</a>
-        </div>
-
         <form id="product-form">
             <input type="hidden" id="productId">
             <div class="form-group">
@@ -233,6 +225,32 @@
                 <label for="product-category">Category</label>
                 <select id="product-category" required></select>
             </div>
+
+            <div id="service-fields-container" style="display: none;">
+    
+                <div class="form-group">
+                    <label for="service-duration">Service Pricing / Duration</label>
+                    <input type="text" id="service-duration" class="form-control" placeholder="e.g., Per Hour, Per Project">
+                    <small>How do you charge? (e.g., "50,000 UGX / Hour" or "Per Project")</small>
+                </div>
+            
+                <div class="form-group">
+                    <label>Service Location</label>
+                    <div class="radio-group">
+                        <input type="radio" id="service-location-online" name="service-location-type" value="Online" checked>
+                        <label for="service-location-online">Online / Remote</label>
+                        
+                        <input type="radio" id="service-location-onsite" name="service-location-type" value="On-site">
+                        <label for="service-location-onsite">On-site / In-Person</label>
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    <label for="service-availability">Availability</label>
+                    <input type="text" id="service-availability" class="form-control" placeholder="e.g., Mon - Fri, 9am - 5pm">
+                </div>
+            
+            </div>
             <div class="form-group">
                 <label for="product-description">Description</label>
                 <textarea id="product-description" required rows="5"></textarea>
@@ -245,7 +263,7 @@
                 <label for="whatsapp-number">WhatsApp Number</label>
                 <input type="tel" id="whatsapp-number" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="product-location">Location (Optional)</label>
                 <input type="text" id="product-location" placeholder="e.g., Kikungiri, Makanga, Town Center">
