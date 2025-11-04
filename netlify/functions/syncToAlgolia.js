@@ -20,7 +20,7 @@ const algoliaClient = algoliasearch(
 );
 
 const productsIndex = algoliaClient.initIndex('products');
-const eventsIndex = algoliaClient.initIndex('events'); 
+const eventsIndex = algoliasearch.initIndex('events'); 
 
 exports.handler = async (event) => {
     try {
@@ -35,7 +35,7 @@ exports.handler = async (event) => {
                 };
             }
         }
-        
+
         // --- Sync Products (UPDATED) ---
         const productsSnapshot = await db.collection('products').get();
         const algoliaObjects = productsSnapshot.docs.map(doc => {
@@ -48,12 +48,18 @@ exports.handler = async (event) => {
                 category: data.category,
                 price: data.price,
                 quantity: data.quantity,
-                
+
                 // All new fields:
                 listing_type: data.listing_type,
                 condition: data.condition,
                 location: data.location,
-                
+
+                // --- NEWLY ADDED SERVICE FIELDS ---
+                service_duration: data.service_duration || '',
+                service_location_type: data.service_location_type || '',
+                service_availability: data.service_availability || '',
+                // --- END ---
+
                 sellerId: data.sellerId,
                 sellerName: data.sellerName,
                 sellerIsVerified: data.sellerIsVerified || false,
@@ -61,13 +67,13 @@ exports.handler = async (event) => {
 
                 imageUrls: data.imageUrls,
                 isSold: data.isSold || false,
-                
+
                 // Homepage fields:
                 isDeal: data.isDeal || false,
                 isSponsored: data.isSponsored || false,
                 isSaveOnMore: data.isSaveOnMore || false,
                 isHero: data.isHero || false,
-                
+
                 // Timestamp fields:
                 createdAt: data.createdAt ? data.createdAt.toMillis() : Date.now(),
                 heroTimestamp: data.heroTimestamp ? data.heroTimestamp.toMillis() : null
@@ -97,7 +103,7 @@ exports.handler = async (event) => {
             statusCode: 200,
             body: JSON.stringify({ message: "Full sync for Products and Events completed successfully." }),
         };
-        
+
     } catch (error) {
         console.error("Algolia sync error:", error);
         return {
