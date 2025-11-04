@@ -1511,10 +1511,11 @@ body.no-scroll {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /* REMOVED: justify-content: space-between; */
     color: #ffffff;
     /* Dark gradient overlay for text readability */
     background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%);
+    box-sizing: border-box; /* Ensures padding is included in height */
 }
 
 .cta-card-animated h2 {
@@ -1523,10 +1524,14 @@ body.no-scroll {
     color: #fff;
     margin: 0;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    flex-shrink: 0; /* Prevents h2 from shrinking */
 }
 
 .cta-card-text-container {
     height: 30px; 
+    margin-top: 15px; /* Space below the title */
+    flex-grow: 1;     /* THIS IS THE FIX: Pushes the arrow to the bottom */
+    flex-shrink: 0;   /* Prevents this container from shrinking */
 }
 
 #cta-animated-text-buyer,
@@ -1544,8 +1549,8 @@ body.no-scroll {
 }
 
 .cta-card-arrow {
-    background-color: #aeffc5;
-    color: #1a2a3a;
+    background-color: #aeffc5; 
+    color: #1a2a3a; 
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -1553,9 +1558,11 @@ body.no-scroll {
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    align-self: flex-end; /* Keeps it to the right */
-    margin-top: auto; /* Pushes it to the bottom, but the margin-bottom will lift it */
-    margin-bottom: 25px; /* Lift the arrow up from the bottom */
+    align-self: flex-end; /* Puts it in the bottom-right */
+    flex-shrink: 0; /* Prevents arrow from shrinking */
+    
+    /* === THIS IS THE ADJUSTMENT === */
+    margin-bottom: 15px; /* Lifts it up 15px from the bottom edge */
 }
 
 /* The Fade In/Out Animation */
