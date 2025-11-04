@@ -1,6 +1,6 @@
 import { auth, db } from '../js/auth.js';
 import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showMessage, toggleLoading, normalizeWhatsAppNumber, getCloudinaryTransformedUrl } from '../js/shared.js';
+import { showMessage as showSharedMessage, toggleLoading as toggleSharedLoading, normalizeWhatsAppNumber } from '../js/shared.js';
 
 // --- DOM ELEMENTS ---
 const productForm = document.getElementById('product-form');
@@ -27,7 +27,6 @@ const productCategories = {
     "Other": "Other" 
 };
 
-// --- NEW: SERVICE CATEGORIES ---
 const serviceCategories = {
     "Tutoring & Academics": "Tutoring & Academics",
     "Design & Creative": "Design & Creative",
@@ -42,13 +41,59 @@ const serviceCategories = {
 
 let editingProductId = null;
 let currentFormType = null; // 'product' or 'service'
+// This will store file objects for upload
+const filesToUpload = {
+    'product-image-1': null,
+    'product-image-2': null,
+    'service-image-1': null,
+    'service-image-2': null,
+};
 
 // --- FUNCTIONS ---
 
 /**
+ * Shows a styled message banner.
+ * @param {HTMLElement} element The message element
+ * @param {string} message The message to display
+ * @param {'error' | 'success' | 'progress'} type The style of the message
+ */
+function showMessage(element, message, type = 'error') {
+    if (!element) return;
+    element.textContent = message;
+    element.className = `form-message-banner show ${type}`; // Applies 'error', 'success', or 'progress'
+    
+    // Add appropriate icons for polite messages
+    if (type === 'error') {
+        element.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
+    } else if (type === 'success') {
+        element.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+    } else if (type === 'progress') {
+        element.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${message}`;
+    }
+}
+
+/**
+ * Toggles the loading state of the submit button.
+ * @param {HTMLElement} button The submit button
+ * @param {boolean} isLoading True to show loading, false to hide
+ * @param {string} loadingText Text to show when loading
+ */
+function toggleLoading(button, isLoading, loadingText = 'Submitting...') {
+    if (!button) return;
+    button.disabled = isLoading;
+    if (isLoading) {
+        button.innerHTML = `<span class="loading-spinner"></span> ${loadingText}`;
+    } else {
+        // Text will be reset by handleFormTypeChange or on page load
+        button.innerHTML = editingProductId ? 'Update Item' : 'Upload Item';
+        if (currentFormType === 'product') button.textContent = 'Upload Product';
+        if (currentFormType === 'service') button.textContent = 'Upload Service';
+    }
+}
+
+
+/**
  * Populates a <select> dropdown with category options.
- * @param {object} categories The category object (productCategories or serviceCategories)
- * @param {HTMLElement} selectElement The <select> element to populate
  */
 function updateCategoryOptions(categories, selectElement) {
     if (!selectElement) return;
@@ -63,8 +108,6 @@ function updateCategoryOptions(categories, selectElement) {
 
 /**
  * Toggles the 'required' attribute on all inputs within a container.
- * @param {HTMLElement} container The container to toggle
- * @param {boolean} isRequired Set to true to add 'required', false to remove
  */
 function toggleRequiredFields(container, isRequired) {
     if (!container) return;
@@ -81,50 +124,85 @@ function handleFormTypeChange(event) {
     currentFormType = event.target.value;
     
     if (currentFormType === 'product') {
-        // 1. Show/Hide containers
         productFieldsContainer.style.display = 'block';
         serviceFieldsContainer.style.display = 'none';
-
-        // 2. Populate correct categories
         updateCategoryOptions(productCategories, productCategorySelect);
-
-        // 3. Set 'required' attributes
         toggleRequiredFields(productFieldsContainer, true);
         toggleRequiredFields(serviceFieldsContainer, false);
-
-        // 4. Update button text
         submitBtn.textContent = 'Upload Product';
 
     } else if (currentFormType === 'service') {
-        // 1. Show/Hide containers
         productFieldsContainer.style.display = 'none';
         serviceFieldsContainer.style.display = 'block';
-
-        // 2. Populate correct categories
         updateCategoryOptions(serviceCategories, serviceCategorySelect);
-
-        // 3. Set 'required' attributes
         toggleRequiredFields(productFieldsContainer, false);
         toggleRequiredFields(serviceFieldsContainer, true);
-
-        // 4. Update button text
         submitBtn.textContent = 'Upload Service';
+    }
+    submitBtn.disabled = false; // Enable submit button
+    messageEl.className = 'form-message-banner'; // Hide any old messages
+}
+
+/**
+ * Handles the custom file input click and preview.
+ * @param {string} inputId The ID of the hidden file input
+ * @param {File} file The file object
+ */
+function handleFilePreview(inputId, file) {
+    const previewContainer = document.getElementById(`${inputId}-preview`);
+    if (!previewContainer) return;
+
+    // Store the file for upload
+    filesToUpload[inputId] = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        previewContainer.innerHTML = `
+            <div class="image-preview-wrapper">
+                <img src="${e.target.result}" alt="Image preview" class="image-preview-img">
+                <button type="button" class="remove-image-btn" data-input="${inputId}">&times;</button>
+            </div>
+        `;
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Removes a file from the preview and the upload queue.
+ * @param {string} inputId The ID of the hidden file input
+ */
+function removeFile(inputId) {
+    filesToUpload[inputId] = null; // Clear the file
+    document.getElementById(inputId).value = null; // Reset the file input
+    const previewContainer = document.getElementById(`${inputId}-preview`);
+    if (previewContainer) {
+        previewContainer.innerHTML = ''; // Clear the preview
     }
 }
 
+
 async function uploadImageToCloudinary(file) {
+    // This function can show progress, but for simplicity, we'll keep it as-is
+    // For a real progress bar, you'd use XHR instead of fetch
     try {
         const response = await fetch('/.netlify/functions/generate-signature');
-        if (!response.ok) throw new Error('Failed to get signature.');
+        if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
         const { signature, timestamp, cloudname, apikey } = await response.json();
+        
         const formData = new FormData();
         formData.append('file', file);
         formData.append('api_key', apikey);
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
+        
         const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-        if (!uploadResponse.ok) throw new Error('Cloudinary upload failed.');
+        
+        if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            throw new Error(`Cloudinary upload failed: ${errorData.error.message}`);
+        }
+        
         const uploadData = await uploadResponse.json();
         return uploadData.secure_url;
     } catch (error) {
@@ -134,12 +212,11 @@ async function uploadImageToCloudinary(file) {
 }
 
 async function populateFormForEdit(productId) {
-    // This function needs to be more robust to handle loading EITHER a product or service
     try {
         const productRef = doc(db, 'products', productId);
         const docSnap = await getDoc(productRef);
         if (!docSnap.exists() || docSnap.data().sellerId !== auth.currentUser.uid) {
-            showMessage(messageEl, 'Item not found or you do not have permission to edit it.', true);
+            showMessage(messageEl, 'Polite Error: The item you are trying to edit could not be found or you do not have permission to edit it.', 'error');
             return;
         }
 
@@ -148,18 +225,17 @@ async function populateFormForEdit(productId) {
 
         // Determine if it's a product or service
         const formType = product.listing_type === 'service' ? 'service' : 'product';
+        
+        // Find and check the correct radio button
+        const radioToSelect = document.querySelector(`input[name="listing_category_type"][value="${formType}"]`);
+        if (radioToSelect) {
+            radioToSelect.checked = true;
+            // Manually trigger the event to show the correct form
+            handleFormTypeChange({ target: radioToSelect });
+        }
 
         if (formType === 'product') {
-            // 1. Set the main radio button and trigger the form change
-            document.querySelector('input[name="listing_category_type"][value="product"]').checked = true;
-            currentFormType = 'product';
-            productFieldsContainer.style.display = 'block';
-            serviceFieldsContainer.style.display = 'none';
-            updateCategoryOptions(productCategories, productCategorySelect);
-            toggleRequiredFields(productFieldsContainer, true);
-            toggleRequiredFields(serviceFieldsContainer, false);
-
-            // 2. Populate product fields
+            // Populate product fields
             document.getElementById('product-name').value = product.name;
             document.getElementById('product-price').value = product.price;
             document.getElementById('product-category').value = product.category || '';
@@ -172,16 +248,7 @@ async function populateFormForEdit(productId) {
             document.querySelector(`input[name="condition"][value="${product.condition || 'new'}"]`).checked = true;
 
         } else if (formType === 'service') {
-            // 1. Set the main radio button and trigger the form change
-            document.querySelector('input[name="listing_category_type"][value="service"]').checked = true;
-            currentFormType = 'service';
-            productFieldsContainer.style.display = 'none';
-            serviceFieldsContainer.style.display = 'block';
-            updateCategoryOptions(serviceCategories, serviceCategorySelect);
-            toggleRequiredFields(productFieldsContainer, false);
-            toggleRequiredFields(serviceFieldsContainer, true);
-            
-            // 2. Populate service fields
+            // Populate service fields
             document.getElementById('service-name').value = product.name;
             document.getElementById('service-price').value = product.price;
             document.getElementById('service-price-type').value = product.service_duration || '';
@@ -197,11 +264,10 @@ async function populateFormForEdit(productId) {
         formTypeRadios.forEach(radio => radio.disabled = true);
         document.querySelector('.product-type-selection').style.opacity = '0.7';
         document.querySelector('.product-type-selection h2').textContent = "Editing Listing (Type cannot be changed)";
-
-
         submitBtn.textContent = 'Update Item';
+
     } catch (error) {
-        showMessage(messageEl, 'Failed to load item data for editing.', true);
+        showMessage(messageEl, 'Polite Error: We had trouble loading your item data. Please refresh the page and try again.', 'error');
         console.error("Edit load error:", error);
     }
 }
@@ -213,7 +279,31 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', handleFormTypeChange);
     });
 
-    // 2. Check if we are editing
+    // 2. Set up custom file input listeners
+    document.querySelectorAll('.file-upload-area').forEach(area => {
+        area.addEventListener('click', () => {
+            const inputId = area.dataset.input;
+            document.getElementById(inputId).click();
+        });
+    });
+
+    document.querySelectorAll('.hidden-file-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleFilePreview(e.target.id, e.target.files[0]);
+            }
+        });
+    });
+
+    // 3. Set up preview removal listener (using event delegation)
+    productForm.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-image-btn')) {
+            const inputId = e.target.dataset.input;
+            removeFile(inputId);
+        }
+    });
+
+    // 4. Check if we are editing
     const params = new URLSearchParams(window.location.search);
     editingProductId = params.get('editId');
     if (editingProductId) {
@@ -229,13 +319,17 @@ document.addEventListener('DOMContentLoaded', () => {
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+        showMessage(messageEl, 'Polite Error: You must be logged in to upload an item. Please log in and try again.', 'error');
+        return;
+    }
     if (!currentFormType) {
-        showMessage(messageEl, 'Please select a listing type (Product or Service) first.', true);
+        showMessage(messageEl, 'Polite Notice: Please select a listing type (Product or Service) first.', 'error');
         return;
     }
 
     toggleLoading(submitBtn, true, editingProductId ? 'Updating...' : 'Submitting...');
+    showMessage(messageEl, 'Uploading... Please wait.', 'progress');
 
     try {
         const userDocRef = doc(db, 'users', user.uid);
@@ -243,14 +337,14 @@ productForm.addEventListener('submit', async (e) => {
         const userData = userDoc.exists() ? userDoc.data() : {};
 
         let productData = {};
-        let filesToUpload = [];
+        let activeFiles = [];
 
         // --- GATHER DATA BASED ON FORM TYPE ---
         if (currentFormType === 'product') {
             const productName = document.getElementById('product-name').value;
-            filesToUpload = [
-                document.getElementById('product-image-1').files[0],
-                document.getElementById('product-image-2').files[0]
+            activeFiles = [
+                filesToUpload['product-image-1'],
+                filesToUpload['product-image-2']
             ].filter(f => f);
 
             productData = {
@@ -269,13 +363,13 @@ productForm.addEventListener('submit', async (e) => {
 
         } else if (currentFormType === 'service') {
             const serviceName = document.getElementById('service-name').value;
-            filesToUpload = [
-                document.getElementById('service-image-1').files[0],
-                document.getElementById('service-image-2').files[0]
+            activeFiles = [
+                filesToUpload['service-image-1'],
+                filesToUpload['service-image-2']
             ].filter(f => f);
 
             productData = {
-                listing_type: "service", // <-- THIS IS THE CRUCIAL FIX
+                listing_type: "service", // <-- CRUCIAL FIX FOR ALGOLIA
                 name: serviceName,
                 name_lowercase: serviceName.toLowerCase(),
                 price: Number(document.getElementById('service-price').value),
@@ -284,15 +378,13 @@ productForm.addEventListener('submit', async (e) => {
                 story: document.getElementById('service-story').value,
                 whatsapp: normalizeWhatsAppNumber(document.getElementById('service-whatsapp').value),
                 
-                // Service-specific fields
                 service_duration: document.getElementById('service-price-type').value || '',
                 service_location_type: document.querySelector('input[name="service-location-type"]:checked').value,
                 service_availability: document.getElementById('service-availability').value || '',
                 
-                // Set defaults for fields that don't apply
-                quantity: 1,
-                condition: 'new',
-                location: '',
+                quantity: 1, // Default for Algolia compatibility
+                condition: 'new', // Default for Algolia compatibility
+                location: document.querySelector('input[name="service-location-type"]:checked').value, // Use 'Online' or 'On-site' for location
             };
         }
 
@@ -310,8 +402,9 @@ productForm.addEventListener('submit', async (e) => {
             if (docSnap.exists()) finalImageUrls = docSnap.data().imageUrls || [];
         }
 
-        if (filesToUpload.length > 0) {
-            finalImageUrls = await Promise.all(filesToUpload.map(f => uploadImageToCloudinary(f)));
+        if (activeFiles.length > 0) {
+            showMessage(messageEl, 'Uploading images... (Step 1 of 2)', 'progress');
+            finalImageUrls = await Promise.all(activeFiles.map(f => uploadImageToCloudinary(f)));
         }
 
         if (finalImageUrls.length === 0 && !editingProductId) {
@@ -322,6 +415,7 @@ productForm.addEventListener('submit', async (e) => {
         }
 
         // --- Save to Firestore and Sync to Algolia ---
+        showMessage(messageEl, 'Saving your listing... (Step 2 of 2)', 'progress');
         let docId; 
         if (editingProductId) {
             await updateDoc(doc(db, 'products', editingProductId), { ...productData, updatedAt: serverTimestamp() });
@@ -330,7 +424,6 @@ productForm.addEventListener('submit', async (e) => {
             const newDocRef = await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), isDeal: false, isSold: false });
             docId = newDocRef.id;
 
-            // Referral logic (only for new listings)
             if (userData.referrerId && !userData.referralValidationRequested) {
                 const referrerDoc = await getDoc(doc(db, 'users', userData.referrerId));
                 await addDoc(collection(db, "referralValidationRequests"), {
@@ -352,24 +445,48 @@ productForm.addEventListener('submit', async (e) => {
                 body: JSON.stringify({ action: 'update', objectID: docId })
             }).catch(err => console.error("Error triggering single sync:", err));
         }
-        // --- END ALGOLIA SYNC ---
 
-        showMessage(messageEl, 'Success! Your listing is live!', false);
+        showMessage(messageEl, 'Success! Your listing is live!', 'success');
         productForm.reset();
+        
+        // Clear previews
+        document.querySelectorAll('.image-preview-container').forEach(c => c.innerHTML = '');
         
         // Hide both containers
         productFieldsContainer.style.display = 'none';
         serviceFieldsContainer.style.display = 'none';
+        
         // Re-enable radio buttons
-        formTypeRadios.forEach(radio => radio.disabled = false);
+        formTypeRadios.forEach(radio => {
+            radio.disabled = false;
+            radio.checked = false;
+        });
         document.querySelector('.product-type-selection').style.opacity = '1';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Please select a listing type';
 
-        setTimeout(() => { window.location.href = '/dashboard/'; }, 2000); // Redirect to dashboard
+
+        setTimeout(() => { 
+            window.location.href = '/dashboard/'; 
+        }, 2000); // Redirect to dashboard
 
     } catch (error) {
         console.error("Error submitting product:", error);
-        showMessage(messageEl, `Oops! Failed to submit: ${error.message} ❌`, true);
+        // Provide polite, specific error messages
+        let politeError = 'Oops! Something went wrong. Please try again.';
+        if (error.message.includes('at least one image')) {
+            politeError = 'Polite Error: Please upload at least one image for your listing.';
+        } else if (error.message.includes('Cloudinary')) {
+            politeError = 'Polite Error: We had trouble uploading your image. Please check your internet connection or try a different image.';
+        } else if (error.message.includes('permission')) {
+             politeError = 'Polite Error: You do not have permission to perform this action. Please log in again.';
+        }
+        
+        showMessage(messageEl, politeError, 'error');
     } finally {
-        toggleLoading(submitBtn, false, editingProductId ? 'Update Item' : 'Add Product');
+        // Only re-enable the button if it's NOT a success
+        if (messageEl.classList.contains('error')) {
+            toggleLoading(submitBtn, false, 'Submit');
+        }
     }
 });
