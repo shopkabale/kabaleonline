@@ -1595,3 +1595,13 @@ body.no-scroll {
     margin-bottom: 60px;
     padding: 0 10px;
 }
+/* --- CSS TO CENTER CAROUSELS WITH FEW ITEMS --- */
+.product-carousel-wrapper.center-items {
+    /* Disables the horizontal scrollbar */
+    overflow-x: hidden;
+}
+
+.product-carousel-wrapper.center-items .product-carousel {
+    /* This centers the cards */
+    justify-content: center;
+}
