@@ -122,7 +122,24 @@
         .product-images img { width: 100%; border-radius: var(--border-radius); margin-bottom: 10px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
         .product-title-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
         #product-name { margin-top: 0; color: var(--text-main); }
-        #share-btn { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 50%; width: 44px; height: 44px; font-size: 1.2em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* This is the style for your original circular share button. 
+           Your product.js will now create a button with a different class (.share-product-btn),
+           so this style won't apply to the new button. */
+        #share-btn { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 50%; 
+            width: 44px; 
+            height: 44px; 
+            font-size: 1.2em; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+
         #product-price { font-size: 1.8em; font-weight: bold; color: var(--ko-primary); margin: 10px 0; }
         #product-description { line-height: 1.7; color: var(--text-secondary); }
         .seller-card { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); margin-top: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
@@ -215,6 +232,146 @@
             margin-right: 5px;
         }
         /* --- END NEW CSS --- */
+
+        
+        /* --- NEW CSS for Share Button and Prominent Profile Button --- */
+        /* This style will be applied to the button your JS creates */
+        .share-product-btn {
+            background-color: #f0f2f5; /* A light, neutral background */
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%; /* Make it full width */
+            margin-top: 15px; /* Space below other product info */
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .share-product-btn:hover {
+            background-color: #e0e2e5;
+            border-color: #c0c2c5;
+        }
+
+        body.dark-mode .share-product-btn {
+            background-color: #2a3a4c;
+            color: var(--text-main);
+            border-color: var(--border-color-dark);
+        }
+
+        body.dark-mode .share-product-btn:hover {
+            background-color: #3b4d61;
+            border-color: #4a5c71;
+        }
+
+        /* This style will be added to the profile link by your JS */
+        .seller-profile-btn-prominent {
+            background-color: var(--ko-primary); /* Use your primary color */
+            color: white;
+            padding: 14px 25px; /* Slightly larger padding */
+            font-size: 1.1em; /* Larger font */
+            border-radius: 10px; /* More rounded */
+            width: 100%; /* Full width */
+            margin-top: 20px; /* Space from other buttons */
+            transition: background-color 0.2s ease;
+        }
+
+        .seller-profile-btn-prominent:hover {
+            background-color: #0056b3; /* Darker primary color on hover */
+        }
+        /* --- END NEW CSS --- */
+
+        /* --- MODAL CSS (Required by product.js) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        /* Themes for modal */
+        .modal-theme-success .modal-icon { color: #28a745; }
+        .modal-theme-error .modal-icon { color: #dc3545; }
+        .modal-theme-info .modal-icon { color: var(--ko-primary); }
+        
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+        .modal-content p {
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+        }
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .modal-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .modal-btn-primary {
+            background-color: var(--ko-primary);
+            color: white;
+        }
+        .modal-btn-secondary {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        @media (min-width: 600px) {
+            .modal-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+            .modal-btn {
+                flex-grow: 1;
+            }
+        }
+        /* --- END MODAL CSS --- */
     </style>
 </head>
 <body>
@@ -257,6 +414,8 @@
     </nav>
 
     <main class="container page-container">
+        <!-- This div is intentionally left simple. 
+             product.js will populate it with the product details. -->
         <div id="product-detail-content"><p style="text-align:center; padding: 40px;">Loading product...</p></div>
 
         <div class="qa-section">
@@ -295,6 +454,20 @@
           color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
       </div>
     </div>
+
+    <!-- This is the Modal HTML that your showModal() function in product.js needs -->
+    <div id="custom-modal" class="modal-overlay modal-theme-info">
+        <div class="modal-content">
+            <div id="modal-icon" class="modal-icon">ℹ️</div>
+            <h3 id="modal-title" class->Modal Title</h3>
+            <p id="modal-message">This is the modal message.</p>
+            <div id="modal-buttons" classs="modal-buttons">
+                <!-- Buttons are added here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    <!-- End Modal HTML -->
+
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
