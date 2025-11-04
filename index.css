@@ -1470,3 +1470,91 @@ body.no-scroll {
   padding: 12px; 
   text-decoration: none; 
 }
+
+/* --- STYLES FOR ANIMATED CTA CARDS (UNIQUE) --- */
+
+.cta-card-animated {
+    color: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 4 / 3;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+    text-align: left;
+}
+.cta-card-animated:hover {
+    transform: scale(1.03) translateY(-3px);
+}
+
+/* Card-specific colors */
+.cta-card-animated.cta-card-buyer {
+    background-color: #1a2a3a; /* Dark Blue/Teal */
+}
+.cta-card-animated.cta-card-seller {
+    background-color: #3a1a2a; /* Dark Red/Purple */
+}
+
+.cta-card-animated h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.cta-card-text-container {
+    height: 30px; /* Fixed height to prevent text from jumping */
+}
+
+#cta-animated-text-buyer,
+#cta-animated-text-seller {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #f0f0f0;
+    opacity: 0; /* Starts invisible */
+    animation: ctaFadeInOut 4s linear infinite; /* 4-second loop */
+}
+
+/* Stagger the animations */
+#cta-animated-text-seller {
+    animation-delay: 2s; /* Starts 2 seconds after the first one */
+}
+
+.cta-card-arrow {
+    background-color: #aeffc5; /* Light green */
+    color: #1a2a3a; /* Dark text color */
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    align-self: flex-end; /* Puts it in the bottom-right */
+}
+
+/* The Fade In/Out Animation */
+@keyframes ctaFadeInOut {
+    0%   { opacity: 0; transform: translateY(10px); }
+    20%  { opacity: 1; transform: translateY(0); }
+    80%  { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* --- Responsive Layout for the cards --- */
+/* (This uses your existing .shop-by-image-cards class as a wrapper) */
+.shop-by-image-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+@media (min-width: 768px) {
+    .shop-by-image-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
