@@ -177,6 +177,21 @@ async function fetchProductsFromFirebase(q, gridId, sectionId) {
     const lastVisible = snapshot.docs[snapshot.docs.length - 1];
     
     renderProducts(gridElement, products);
+
+    // --- NEW CODE TO CENTER CAROUSELS ---
+    // This finds the scrolling wrapper around the grid
+    const wrapper = gridElement.closest('.product-carousel-wrapper');
+    
+    // We check if it's a carousel AND it is NOT expanded
+    if (wrapper && !wrapper.classList.contains('expanded')) {
+        // If there are 4 or fewer products, add the 'center-items' class
+        // (4 items on desktop is about the cutoff)
+        if (products.length <= 4) { 
+            wrapper.classList.add('center-items');
+        }
+    }
+    // --- END OF NEW CODE ---
+
     if (sectionElement) sectionElement.style.display = 'block';
     
     return { products, lastVisible }; // Return data
