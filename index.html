@@ -12,7 +12,6 @@
   <link rel="canonical" href="https://www.kabaleonline.com/" />
   <meta name="robots" content="index, follow">
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:title" content="KabaleOnline: Buy, Sell, Rent & Discover in Kabale">
   <meta property "og:description" content="Kabale’s community marketplace — trade electronics, books, rent hostels, list services & events. Join Kabale’s most trusted local platform." />
   <meta property="og:type" content="website" />
@@ -21,25 +20,21 @@
   <meta property="og:site_name" content="KabaleOnline" />
   <meta property="og:locale" content="en_UG" />
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="KabaleOnline | Buy, Sell, Rent & Discover Locally" />
   <meta name="twitter:description" content="Join Kabale’s trusted marketplace: buy/sell electronics & textbooks, find hostels, list services & events, explore lost & found." />
   <meta name="twitter:image" content="https://www.kabaleonline.com/assets/social-share-image.jpg" />
   <meta name="twitter:site" content="@kabaleonline" />
 
-  <!-- Geolocation / Region hints -->
   <meta name="geo.region" content="UG-WC" />
   <meta name="geo.placename" content="Kabale, Uganda" />
 
-  <!-- Manifest + Theme + Icons -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#007bff" />
   <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
   <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-  <!-- Schema / Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -63,7 +58,6 @@
   }
   </script>
 
-  <!-- Google Analytics / gtag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XQRYNC9TW"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -72,7 +66,6 @@
     gtag('config', 'G-5XQRYNC9TW');
   </script>
 
-  <!-- OneSignal (deferred) -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -81,8 +74,7 @@
     });
   </script>
 
-  <!-- Fonts / Styles / Icons -->
-<link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="index.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -314,7 +306,9 @@
                     <span class="how-to-dot active" data-slide="0"></span>
                     <span class="how-to-dot" data-slide="1"></span>
                 </div>
-
+<section class="holiday-banner">
+  <h2>🎉 HAPPY HOLIDAYS – All Deliveries Covered! 🎁</h2>
+</section>
            <section class="category-section">
     <div class="container">
         <div class="category-grid">
@@ -491,7 +485,6 @@
                 <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
             </div>
         </div>
-<br>
 <section class="holiday-banner">
   <h2>🎉 HAPPY HOLIDAYS – All Deliveries Covered! 🎁</h2>
 </section>
@@ -527,7 +520,8 @@
         </div>
     </div>
 <script type="module" src="ui.js"></script>
-    <script type="module" src="index.js"></script>
+<script type="module" src="index.js"></script>
+
 <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Find all the elements needed
@@ -541,7 +535,7 @@
                 // Function to open/close the menu
                 function toggleMenu() {
                     mobileNav.classList.toggle('active');
-                    overlay.classList.toggle('active');
+                   overlay.classList.toggle('active');
                     // Optional: Prevent scrolling when menu is open
                     document.body.classList.toggle('no-scroll');
                 }
@@ -553,7 +547,7 @@
                 overlay.addEventListener('click', toggleMenu);
             }
         });
-    </script>
-    
+</script>
+
 </body>
 </html>
