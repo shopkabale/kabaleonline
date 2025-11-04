@@ -498,10 +498,13 @@ footer {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-/* * This new rule ONLY applies centering logic
- * on screens wider than 768px (tablets/desktops).
-*/
+/* --- SHOP PAGE CAROUSEL FIX (DESKTOP ONLY) --- */
 @media (min-width: 768px) {
+  .deals-carousel-wrapper.center-items {
+     /* Add this to hide scrollbar ON DESKTOP */
+    overflow-x: hidden;
+  }
+
   .deals-carousel-wrapper.center-items .deals-grid {
     justify-content: center;
   }
