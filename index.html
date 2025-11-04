@@ -1173,6 +1173,7 @@
   box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
 }
 /* Responsive Animated Start Selling Section */
+
 .start-selling-section {
   position: relative;
   width: 100%; /* full width on desktop */
@@ -1194,114 +1195,95 @@
   padding: 10px;
 }
 
-/* Arrow Shape */
-.arrow {
-  width: 40px;
-  height: 10px;
-  background: white;
-  border-radius: 5px;
-  position: relative;
-  animation: arrowMove 3s ease-in-out infinite;
-}
-.arrow::after {
-  content: "";
-  position: absolute;
-  top: -6px;
-  right: -10px;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 10px solid white;
-}
-
-/* Text Container */
-.text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.start {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  animation: zoomIn 3s ease-in-out infinite;
-}
-
-.selling {
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  animation: dropDown 3s ease-in-out infinite;
-  animation-delay: 1.5s;
-}
-
-/* Animations */
-@keyframes arrowMove {
-  0% { transform: translateX(-30px); opacity: 0; width: 0; }
-  25% { transform: translateX(0); opacity: 1; width: 40px; }
-  50% { transform: translateX(10px); }
-  75% { transform: translateX(0); }
-  100% { transform: translateX(-30px); opacity: 0; width: 0; }
-}
-
-@keyframes zoomIn {
-  0%, 100% { transform: scale(0); opacity: 0; }
-  25%, 50% { transform: scale(1.1); opacity: 1; }
-  75% { transform: scale(1); }
-}
-
-@keyframes dropDown {
-  0%, 100% { transform: translateY(-40px); opacity: 0; }
-  25%, 50% { transform: translateY(0); opacity: 1; }
-  75% { transform: translateY(5px); }
-}
-
-@keyframes pulse {
-  0%, 100% { background: #00c853; }
-  50% { background: #00e676; }
-}
-
-/* Hover effect */
 .start-selling-section:hover {
+  background: #00e676;
   transform: scale(1.02);
 }
 
-/* ✅ RESPONSIVE STYLES */
-@media (max-width: 768px) {
-  .start-selling-section {
-    height: 90px;
-    flex-direction: column;
-    gap: 5px;
-    padding: 10px;
-  }
+/* --- Text and Animation --- */
+.arrow {
+  font-size: 70px;
+  animation: moveArrow 3s linear infinite;
+  color: yellow;
+}
 
-  .arrow {
-    width: 30px;
-  }
+.start-text {
+  font-size: 50px;
+  font-weight: bold;
+  color: white;
+  animation: zoomStart 3s ease-in-out infinite;
+}
 
-  .start {
-    font-size: 1.6rem;
-  }
+.selling-text {
+  font-size: 60px;
+  font-weight: bold;
+  color: #ffeb3b;
+  animation: dropSelling 3s ease-in-out infinite;
+}
 
-  .selling {
-    font-size: 1.4rem;
+/* --- Animations --- */
+@keyframes moveArrow {
+  0% {
+    transform: translateX(-300%);
+    opacity: 0;
+  }
+  30% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(300%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(300%);
+    opacity: 0;
   }
 }
 
-@media (max-width: 480px) {
-  .start-selling-section {
-    height: 80px;
-    padding: 5px;
-    border-radius: 10px;
+@keyframes zoomStart {
+  0% {
+    transform: scale(0);
+    opacity: 0;
   }
-
-  .start {
-    font-size: 1.3rem;
+  40% {
+    transform: scale(1.5);
+    opacity: 1;
   }
+  70% {
+    transform: scale(2.2);
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
 
-  .selling {
-    font-size: 1.1rem;
+@keyframes dropSelling {
+  0% {
+    transform: translateY(-200%);
+    opacity: 0;
+  }
+  40% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+}
+
+/* --- Pulse background effect --- */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 255, 100, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 150, 1);
   }
 }
     </style>
@@ -1426,13 +1408,10 @@
                 </div>
             </section>
             
-<!-- Animated Start Selling Section -->
 <div class="start-selling-section" onclick="window.location.href='/upload/'">
-  <div class="arrow"></div>
-  <div class="text">
-    <span class="start">Start</span>
-    <span class="selling">Selling</span>
-  </div>
+  <span class="arrow">➜</span>
+  <span class="start-text">Start</span>
+  <span class="selling-text">Selling</span>
 </div>
 
             <section id="sponsored-section" class="product-carousel-section" style="display: none;">
