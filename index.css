@@ -1485,6 +1485,8 @@ body.no-scroll {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     transition: transform 0.3s ease;
     text-align: left;
+    position: relative; /* Needed for absolute positioning if you want to place image freely */
+    overflow: hidden; /* Hide parts of image if it overflows */
 }
 .cta-card-animated:hover {
     transform: scale(1.03) translateY(-3px);
@@ -1505,8 +1507,23 @@ body.no-scroll {
     margin: 0;
 }
 
+.cta-card-image {
+    width: 60px; /* Adjust size as needed */
+    height: auto;
+    margin-top: 15px; /* Space below title */
+    margin-bottom: 10px; /* Space above animated text */
+    opacity: 0.8; /* Slightly faded */
+    transition: opacity 0.3s ease;
+}
+
+.cta-card-animated:hover .cta-card-image {
+    opacity: 1; /* Fully visible on hover */
+}
+
+
 .cta-card-text-container {
     height: 30px; /* Fixed height to prevent text from jumping */
+    flex-grow: 1; /* Allows it to take up available space */
 }
 
 #cta-animated-text-buyer,
@@ -1534,6 +1551,7 @@ body.no-scroll {
     justify-content: center;
     font-size: 1.5rem;
     align-self: flex-end; /* Puts it in the bottom-right */
+    margin-top: 15px; /* Space above the arrow */
 }
 
 /* The Fade In/Out Animation */
