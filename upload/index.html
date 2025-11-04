@@ -88,10 +88,9 @@
 
         /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
         .home-link { color: var(--ko-primary); text-decoration: none; font-weight: 600; margin-bottom: 15px; display: inline-block; }
-        .info-box { border: 1px solid; border-radius: var(--border-radius); padding: 15px; margin: 20px 0; text-align: center; }
-        body.light-mode .info-box { background-color: #e9f5ff; border-color: #bce8f1; color: #31708f; }
-        body.dark-mode .info-box { background-color: #1c2e4a; border-color: #3e5a8a; color: #a8caff; }
-        .info-box p { margin: 0; font-size: 1em; }
+        
+        /* (Removed .info-box styles as it's no longer used on this page) */
+
         .cta-button { padding: 12px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; background-color: var(--ko-primary); color: white; border: none; transition: background-color 0.2s; text-decoration: none; }
 
         form { background-color: var(--bg-card); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
@@ -99,10 +98,11 @@
         .form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1em; box-sizing: border-box; background-color: var(--bg-main); color: var(--text-main); }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--ko-primary); box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15); outline: none; }
+        .form-group small { color: var(--text-secondary); font-size: 0.9em; margin-top: 5px; display: block; }
         #submit-btn { width: 100%; }
         #submit-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
 
-        /* --- NEW RADIO BUTTON STYLES --- */
+        /* --- RADIO BUTTON STYLES --- */
         .radio-group {
             display: flex;
             gap: 20px;
@@ -135,7 +135,7 @@
             border-color: var(--ko-primary);
             box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15);
         }
-        /* --- END NEW STYLES --- */
+        /* --- END RADIO STYLES --- */
 
         /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
         footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
@@ -155,7 +155,7 @@
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
-                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                <a href="/?category=Services" class="nav-link">Services</a>
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
             </nav>
@@ -172,7 +172,7 @@
     <nav class="mobile-nav">
         <div class="mobile-nav-header">Kabale Online</div>
         <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-        <a href="/?type=service" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/?category=Services" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
         <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
         <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
         <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
@@ -294,20 +294,9 @@
       </div>
     </footer>
 
-    <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-        background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1201;">
-      <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
-        box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif;">
-        <h3 style="margin-bottom:15px; color:var(--text-main);">Notice</h3>
-        <p style="margin-bottom:20px; color:var(--text-secondary);">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-        <button id="continue-btn" style="padding:10px 20px; background:var(--ko-primary); border:none; border-radius:8px; 
-          color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
-      </div>
-    </div>
-
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Logic for the mobile nav toggle and service modal
+      // Logic for the mobile nav toggle
       const hamburger = document.querySelector('.hamburger-menu');
       const mobileNav = document.querySelector('.mobile-nav');
       const overlay = document.querySelector('.mobile-nav-overlay');
@@ -322,23 +311,7 @@
           });
       }
 
-      const serviceLinks = document.querySelectorAll('a.service-link');
-      const modal = document.getElementById('service-notice');
-      const continueBtn = document.getElementById('continue-btn');
-      if(modal && continueBtn && serviceLinks.length > 0) {
-        serviceLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-              e.preventDefault();
-              modal.style.display = 'flex';
-            });
-        });
-        continueBtn.addEventListener('click', function() {
-            window.location.href = 'https://gigs.kabaleonline.com';
-        });
-        modal.addEventListener('click', function(e) {
-            if(e.target === modal) modal.style.display = 'none';
-        });
-      }
+      // All logic for the 'service-link' modal has been removed.
     });
     </script>
 
