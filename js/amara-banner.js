@@ -1,85 +1,75 @@
-// === AMARA AI BANNER V3 SCRIPT ===
+// === AMARA AI BANNER V4 SCRIPT ===
 document.addEventListener('DOMContentLoaded', function() {
-    const banner = document.querySelector('.amara-banner-v3');
-    const expandingTextElement = document.getElementById('amara-ai-expanding-text');
-    const dynamicWordsContainer = document.getElementById('amara-dynamic-words-container');
+    const wordElement = document.getElementById('amara-animated-word');
+    if (!wordElement) return;
 
-    if (!banner || !expandingTextElement || !dynamicWordsContainer) {
-        return; // Exit if banner elements aren't present
-    }
-
-    // --- The sequence of words to animate ---
-    const wordSequence = [
-        { text: "Search", classes: "amara-word-swipe-left", x: 10, y: 30, color: "var(--ko-accent)" },
-        { text: "Learn", classes: "amara-word-drop-bounce", x: 70, y: 15, color: "var(--ko-primary)" },
-        { text: "Discover", classes: "amara-word-swipe-right", x: 60, y: 70, color: "var(--ko-accent)" },
-        { text: "Solve", classes: "amara-word-zoom-in", x: 45, y: 40, color: "white" },
-        { text: "Find It", classes: "amara-word-fall-through", x: 25, y: 55, color: "var(--ko-primary)" }
+    // --- The Sequence of Animations ---
+    const sequence = [
+        { 
+            text: "Ask Amara AI", 
+            color: "var(--ko-accent)", 
+            animation: "amara-anim-zoom-pop" // Pop out of screen
+        },
+        { 
+            text: "Search", 
+            color: "var(--ko-accent)", 
+            animation: "amara-anim-swipe-left" // Swipe left + underline
+        },
+        { 
+            text: "Learn", 
+            color: "var(--ko-primary)", 
+            animation: "amara-anim-drop-in" // Drop in
+        },
+        { 
+            text: "Find It", 
+            color: "white", 
+            animation: "amara-anim-fall-through" // Fall through
+        },
+        { 
+            text: "Discover", 
+            color: "var(--ko-accent)", 
+            animation: "amara-anim-zoom-pop" // Pop out again
+        },
+        { 
+            text: "Solve", 
+            color: "var(--ko-primary)", 
+            animation: "amara-anim-drop-in" // Drop in
+        }
     ];
 
-    let currentWordIndex = 0;
-    let mainLoopTimer = null;
-    let wordLoopTimer = null;
+    let currentIndex = 0;
+    const inDuration = 1000; // 1s for "in" animation
+    const holdDuration = 2000; // 2s to show the word
+    const outDuration = 500; // 0.5s for "out" animation
 
-    // --- Function to create and animate a single word ---
-    function animateWord() {
-        if (currentWordIndex >= wordSequence.length) {
-            currentWordIndex = 0; // Loop back
-        }
-
-        const wordData = wordSequence[currentWordIndex];
-        const wordEl = document.createElement('span');
-        wordEl.textContent = wordData.text;
-        wordEl.className = `amara-word ${wordData.classes}`;
-        wordEl.style.color = wordData.color;
-        wordEl.style.left = `${wordData.x}%`;
-        wordEl.style.top = `${wordData.y}%`;
-
-        dynamicWordsContainer.appendChild(wordEl);
-        currentWordIndex++;
-
-        // Schedule removal
-        // 1. Fade out after 2.5 seconds
-        setTimeout(() => {
-            wordEl.classList.add('amara-word-fade-out');
-        }, 2500); 
-
-        // 2. Remove from DOM after fade out (2.5s + 0.5s fade)
-        setTimeout(() => {
-            wordEl.remove();
-        }, 3000); 
-    }
-
-    // --- Function to start the main "Ask Amara AI" expansion ---
-    function startExpandingText() {
-        // Reset animation by removing and re-adding the class
-        expandingTextElement.classList.remove('expanding');
-        // Void reflow (a trick to force CSS to restart the animation)
-        void expandingTextElement.offsetWidth; 
-        expandingTextElement.classList.add('expanding');
-    }
-
-    // --- Main function to start and repeat the whole show ---
-    function startFullAnimationCycle() {
-        // 1. Clear any old timers
-        clearInterval(mainLoopTimer);
-        clearInterval(wordLoopTimer);
+    function runAnimation() {
+        // --- 1. GET THE NEXT ITEM ---
+        const item = sequence[currentIndex];
         
-        // 2. Clear any leftover words
-        dynamicWordsContainer.innerHTML = '';
-        currentWordIndex = 0;
+        // --- 2. FADE-OUT THE OLD WORD ---
+        // Add "amara-word-out" to whatever animation is currently on
+        wordElement.className = "amara-word-out " + (wordElement.dataset.anim || "");
+        
+        // --- 3. AFTER FADE-OUT, PREP AND FADE-IN NEW WORD ---
+        setTimeout(() => {
+            // Remove all old classes
+            wordElement.className = ""; 
+            
+            // Set new properties
+            wordElement.textContent = item.text;
+            wordElement.style.color = item.color;
+            wordElement.dataset.anim = item.animation; // Store the animation name
 
-        // 3. Start the "Ask Amara AI" expansion
-        startExpandingText();
+            // Add the new "IN" classes
+            wordElement.classList.add('amara-word-in', item.animation);
+            
+            // Update index for next time
+            currentIndex = (currentIndex + 1) % sequence.length;
 
-        // 4. Start the word loop
-        // It spawns a new word every 1.5 seconds
-        animateWord(); // Spawn the first word immediately
-        wordLoopTimer = setInterval(animateWord, 1500);
+        }, outDuration); // Wait for the fade-out to finish
     }
 
-    // --- Start the show! ---
-    startFullAnimationCycle(); // Run it once on load
-    // Repeat the entire 8-second cycle
-    mainLoopTimer = setInterval(startFullAnimationCycle, 8000); 
+    // --- Start the Loop ---
+    runAnimation(); // Run the first animation immediately
+    setInterval(runAnimation, inDuration + holdDuration); // Loop
 });
