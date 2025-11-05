@@ -80,7 +80,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kabale Online">
-  <link rel="stylesheet" href="shop.css">
+    <link rel="stylesheet" href="shop.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     
@@ -94,7 +94,8 @@
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link active">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
-                <a href="/shop/?category=Services" class="nav-link">Services</a>
+                <!-- === LINK 1: CORRECTED === -->
+                <a href="/shop/?type=service" class="nav-link">Services</a>
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
             </nav>
@@ -111,7 +112,8 @@
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="/shop/?category=Services" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <!-- === LINK 2: CORRECTED === -->
+            <a href="/shop/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
             <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
             <a href="stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
@@ -152,7 +154,8 @@
                     <span class="category-emoji">🏘️</span>
                     <h3>Rentals</h3>
                 </a>
-                <a href="/shop/?category=Services" class="image-category-card">
+                <!-- === LINK 3: CORRECTED === -->
+                <a href="/shop/?type=service" class="image-category-card">
                     <span class="category-emoji">📡</span>
                     <h3>Services</h3>
                 </a>
@@ -253,7 +256,8 @@
             <h3>Explore</h3>
             <a href="/shop/">Shop Items</a>
             <a href="/rentals/">Hostels & Rentals</a>
-            <a href="/shop/?category=Services">Find Services</a>
+            <!-- === LINK 4: CORRECTED === -->
+            <a href="/shop/?type=service">Find Services</a>
             <a href="/events/">Local Events</a>
             <a href="/lost-and-found/">Lost & Found</a>
         </div>
@@ -262,6 +266,7 @@
             <h3>For Sellers</h3>
             <a href="/upload/">Sell an Item</a>
             <a href="/dashboard/">My Dashboard</a>
+            <!-- === LINK 5: CORRECTED (Upload page handles both) === -->
             <a href="/upload/">Offer a Service</a>
             <a href="/blog/">Seller Tips</a>
         </div>
