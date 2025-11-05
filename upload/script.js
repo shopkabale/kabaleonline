@@ -1,6 +1,7 @@
 import { auth, db } from '../js/auth.js';
 import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { showMessage as showSharedMessage, toggleLoading as toggleSharedLoading, normalizeWhatsAppNumber } from '../js/shared.js';
+// We only need normalizeWhatsAppNumber from shared.js, as we define custom showMessage/toggleLoading
+import { normalizeWhatsAppNumber } from '../js/shared.js';
 
 // --- DOM ELEMENTS ---
 const productForm = document.getElementById('product-form');
@@ -27,6 +28,7 @@ const productCategories = {
     "Other": "Other" 
 };
 
+// --- NEW: SERVICE CATEGORIES ---
 const serviceCategories = {
     "Tutoring & Academics": "Tutoring & Academics",
     "Design & Creative": "Design & Creative",
@@ -85,9 +87,14 @@ function toggleLoading(button, isLoading, loadingText = 'Submitting...') {
         button.innerHTML = `<span class="loading-spinner"></span> ${loadingText}`;
     } else {
         // Text will be reset by handleFormTypeChange or on page load
-        button.innerHTML = editingProductId ? 'Update Item' : 'Upload Item';
-        if (currentFormType === 'product') button.textContent = 'Upload Product';
-        if (currentFormType === 'service') button.textContent = 'Upload Service';
+        if (currentFormType === 'product') {
+            button.textContent = editingProductId ? 'Update Product' : 'Upload Product';
+        } else if (currentFormType === 'service') {
+            button.textContent = editingProductId ? 'Update Service' : 'Upload Service';
+        } else {
+            button.textContent = 'Please select a listing type';
+            button.disabled = true;
+        }
     }
 }
 
@@ -111,6 +118,7 @@ function updateCategoryOptions(categories, selectElement) {
  */
 function toggleRequiredFields(container, isRequired) {
     if (!container) return;
+    // Note: The 'data-required' attribute must be on the inputs in the HTML
     const inputs = container.querySelectorAll('input[data-required], textarea[data-required], select[data-required]');
     inputs.forEach(input => {
         input.required = isRequired;
@@ -182,8 +190,6 @@ function removeFile(inputId) {
 
 
 async function uploadImageToCloudinary(file) {
-    // This function can show progress, but for simplicity, we'll keep it as-is
-    // For a real progress bar, you'd use XHR instead of fetch
     try {
         const response = await fetch('/.netlify/functions/generate-signature');
         if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
@@ -243,7 +249,7 @@ async function populateFormForEdit(productId) {
             document.getElementById('product-location').value = product.location || '';
             document.getElementById('product-description').value = product.description;
             document.getElementById('product-story').value = product.story || '';
-            document.getElementById('product-whatsapp').value = normalizeWhatsAppNumber(product.whatsapp, true);
+            document.getElementById('product-whatsapp').value = normalizeWhatsAppNumber(product.whatsapp, true); // Assuming de-normalize
             document.querySelector(`input[name="listing-type"][value="${product.listing_type || 'sale'}"]`).checked = true;
             document.querySelector(`input[name="condition"][value="${product.condition || 'new'}"]`).checked = true;
 
@@ -255,10 +261,35 @@ async function populateFormForEdit(productId) {
             document.getElementById('service-category').value = product.category || '';
             document.getElementById('service-description').value = product.description;
             document.getElementById('service-story').value = product.story || '';
-            document.getElementById('service-whatsapp').value = normalizeWhatsAppNumber(product.whatsapp, true);
+            document.getElementById('service-whatsapp').value = normalizeWhatsAppNumber(product.whatsapp, true); // Assuming de-normalize
             document.querySelector(`input[name="service-location-type"][value="${product.service_location_type || 'Online'}"]`).checked = true;
             document.getElementById('service-availability').value = product.service_availability || '';
         }
+
+        // Handle image previews for existing images
+        if (product.imageUrls && product.imageUrls.length > 0) {
+            const id1 = formType === 'product' ? 'product-image-1' : 'service-image-1';
+            const previewContainer1 = document.getElementById(`${id1}-preview`);
+            if (previewContainer1) {
+                 previewContainer1.innerHTML = `
+                    <div class="image-preview-wrapper">
+                        <img src="${product.imageUrls[0]}" alt="Image preview" class="image-preview-img">
+                        <small>Current Image 1. Upload new file to replace.</small>
+                    </div>`;
+            }
+        }
+         if (product.imageUrls && product.imageUrls.length > 1) {
+            const id2 = formType === 'product' ? 'product-image-2' : 'service-image-2';
+            const previewContainer2 = document.getElementById(`${id2}-preview`);
+            if (previewContainer2) {
+                 previewContainer2.innerHTML = `
+                    <div class="image-preview-wrapper">
+                        <img src="${product.imageUrls[1]}" alt="Image preview" class="image-preview-img">
+                        <small>Current Image 2. Upload new file to replace.</small>
+                    </div>`;
+            }
+        }
+
 
         // Disable the top radio buttons so user can't switch types during an edit
         formTypeRadios.forEach(radio => radio.disabled = true);
@@ -407,6 +438,7 @@ productForm.addEventListener('submit', async (e) => {
             finalImageUrls = await Promise.all(activeFiles.map(f => uploadImageToCloudinary(f)));
         }
 
+        // Check for images *after* processing uploads, but only for new products
         if (finalImageUrls.length === 0 && !editingProductId) {
             throw new Error('At least one image is required for a new listing.');
         }
@@ -462,9 +494,7 @@ productForm.addEventListener('submit', async (e) => {
             radio.checked = false;
         });
         document.querySelector('.product-type-selection').style.opacity = '1';
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Please select a listing type';
-
+        toggleLoading(submitBtn, false); // This will set the disabled state and text correctly
 
         setTimeout(() => { 
             window.location.href = '/dashboard/'; 
@@ -483,10 +513,6 @@ productForm.addEventListener('submit', async (e) => {
         }
         
         showMessage(messageEl, politeError, 'error');
-    } finally {
-        // Only re-enable the button if it's NOT a success
-        if (messageEl.classList.contains('error')) {
-            toggleLoading(submitBtn, false, 'Submit');
-        }
+        toggleLoading(submitBtn, false); // Re-enable button on error
     }
 });
