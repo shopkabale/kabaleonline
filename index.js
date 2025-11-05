@@ -32,7 +32,7 @@ function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
 }
 
 // ==================================================== //
-//           PRODUCT RENDERING & LAZY LOAD              //
+//           PRODUCT RENDERING (UPGRADED)               //
 // ==================================================== //
 
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -101,33 +101,14 @@ function renderProducts(gridElement, products, append = false) {
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         
-        // --- STOCK STATUS LOGIC ---
-        let stockStatusHTML = '';
-        if (isActuallySold) {
-            stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
-        } else if (product.quantity > 5) {
-            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
-        } else if (product.quantity > 0 && product.quantity <= 5) {
-            stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
-        }
-        
-        let tagsHTML = '';
-        if (product.listing_type === 'rent') {
-            tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
-        } else if (product.listing_type === 'sale') {
-            tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
-        }
-        if (product.condition === 'new') {
-            tagsHTML += '<span class="product-tag condition-new">NEW</span>';
-        } else if (product.condition === 'used') {
-            tagsHTML += '<span class="product-tag condition-used">USED</span>';
-        }
-
         // --- NEW: Service-Aware Logic ---
-        // We add this to the homepage as well so services look correct
         let priceHTML = '';
         let locationHTML = '';
-        if (product.category === 'Services') {
+        let stockStatusHTML = '';
+        let tagsHTML = '';
+
+        if (product.listing_type === 'service') {
+            // --- Service Card Logic ---
             priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
                 ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
             </p>`;
@@ -136,11 +117,35 @@ function renderProducts(gridElement, products, append = false) {
                 const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
                 locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
             }
-            stockStatusHTML = ''; // Services don't have stock
+            // No stock or condition tags for services
+            stockStatusHTML = '';
+            tagsHTML = '';
+
         } else {
+            // --- Regular Product Card Logic ---
             priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
+            
             if (product.location) {
                 locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
+            }
+
+            if (isActuallySold) {
+                stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
+            } else if (product.quantity > 5) {
+                stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+            } else if (product.quantity > 0 && product.quantity <= 5) {
+                stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
+            }
+
+            if (product.listing_type === 'rent') {
+                tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+            } else if (product.listing_type === 'sale') {
+                tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+            }
+            if (product.condition === 'new') {
+                tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+            } else if (product.condition === 'used') {
+                tagsHTML += '<span class="product-tag condition-used">USED</span>';
             }
         }
         // --- END NEW LOGIC ---
@@ -352,10 +357,6 @@ function initializeUI() {
             handleWishlistClick(event);
         }
     });
-
-    // --- External Navigation Modal (REMOVED) ---
-    // The old logic for 'nav-modal' and '.service-link' clicks is gone.
-    // Your 'ui.js' file handles the hamburger menu.
 
     // --- AI Chat Bubble and Modal Logic ---
     const chatModalContainer = document.getElementById('chat-modal-container');
