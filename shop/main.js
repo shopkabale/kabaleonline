@@ -281,12 +281,6 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     try {
         const snapshot = await getDocs(q);
         
-        // This logic is now handled by renderProducts
-        // if (snapshot.empty) {
-        //     sectionElement.style.display = 'none';
-        //     return;
-        // }
-        
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         const wrapper = gridElement.closest('.deals-carousel-wrapper'); 
@@ -325,40 +319,51 @@ function fetchSponsoredItems() {
 // === NEW FUNCTIONS FOR NEW SECTIONS =======
 // ==========================================
 
+// --- UPDATED FUNCTION ---
 function displayLastViewed() {
     try {
         const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
-        // renderProducts will hide the section if 'viewed' is empty
-        renderProducts(lastViewedGrid, viewed, false);
+        const initialView = viewed.slice(0, 8); // Limit to 8 for carousel display
+        // renderProducts will hide the section if 'initialView' is empty
+        renderProducts(lastViewedGrid, initialView, false);
     } catch (e) {
         console.error("Error displaying last viewed:", e);
         if(lastViewedSection) lastViewedSection.style.display = 'none';
     }
 }
 
-// --- THIS FUNCTION IS NOW FIXED ---
+// --- UPDATED FUNCTION ---
 async function displayMadeForYou() {
     let q;
-    let title = "✨ Made for You";
+    let title = "✨ Recommended for You";
 
     try {
         const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
         
         if (interests.length > 0) {
-            // Find the most common category in the user's history
+            // Find the top 3 most common categories
             const counts = interests.reduce((acc, cat) => {
                 acc[cat] = (acc[cat] || 0) + 1;
                 return acc;
             }, {});
             
-            const topCategory = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            const sortedCategories = Object.entries(counts).sort(([,a],[,b]) => b - a);
+            const topCategories = sortedCategories.slice(0, 3).map(([category]) => category);
+
+            if (topCategories.length === 0) {
+                if (madeForYouSection) madeForYouSection.style.display = 'none';
+                return;
+            }
             
-            // Fetch products from that category
+            // Fetch products from those top categories
             q = query(collection(db, 'products'), 
-                where('category', '==', topCategory), 
+                where('category', 'in', topCategories), 
                 where('isSold', '==', false), 
                 limit(8));
-            title = `✨ Because you like ${topCategory}`;
+            
+            if (topCategories.length === 1) {
+                title = `✨ Because you like ${topCategories[0]}`;
+            }
 
             if (madeForYouTitle) madeForYouTitle.textContent = title;
             // Use your existing carousel fetcher
@@ -605,67 +610,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- "SEE MORE" EXPAND LOGIC ---
+// --- "SEE MORE" EXPAND LOGIC (UPDATED) ---
 document.body.addEventListener('click', async (e) => {
     const seeMoreBtn = e.target.closest('.see-more-btn');
     if (!seeMoreBtn) return;
     
     const sectionName = seeMoreBtn.dataset.section;
-    if (!sectionName) return; 
-
-    if (sectionName === 'made-for-you') {
-        const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-        if (interests.length > 0) {
-            const counts = interests.reduce((acc, cat) => {
-                acc[cat] = (acc[cat] || 0) + 1;
-                return acc;
-            }, {});
-            const topCategory = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-            window.location.href = `/shop/?category=${encodeURIComponent(topCategory)}`;
-        } else {
-            window.location.href = '/shop/';
-        }
-        return;
+    if (!sectionName || seeMoreBtn.dataset.expanded === 'true') {
+        return; // No section name or already expanded
     }
 
     let grid, wrapper;
-    if (sectionName === 'deals') {
+
+    // --- 1. Find the correct grid and wrapper ---
+    if (sectionName === 'last-viewed') {
+        grid = document.getElementById('last-viewed-grid');
+    } else if (sectionName === 'made-for-you') {
+        grid = document.getElementById('made-for-you-grid');
+    } else if (sectionName === 'deals') {
         grid = document.getElementById('deals-grid');
     } else if (sectionName === 'sponsored') {
         grid = document.getElementById('sponsored-grid');
     } else if (sectionName === 'save') {
         grid = document.getElementById('save-on-more-grid');
     } else {
-        return;
+        return; // Unknown section
     }
 
-    if (!grid) return; 
-
+    if (!grid) return;
     wrapper = grid.closest('.deals-carousel-wrapper');
     if (!wrapper) return;
 
-    if (seeMoreBtn.dataset.expanded === 'true') {
-        return; 
-    }
-    
+    // --- 2. Start Expansion (Disable button) ---
     seeMoreBtn.disabled = true;
     seeMoreBtn.textContent = 'Loading...';
 
     try {
-        let q;
-        if (sectionName === 'deals') {
-            q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
-        } else if (sectionName === 'sponsored') {
-            q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
-        } else if (sectionName === 'save') {
-            q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+        let products = [];
+
+        if (sectionName === 'last-viewed') {
+            // --- 3a. Handle localStorage Expansion (Sync) ---
+            products = JSON.parse(localStorage.getItem('lastViewed')) || [];
+        
+        } else {
+            // --- 3b. Handle Firestore Expansion (Async) ---
+            let q;
+            
+            if (sectionName === 'made-for-you') {
+                const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
+                const counts = interests.reduce((acc, cat) => {
+                    acc[cat] = (acc[cat] || 0) + 1;
+                    return acc;
+                }, {});
+                const sortedCategories = Object.entries(counts).sort(([,a],[,b]) => b - a);
+                const topCategories = sortedCategories.slice(0, 3).map(([category]) => category);
+
+                if (topCategories.length === 0) {
+                     throw new Error('No user interests found');
+                }
+                
+                q = query(collection(db, 'products'), 
+                    where('category', 'in', topCategories), 
+                    where('isSold', '==', false), 
+                    orderBy('createdAt', 'desc'), 
+                    limit(20)); // Expanded limit
+
+            } else if (sectionName === 'deals') {
+                q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+            } else if (sectionName === 'sponsored') {
+                q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+            } else if (sectionName === 'save') {
+                q = query(collection(db, 'products'), where('isSaveOnMore', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+            }
+
+            const snapshot = await getDocs(q);
+            products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
-        const snapshot = await getDocs(q);
-        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+        // --- 4. Render and Finalize UI (Common to all) ---
         if (products && products.length > 0) {
-            renderProducts(grid, products); 
+            renderProducts(grid, products); // Re-render with full list
             wrapper.classList.add('expanded');
             grid.classList.remove('deals-grid'); 
             grid.classList.add('product-grid');  
@@ -676,9 +700,10 @@ document.body.addEventListener('click', async (e) => {
             seeMoreBtn.textContent = 'No More Items';
             seeMoreBtn.dataset.expanded = 'true';
         }
+
     } catch (error) {
         console.error(`Error expanding section ${sectionName}:`, error);
         seeMoreBtn.textContent = 'Error';
-        seeMoreBtn.disabled = false;
+        seeMoreBtn.disabled = false; // Re-enable on error
     }
 });
