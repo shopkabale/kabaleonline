@@ -59,12 +59,13 @@ async function fetchWishlistData() {
                 wishlistSnapshot.forEach(itemDoc => {
                     const item = itemDoc.data();
                     
-                    // --- Get all the details you asked for ---
-                    // (Assuming item data matches your product structure)
+                    // --- THIS IS THE FIX, using your confirmed data structure ---
                     const itemName = item.name || 'Untitled Item';
                     const itemPrice = item.price || 0;
-                    const itemImage = item.imageUrls?.[0] || 'https://placehold.co/100';
-                    const sellerName = item.sellerName || 'N/A';
+                    // Use 'imageUrl' (string) NOT 'imageUrls' (array)
+                    const itemImage = item.imageUrl || 'https://placehold.co/100'; 
+                    // 'sellerName' is not in your data, so we remove it.
+                    // --- END FIX ---
                     
                     // Create the HTML for this specific item
                     const itemHTML = `
@@ -72,8 +73,7 @@ async function fetchWishlistData() {
                             <img src="${itemImage}" alt="${itemName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px;">
                             <div style="flex-grow: 1;">
                                 <p style="font-weight: bold; margin: 0 0 5px 0;">${itemName}</p>
-                                <p style="margin: 0; color: var(--text-secondary);">Seller: ${sellerName}</p>
-                            </div>
+                                </div>
                             <span style="font-weight: bold; color: green; font-size: 1.1em;">UGX ${itemPrice.toLocaleString()}</span>
                         </li>
                     `;
@@ -92,7 +92,7 @@ async function fetchWishlistData() {
         
     } catch (e) { 
         console.error("Error fetching wishlist data:", e); 
-        userWishlistSummary.innerHTML = '<li>Could not load wishlist data.</li>'; 
+        userWishlistSummary.innerHTML = '<li>Could not load wishlist data. Check the console (F12) for errors.</li>'; 
     }
 }
 
