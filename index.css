@@ -1652,10 +1652,7 @@ body.no-scroll {
     position: relative; /* Crucial for positioning */
     overflow: hidden; /* CRUCIAL: Hides text that flies out */
     
-    /* Center the button */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    
 }
 
 /* --- 2. The Animated Word "Stage" --- */
@@ -1677,26 +1674,25 @@ body.no-scroll {
     will-change: transform, opacity;
 }
 
-/* --- 3. The Button (On Top) --- */
-.amara-banner-cta-container {
-    position: relative; /* Stays in the flex flow */
-    z-index: 10; /* ON TOP of the giant text */
-}
+/* --- 5. The "Try Now" Button (UPDATED) --- */
 .amara-banner-cta-button {
-    /* --- UPDATED STYLES FOR ICON --- */
-    display: flex; /* Use flex to center the icon */
+    /* --- NEW POSITIONING --- */
+    position: absolute;   /* Position it relative to the banner */
+    z-index: 20;          /* Keep it on top of all animations */
+    bottom: 20px;         /* 20px from the bottom */
+    right: 25px;          /* 25px from the right */
+
+    /* --- Your existing circle styles --- */
+    display: flex;
     align-items: center;
     justify-content: center;
     background-color: white;
-    color: #007aff; /* --ko-primary */
-    
-    width: 60px;  /* Fixed width for a circle */
-    height: 60px; /* Fixed height for a circle */
-    padding: 0;   /* Remove old padding */
-    border-radius: 50%; /* Makes it a circle */
-
-    font-size: 1.5rem; /* Makes the arrow icon larger */
-
+    color: var(--ko-primary);
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
     text-decoration: none;
@@ -1705,7 +1701,7 @@ body.no-scroll {
 .amara-banner-cta-button:hover {
     background-color: #f0f0f0;
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px) scale(1.05); /* Added scale on hover */
+    transform: translateY(-2px) scale(1.05);
 }
 
 /* --- 4. The Unique Animation Classes --- */
