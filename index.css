@@ -1683,22 +1683,29 @@ body.no-scroll {
     z-index: 10; /* ON TOP of the giant text */
 }
 .amara-banner-cta-button {
-    display: block;
+    /* --- UPDATED STYLES FOR ICON --- */
+    display: flex; /* Use flex to center the icon */
+    align-items: center;
+    justify-content: center;
     background-color: white;
-    color: var(--ko-primary);
-    font-weight: bold;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    text-align: center;
-    font-size: 1.125rem;
+    color: #007aff; /* --ko-primary */
+    
+    width: 60px;  /* Fixed width for a circle */
+    height: 60px; /* Fixed height for a circle */
+    padding: 0;   /* Remove old padding */
+    border-radius: 50%; /* Makes it a circle */
+
+    font-size: 1.5rem; /* Makes the arrow icon larger */
+
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
     text-decoration: none;
 }
+
 .amara-banner-cta-button:hover {
     background-color: #f0f0f0;
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.05); /* Added scale on hover */
 }
 
 /* --- 4. The Unique Animation Classes --- */
