@@ -1631,70 +1631,184 @@ body.no-scroll {
     color: var(--ko-primary);
 }
 
-/* === AMARA AI SHOWCASE BANNER === */
+/* === AMARA AI SHOWCASE BANNER V3 === */
 
-/* --- 1. The "Powerful" Animated Background --- */
-.amara-banner {
+/* --- 1. Main Banner Container --- */
+.amara-banner-v3 {
     width: 100%;
-    /* A 4-color "strong" gradient using your site's dark/primary colors */
-    background: linear-gradient(270deg, 
-        var(--ko-primary),  /* Your #007aff blue */
-        #4a00e0,            /* A deep, strong purple */
-        #0f172a,            /* Your site's dark #0f172a background */
-        var(--ko-primary)   /* Loop back to blue */
-    );
-    background-size: 400% 400%;
-    animation: amara-gradient-shift 15s ease infinite;
-    overflow: hidden; /* Important for animations */
+    /* A single, strong, dark background */
+    background-color: #0f172a; /* Your site's dark background */
+    /* You can add a subtle gradient overlay for depth */
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.1) 100%);
+    position: relative; /* Crucial for absolute positioning of text */
+    overflow: hidden; /* CRUCIAL: Hides text that flies outside */
+    min-height: 250px; /* Ensures it has height */
+    padding: 3rem 1rem; /* Padding for mobile */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-@keyframes amara-gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@media (min-width: 768px) {
+    .amara-banner-v3 {
+        padding: 4rem 2rem;
+    }
 }
 
-/* --- 2. The Text Animation Container --- */
-/* This holds the space so the page doesn't jump */
-#amara-prompt-container {
-    position: relative;
-    /* Adjust min-height to fit your longest prompt */
-    min-height: 2.5em; 
-    overflow: hidden;
-    padding: 0 5px;
-}
-
-/* --- 3. The Text Animations (Fall & Swipe) --- */
-#amara-prompt-text {
+/* --- 2. The Expanding "Ask Amara AI" Text --- */
+#amara-ai-expanding-text {
     position: absolute;
-    width: 100%;
-    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+    top: 20px; /* Positioned top-right */
+    right: 25px;
+    
+    color: rgba(255, 255, 255, 0.1); /* Very faint initial color */
+    font-weight: 800; /* Extra-bold */
+    font-size: 2rem; /* Initial font size */
+    
+    z-index: 0; /* Stays in the background */
+    pointer-events: none;
+    white-space: nowrap;
+    
+    /* Animation will be triggered by JS */
+    opacity: 0;
+    transform: scale(1);
+    will-change: transform, opacity, font-size; /* Performance hint */
 }
 
-/* "Fall" animation for KNOWLEDGE prompts */
-.amara-text-fall-in {
-    opacity: 1;
-    transform: translateY(0);
-}
-.amara-text-fall-out {
-    opacity: 0;
-    transform: translateY(20px);
-}
-.amara-text-fall-start {
-    opacity: 0;
-    transform: translateY(-20px);
+/* This class is added by JS to start the animation */
+#amara-ai-expanding-text.expanding {
+    animation: 
+        amara-expand-fade 8s forwards ease-out,
+        amara-font-scale 8s forwards ease-out;
 }
 
-/* "Swipe" animation for WEB SEARCH prompts */
-.amara-text-swipe-in {
-    opacity: 1;
-    transform: translateX(0);
+@keyframes amara-expand-fade {
+    0% { opacity: 0; transform: scale(1); }
+    10% { opacity: 0.1; transform: scale(1.1); }
+    70% { opacity: 0.05; } /* Fades as it gets huge */
+    100% { opacity: 0; transform: scale(5); } /* Expands 5x */
 }
-.amara-text-swipe-out {
-    opacity: 0;
-    transform: translateX(40px);
+
+@keyframes amara-font-scale {
+    0% { font-size: 2rem; } /* Starts at 2rem */
+    100% { font-size: 30rem; } /* Finishes at 30rem (fills screen) */
 }
-.amara-text-swipe-start {
+
+
+/* --- 3. The Flying Dynamic Words --- */
+#amara-dynamic-words-container {
+    position: absolute;
+    inset: 0; /* Covers the entire banner */
+    z-index: 10; /* Sits on top of the expanding text */
+    pointer-events: none;
+}
+
+.amara-word {
+    position: absolute;
+    color: white; /* Default */
+    font-weight: 800; /* Extra bold */
+    font-size: clamp(1.5rem, 4vw, 3rem); /* Strong, responsive font */
     opacity: 0;
-    transform: translateX(-40px);
+    white-space: nowrap;
+    will-change: transform, opacity;
+}
+
+/* --- 4. Unique Animation Classes --- */
+
+/* "Search" - Swipes left, with underline */
+.amara-word-swipe-left {
+    animation: amara-swipe-left-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    position: relative; /* For the underline */
+}
+.amara-word-swipe-left::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    height: 3px;
+    background-color: var(--ko-accent); /* Your accent color */
+    width: 0;
+    animation: amara-underline 1s forwards 0.5s; /* Underline appears after 0.5s */
+}
+@keyframes amara-swipe-left-in {
+    from { opacity: 0; transform: translateX(-100%) skewX(-20deg); }
+    to { opacity: 1; transform: translateX(0) skewX(0); }
+}
+@keyframes amara-underline {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+/* "Learn" - Drops from top, bounces */
+.amara-word-drop-bounce {
+    animation: amara-drop-bounce 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+@keyframes amara-drop-bounce {
+    0% { opacity: 0; transform: translateY(-150px); }
+    60% { opacity: 1; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* "Discover" - Swipes from right */
+.amara-word-swipe-right {
+    animation: amara-swipe-right-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes amara-swipe-right-in {
+    from { opacity: 0; transform: translateX(100%) skewX(20deg); }
+    to { opacity: 1; transform: translateX(0) skewX(0); }
+}
+
+/* "Solve" - Comes "out of the screen" */
+.amara-word-zoom-in {
+    animation: amara-zoom-in 1s ease-out forwards;
+}
+@keyframes amara-zoom-in {
+    from { opacity: 0; transform: scale(0.1); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* "Find It" - Drops and falls through */
+.amara-word-fall-through {
+    animation: amara-fall-through 2s ease-in forwards;
+}
+@keyframes amara-fall-through {
+    0% { opacity: 0; transform: translateY(-50px); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(200px); } /* Falls off the bottom */
+}
+
+/* Common "fade out" class for cleanup */
+.amara-word-fade-out {
+    animation: amara-fade-out 0.5s ease-in forwards !important; /* !important to override */
+}
+@keyframes amara-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; transform: scale(0.8); }
+}
+
+
+/* --- 5. The "Try Now" Button --- */
+.amara-banner-cta-container {
+    position: relative; /* Use relative to place it in the flex flow */
+    z-index: 20; /* On top of all animations */
+}
+.amara-banner-cta-button {
+    /* Tailwind classes are in the HTML, this is just a fallback */
+    display: block;
+    background-color: white;
+    color: #007aff; /* --ko-primary */
+    font-weight: bold;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    text-decoration: none;
+}
+.amara-banner-cta-button:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
