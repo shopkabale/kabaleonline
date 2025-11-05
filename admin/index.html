@@ -6,187 +6,15 @@
     <title>Super Admin Panel | Kabale Online</title>
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* --- THEME-AWARE CSS VARIABLES --- */
-        :root {
-            --ko-primary: #007aff;
-            --ko-primary-rgb: 0, 122, 255;
-            --ko-accent: #ffc107;
-            --bg-light: #f8f9fa;
-            --bg-card-light: #ffffff;
-            --text-main-light: #212529;
-            --text-secondary-light: #6c757d;
-            --border-color-light: #e9ecef;
-            --bg-dark: #0f172a;
-            --bg-card-dark: #1e2b3b;
-            --text-main-dark: #e2e8f0;
-            --text-secondary-dark: #94a3b8;
-            --border-color-dark: #334155;
-            --shadow: 0 10px 30px rgba(0,0,0,0.07);
-            --border-radius: 12px;
-        }
-
-        /* --- THEME-SWITCHING LOGIC --- */
-        body.light-mode {
-            --bg-main: var(--bg-light);
-            --bg-card: var(--bg-card-light);
-            --text-main: var(--text-main-light);
-            --text-secondary: var(--text-secondary-light);
-            --border-color: var(--border-color-light);
-        }
-
-        body.dark-mode {
-            --bg-main: var(--bg-dark);
-            --bg-card: var(--bg-card-dark);
-            --text-main: var(--text-main-dark);
-            --text-secondary: var(--text-secondary-dark);
-            --border-color: var(--border-color-dark);
-        }
-        
-        /* --- GENERAL & HEADER STYLES --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        .page-content { padding-top: 90px; padding-bottom: 30px; }
-
-        .sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); }
-        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
-        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
-
-        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
-        .site-title span { color: var(--ko-accent); }
-        .header-icons { display: flex; align-items: center; gap: 20px; }
-        .header-icons button { background: none; border: none; font-size: 1em; color: var(--text-secondary); cursor: pointer; font-family: inherit; font-weight: 600; }
-        .desktop-nav, .hamburger-menu { display: none; }
-
-        /* --- ADMIN DASHBOARD STYLES --- */
-        h1, h2, h3 { color: var(--text-main); }
-        .stats-grid, .action-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 30px; }
-        .stat-card, .action-card, .chart-container { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
-        .stat-card h3 { margin: 0 0 10px; font-size: 1em; color: var(--text-secondary); }
-        .stat-card .stat-number { font-size: 2.5em; font-weight: 700; color: var(--ko-primary); }
-        .action-card { text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; }
-        .action-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .action-card h3 { color: var(--ko-primary); }
-        .action-card p { font-size: 2.5em; font-weight: 700; margin: 0; color: #dc3545; }
-
-        /* Chart Section Styles */
-        .chart-container { margin-bottom: 30px; }
-        .chart-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end; }
-        .chart-controls button { background-color: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; }
-        .chart-controls button.active { background-color: var(--ko-primary); color: white; border-color: var(--ko-primary); }
-        
-        /* Accordion Styles */
-        .accordion-item { background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); margin-bottom: 15px; }
-        .accordion-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; font-weight: 600; }
-        .accordion-header i { transition: transform 0.3s; }
-        .accordion-header.active i { transform: rotate(180deg); }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; border-top: 1px solid var(--border-color); }
-        .accordion-content-inner { padding: 20px; }
-
-        /* Management List Styles */
-        .user-list { list-style-type: none; padding: 0; }
-        .user-list-item { background: var(--bg-main); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
-        
-        /* --- MODIFIED: Product Grid --- */
-        .product-grid { 
-            display: grid; 
-            gap: 20px; 
-            grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
-        }
-        @media (max-width: 600px) {
-            .product-grid {
-                grid-template-columns: 1fr; /* Single column on small screens */
-            }
-        }
-        
-        .product-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--bg-main); text-align: center; display: flex; flex-direction: column; }
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
-        .product-card h3 { 
-            margin: 10px;
-            font-size: 1em;
-            /* Fix for long names */
-            overflow-wrap: break-word;
-            word-break: break-all;
-        }
-        .product-card .price { margin: 10px; }
-
-        .action-btn { padding: 5px 10px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
-        .action-btn.green { background-color: #28a745; color: white; }
-        .action-btn.red { background-color: #dc3545; color: white; }
-        .action-btn.blue { background-color: #007bff; color: white; }
-
-        /* --- NEW: Styles for new product toggle buttons --- */
-        .seller-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 0 10px 10px; /* Aligns buttons with card padding */
-        }
-
-        .product-toggle-btn {
-            background-color: #f0f0f0; /* Default off state */
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 5px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            cursor: pointer;
-            flex-grow: 1; /* Make buttons fill space */
-            flex-basis: 100px; /* Min width before wrapping */
-        }
-        
-        /* Ensure delete button uses new flex properties */
-        .action-btn.red {
-            flex-grow: 1;
-            flex-basis: 100px;
-        }
-
-        .product-toggle-btn:hover {
-            background-color: #e0e0e0;
-        }
-
-        /* "ON" states for buttons */
-        .product-toggle-btn.on-deal {
-            background-color: var(--ko-accent); /* Yellow */
-            color: #212529;
-            border-color: var(--ko-accent);
-        }
-
-        .product-toggle-btn.on-save {
-            background-color: #17a2b8; /* Teal/Info */
-            color: white;
-            border-color: #17a2b8;
-        }
-
-        .product-toggle-btn.on-sponsor {
-            background-color: #28a745; /* Green */
-            color: white;
-            border-color: #28a745;
-        }
-
-        .product-toggle-btn.red { /* For Hero "on" state */
-            background-color: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
-
-        .product-toggle-btn.blue { /* For Hero "off" state */
-            background-color: var(--ko-primary);
-            color: white;
-            border-color: var(--ko-primary);
-        }
-
-    </style>
 </head>
 <body>
     <script src="/theme.js"></script>
 
     <header class="sticky-header">
       <div class="header-content container">
-        <a href="/" class="site-title">Kabale <span>Online</span></a>
+        <a href="/admin/" class="site-title">Kabale <span>Online</span></a>
         <div class="header-icons">
           <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
         </div>
@@ -205,21 +33,20 @@
 
             <h2>Overview</h2>
             <div class="stats-grid">
-                <div class="stat-card"><h3>Total Users</h3><p id="total-users-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Total Products</h3><p id="total-products-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Total Orders</h3><p id="total-orders-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Total Sales Value</h3><p id="total-sales-stat" class="stat-number">UGX 0</p></div>
-                <div class="stat-card"><h3>Wishlisted Items</h3><p id="total-wishlist-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Referrals Made</h3><p id="total-referrals-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Rentals/Hostels</h3><p id="total-rentals-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Events</h3><p id="total-events-stat" class="stat-number">0</p></div>
-                <div class="stat-card"><h3>Services Listed</h3><p id="total-services-stat" class="stat-number">0</p></div>
-            </div>
+                <a href="users.html" class="stat-card"><h3>Total Users</h3><p id="total-users-stat" class="stat-number">0</p></a>
+                <a href="products.html" class="stat-card"><h3>Total Products</h3><p id="total-products-stat" class="stat-number">0</p></a>
+                <a href="orders.html" class="stat-card"><h3>Total Orders</h3><p id="total-orders-stat" class="stat-number">0</p></a>
+                <a href="earnings.html" class="stat-card"><h3>Total Sales Value</h3><p id="total-sales-stat" class="stat-number">UGX 0</p></a>
+                <a href="wishlists.html" class="stat-card"><h3>Wishlisted Items</h3><p id="total-wishlist-stat" class="stat-number">0</p></a>
+                <a href="referrals.html" class="stat-card"><h3>Referrals Made</h3><p id="total-referrals-stat" class="stat-number">0</p></a>
+                <a href="rentals.html" class="stat-card"><h3>Rentals/Hostels</h3><p id="total-rentals-stat" class="stat-number">0</p></a>
+                <a href="events.html" class="stat-card"><h3>Events</h3><p id="total-events-stat" class="stat-number">0</p></a>
+                </div>
             
             <h2>Action Items</h2>
             <div class="action-grid">
-                <a href="#products-accordion" class="action-card"><h3>Products to Approve</h3><p id="pending-products-count">0</p></a>
-                <a href="#testimonials-accordion" class="action-card"><h3>Testimonials to Approve</h3><p id="pending-testimonials-count">0</p></a>
+                <a href="products.html" class="action-card"><h3>Products to Approve</h3><p id="pending-products-count">0</p></a>
+                <a href="testimonials.html" class="action-card"><h3>Testimonials to Approve</h3><p id="pending-testimonials-count">0</p></a>
             </div>
 
             <h2>Site Activity</h2>
@@ -231,28 +58,10 @@
                 <canvas id="activity-chart"></canvas>
             </div>
 
-            <h2 style="margin-top: 40px;">Site Management</h2>
-            <div id="management-accordions">
-                <div class="accordion-item" id="users-accordion">
-                    <div class="accordion-header">Manage Users <i class="fa-solid fa-chevron-down"></i></div>
-                    <div class="accordion-content"><div class="accordion-content-inner"><ul id="user-list" class="user-list"></ul></div></div>
-                </div>
-                <div class="accordion-item" id="products-accordion">
-                    <div class="accordion-header">Manage All Products <i class="fa-solid fa-chevron-down"></i></div>
-                    <div class="accordion-content"><div class="accordion-content-inner"><div id="all-products-list" class="product-grid"></div></div></div>
-                </div>
-                <div class="accordion-item" id="testimonials-accordion">
-                    <div class="accordion-header">Manage Testimonials <i class="fa-solid fa-chevron-down"></i></div>
-                    <div class="accordion-content"><div class="accordion-content-inner">
-                        <h3>Pending</h3><ul id="pending-testimonials-list" class="user-list"></ul>
-                        <h3>Approved</h3><ul id="approved-testimonials-list" class="user-list"></ul>
-                    </div></div>
-                </div>
-            </div>
-        </main>
+            </main>
     </div>
     
-    <script type="module" src="admin.js"></script>
+    <script type="module" src="dashboard.js"></script>
     <script type="module" src="../ui.js"></script>
 </body>
 </html>
