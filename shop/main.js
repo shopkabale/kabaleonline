@@ -268,7 +268,6 @@ async function fetchAndRenderProducts(append = false) {
     }
 }
 
-// --- THIS FUNCTION IS NOW FIXED ---
 async function fetchCarouselProducts(q, gridId, sectionId) {
     const gridElement = document.getElementById(gridId);
     const sectionElement = document.getElementById(sectionId);
@@ -276,7 +275,6 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     if (!gridElement || !sectionElement) return;
 
     renderSkeletonLoaders(gridElement, 5);
-    // REMOVED: sectionElement.style.display = 'block'; (This was the bug)
 
     try {
         const snapshot = await getDocs(q);
@@ -291,7 +289,6 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
             }
         }
 
-        // renderProducts will now show the section *only if* products.length > 0
         renderProducts(gridElement, products);
 
     } catch (error) {
@@ -319,12 +316,10 @@ function fetchSponsoredItems() {
 // === NEW FUNCTIONS FOR NEW SECTIONS =======
 // ==========================================
 
-// --- UPDATED FUNCTION ---
 function displayLastViewed() {
     try {
         const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
         const initialView = viewed.slice(0, 8); // Limit to 8 for carousel display
-        // renderProducts will hide the section if 'initialView' is empty
         renderProducts(lastViewedGrid, initialView, false);
     } catch (e) {
         console.error("Error displaying last viewed:", e);
@@ -332,33 +327,24 @@ function displayLastViewed() {
     }
 }
 
-// --- UPDATED FUNCTION ---
+// --- THIS IS THE UPDATED FUNCTION ---
 async function displayMadeForYou() {
-    let q;
     let title = "✨ Recommended for You";
 
     try {
+        // 1. Get the recency-ordered list of unique categories
         const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
         
         if (interests.length > 0) {
-            // Find the top 3 most common categories
-            const counts = interests.reduce((acc, cat) => {
-                acc[cat] = (acc[cat] || 0) + 1;
-                return acc;
-            }, {});
             
-            const sortedCategories = Object.entries(counts).sort(([,a],[,b]) => b - a);
-            const topCategories = sortedCategories.slice(0, 3).map(([category]) => category);
+            // 2. Just take the top 3 most recent unique categories!
+            const topCategories = interests.slice(0, 3);
 
-            if (topCategories.length === 0) {
-                if (madeForYouSection) madeForYouSection.style.display = 'none';
-                return;
-            }
-            
-            // Fetch products from those top categories
-            q = query(collection(db, 'products'), 
+            // 3. Fetch products from those top categories
+            const q = query(collection(db, 'products'), 
                 where('category', 'in', topCategories), 
                 where('isSold', '==', false), 
+                orderBy('createdAt', 'desc'), // You could also randomize this
                 limit(8));
             
             if (topCategories.length === 1) {
@@ -366,11 +352,10 @@ async function displayMadeForYou() {
             }
 
             if (madeForYouTitle) madeForYouTitle.textContent = title;
-            // Use your existing carousel fetcher
             await fetchCarouselProducts(q, 'made-for-you-grid', 'made-for-you-section');
 
         } else {
-            // NO FALLBACK. Just hide the section.
+            // No interests, hide the section
             if (madeForYouSection) madeForYouSection.style.display = 'none';
         }
         
@@ -379,6 +364,8 @@ async function displayMadeForYou() {
         if (madeForYouSection) madeForYouSection.style.display = 'none';
     }
 }
+// --- END OF UPDATED FUNCTION ---
+
 
 // ==========================================
 // === END NEW FUNCTIONS ====================
@@ -656,14 +643,12 @@ document.body.addEventListener('click', async (e) => {
             // --- 3b. Handle Firestore Expansion (Async) ---
             let q;
             
+            // --- THIS LOGIC IS NOW UPDATED ---
             if (sectionName === 'made-for-you') {
+                // Get the recency-ordered list
                 const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-                const counts = interests.reduce((acc, cat) => {
-                    acc[cat] = (acc[cat] || 0) + 1;
-                    return acc;
-                }, {});
-                const sortedCategories = Object.entries(counts).sort(([,a],[,b]) => b - a);
-                const topCategories = sortedCategories.slice(0, 3).map(([category]) => category);
+                // Just take the top 3
+                const topCategories = interests.slice(0, 3); 
 
                 if (topCategories.length === 0) {
                      throw new Error('No user interests found');
