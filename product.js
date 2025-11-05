@@ -58,10 +58,13 @@ if (!productId) {
     });
 }
 
+// --- THIS IS THE UPDATED FUNCTION ---
 function saveToLocalStorage(product) {
     try {
+        // --- 1. Update 'lastViewed' (Your existing logic is good) ---
         let lastViewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
         
+        // Remove this item if it already exists (to avoid duplicates)
         lastViewed = lastViewed.filter(item => item.id !== product.id);
         
         const simplifiedProduct = {
@@ -79,15 +82,26 @@ function saveToLocalStorage(product) {
             sellerIsVerified: product.sellerIsVerified || false, 
             sellerBadges: product.sellerBadges || []
         };
+        // Add the current item to the front of the list
         lastViewed.unshift(simplifiedProduct);
 
-        lastViewed = lastViewed.slice(0, 6);
+        // Keep the list limited
+        lastViewed = lastViewed.slice(0, 8); // Increased to 8 to match carousel size
         localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
 
+        // --- 2. Update 'userInterests' (NEW LOGIC) ---
         if (product.category) {
             let userInterests = JSON.parse(localStorage.getItem('userInterests')) || [];
-            userInterests.push(product.category);
-            userInterests = userInterests.slice(-20);
+            
+            // Remove the category if it already exists
+            userInterests = userInterests.filter(cat => cat !== product.category);
+            
+            // Add the new category to the VERY FRONT (most recent)
+            userInterests.unshift(product.category);
+            
+            // Keep only the 20 most recent unique categories
+            userInterests = userInterests.slice(0, 20); 
+            
             localStorage.setItem('userInterests', JSON.stringify(userInterests));
         }
 
@@ -95,6 +109,7 @@ function saveToLocalStorage(product) {
         console.error("Error saving to localStorage:", e);
     }
 }
+// --- END OF UPDATED FUNCTION ---
 
 
 async function loadProductAndSeller() {
@@ -123,7 +138,7 @@ async function loadProductAndSeller() {
         renderProductDetails(productData, sellerData);
         loadQandA(productData.sellerId);
 
-        saveToLocalStorage(productData);
+        saveToLocalStorage(productData); // This now calls the new function
 
     } catch (error) {
         console.error("Critical error loading product:", error);
