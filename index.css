@@ -1630,3 +1630,71 @@ body.no-scroll {
     text-align: center;
     color: var(--ko-primary);
 }
+
+/* === AMARA AI SHOWCASE BANNER === */
+
+/* --- 1. The "Powerful" Animated Background --- */
+.amara-banner {
+    width: 100%;
+    /* A 4-color "strong" gradient using your site's dark/primary colors */
+    background: linear-gradient(270deg, 
+        var(--ko-primary),  /* Your #007aff blue */
+        #4a00e0,            /* A deep, strong purple */
+        #0f172a,            /* Your site's dark #0f172a background */
+        var(--ko-primary)   /* Loop back to blue */
+    );
+    background-size: 400% 400%;
+    animation: amara-gradient-shift 15s ease infinite;
+    overflow: hidden; /* Important for animations */
+}
+
+@keyframes amara-gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* --- 2. The Text Animation Container --- */
+/* This holds the space so the page doesn't jump */
+#amara-prompt-container {
+    position: relative;
+    /* Adjust min-height to fit your longest prompt */
+    min-height: 2.5em; 
+    overflow: hidden;
+    padding: 0 5px;
+}
+
+/* --- 3. The Text Animations (Fall & Swipe) --- */
+#amara-prompt-text {
+    position: absolute;
+    width: 100%;
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+/* "Fall" animation for KNOWLEDGE prompts */
+.amara-text-fall-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+.amara-text-fall-out {
+    opacity: 0;
+    transform: translateY(20px);
+}
+.amara-text-fall-start {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* "Swipe" animation for WEB SEARCH prompts */
+.amara-text-swipe-in {
+    opacity: 1;
+    transform: translateX(0);
+}
+.amara-text-swipe-out {
+    opacity: 0;
+    transform: translateX(40px);
+}
+.amara-text-swipe-start {
+    opacity: 0;
+    transform: translateX(-40px);
+}
