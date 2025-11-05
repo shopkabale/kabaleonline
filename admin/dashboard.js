@@ -16,7 +16,7 @@ const totalWishlistStat = document.getElementById('total-wishlist-stat');
 const totalReferralsStat = document.getElementById('total-referrals-stat');
 const totalRentalsStat = document.getElementById('total-rentals-stat');
 const totalEventsStat = document.getElementById('total-events-stat');
-// totalServicesStat is removed
+const totalServicesStat = document.getElementById('total-services-stat'); // <-- Updated
 
 // Action Card Elements
 const pendingProductsCount = document.getElementById('pending-products-count');
@@ -66,7 +66,8 @@ async function fetchAllStats() {
 
         const [
             productCount, orderCount, rentalCount, eventCount,
-            testimonialCount, /* serviceCount is removed */ pendingProducts, pendingTestimonials,
+            testimonialCount, serviceCount, // <-- Updated
+            pendingProducts, pendingTestimonials,
             salesData
         ] = await Promise.all([
             getCountFromServer(collection(db, 'products')),
@@ -74,7 +75,7 @@ async function fetchAllStats() {
             getCountFromServer(collection(db, 'rentals')),
             getCountFromServer(collection(db, 'events')),
             getCountFromServer(collection(db, 'testimonials')),
-            // getCountFromServer(collection(db, 'services')), // Removed
+            getCountFromServer(collection(db, 'services')), // <-- Updated
             getCountFromServer(query(collection(db, 'products'), where('status', '==', 'pending'))),
             getCountFromServer(query(collection(db, 'testimonials'), where('status', '==', 'pending'))),
             getDocs(query(collection(db, 'products'), where('isSold', '==', true))),
@@ -90,7 +91,7 @@ async function fetchAllStats() {
         totalReferralsStat.textContent = totalReferralCount;
         totalRentalsStat.textContent = rentalCount.data().count;
         totalEventsStat.textContent = eventCount.data().count;
-        // totalServicesStat.textContent = serviceCount.data().count; // Removed
+        totalServicesStat.textContent = serviceCount.data().count; // <-- Updated
         pendingProductsCount.textContent = pendingProducts.data().count;
         pendingTestimonialsCount.textContent = pendingTestimonials.data().count;
 
@@ -187,8 +188,6 @@ function setupEventListeners() {
         monthlyViewBtn.classList.add('active');
         weeklyViewBtn.classList.remove('active');
     });
-
-    // All accordion and management listeners are removed
 }
 
 // --- START THE APP ---
