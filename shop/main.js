@@ -1,5 +1,5 @@
 // --- FIREBASE IMPORTS ---
-import { db, auth } from "../firebase.js"; // Correct path (one level up)
+import { db, auth } from "../firebase.js"; 
 import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
@@ -27,7 +27,7 @@ function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
 
-// --- NEW: SERVICE CATEGORIES (Needed for URL logic) ---
+// Service categories (used for URL logic)
 const serviceCategories = {
     "Tutoring & Academics": "Tutoring & Academics",
     "Design & Creative": "Design & Creative",
@@ -57,6 +57,13 @@ const imageCategoryGrid = document.querySelector(".image-category-grid");
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
 const backToTopBtn = document.getElementById("back-to-top-btn");
+
+// --- NEW DOM REFERENCES ---
+const lastViewedSection = document.getElementById("last-viewed-section");
+const lastViewedGrid = document.getElementById("last-viewed-grid");
+const madeForYouSection = document.getElementById("made-for-you-section");
+const madeForYouGrid = document.getElementById("made-for-you-grid");
+const madeForYouTitle = document.querySelector("#made-for-you-section h2");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -102,7 +109,7 @@ function observeLazyImages() {
 }
 
 // =================================================================
-// === MODIFIED RENDERPRODUCTS FUNCTION (UPGRADED) =================
+// === YOUR EXISTING, UPGRADED RENDERPRODUCTS FUNCTION =============
 // =================================================================
 function renderProducts(gridElement, products, append = false) {
     if (!gridElement) return;
@@ -110,15 +117,27 @@ function renderProducts(gridElement, products, append = false) {
     if (!append) {
         gridElement.innerHTML = "";
     }
-    if (products.length === 0 && !append) {
-        gridElement.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+    
+    if (products.length === 0) {
+        if (!append) {
+            if (gridElement.id === 'product-grid') {
+                gridElement.innerHTML = `<p class="loading-indicator">No listings found matching your criteria.</p>`;
+            } else {
+                const section = gridElement.closest('.carousel-section');
+                if (section) section.style.display = 'none';
+            }
+        }
         return;
     }
+
+    const section = gridElement.closest('.carousel-section');
+    if (section) section.style.display = 'block';
 
     const fragment = document.createDocumentFragment();
     products.forEach(product => {
         const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
         const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
+        
         const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) ? `<p class="verified-text">✓ Verified Seller</p>` : '';
         const isInWishlist = state.wishlist.has(product.id);
         const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
@@ -127,34 +146,26 @@ function renderProducts(gridElement, products, append = false) {
         const soldClass = isActuallySold ? 'is-sold' : '';
         const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
         
-        // --- NEW: Service-Aware Logic ---
         let priceHTML = '';
         let locationHTML = '';
         let stockStatusHTML = '';
         let tagsHTML = '';
 
         if (product.listing_type === 'service') {
-            // --- Service Card Logic ---
             priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
                 ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
             </p>`;
-
             if (product.service_location_type) {
                 const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
                 locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
             }
-            // No stock or condition tags for services
             stockStatusHTML = '';
             tagsHTML = '';
-
         } else {
-            // --- Regular Product Card Logic ---
             priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
-            
             if (product.location) {
                 locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
             }
-
             if (isActuallySold) {
                 stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
             } else if (product.quantity > 5) {
@@ -162,7 +173,6 @@ function renderProducts(gridElement, products, append = false) {
             } else if (product.quantity > 0 && product.quantity <= 5) {
                 stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
             }
-
             if (product.listing_type === 'rent') {
                 tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
             } else if (product.listing_type === 'sale') {
@@ -174,7 +184,6 @@ function renderProducts(gridElement, products, append = false) {
                 tagsHTML += '<span class="product-tag condition-used">USED</span>';
             }
         }
-        // --- END NEW LOGIC ---
         
         const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
         
@@ -210,7 +219,7 @@ function renderProducts(gridElement, products, append = false) {
     initializeWishlistButtons();
 }
 // =================================================================
-// === END MODIFIED RENDERPRODUCTS FUNCTION ========================
+// === END RENDERPRODUCTS FUNCTION =================================
 // =================================================================
 
 
@@ -233,14 +242,11 @@ async function fetchAndRenderProducts(append = false) {
         const params = new URLSearchParams({ page: state.currentPage });
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
         
-        // --- THIS IS THE KEY LOGIC ---
-        // It now sends 'type=service' OR 'category=Electronics'
         if (state.filters.type) {
             params.append('type', state.filters.type);
         } else if (state.filters.category) {
             params.append('category', state.filters.category);
         }
-        // --- END KEY LOGIC ---
 
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
@@ -261,7 +267,6 @@ async function fetchAndRenderProducts(append = false) {
     }
 }
 
-// --- GENERIC FUNCTION TO FETCH CAROUSEL PRODUCTS ---
 async function fetchCarouselProducts(q, gridId, sectionId) {
     const gridElement = document.getElementById(gridId);
     const sectionElement = document.getElementById(sectionId);
@@ -295,7 +300,6 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     }
 }
 
-// --- Carousel fetch functions ---
 function fetchDeals() {
     const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
     return fetchCarouselProducts(dealsQuery, 'deals-grid', 'deals-section');
@@ -310,6 +314,67 @@ function fetchSponsoredItems() {
     const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
     return fetchCarouselProducts(q, 'sponsored-grid', 'sponsored-section');
 }
+
+// ==========================================
+// === NEW FUNCTIONS FOR NEW SECTIONS =======
+// ==========================================
+
+function displayLastViewed() {
+    try {
+        const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
+        // We use renderProducts to keep the style 100% consistent
+        renderProducts(lastViewedGrid, viewed, false);
+    } catch (e) {
+        console.error("Error displaying last viewed:", e);
+        if(lastViewedSection) lastViewedSection.style.display = 'none';
+    }
+}
+
+async function displayMadeForYou() {
+    let q;
+    let title = "✨ Made for You";
+
+    try {
+        const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
+        
+        if (interests.length > 0) {
+            // Find the most common category in the user's history
+            const counts = interests.reduce((acc, cat) => {
+                acc[cat] = (acc[cat] || 0) + 1;
+                return acc;
+            }, {});
+            
+            const topCategory = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            
+            // Fetch products from that category
+            q = query(collection(db, 'products'), 
+                where('category', '==', topCategory), 
+                where('isSold', '==', false), 
+                limit(8));
+            title = `✨ Because you like ${topCategory}`;
+        } else {
+            // Fallback for new users: Show Top Deals
+            q = query(collection(db, 'products'), 
+                where('isDeal', '==', true), 
+                where('isSold', '==', false), 
+                orderBy('createdAt', 'desc'), 
+                limit(8));
+            title = `✨ Today's Top Deals`;
+        }
+
+        if (madeForYouTitle) madeForYouTitle.textContent = title;
+        // Use your existing carousel fetcher
+        await fetchCarouselProducts(q, 'made-for-you-grid', 'made-for-you-section');
+        
+    } catch (e) {
+        console.error("Error displaying 'Made for You':", e);
+        if (madeForYouSection) madeForYouSection.style.display = 'none';
+    }
+}
+
+// ==========================================
+// === END NEW FUNCTIONS ====================
+// ==========================================
 
 
 // --- UI & EVENT HANDLERS ---
@@ -328,7 +393,6 @@ function updateListingsTitle() {
     if (!listingsTitle) return; 
     let title = "Recent Items";
     
-    // --- UPDATED TITLE LOGIC ---
     if (state.searchTerm) {
         title = `Results for "${state.searchTerm}"`;
     } else if (state.filters.type === 'service') {
@@ -338,7 +402,6 @@ function updateListingsTitle() {
     } else if (state.filters.type === 'rent') {
         title = "All Rentals";
     }
-    // --- END UPDATED LOGIC ---
     
     listingsTitle.textContent = title;
 }
@@ -422,7 +485,6 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
-// --- UPDATED: Reads `?type=service` or `?category=...` ---
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
@@ -432,7 +494,6 @@ function handleFilterLinkClick(event) {
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
     
-    // This is the new logic
     if (type === 'service') {
         state.filters.type = 'service';
         state.filters.category = '';
@@ -440,7 +501,6 @@ function handleFilterLinkClick(event) {
         state.filters.type = '';
         state.filters.category = category;
     } else {
-        // Default for "All Items" or other non-filter links if any
         state.filters.type = '';
         state.filters.category = '';
     }
@@ -457,7 +517,6 @@ function handleFilterLinkClick(event) {
     }
 }
 
-// --- UPDATED: Reads `?type=service` from URL on load ---
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category');
@@ -466,22 +525,18 @@ function initializeStateFromURL() {
     state.searchTerm = params.get('q') || '';
     if (state.searchTerm) searchInput.value = state.searchTerm;
 
-    // --- NEW LOGIC TO HANDLE SERVICE FILTER ---
     if (type === 'service') {
         state.filters.type = 'service';
-        state.filters.category = ''; // Clear category when filtering by 'service' type
+        state.filters.category = ''; 
     } 
-    // Handle old "?category=Services" links just in case
     else if (category === 'Services') { 
         state.filters.type = 'service';
         state.filters.category = '';
     } 
-    // Handle all other category links
     else if (category) {
-        state.filters.type = ''; // Clear type
+        state.filters.type = ''; 
         state.filters.category = category;
     } 
-    // Handle 'rent' type (if you use it)
     else if (type === 'rent') {
         state.filters.type = 'rent';
         state.filters.category = '';
@@ -496,6 +551,8 @@ function initializeStateFromURL() {
 document.addEventListener('DOMContentLoaded', () => {
 
     function loadPageContent() {
+        displayLastViewed();
+        displayMadeForYou();
         fetchDeals();
         fetchSaveOnMore();
         fetchSponsoredItems();
@@ -553,6 +610,21 @@ document.body.addEventListener('click', async (e) => {
     const sectionName = seeMoreBtn.dataset.section;
     if (!sectionName) return; 
 
+    if (sectionName === 'made-for-you') {
+        const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
+        if (interests.length > 0) {
+            const counts = interests.reduce((acc, cat) => {
+                acc[cat] = (acc[cat] || 0) + 1;
+                return acc;
+            }, {});
+            const topCategory = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            window.location.href = `/shop/?category=${encodeURIComponent(topCategory)}`;
+        } else {
+            window.location.href = '/shop/';
+        }
+        return;
+    }
+
     let grid, wrapper;
     if (sectionName === 'deals') {
         grid = document.getElementById('deals-grid');
@@ -579,7 +651,7 @@ document.body.addEventListener('click', async (e) => {
     try {
         let q;
         if (sectionName === 'deals') {
-            q = query(collection(db, 'products'), where('isDeal', '==',true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+            q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
         } else if (sectionName === 'sponsored') {
             q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
         } else if (sectionName === 'save') {
