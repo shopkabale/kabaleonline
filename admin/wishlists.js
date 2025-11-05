@@ -1,6 +1,6 @@
 import { db } from '../firebase.js';
 import { checkAdminAuth, setupHeader } from './admin-common.js';
-import { collection, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, query } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM ELEMENTS ---
 const adminContent = document.getElementById('admin-content');
@@ -21,9 +21,11 @@ function initializeWishlist() {
     });
 }
 
+/**
+ * Fetches all wishlisted items from all users.
+ */
 async function fetchWishlistData() {
-    // Note: This matches your dashboard logic, but can be slow if you have many users.
-    userWishlistSummary.innerHTML = '<li>Loading user data...</li>';
+    userWishlistSummary.innerHTML = '<li>Loading all wishlist items...</li>';
     try {
         const usersSnapshot = await getDocs(collection(db, 'users'));
         if (usersSnapshot.empty) {
@@ -31,33 +33,62 @@ async function fetchWishlistData() {
             return;
         }
         
-        let totalWishlistedItems = 0;
-        userWishlistSummary.innerHTML = '';
-        
+        let totalItems = 0;
+        let allWishlistItemsHTML = []; // An array to hold all HTML strings
+
+        // Loop through each user
         for (const userDoc of usersSnapshot.docs) {
             const userData = userDoc.data();
+            const userName = userData.name || userData.email || 'Unknown User';
+            
+            // Get the 'wishlist' subcollection for this user
             const wishlistCol = collection(db, 'users', userDoc.id, 'wishlist');
-            const wishlistSnapshot = await getCountFromServer(wishlistCol);
-            const count = wishlistSnapshot.data().count;
-            
-            totalWishlistedItems += count;
-            
-            if (count > 0) {
-                const li = document.createElement('li');
-                li.className = 'user-list-item';
-                li.innerHTML = `
-                    <span>${userData.email || userDoc.id}</span>
-                    <span style="font-weight:bold;">${count} items</span>
-                `;
-                userWishlistSummary.appendChild(li);
+            const wishlistSnapshot = await getDocs(wishlistCol); // Get actual items
+
+            if (!wishlistSnapshot.empty) {
+                totalItems += wishlistSnapshot.size;
+
+                // Add a header for this user's items
+                allWishlistItemsHTML.push(`
+                    <li class="user-list-item" style="background-color: var(--bg-card); justify-content: center; margin-top: 20px;">
+                        <strong>Items wishlisted by ${userName}</strong>
+                    </li>
+                `);
+
+                // Loop over each item in their wishlist
+                wishlistSnapshot.forEach(itemDoc => {
+                    const item = itemDoc.data();
+                    
+                    // --- Get all the details you asked for ---
+                    // (Assuming item data matches your product structure)
+                    const itemName = item.name || 'Untitled Item';
+                    const itemPrice = item.price || 0;
+                    const itemImage = item.imageUrls?.[0] || 'https://placehold.co/100';
+                    const sellerName = item.sellerName || 'N/A';
+                    
+                    // Create the HTML for this specific item
+                    const itemHTML = `
+                        <li class="user-list-item" style="align-items: center;">
+                            <img src="${itemImage}" alt="${itemName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px;">
+                            <div style="flex-grow: 1;">
+                                <p style="font-weight: bold; margin: 0 0 5px 0;">${itemName}</p>
+                                <p style="margin: 0; color: var(--text-secondary);">Seller: ${sellerName}</p>
+                            </div>
+                            <span style="font-weight: bold; color: green; font-size: 1.1em;">UGX ${itemPrice.toLocaleString()}</span>
+                        </li>
+                    `;
+                    allWishlistItemsHTML.push(itemHTML);
+                });
             }
         }
         
-        if (userWishlistSummary.innerHTML === '') {
-            userWishlistSummary.innerHTML = '<li>No users have wishlisted items.</li>';
+        // Render everything at once
+        totalWishlistItems.textContent = totalItems;
+        if (allWishlistItemsHTML.length === 0) {
+            userWishlistSummary.innerHTML = '<li>No items have been wishlisted by any user.</li>';
+        } else {
+            userWishlistSummary.innerHTML = allWishlistItemsHTML.join('');
         }
-
-        totalWishlistItems.textContent = totalWishlistedItems;
         
     } catch (e) { 
         console.error("Error fetching wishlist data:", e); 
