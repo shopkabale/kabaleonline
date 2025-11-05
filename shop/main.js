@@ -130,6 +130,7 @@ function renderProducts(gridElement, products, append = false) {
         return;
     }
 
+    // THIS IS THE FIX: Only show the section IF products exist
     const section = gridElement.closest('.carousel-section');
     if (section) section.style.display = 'block';
 
@@ -267,6 +268,7 @@ async function fetchAndRenderProducts(append = false) {
     }
 }
 
+// --- THIS FUNCTION IS NOW FIXED ---
 async function fetchCarouselProducts(q, gridId, sectionId) {
     const gridElement = document.getElementById(gridId);
     const sectionElement = document.getElementById(sectionId);
@@ -274,14 +276,17 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     if (!gridElement || !sectionElement) return;
 
     renderSkeletonLoaders(gridElement, 5);
-    sectionElement.style.display = 'block';
+    // REMOVED: sectionElement.style.display = 'block'; (This was the bug)
 
     try {
         const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-            sectionElement.style.display = 'none';
-            return;
-        }
+        
+        // This logic is now handled by renderProducts
+        // if (snapshot.empty) {
+        //     sectionElement.style.display = 'none';
+        //     return;
+        // }
+        
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         const wrapper = gridElement.closest('.deals-carousel-wrapper'); 
@@ -292,6 +297,7 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
             }
         }
 
+        // renderProducts will now show the section *only if* products.length > 0
         renderProducts(gridElement, products);
 
     } catch (error) {
@@ -322,7 +328,7 @@ function fetchSponsoredItems() {
 function displayLastViewed() {
     try {
         const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
-        // We use renderProducts to keep the style 100% consistent
+        // renderProducts will hide the section if 'viewed' is empty
         renderProducts(lastViewedGrid, viewed, false);
     } catch (e) {
         console.error("Error displaying last viewed:", e);
@@ -330,6 +336,7 @@ function displayLastViewed() {
     }
 }
 
+// --- THIS FUNCTION IS NOW FIXED ---
 async function displayMadeForYou() {
     let q;
     let title = "✨ Made for You";
@@ -352,19 +359,15 @@ async function displayMadeForYou() {
                 where('isSold', '==', false), 
                 limit(8));
             title = `✨ Because you like ${topCategory}`;
-        } else {
-            // Fallback for new users: Show Top Deals
-            q = query(collection(db, 'products'), 
-                where('isDeal', '==', true), 
-                where('isSold', '==', false), 
-                orderBy('createdAt', 'desc'), 
-                limit(8));
-            title = `✨ Today's Top Deals`;
-        }
 
-        if (madeForYouTitle) madeForYouTitle.textContent = title;
-        // Use your existing carousel fetcher
-        await fetchCarouselProducts(q, 'made-for-you-grid', 'made-for-you-section');
+            if (madeForYouTitle) madeForYouTitle.textContent = title;
+            // Use your existing carousel fetcher
+            await fetchCarouselProducts(q, 'made-for-you-grid', 'made-for-you-section');
+
+        } else {
+            // NO FALLBACK. Just hide the section.
+            if (madeForYouSection) madeForYouSection.style.display = 'none';
+        }
         
     } catch (e) {
         console.error("Error displaying 'Made for You':", e);
