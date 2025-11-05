@@ -123,22 +123,17 @@
         .product-title-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
         #product-name { margin-top: 0; color: var(--text-main); }
         
-        /* Original share-btn style - this is now overridden by .share-product-btn */
-        #share-btn { 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-            border: 1px solid var(--border-color); 
-            border-radius: 50%; 
-            width: 44px; 
-            height: 44px; 
-            font-size: 1.2em; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+        #product-price { font-size: 1.8em; font-weight: bold; color: var(--ko-primary); margin: 10px 0; }
+        
+        /* NEW: Service Price Style */
+        #product-price.price-service span {
+            font-size: 0.6em;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: -10px;
         }
 
-        #product-price { font-size: 1.8em; font-weight: bold; color: var(--ko-primary); margin: 10px 0; }
         #product-description { line-height: 1.7; color: var(--text-secondary); }
         .seller-card { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); margin-top: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
         .contact-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
@@ -154,10 +149,14 @@
         .seller-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
         .seller-name-badges strong { font-size: 1.1em; color: var(--text-main); }
 
-        .verified-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.85em; font-weight: bold; padding: 4px 8px; border-radius: 20px; border: 1px solid; margin-top: 5px; }
-        body.light-mode .verified-badge { background-color: #e7f3ff; color: #0056b3; border-color: #b3d7ff; }
-        body.dark-mode .verified-badge { background-color: #1c2e4a; color: #a8caff; border-color: #3e5a8a; }
-        .verified-badge i { color: var(--ko-primary); }
+        /* Badge inside seller card */
+        #user-badges .badge-icon { 
+            display: inline-flex; align-items: center; gap: 5px; font-size: 0.85em; font-weight: bold; 
+            padding: 4px 8px; border-radius: 20px; border: 1px solid; margin-top: 5px;
+        }
+        body.light-mode #user-badges .verified { background-color: #e7f3ff; color: #0056b3; border-color: #b3d7ff; }
+        body.dark-mode #user-badges .verified { background-color: #1c2e4a; color: #a8caff; border-color: #3e5a8a; }
+        #user-badges .verified i { color: var(--ko-primary); }
         
         /* Q&A Section Styles */
         .qa-section { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); margin-top: 30px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
@@ -180,60 +179,17 @@
         body.dark-mode .low-stock { color: #ffeeba; background-color: #493f1b; }
         body.dark-mode .out-of-stock { color: #f5c6cb; background-color: #4a1c24; }
 
-        /* --- NEW CSS FOR SHARE BUTTON (Moved higher and added !important) --- */
-        .share-product-btn {
-            background-color: #f0f2f5 !important; /* A light, neutral background */
-            color: var(--text-main) !important;
-            border: 1px solid var(--border-color);
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex; /* This makes the icon and text align on one line */
-            align-items: center;
-            justify-content: center;
-            gap: 8px; /* Space between icon and text */
-            width: 100%; /* Make it full width */
-            margin-top: 15px; /* Space below other product info */
-            transition: background-color 0.2s, border-color 0.2s; /* This creates the hover effect transition */
-            
-            /* This overrides the default circular button styles */
-            height: auto; 
-            font-size: 1em;
-        }
-
-        /* This is the hover effect */
-        .share-product-btn:hover {
-            background-color: #e0e2e5 !important;
-            border-color: #c0c2c5 !important;
-        }
-
-        /* Dark mode styles for the share button */
-        body.dark-mode .share-product-btn {
-            background-color: #2a3a4c !important;
-            color: var(--text-main) !important;
-            border-color: var(--border-color-dark) !important;
-        }
-
-        /* Dark mode hover effect */
-        body.dark-mode .share-product-btn:hover {
-            background-color: #3b4d61 !important;
-            border-color: #4a5c71 !important;
-        }
-        /* --- END NEW CSS FOR SHARE BUTTON --- */
-
-
-        /* New Prominent Verified Badge Style */
+        /* Prominent Verified Badge Style */
         .prominent-verified-badge {
             font-size: 0.9em;
             font-weight: 700;
-            color: var(--ko-primary); /* Use your site's main blue color */
-            background-color: rgba(var(--ko-primary-rgb), 0.1); /* Light blue background */
-            border: 1px solid rgba(var(--ko-primary-rgb), 0.2); /* Faint blue border */
+            color: var(--ko-primary); 
+            background-color: rgba(var(--ko-primary-rgb), 0.1); 
+            border: 1px solid rgba(var(--ko-primary-rgb), 0.2); 
             padding: 5px 12px;
-            border-radius: 20px; /* "pill" shape */
+            border-radius: 20px; 
             display: inline-block;
-            margin-top: -10px; /* Tucks it under the price */
+            margin-top: -10px; 
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -270,24 +226,6 @@
             color: var(--text-main);
             margin-right: 5px;
         }
-        /* --- END NEW CSS --- */
-
-        /* This style will be added to the profile link by your JS */
-        .seller-profile-btn-prominent {
-            background-color: var(--ko-primary); /* Use your primary color */
-            color: white;
-            padding: 14px 25px; /* Slightly larger padding */
-            font-size: 1.1em; /* Larger font */
-            border-radius: 10px; /* More rounded */
-            width: 100%; /* Full width */
-            margin-top: 20px; /* Space from other buttons */
-            transition: background-color 0.2s ease;
-        }
-
-        .seller-profile-btn-prominent:hover {
-            background-color: #0056b3; /* Darker primary color on hover */
-        }
-        /* --- END NEW CSS --- */
 
         /* --- MODAL CSS (Required by product.js) --- */
         .modal-overlay {
@@ -387,7 +325,8 @@
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
-                <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+                <!-- === LINK 1: CORRECTED === -->
+                <a href="/shop/?type=service" class="nav-link">Services</a>
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
             </nav>
@@ -406,7 +345,8 @@
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-            <a href="/?type=service" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <!-- === LINK 2: CORRECTED === -->
+            <a href="/shop/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
             <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
             <a href="/inbox.html" class="nav-link"><i class="fa-solid fa-inbox"></i> My Inbox</a>
@@ -418,7 +358,12 @@
 
     <main class="container page-container">
         <!-- This div is intentionally left simple. 
-             product.js will populate it with the product details. --><div id="product-detail-content"><p style="text-align:center; padding: 40px;">Loading product...</p></div>
+             product.js will populate it with the product details. -->
+        <div id="product-detail-content">
+            <p style="text-align:center; padding: 40px; font-size: 1.2em;">
+                <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+            </p>
+        </div>
 
         <div class="qa-section">
             <h2>Questions & Answers</h2>
@@ -446,49 +391,26 @@
         </div>
     </footer>
 
-    <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-      background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
-      <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
-        box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif;">
-        <h3 style="margin-bottom:15px; color:var(--text-main);">Notice</h3>
-        <p style="margin-bottom:20px; color:var(--text-secondary);">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-        <button id="continue-btn" style="padding:10px 20px; background:var(--ko-primary); border:none; border-radius:8px; 
-          color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
-      </div>
-    </div>
+    <!-- === OLD SERVICE MODAL (REMOVED) === -->
+    <!-- The "service-notice" modal has been deleted. -->
 
-    <!-- This is the Modal HTML that your showModal() function in product.js needs --><div id="custom-modal" class="modal-overlay modal-theme-info">
+    <!-- This is the Modal HTML that your showModal() function in product.js needs -->
+    <div id="custom-modal" class="modal-overlay modal-theme-info">
         <div class="modal-content">
             <div id="modal-icon" class="modal-icon">ℹ️</div>
-            <h3 id="modal-title" class->Modal Title</h3>
+            <h3 id="modal-title">Modal Title</h3>
             <p id="modal-message">This is the modal message.</p>
             <div id="modal-buttons" class="modal-buttons">
-                <!-- Buttons are added here by JavaScript --></div>
+                <!-- Buttons are added here by JavaScript -->
+            </div>
         </div>
     </div>
-    <!-- End Modal HTML --><script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Logic for the service notice modal
-      const serviceLinks = document.querySelectorAll('a.service-link, a[href="/?type=service"]');
-      const modal = document.getElementById('service-notice');
-      const continueBtn = document.getElementById('continue-btn');
+    <!-- End Modal HTML -->
 
-      if (modal && continueBtn) {
-        serviceLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                modal.style.display = 'flex';
-            });
-        });
-        continueBtn.addEventListener('click', function() {
-            window.location.href = 'https://gigs.kabaleonline.com';
-        });
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) modal.style.display = 'none';
-        });
-      }
-      
-      // Logic for the mobile nav toggle
+    <!-- === UPDATED SCRIPT (REMOVED MODAL LOGIC) === -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Logic for the mobile nav toggle (This is still needed)
       const hamburger = document.querySelector('.hamburger-menu');
       const mobileNav = document.querySelector('.mobile-nav');
       const overlay = document.querySelector('.mobile-nav-overlay');
@@ -502,12 +424,15 @@
               overlay.classList.remove('active');
           });
       }
+
+      // The old "service-notice" modal logic has been removed.
     });
     </script>
 
     <script type="module" src="ui.js"></script>
     <script type="module" src="shared.js"></script>
     
-    <!-- THIS LINE IS NOW CORRECTED --><script type="module" src="product.js"></script>
+    <!-- This script is what loads your product details -->
+    <script type="module" src="product.js"></script>
 </body>
 </html>
