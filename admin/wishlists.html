@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlisted Items | Admin Panel</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <script src="/theme.js"></script>
+    <header class="sticky-header">
+      <div class="header-content container">
+        <a href="/admin/" class="site-title">Kabale <span>Online</span></a>
+        <div class="header-icons">
+          <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container page-content">
+        <div id="loader"><p>Loading Wishlist Data...</p></div>
+        <div id="access-denied" style="display: none;">
+            <h1>Access Denied</h1><p>You do not have permission to view this page. Redirecting...</p>
+        </div>
+        <main id="admin-content" style="display: none;">
+            <h1>Wishlisted Items</h1>
+            <p>Welcome, <strong id="admin-name">Admin</strong>!</p>
+            
+            <div class="stat-card" style="max-width: 400px; margin-bottom: 30px;">
+                <h3>Total Wishlisted Items</h3>
+                <p id="total-wishlist-items" class="stat-number">0</p>
+            </div>
+
+            <h2>User Wishlist Summary</h2>
+            <ul id="user-wishlist-summary" class="user-list"></ul>
+        </main>
+    </div>
+    <script type="module" src="wishlists.js"></script>
+    <script type="module" src="../ui.js"></script>
+</body>
+</html>
