@@ -1,5 +1,5 @@
 // --- FIREBASE IMPORTS ---
-import { db, auth } from "../firebase.js"; // Corrected path assuming it's one level up
+import { db, auth } from "../firebase.js"; // Correct path (one level up)
 import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
@@ -26,6 +26,19 @@ function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     }
     return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
+
+// --- NEW: SERVICE CATEGORIES (Needed for URL logic) ---
+const serviceCategories = {
+    "Tutoring & Academics": "Tutoring & Academics",
+    "Design & Creative": "Design & Creative",
+    "Writing & Translation": "Writing & Translation",
+    "Tech & Programming": "Tech & Programming",
+    "Repairs & Technicians": "Repairs & Technicians",
+    "Events & Photography": "Events & Photography",
+    "Health & Wellness": "Health & Wellness",
+    "Home & Errands": "Home & Errands",
+    "Other Services": "Other Services"
+};
 
 // --- DOM ELEMENT REFERENCES ---
 const productGrid = document.getElementById("product-grid");
@@ -219,8 +232,15 @@ async function fetchAndRenderProducts(append = false) {
     try {
         const params = new URLSearchParams({ page: state.currentPage });
         if (state.searchTerm) params.append('searchTerm', state.searchTerm);
-        if (state.filters.type) params.append('type', state.filters.type);
-        if (state.filters.category) params.append('category', state.filters.category);
+        
+        // --- THIS IS THE KEY LOGIC ---
+        // It now sends 'type=service' OR 'category=Electronics'
+        if (state.filters.type) {
+            params.append('type', state.filters.type);
+        } else if (state.filters.category) {
+            params.append('category', state.filters.category);
+        }
+        // --- END KEY LOGIC ---
 
         const response = await fetch(`/.netlify/functions/search?${params.toString()}`);
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
@@ -307,9 +327,19 @@ function updateLoadMoreUI() {
 function updateListingsTitle() {
     if (!listingsTitle) return; 
     let title = "Recent Items";
-    if (state.filters.category) { title = state.filters.category; }
-    else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
-    if (state.searchTerm) { title = `Results for "${state.searchTerm}"`; }
+    
+    // --- UPDATED TITLE LOGIC ---
+    if (state.searchTerm) {
+        title = `Results for "${state.searchTerm}"`;
+    } else if (state.filters.type === 'service') {
+        title = "All Services";
+    } else if (state.filters.category) {
+        title = state.filters.category;
+    } else if (state.filters.type === 'rent') {
+        title = "All Rentals";
+    }
+    // --- END UPDATED LOGIC ---
+    
     listingsTitle.textContent = title;
 }
 
@@ -317,7 +347,6 @@ async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
     if (!state.currentUser) {
-        // You might want a modal here instead of alert
         alert('Please log in to add items to your wishlist.');
         window.location.href = '/login/';
         return;
@@ -393,7 +422,7 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
-// --- UPDATED: No more 'service-link' check ---
+// --- UPDATED: Reads `?type=service` or `?category=...` ---
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
@@ -403,8 +432,19 @@ function handleFilterLinkClick(event) {
     const type = url.searchParams.get('type') || '';
     const category = url.searchParams.get('category') || '';
     
-    state.filters.type = type;
-    state.filters.category = category;
+    // This is the new logic
+    if (type === 'service') {
+        state.filters.type = 'service';
+        state.filters.category = '';
+    } else if (category) {
+        state.filters.type = '';
+        state.filters.category = category;
+    } else {
+        // Default for "All Items" or other non-filter links if any
+        state.filters.type = '';
+        state.filters.category = '';
+    }
+    
     state.currentPage = 0;
     state.searchTerm = '';
     searchInput.value = '';
@@ -417,23 +457,39 @@ function handleFilterLinkClick(event) {
     }
 }
 
+// --- UPDATED: Reads `?type=service` from URL on load ---
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
-    state.filters.type = params.get('type') || '';
-    // --- NEW: Check for 'Services' category ---
     const category = params.get('category');
-    if (category) {
-        state.filters.category = category;
-        // This is a special check to see if the category is a service
-        if (serviceCategories.hasOwnProperty(category)) {
-            state.filters.type = 'service';
-        }
-    } else {
-        state.filters.category = '';
-    }
+    const type = params.get('type');
     
     state.searchTerm = params.get('q') || '';
     if (state.searchTerm) searchInput.value = state.searchTerm;
+
+    // --- NEW LOGIC TO HANDLE SERVICE FILTER ---
+    if (type === 'service') {
+        state.filters.type = 'service';
+        state.filters.category = ''; // Clear category when filtering by 'service' type
+    } 
+    // Handle old "?category=Services" links just in case
+    else if (category === 'Services') { 
+        state.filters.type = 'service';
+        state.filters.category = '';
+    } 
+    // Handle all other category links
+    else if (category) {
+        state.filters.type = ''; // Clear type
+        state.filters.category = category;
+    } 
+    // Handle 'rent' type (if you use it)
+    else if (type === 'rent') {
+        state.filters.type = 'rent';
+        state.filters.category = '';
+    }
+    else {
+        state.filters.type = '';
+        state.filters.category = '';
+    }
 }
 
 // --- INITIALIZATION ---
@@ -523,7 +579,7 @@ document.body.addEventListener('click', async (e) => {
     try {
         let q;
         if (sectionName === 'deals') {
-            q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+            q = query(collection(db, 'products'), where('isDeal', '==',true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
         } else if (sectionName === 'sponsored') {
             q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
         } else if (sectionName === 'save') {
