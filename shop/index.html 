@@ -80,10 +80,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kabale Online">
-    <link rel="stylesheet" href="shop.css">
+  <link rel="stylesheet" href="shop.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    
     
 </head>
 <body>
@@ -171,7 +170,8 @@
         <!-- === ADDED "LAST VIEWED" SECTION === -->
         <!-- ================================== -->
         <section class="carousel-section" id="last-viewed-section" style="display: none;">
-            <div class="section-header-jumia" style="background-color: var(--ko-purple); color: white;">
+            <!-- This purple style uses the --ko-purple variable added to the <head> -->
+            <div class="section-header-jumia" style="background-color: var(--ko-purple, #6f42c1); color: white;">
                 <h2>🕒 Recently Viewed</h2>
             </div>
             <div class="deals-carousel-wrapper">
