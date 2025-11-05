@@ -1,10 +1,16 @@
+// --- FIREBASE IMPORTS ---
+import { db, auth } from "../firebase.js"; // Corrected path assuming it's one level up
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+// ==================================================== //
+//               GLOBAL STATE & HELPERS                 //
+// ==================================================== //
+
 /**
  * Creates an optimized and transformed Cloudinary URL.
- * @param {string} url The original Cloudinary URL.
- * @param {'thumbnail'|'full'|'placeholder'} type The desired transformation type.
- * @returns {string} The new, transformed URL.
  */
-function getCloudinaryTransformedUrl(url, type) {
+function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
     }
@@ -21,12 +27,6 @@ function getCloudinaryTransformedUrl(url, type) {
     return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
 
-// --- FIREBASE IMPORTS ---
-import { db, auth } from "./firebase.js";
-import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
 // --- DOM ELEMENT REFERENCES ---
 const productGrid = document.getElementById("product-grid");
 const listingsTitle = document.getElementById("listings-title");
@@ -40,8 +40,7 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const mobileNav = document.querySelector(".mobile-nav");
 const categoryGrid = document.querySelector(".category-grid");
-const imageCategoryGrid = document.querySelector(".image-category-grid"); // Added reference for image grid
-const modal = document.getElementById('custom-modal');
+const imageCategoryGrid = document.querySelector(".image-category-grid"); 
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
 const backToTopBtn = document.getElementById("back-to-top-btn");
@@ -59,33 +58,8 @@ const state = {
 
 // --- HELPER & RENDER FUNCTIONS ---
 
-function showModal({ icon, title, message, theme = 'info', buttons }) {
-    if (!modal) return;
-    const modalIcon = document.getElementById('modal-icon');
-    const modalTitle = document.getElementById('modal-title');
-    const modalMessage = document.getElementById('modal-message');
-    const modalButtons = document.getElementById('modal-buttons');
-    modal.className = `modal-overlay modal-theme-${theme}`;
-    modalIcon.innerHTML = icon;
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    modalButtons.innerHTML = '';
-    buttons.forEach(btnInfo => {
-        const button = document.createElement('button');
-        button.textContent = btnInfo.text;
-        button.className = `modal-btn modal-btn-${btnInfo.class}`;
-        button.addEventListener('click', btnInfo.onClick);
-        modalButtons.appendChild(button);
-    });
-    modal.classList.add('show');
-}
-
-function hideModal() {
-    if (modal) modal.classList.remove('show');
-}
-
 function renderSkeletonLoaders(container, count) {
-    if (!container) return; // Add guard clause
+    if (!container) return; 
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
@@ -115,10 +89,10 @@ function observeLazyImages() {
 }
 
 // =================================================================
-// === MODIFIED RENDERPRODUCTS FUNCTION ============================
+// === MODIFIED RENDERPRODUCTS FUNCTION (UPGRADED) =================
 // =================================================================
 function renderProducts(gridElement, products, append = false) {
-    if (!gridElement) return; // Add guard clause
+    if (!gridElement) return;
     
     if (!append) {
         gridElement.innerHTML = "";
@@ -144,8 +118,9 @@ function renderProducts(gridElement, products, append = false) {
         let priceHTML = '';
         let locationHTML = '';
         let stockStatusHTML = '';
+        let tagsHTML = '';
 
-        if (product.category === 'Services') {
+        if (product.listing_type === 'service') {
             // --- Service Card Logic ---
             priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
                 ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
@@ -155,11 +130,14 @@ function renderProducts(gridElement, products, append = false) {
                 const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
                 locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
             }
-            stockStatusHTML = ''; // Services don't have stock
+            // No stock or condition tags for services
+            stockStatusHTML = '';
+            tagsHTML = '';
+
         } else {
             // --- Regular Product Card Logic ---
             priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
-
+            
             if (product.location) {
                 locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
             }
@@ -171,24 +149,22 @@ function renderProducts(gridElement, products, append = false) {
             } else if (product.quantity > 0 && product.quantity <= 5) {
                 stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
             }
+
+            if (product.listing_type === 'rent') {
+                tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+            } else if (product.listing_type === 'sale') {
+                tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+            }
+            if (product.condition === 'new') {
+                tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+            } else if (product.condition === 'used') {
+                tagsHTML += '<span class="product-tag condition-used">USED</span>';
+            }
         }
         // --- END NEW LOGIC ---
         
-        // --- Build Tags for Condition and Listing Type ---
-        let tagsHTML = '';
-        if (product.listing_type === 'rent') {
-            tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
-        } else if (product.listing_type === 'sale') {
-            tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
-        }
-        
-        if (product.condition === 'new') {
-            tagsHTML += '<span class="product-tag condition-new">NEW</span>';
-        } else if (product.condition === 'used') {
-            tagsHTML += '<span class="product-tag condition-used">USED</span>';
-        }
         const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
-
+        
         const productLink = document.createElement("a");
         productLink.href = `/product.html?id=${product.id}`;
         productLink.className = "product-card-link";
@@ -197,26 +173,21 @@ function renderProducts(gridElement, products, append = false) {
             productLink.style.cursor = 'default';
         }
 
-        // --- UPDATED innerHTML with dynamic variables ---
         productLink.innerHTML = `
           <div class="product-card ${soldClass}">
              ${soldOverlayHTML}
-             ${tagsContainerHTML} 
-             <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+             ${tagsContainerHTML} <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
                 <i class="${wishlistIcon} fa-heart"></i>
             </button>
             <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
             <h3>${product.name}</h3>
-            
             ${stockStatusHTML}
             ${priceHTML}
             ${locationHTML}
-            
             ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
             ${verifiedTextHTML}
           </div>
         `;
-        // --- END UPDATED innerHTML ---
         
         fragment.appendChild(productLink);
     });
@@ -270,13 +241,7 @@ async function fetchAndRenderProducts(append = false) {
     }
 }
 
-// --- NEW: GENERIC FUNCTION TO FETCH CAROUSEL PRODUCTS ---
-/**
- * Fetches products for carousels, renders them, and applies centering logic.
- * @param {Query} q - The Firestore query to execute.
- * @param {string} gridId - The ID of the grid element to render into.
- * @param {string} sectionId - The ID of the section element to show/hide.
- */
+// --- GENERIC FUNCTION TO FETCH CAROUSEL PRODUCTS ---
 async function fetchCarouselProducts(q, gridId, sectionId) {
     const gridElement = document.getElementById(gridId);
     const sectionElement = document.getElementById(sectionId);
@@ -310,7 +275,7 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     }
 }
 
-// --- REFACTORED: Carousel fetch functions now use the generic function ---
+// --- Carousel fetch functions ---
 function fetchDeals() {
     const dealsQuery = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
     return fetchCarouselProducts(dealsQuery, 'deals-grid', 'deals-section');
@@ -325,7 +290,6 @@ function fetchSponsoredItems() {
     const q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(8));
     return fetchCarouselProducts(q, 'sponsored-grid', 'sponsored-section');
 }
-// --- END OF REFACTORED SECTION ---
 
 
 // --- UI & EVENT HANDLERS ---
@@ -341,7 +305,7 @@ function updateLoadMoreUI() {
 }
 
 function updateListingsTitle() {
-    if (!listingsTitle) return; // Add guard clause
+    if (!listingsTitle) return; 
     let title = "Recent Items";
     if (state.filters.category) { title = state.filters.category; }
     else if (state.filters.type) { title = `${state.filters.type.charAt(0).toUpperCase() + state.filters.type.slice(1)}s`; }
@@ -353,10 +317,9 @@ async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
     if (!state.currentUser) {
-        showModal({
-            icon: '🔒', title: 'Login Required', message: 'You need an account to save items.',
-            buttons: [ { text: 'Cancel', class: 'secondary', onClick: hideModal }, { text: 'Log In', class: 'primary', onClick: () => { window.location.href = '/login/'; } } ]
-        });
+        // You might want a modal here instead of alert
+        alert('Please log in to add items to your wishlist.');
+        window.location.href = '/login/';
         return;
     }
     const button = event.currentTarget;
@@ -430,13 +393,11 @@ function handleSearch() {
     fetchAndRenderProducts(false);
 }
 
-// --- THIS IS THE FULLY UPDATED FUNCTION ---
+// --- UPDATED: No more 'service-link' check ---
 function handleFilterLinkClick(event) {
     const link = event.target.closest('a.category-item, a.image-category-card');
     if (!link) return;
 
-    // The 'service-link' check has been REMOVED.
-    
     event.preventDefault(); 
     const url = new URL(link.href);
     const type = url.searchParams.get('type') || '';
@@ -455,12 +416,22 @@ function handleFilterLinkClick(event) {
         document.querySelector('.mobile-nav-overlay')?.classList.remove('active'); 
     }
 }
-// --- END UPDATED FUNCTION ---
 
 function initializeStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     state.filters.type = params.get('type') || '';
-    state.filters.category = params.get('category') || '';
+    // --- NEW: Check for 'Services' category ---
+    const category = params.get('category');
+    if (category) {
+        state.filters.category = category;
+        // This is a special check to see if the category is a service
+        if (serviceCategories.hasOwnProperty(category)) {
+            state.filters.type = 'service';
+        }
+    } else {
+        state.filters.category = '';
+    }
+    
     state.searchTerm = params.get('q') || '';
     if (state.searchTerm) searchInput.value = state.searchTerm;
 }
@@ -488,10 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
         listenForCartUpdates(null);
         loadPageContent();
     });
-
-    if (modal) {
-        modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(); });
-    }
 
     if(searchBtn) searchBtn.addEventListener('click', handleSearch);
     if(searchInput) searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
@@ -522,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- "SEE MORE" EXPAND LOGIC (FROM HOME PAGE) ---
+// --- "SEE MORE" EXPAND LOGIC ---
 document.body.addEventListener('click', async (e) => {
     const seeMoreBtn = e.target.closest('.see-more-btn');
     if (!seeMoreBtn) return;
