@@ -20,6 +20,9 @@ function initializeOrderManagement() {
     });
 }
 
+/**
+ * Fetches all orders with detailed product/buyer/seller info.
+ */
 async function fetchAllOrders() {
     orderList.innerHTML = '<li>Loading orders...</li>';
     try {
@@ -37,15 +40,48 @@ async function fetchAllOrders() {
             const order = docSnap.data();
             const orderDate = order.createdAt?.toDate().toLocaleDateString() || 'No date';
             
+            // --- UPDATED LOGIC ---
+            // Try common field names for buyer and total
+            const customer = order.buyerEmail || order.customerEmail || order.email || 'N/A';
+            const total = order.totalPrice || order.totalAmount || 0;
+            
+            // Build the list of products in the order
+            // Assumes your order doc has an array field named 'items'
+            let productsHTML = '<ul style="padding-left: 20px; margin: 0;">';
+            if (order.items && Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    productsHTML += `
+                        <li style="margin-top: 10px; list-style-type: disc;">
+                            <strong>Product:</strong> ${item.productName || 'Unnamed Product'} <br>
+                            <strong>Price:</strong> UGX ${(item.price || 0).toLocaleString()} <br>
+                            <strong>Seller:</strong> ${item.sellerName || 'N/A'}
+                        </li>
+                    `;
+                });
+            } else {
+                productsHTML += '<li>No item details available for this order.</li>';
+            }
+            productsHTML += '</ul>';
+            // --- END UPDATED LOGIC ---
+
             const li = document.createElement('li');
             li.className = 'user-list-item';
-            // Customize this with your order data structure
+            // Change styles to stack content vertically and align left
+            li.style.flexDirection = 'column';
+            li.style.alignItems = 'flex-start';
+            
+            // New, more detailed card layout
             li.innerHTML = `
-                <div>
+                <div style="width: 100%;">
                     <p><strong>Order ID:</strong> ${docSnap.id}</p>
-                    <p><strong>Customer:</strong> ${order.customerEmail || 'N/A'}</p>
-                    <p><strong>Total:</strong> UGX ${(order.totalAmount || 0).toLocaleString()}</p>
+                    <p><strong>Buyer:</strong> ${customer}</p>
+                    <p><strong>Total:</strong> <span style="font-weight:bold; color:green;">UGX ${total.toLocaleString()}</span></p>
                     <p><strong>Date:</strong> ${orderDate}</p>
+                    
+                    <hr style="border:0; border-top: 1px solid var(--border-color); margin: 10px 0;">
+                    
+                    <p style="font-weight: bold; margin-bottom: 5px;">Items in this Order:</p>
+                    ${productsHTML}
                 </div>
             `;
             orderList.appendChild(li);
