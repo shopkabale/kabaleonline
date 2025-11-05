@@ -194,7 +194,47 @@
                     </div>
                 </div>
             </section>
-            
+            <!-- =================================== -->
+<!-- === AMARA AI SHOWCASE BANNER === -->
+<!-- =================================== -->
+<section class="amara-banner w-full py-12 md:py-16 shadow-lg">
+    <!-- This inner div matches your site's container -->
+    <div class="amara-content container mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12">
+
+        <!-- 1. Icon -->
+        <div class="ai-icon-container text-white text-5xl md:text-6xl flex-shrink-0">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+
+        <!-- 2. Animated Text -->
+        <div class="ai-text-container flex-grow text-center md:text-left w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-1">
+                Ask Amara AI
+            </h2>
+            <!-- This container enables the swipe/fall animations -->
+            <div id="amara-prompt-container">
+                <p id="amara-prompt-text" class="text-lg text-white/80">
+                    <!-- Text is injected by JavaScript -->
+                </p>
+            </div>
+        </div>
+
+        <!-- 3. Call to Action Button -->
+        <div class="ai-cta-container flex-shrink-0 w-full md:w-auto">
+            <!-- 
+              THIS IS THE UPDATED BUTTON:
+              - href now points to your AI page
+              - target="_blank" opens in a new tab
+              - id is no longer needed by the JS, but kept for styling
+            -->
+            <a href="https://www.kabaleonline.com/ai" target="_blank" id="amara-banner-cta-button" class="block w-full md:w-auto bg-white text-[var(--ko-primary)] font-bold py-3 px-8 rounded-lg text-center text-lg shadow-md transition-all duration-300 hover:bg-gray-200 hover:shadow-lg">
+                Try Amara Now
+            </a>
+        </div>
+        
+    </div>
+</section>
+<!-- === END OF AMARA AI BANNER === -->
             <section id="deals-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
                     <h2 class="section-title">Today's Deals</h2>
@@ -535,6 +575,7 @@
     </div>
 <script type="module" src="ui.js"></script>
 <script type="module" src="index.js"></script>
+<script type="module" src="/js/amara-banner.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
