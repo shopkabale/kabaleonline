@@ -84,6 +84,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     
+    
 </head>
 <body>
     <script src="/theme.js"></script>
@@ -163,6 +164,37 @@
                     <span class="category-emoji">⚙️</span>
                     <h3>Other</h3>
                 </a>
+            </div>
+        </section>
+
+        <!-- ================================== -->
+        <!-- === ADDED "LAST VIEWED" SECTION === -->
+        <!-- ================================== -->
+        <section class="carousel-section" id="last-viewed-section" style="display: none;">
+            <div class="section-header-jumia" style="background-color: var(--ko-purple); color: white;">
+                <h2>🕒 Recently Viewed</h2>
+            </div>
+            <div class="deals-carousel-wrapper">
+                <!-- JS will fill this grid -->
+                <div id="last-viewed-grid" class="deals-grid"></div>
+            </div>
+        </section>
+
+        <!-- ================================== -->
+        <!-- === ADDED "MADE FOR YOU" SECTION === -->
+        <!-- ================================== -->
+        <section class="carousel-section" id="made-for-you-section" style="display: none;">
+            <div class="section-header-jumia">
+                <!-- This h2 title will be set dynamically by main.js -->
+                <h2>✨ Made for You</h2> 
+                <button class="see-more-btn" data-section="made-for-you" data-expanded="false">See More &darr;</button>
+            </div>
+            <div class="deals-carousel-wrapper">
+                <div id="made-for-you-grid" class="deals-grid">
+                    <!-- JS will fill this with skeletons -->
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                    <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                </div>
             </div>
         </section>
 
