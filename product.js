@@ -10,13 +10,15 @@ let currentUser = null;
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
 
-// A function to show a pop-up modal
 function showModal({ icon, title, message, theme = 'info', buttons }) {
-    const modal = document.getElementById('custom-modal'); 
+    const modal = document.getElementById('custom-modal');
     if (!modal) {
-        alert(message); // Fallback to a simple alert
+        alert(message); 
+        
         const primaryAction = buttons.find(b => b.class === 'primary')?.onClick;
-        if (primaryAction) primaryAction();
+        if (primaryAction) {
+            primaryAction();
+        }
         return;
     }
     const modalIcon = document.getElementById('modal-icon');
@@ -56,6 +58,45 @@ if (!productId) {
     });
 }
 
+function saveToLocalStorage(product) {
+    try {
+        let lastViewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
+        
+        lastViewed = lastViewed.filter(item => item.id !== product.id);
+        
+        const simplifiedProduct = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            imageUrls: product.imageUrls,
+            listing_type: product.listing_type,
+            service_duration: product.service_duration || '',
+            service_location_type: product.service_location_type || '',
+            location: product.location || '',
+            condition: product.condition || '',
+            isSold: product.isSold || false,
+            quantity: product.quantity || 0,
+            sellerIsVerified: product.sellerIsVerified || false, 
+            sellerBadges: product.sellerBadges || []
+        };
+        lastViewed.unshift(simplifiedProduct);
+
+        lastViewed = lastViewed.slice(0, 6);
+        localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
+
+        if (product.category) {
+            let userInterests = JSON.parse(localStorage.getItem('userInterests')) || [];
+            userInterests.push(product.category);
+            userInterests = userInterests.slice(-20);
+            localStorage.setItem('userInterests', JSON.stringify(userInterests));
+        }
+
+    } catch (e) {
+        console.error("Error saving to localStorage:", e);
+    }
+}
+
+
 async function loadProductAndSeller() {
     try {
         const productRef = doc(db, 'products', productId);
@@ -66,7 +107,7 @@ async function loadProductAndSeller() {
             return;
         }
 
-        const productData = productSnap.data();
+        const productData = { id: productSnap.id, ...productSnap.data() };
         
         document.title = `${productData.name || 'Product'} | Kabale Online`;
 
@@ -75,9 +116,14 @@ async function loadProductAndSeller() {
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
         
         productData.sellerName = sellerData.name || 'Seller';
+        productData.sellerIsVerified = sellerData.isVerified || false;
+        productData.sellerBadges = sellerData.badges || [];
+        productData.profilePhotoUrl = sellerData.profilePhotoUrl || null;
 
         renderProductDetails(productData, sellerData);
         loadQandA(productData.sellerId);
+
+        saveToLocalStorage(productData);
 
     } catch (error) {
         console.error("Critical error loading product:", error);
@@ -85,23 +131,18 @@ async function loadProductAndSeller() {
     }
 }
 
-// =================================================================
-// ===           UPGRADED RENDERPRODUCTDETAILS FUNCTION          ===
-// =================================================================
 function renderProductDetails(product, seller) {
     productDetailContent.innerHTML = '';
     const productElement = document.createElement('div');
     productElement.className = 'product-detail-container';
     const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hello, I'm interested in your listing for '${product.name}' on Kabale Online.`;
 
-    // --- NEW: Service-Aware Logic ---
     let stockStatusHTML = '';
     let specsHTML = '';
     let priceHTML = '';
     let addToCartHTML = '';
 
     if (product.listing_type === 'service') {
-        // --- This is a SERVICE ---
         priceHTML = `
             <h2 id="product-price" class="price-service">
                 UGX ${product.price ? product.price.toLocaleString() : 'N/A'}
@@ -116,18 +157,14 @@ function renderProductDetails(product, seller) {
             specsHTML += `<div class="product-spec"><i class="fa-solid fa-clock"></i><span><strong>Availability:</strong> ${product.service_availability}</span></div>`;
         }
         
-        // No stock status for services
         stockStatusHTML = '';
-        
-        // No "Add to Cart" for services
         addToCartHTML = '';
 
     } else {
-        // --- This is a PRODUCT ---
         priceHTML = `<h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>`;
         
         const quantity = product.quantity;
-        if (product.isSold || (!quantity && quantity !== 0) || quantity <= 0) {
+        if (product.isSold || (quantity !== undefined && quantity <= 0)) {
             stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
         } else if (quantity > 5) {
             stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
@@ -147,16 +184,13 @@ function renderProductDetails(product, seller) {
             specsHTML += `<div class="product-spec"><i class="fa-solid fa-clipboard-list"></i><span><strong>Type:</strong> ${typeText}</span></div>`;
         }
         
-        // Only show "Add to Cart" for products
         addToCartHTML = `
             <button id="add-to-cart-btn" class="cta-button primary-action-btn">
                 <i class="fa-solid fa-cart-plus"></i> Add to Cart
             </button>`;
     }
-    // --- END NEW LOGIC ---
 
     const specsGridHTML = specsHTML ? `<div class="product-specs-grid">${specsHTML}</div>` : '';
-
     const isVerified = (seller.badges || []).includes('verified') || seller.isVerified;
     const prominentVerifiedBadgeHTML = isVerified 
         ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
@@ -179,10 +213,10 @@ function renderProductDetails(product, seller) {
                 <h1 id="product-name">${product.name}</h1>
             </div>
             
-            ${priceHTML} <!-- Dynamic Price -->
+            ${priceHTML}
             ${prominentVerifiedBadgeHTML}
-            ${stockStatusHTML} <!-- Dynamic Stock -->
-            ${specsGridHTML} <!-- Dynamic Specs -->
+            ${stockStatusHTML}
+            ${specsGridHTML}
             
             <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
             
@@ -228,7 +262,7 @@ function renderProductDetails(product, seller) {
 
                 <div class="contact-buttons">
                 
-                    ${addToCartHTML} <!-- Dynamic Add to Cart -->
+                    ${addToCartHTML}
                     
                     <button id="wishlist-btn" class="cta-button wishlist-btn" style="display: none;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
                     
@@ -253,7 +287,7 @@ function renderProductDetails(product, seller) {
                             align-items: center;
                             justify-content: center;
                             gap: 8px;
-                            margin-top: 10px; 
+                            margin-top: 10px;
                             transition: background-color 0.2s;
                         "
                         onmouseover="this.style.backgroundColor='${hoverColor}'"
@@ -267,9 +301,7 @@ function renderProductDetails(product, seller) {
 
     productDetailContent.appendChild(productElement);
 
-    // --- SETUP ALL BUTTONS ---
     setupShareButton(product);
-    // Only set up cart button if it was rendered
     if (addToCartHTML !== '') {
         setupAddToCartButton(product);
     }
@@ -281,29 +313,23 @@ function renderProductDetails(product, seller) {
         const whatsappBtn = productElement.querySelector('.whatsapp-btn');
         if (contactBtn) {
             contactBtn.style.pointerEvents = 'none';
-            contactBtn.style.backgroundColor = '#6c757d'; // 'disabled' grey
+            contactBtn.style.backgroundColor = '#6c757d';
             contactBtn.textContent = 'This is your listing';
         }
         if (whatsappBtn) whatsappBtn.style.display = 'none';
     }
 }
-// =================================================================
-// ===           END UPGRADED RENDERPRODUCTDETAILS               ===
-// =================================================================
-
 
 function setupAddToCartButton(product) {
     const addToCartBtn = document.getElementById('add-to-cart-btn');
-    if (!addToCartBtn) return; // Exit if button doesn't exist (i.e., for services)
+    if (!addToCartBtn) return;
 
-    // Handle out of stock case
-    if (product.isSold || !product.quantity || product.quantity <= 0) {
+    if (product.isSold || (product.quantity !== undefined && product.quantity <= 0)) {
         addToCartBtn.disabled = true;
         addToCartBtn.innerHTML = '<i class="fa-solid fa-times-circle"></i> Out of Stock';
         return;
     }
     
-    // Handle self-purchase case
     if (currentUser && currentUser.uid === product.sellerId) {
         addToCartBtn.disabled = true;
         addToCartBtn.textContent = 'This is your item';
@@ -419,7 +445,7 @@ function setupShareButton(product) {
 async function setupWishlistButton(product) {
     const wishlistBtn = document.getElementById('wishlist-btn');
     if (!wishlistBtn) return;
-    wishlistBtn.style.display = 'flex'; // Make it visible
+    wishlistBtn.style.display = 'flex';
     const wishlistRef = doc(db, 'users', currentUser.uid, 'wishlist', productId);
     let isInWishlist = false;
 
@@ -430,7 +456,6 @@ async function setupWishlistButton(product) {
         console.error("Error checking wishlist:", e);
     }
 
-    // --- TYPO FIX: Renamed this function ---
     function updateButtonState() {
         if (isInWishlist) {
             wishlistBtn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
@@ -441,7 +466,7 @@ async function setupWishlistButton(product) {
         }
     }
     
-    updateButtonState(); // <-- Call the correctly named function
+    updateButtonState();
 
     wishlistBtn.addEventListener('click', async () => {
         wishlistBtn.disabled = true;
@@ -479,7 +504,6 @@ function loadQandA(sellerId) {
                     const qa = docSnap.data(); 
                     const div = document.createElement('div'); 
                     div.className = 'question-item'; 
-                    // Sanitize output (simple text replacement)
                     const question = qa.question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     const answer = qa.answer ? qa.answer.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>') : null;
 
@@ -518,7 +542,7 @@ async function submitQuestion(e, sellerId) {
             question: questionText, 
             answer: null, 
             askerId: currentUser.uid, 
-            askerName: currentUser.displayName || currentUser.email, // Store asker's name
+            askerName: currentUser.displayName || currentUser.email, 
             sellerId: sellerId, 
             timestamp: serverTimestamp() 
         });
