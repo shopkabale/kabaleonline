@@ -108,9 +108,6 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// =================================================================
-// === YOUR EXISTING, UPGRADED RENDERPRODUCTS FUNCTION =============
-// =================================================================
 function renderProducts(gridElement, products, append = false) {
     if (!gridElement) return;
     
@@ -130,7 +127,6 @@ function renderProducts(gridElement, products, append = false) {
         return;
     }
 
-    // THIS IS THE FIX: Only show the section IF products exist
     const section = gridElement.closest('.carousel-section');
     if (section) section.style.display = 'block';
 
@@ -160,8 +156,6 @@ function renderProducts(gridElement, products, append = false) {
                 const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
                 locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
             }
-            stockStatusHTML = '';
-            tagsHTML = '';
         } else {
             priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
             if (product.location) {
@@ -219,10 +213,6 @@ function renderProducts(gridElement, products, append = false) {
     observeLazyImages();
     initializeWishlistButtons();
 }
-// =================================================================
-// === END RENDERPRODUCTS FUNCTION =================================
-// =================================================================
-
 
 // --- DATA FETCHING FUNCTIONS ---
 async function fetchAndRenderProducts(append = false) {
@@ -319,7 +309,7 @@ function fetchSponsoredItems() {
 function displayLastViewed() {
     try {
         const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
-        const initialView = viewed.slice(0, 8); // Limit to 8 for carousel display
+        const initialView = viewed.slice(0, 8); 
         renderProducts(lastViewedGrid, initialView, false);
     } catch (e) {
         console.error("Error displaying last viewed:", e);
@@ -327,38 +317,64 @@ function displayLastViewed() {
     }
 }
 
-// --- THIS IS THE UPDATED FUNCTION ---
+// --- THIS IS THE FULLY CORRECTED FUNCTION ---
 async function displayMadeForYou() {
     let title = "✨ Recommended for You";
+    if (madeForYouTitle) madeForYouTitle.textContent = title;
 
+    // Show skeletons while we fetch
+    renderSkeletonLoaders(madeForYouGrid, 5);
+    
     try {
         // 1. Get the recency-ordered list of unique categories
         const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-        
-        if (interests.length > 0) {
-            
-            // 2. Just take the top 3 most recent unique categories!
-            const topCategories = interests.slice(0, 3);
+        // 2. Just take the top 3 most recent unique categories
+        const topCategories = interests.slice(0, 3);
 
-            // 3. Fetch products from those top categories
-            const q = query(collection(db, 'products'), 
-                where('category', 'in', topCategories), 
-                where('isSold', '==', false), 
-                orderBy('createdAt', 'desc'), // You could also randomize this
-                limit(8));
-            
-            if (topCategories.length === 1) {
-                title = `✨ Because you like ${topCategories[0]}`;
-            }
-
-            if (madeForYouTitle) madeForYouTitle.textContent = title;
-            await fetchCarouselProducts(q, 'made-for-you-grid', 'made-for-you-section');
-
-        } else {
-            // No interests, hide the section
+        if (topCategories.length === 0) {
             if (madeForYouSection) madeForYouSection.style.display = 'none';
+            return;
         }
+
+        // 3. Define how many items to pull from each category for a good mix
+        // (e.g., if 3 categories, pull [3, 3, 2] items = 8 total)
+        const limits = { 1: [8], 2: [4, 4], 3: [3, 3, 2] };
+        const itemsToFetch = limits[topCategories.length];
+
+        // 4. Create an array of query promises (one for each category)
+        const queryPromises = topCategories.map((category, index) => {
+            const q = query(collection(db, 'products'),
+                where('category', '==', category),
+                where('isSold', '==', false),
+                orderBy('createdAt', 'desc'), // You could also try 'random' here
+                limit(itemsToFetch[index])
+            );
+            return getDocs(q);
+        });
+
+        // 5. Run all queries in parallel
+        const snapshots = await Promise.all(queryPromises);
+
+        // 6. Combine the results
+        let combinedProducts = [];
+        snapshots.forEach(snapshot => {
+            snapshot.docs.forEach(doc => {
+                combinedProducts.push({ id: doc.id, ...doc.data() });
+            });
+        });
+
+        // 7. Shuffle the combined array for a true mix
+        const mixedProducts = combinedProducts.sort(() => 0.5 - Math.random());
+
+        // 8. Update title and render
+        if (topCategories.length === 1) {
+            title = `✨ Because you like ${topCategories[0]}`;
+        }
+        if (madeForYouTitle) madeForYouTitle.textContent = title;
         
+        // 9. Render directly (this function also handles showing the section)
+        renderProducts(madeForYouGrid, mixedProducts);
+
     } catch (e) {
         console.error("Error displaying 'Made for You':", e);
         if (madeForYouSection) madeForYouSection.style.display = 'none';
@@ -604,7 +620,7 @@ document.body.addEventListener('click', async (e) => {
     
     const sectionName = seeMoreBtn.dataset.section;
     if (!sectionName || seeMoreBtn.dataset.expanded === 'true') {
-        return; // No section name or already expanded
+        return; 
     }
 
     let grid, wrapper;
@@ -621,14 +637,14 @@ document.body.addEventListener('click', async (e) => {
     } else if (sectionName === 'save') {
         grid = document.getElementById('save-on-more-grid');
     } else {
-        return; // Unknown section
+        return;
     }
 
     if (!grid) return;
     wrapper = grid.closest('.deals-carousel-wrapper');
     if (!wrapper) return;
 
-    // --- 2. Start Expansion (Disable button) ---
+    // --- 2. Start Expansion ---
     seeMoreBtn.disabled = true;
     seeMoreBtn.textContent = 'Loading...';
 
@@ -636,30 +652,32 @@ document.body.addEventListener('click', async (e) => {
         let products = [];
 
         if (sectionName === 'last-viewed') {
-            // --- 3a. Handle localStorage Expansion (Sync) ---
+            // --- 3a. Handle localStorage Expansion ---
             products = JSON.parse(localStorage.getItem('lastViewed')) || [];
         
         } else {
-            // --- 3b. Handle Firestore Expansion (Async) ---
+            // --- 3b. Handle Firestore Expansion ---
             let q;
             
-            // --- THIS LOGIC IS NOW UPDATED ---
+            // --- THIS LOGIC IS NOW CORRECTED FOR 'made-for-you' ---
             if (sectionName === 'made-for-you') {
-                // Get the recency-ordered list
                 const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-                // Just take the top 3
                 const topCategories = interests.slice(0, 3); 
 
                 if (topCategories.length === 0) {
                      throw new Error('No user interests found');
                 }
                 
+                // For "See More," we'll just use the simpler `where 'in'` query.
+                // It will show *all* items from those categories, ordered by newness,
+                // which is correct for an "expansion" view.
                 q = query(collection(db, 'products'), 
                     where('category', 'in', topCategories), 
                     where('isSold', '==', false), 
                     orderBy('createdAt', 'desc'), 
                     limit(20)); // Expanded limit
-
+            
+            // --- Other sections remain the same ---
             } else if (sectionName === 'deals') {
                 q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             } else if (sectionName === 'sponsored') {
@@ -672,9 +690,9 @@ document.body.addEventListener('click', async (e) => {
             products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
-        // --- 4. Render and Finalize UI (Common to all) ---
+        // --- 4. Render and Finalize UI ---
         if (products && products.length > 0) {
-            renderProducts(grid, products); // Re-render with full list
+            renderProducts(grid, products); 
             wrapper.classList.add('expanded');
             grid.classList.remove('deals-grid'); 
             grid.classList.add('product-grid');  
@@ -689,6 +707,6 @@ document.body.addEventListener('click', async (e) => {
     } catch (error) {
         console.error(`Error expanding section ${sectionName}:`, error);
         seeMoreBtn.textContent = 'Error';
-        seeMoreBtn.disabled = false; // Re-enable on error
+        seeMoreBtn.disabled = false; 
     }
 });
