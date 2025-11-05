@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Item | Kabale Online</title>
+    <title>Upload a Listing | Kabale Online</title>
     <meta name="robots" content="noindex">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* --- THEME-AWARE CSS VARIABLES --- */
+        /* --- THEME-AWARE CSS VARIABLES (From your site) --- */
         :root {
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
@@ -17,7 +22,7 @@
             --ko-success-rgb: 40, 167, 69;
             --ko-danger: #dc3545;
             --ko-danger-rgb: 220, 53, 69;
-            --ko-info: #007aff; /* Using primary for info/progress */
+            --ko-info: #007aff;
             --ko-info-rgb: 0, 122, 255;
 
             --bg-light: #f8f9fa;
@@ -32,7 +37,8 @@
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
             
-            --shadow: 0 10px 30px rgba(0,0,0,0.07);
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
 
@@ -48,25 +54,91 @@
             --bg-input: #1e2b3b;
         }
 
-        /* --- GENERAL & FORM STYLES --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; }
-        .container { max-width: 960px; margin: 0 auto; padding: 0 15px; }
-        .page-content { padding-top: 30px; padding-bottom: 30px; }
+        /* --- BASE & HEADER/FOOTER STYLES (From your site) --- */
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         
-        form { background-color: var(--bg-card); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
-        .form-section { border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; }
-        .form-section h2 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .sticky-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
+        body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+        .site-title span { color: var(--ko-accent); }
+        .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
+        .header-icons { display: flex; align-items: center; gap: 20px; }
+        .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; }
+        .desktop-nav { display: none; } 
+        @media (min-width: 1024px) { 
+            .hamburger-menu { display: none; } 
+            .desktop-nav { display: flex; align-items: center; gap: 25px; list-style: none; margin: 0; padding: 0;} 
+            .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; } 
+            .desktop-nav a.active { color: var(--ko-primary); }
+        }
+        
+        /* Mobile Nav */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+        .mobile-nav-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+        .mobile-nav.active { transform: translateX(280px); }
+        .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
+        .mobile-nav a { display: flex; align-items: center; padding: 16px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
+        .mobile-nav a i { margin-right: 15px; color: var(--ko-primary); }
+
+        /* Footer */
+        footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
+        .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
+        .footer-logo span { color: var(--ko-accent); }
+        .footer-links { margin: 25px 0; }
+        .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
+        .footer-copyright { font-size: 0.9em; color: #64748b; }
+
+        /* --- PAGE CONTENT & FORM STYLES --- */
+        .page-content { padding-top: 100px; padding-bottom: 40px; max-width: 960px; }
+        
+        .upload-header { text-align: center; margin-bottom: 30px; }
+        .upload-header h1 { font-size: 2.5rem; color: var(--text-main); margin-bottom: 10px; }
+        .upload-header p { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+        
+        form { background-color: var(--bg-card); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); }
+        @media (min-width: 768px) {
+            form { padding: 40px; }
+        }
+
+        .form-section { border-bottom: 1px solid var(--border-color); padding-bottom: 25px; margin-bottom: 25px; }
+        .form-section:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .form-section h2 { 
+            font-size: 1.5rem; 
+            color: var(--ko-primary); 
+            margin-top: 0; 
+            margin-bottom: 20px; 
+            display: flex;
+            align-items: center;
+        }
+        .form-section h2 i { margin-right: 12px; font-size: 1.2rem; }
+        
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
         .form-group input[type="text"],
         .form-group input[type="number"],
         .form-group input[type="tel"],
         .form-group textarea, 
         .form-group select { 
-            width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; 
-            font-size: 1em; box-sizing: border-box; background-color: var(--bg-input); 
+            width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; 
+            font-size: 1rem; font-family: 'Inter', sans-serif; box-sizing: border-box; background-color: var(--bg-input); 
             color: var(--text-main); transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .form-group textarea { min-height: 120px; }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             border-color: var(--ko-primary);
             box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15);
@@ -74,7 +146,51 @@
         }
         .form-group small { color: var(--text-secondary); font-size: 0.9em; margin-top: 5px; display: block; }
         
-        /* --- RADIO BUTTON STYLES --- */
+        /* --- PROFESSIONAL RADIO "CARD" STYLES --- */
+        .radio-card-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media (min-width: 600px) {
+            .radio-card-group { grid-template-columns: 1fr 1fr; }
+        }
+        .radio-card-group input[type="radio"] { opacity: 0; position: fixed; width: 0; }
+        .radio-card-group label {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 25px 20px; border: 2px solid var(--border-color); 
+            border-radius: var(--border-radius); cursor: pointer; transition: all 0.2s ease;
+            text-align: center;
+        }
+        .radio-card-group label i {
+            font-size: 2.5rem;
+            color: var(--ko-primary);
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+        }
+        .radio-card-group label span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .radio-card-group label small {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .radio-card-group label:hover {
+            border-color: var(--ko-primary);
+            background-color: rgba(var(--ko-primary-rgb), 0.05);
+        }
+        .radio-card-group input[type="radio"]:checked + label {
+            background-color: rgba(var(--ko-primary-rgb), 0.1);
+            border-color: var(--ko-primary);
+            box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15);
+        }
+        .radio-card-group input[type="radio"]:checked + label i {
+            transform: scale(1.1);
+        }
+
+        /* --- Standard Radio Group --- */
         .radio-group { display: flex; flex-wrap: wrap; gap: 15px; }
         .radio-group input[type="radio"] { opacity: 0; position: fixed; width: 0; }
         .radio-group label {
@@ -86,9 +202,7 @@
             background-color: rgba(var(--ko-primary-rgb), 0.1);
             border-color: var(--ko-primary);
             color: var(--ko-primary);
-            box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.15);
         }
-        .radio-group i { font-size: 1.2em; }
 
         /* --- FILE UPLOAD STYLES --- */
         .file-upload-area {
@@ -121,14 +235,13 @@
         .form-message-banner {
             display: none; /* Hidden by default */
             padding: 15px;
+            margin-top: 25px; /* NEW: Margin to separate from fields */
             margin-bottom: 20px;
             border-radius: 8px;
             font-weight: 600;
             border: 1px solid transparent;
         }
-        .form-message-banner.show {
-            display: block; /* JS adds this class to show */
-        }
+        .form-message-banner.show { display: block; }
         .form-message-banner.success {
             background-color: rgba(var(--ko-success-rgb), 0.1);
             color: var(--ko-success);
@@ -167,30 +280,73 @@
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
-    <!-- Add your Header and Nav HTML here -->
+<body class="light-mode">
     
+    <!-- === YOUR SITE HEADER === -->
+    <header class="sticky-header">
+        <div class="header-content container">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="/shop/?category=Services" class="nav-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+            </nav>
+            <div class="header-icons">
+                 <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/inbox.html" aria-label="Notifications"><i class="fa-regular fa-bell"></i></a>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- === YOUR SITE MOBILE NAV === -->
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+        <a href="/shop/?category=Services" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+        <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
+        <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+        <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+        <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+        <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
+        <hr>
+        <a href="/upload/" class="nav-link" style="background: var(--ko-accent); color: #111; font-weight: 600; border-radius: 8px;"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
+    </nav>
+    <div class="mobile-nav-overlay"></div>
+
+    <!-- === MAIN PAGE CONTENT === -->
     <div class="container page-content">
-        <h1>Add Your Listing</h1>
-        <p>Start by telling us what you are listing. Your choice will show the correct form.</p>
+        <div class="upload-header">
+            <h1>Create a New Listing</h1>
+            <p>Start by telling us what you are listing. Your choice will show the correct form below.</p>
+        </div>
 
         <form id="product-form">
             <input type="hidden" id="productId">
 
-            <!-- STEP 1: CHOOSE TYPE -->
+            <!-- STEP 1: CHOOSE TYPE (NEW CARD STYLE) -->
             <div class="form-section product-type-selection">
-                <h2>What are you listing?</h2>
-                <div class="radio-group">
+                <h2 style="color: var(--text-main);"><i class="fa-solid fa-shapes"></i> What are you listing?</h2>
+                <div class="radio-card-group">
                     <input type="radio" id="type-product" name="listing_category_type" value="product" required>
-                    <label for="type-product"><i class="fa-solid fa-box"></i> Product (Physical Item)</label>
+                    <label for="type-product">
+                        <i class="fa-solid fa-box-open"></i>
+                        <span>Product</span>
+                        <small>A physical item like a phone, textbook, or chair.</small>
+                    </label>
                     
                     <input type="radio" id="type-service" name="listing_category_type" value="service">
-                    <label for="type-service"><i class="fa-solid fa-screwdriver-wrench"></i> Service</label>
+                    <label for="type-service">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <span>Service</span>
+                        <small>A service like tutoring, graphic design, or repairs.</small>
+                    </label>
                 </div>
             </div>
 
-            <!-- This is the message banner for Success, Error, and Progress -->
-            <p id="product-form-message" class="form-message-banner"></p>
 
             <!-- =================================== -->
             <!-- ==  PRODUCT-ONLY FIELDS CONTAINER  == -->
@@ -198,14 +354,14 @@
             <div id="product-fields-container" style="display: none;">
                 
                 <div class="form-section">
-                    <h2>Product Details</h2>
+                    <h2><i class="fa-solid fa-pencil"></i> Product Details</h2>
                     <div class="form-group">
                         <label for="product-name">Product Name</label>
-                        <input type="text" id="product-name" placeholder="e.g., iPhone 12 Pro Max" data-required="true">
+                        <input type="text" id="product-name" placeholder="e.g., iPhone 12 Pro Max, 128GB, Blue" data-required="true">
                     </div>
                     <div class="form-group">
                         <label for="product-price">Price (UGX)</label>
-                        <input type="number" id="product-price" placeholder="e.g., 2,500,000" data-required="true" min="0">
+                        <input type="number" id="product-price" placeholder="e.g., 2500000" data-required="true" min="0">
                     </div>
                     <div class="form-group">
                         <label for="product-category">Product Category</label>
@@ -218,7 +374,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>Listing & Condition</h2>
+                    <h2><i class="fa-solid fa-tags"></i> Listing & Condition</h2>
                     <div class="form-group">
                         <label>Listing Type</label>
                         <div class="radio-group">
@@ -244,10 +400,10 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>Description & Contact</h2>
+                    <h2><i class="fa-solid fa-file-lines"></i> Description & Contact</h2>
                     <div class="form-group">
                         <label for="product-description">Description</label>
-                        <textarea id="product-description" data-required="true" rows="5" placeholder="Describe your product..."></textarea>
+                        <textarea id="product-description" data-required="true" rows="5" placeholder="Describe your product in detail..."></textarea>
                     </div>
                     <div class="form-group">
                         <label for="product-story">Your Story (Optional)</label>
@@ -260,7 +416,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>Product Images (Up to 2)</h2>
+                    <h2><i class="fa-solid fa-images"></i> Product Images (Up to 2)</h2>
                     <div class="form-group">
                         <label for="product-image-1">Main Image</label>
                         <div class="file-upload-area" data-input="product-image-1">
@@ -282,7 +438,6 @@
                         <div class="image-preview-container" id="product-image-2-preview"></div>
                     </div>
                 </div>
-
             </div>
 
             <!-- =================================== -->
@@ -291,7 +446,7 @@
             <div id="service-fields-container" style="display: none;">
 
                 <div class="form-section">
-                    <h2>Service Details</h2>
+                    <h2><i class="fa-solid fa-pencil"></i> Service Details</h2>
                     <div class="form-group">
                         <label for="service-name">Service Title</label>
                         <input type="text" id="service-name" placeholder="e.g., Professional Logo Design" data-required="true">
@@ -312,7 +467,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>Location & Availability</h2>
+                    <h2><i class="fa-solid fa-map-location-dot"></i> Location & Availability</h2>
                     <div class="form-group">
                         <label>Service Location</label>
                         <div class="radio-group">
@@ -329,7 +484,7 @@
                 </div>
                 
                 <div class="form-section">
-                    <h2>Description & Contact</h2>
+                    <h2><i class="fa-solid fa-file-lines"></i> Description & Contact</h2>
                     <div class="form-group">
                         <label for="service-description">Service Description</label>
                         <textarea id="service-description" data-required="true" rows="5" placeholder="Describe your service in detail..."></textarea>
@@ -345,7 +500,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>Service Images (Up to 2)</h2>
+                    <h2><i class="fa-solid fa-images"></i> Service Images (Up to 2)</h2>
                     <div class="form-group">
                         <label for="service-image-1">Main Image</label>
                         <div class="file-upload-area" data-input="service-image-1">
@@ -357,7 +512,7 @@
                         <div class="image-preview-container" id="service-image-1-preview"></div>
                     </div>
                     <div class="form-group">
-                        <label for="service-image-2">Optional Second Image</pre-wrap>
+                        <label for="service-image-2">Optional Second Image</label>
                         <div class="file-upload-area" data-input="service-image-2">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <p>Click to Upload Image</p>
@@ -367,18 +522,38 @@
                         <div class="image-preview-container" id="service-image-2-preview"></div>
                     </div>
                 </div>
-
             </div>
+            
+            <!-- 
+              NEW MESSAGE BANNER LOCATION:
+              Right above the submit button for easy visibility.
+            -->
+            <p id="product-form-message" class="form-message-banner"></p>
 
             <!-- This button is outside both containers and will submit the active form -->
             <button type="submit" id="submit-btn" class="cta-button" disabled>Please select a listing type</button>
         </form>
     </div>
 
-    <!-- Add your Footer HTML here -->
+    <!-- === YOUR SITE FOOTER === -->
+    <footer>
+      <div class="container">
+          <div class="footer-logo">Kabale <span>Online</span></div>
+          <div class="footer-links">
+              <a href="/about.html">About Us</a>
+              <a href="/blog/">Blog & Tips</a>
+              <a href="/terms.html">Terms of Service</a>
+          </div>
+          <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+      </div>
+    </footer>
 
+    <!-- === SCRIPT (MODULES) === -->
+    <!-- These are assumed paths. Adjust if your 'js' folder is not in the root -->
+    <script src="/js/theme.js"></script> 
     <script type="module" src="/js/shared.js"></script>
-    <script type="module" src="script.js"></script> <!-- Make sure this path is correct, e.g., /upload/script.js -->
     <script type="module" src="/js/ui.js"></script>
+    <!-- This is the main script for this page -->
+    <script type="module" src="script.js"></script> 
 </body>
 </html>
