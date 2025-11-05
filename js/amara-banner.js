@@ -1,79 +1,85 @@
-// This script is self-contained and will only run when the banner is on the page.
+// === AMARA AI BANNER V3 SCRIPT ===
 document.addEventListener('DOMContentLoaded', function() {
-    const promptContainer = document.getElementById('amara-prompt-container');
-    const promptEl = document.getElementById('amara-prompt-text');
+    const banner = document.querySelector('.amara-banner-v3');
+    const expandingTextElement = document.getElementById('amara-ai-expanding-text');
+    const dynamicWordsContainer = document.getElementById('amara-dynamic-words-container');
 
-    // Check if the banner elements exist on this page
-    if (!promptContainer || !promptEl) {
-        return; // Do nothing if the banner isn't here
+    if (!banner || !expandingTextElement || !dynamicWordsContainer) {
+        return; // Exit if banner elements aren't present
     }
 
-    // --- Prompts to showcase Amara's dual capabilities ---
-    const prompts = [
-        { 
-            text: "Give me 5 study tips for exams", 
-            type: "knowledge" // Will use "fall" animation
-        },
-        { 
-            text: "Find me a plumber in Kabale", 
-            type: "search" // Will use "swipe" animation
-        },
-        { 
-            text: "Compare the iPhone 12 and iPhone 13", 
-            type: "knowledge" 
-        },
-        { 
-            text: "What's the best deal on a used laptop?", 
-            type: "search" 
-        },
-        { 
-            text: "What's happening this weekend?", 
-            type: "search" 
-        },
-        { 
-            text: "Explain what Algolia is", 
-            type: "knowledge" 
-        }
+    // --- The sequence of words to animate ---
+    const wordSequence = [
+        { text: "Search", classes: "amara-word-swipe-left", x: 10, y: 30, color: "var(--ko-accent)" },
+        { text: "Learn", classes: "amara-word-drop-bounce", x: 70, y: 15, color: "var(--ko-primary)" },
+        { text: "Discover", classes: "amara-word-swipe-right", x: 60, y: 70, color: "var(--ko-accent)" },
+        { text: "Solve", classes: "amara-word-zoom-in", x: 45, y: 40, color: "white" },
+        { text: "Find It", classes: "amara-word-fall-through", x: 25, y: 55, color: "var(--ko-primary)" }
     ];
-    
-    let index = 0;
 
-    function rotatePrompts() {
-        const currentPrompt = prompts[index];
-        
-        // 1. Get the correct "out" animation based on type
-        const outAnimation = currentPrompt.type === 'knowledge' ? 'amara-text-fall-out' : 'amara-text-swipe-out';
-        promptEl.className = outAnimation;
+    let currentWordIndex = 0;
+    let mainLoopTimer = null;
+    let wordLoopTimer = null;
 
-        // 2. Wait for the "out" animation (400ms)
+    // --- Function to create and animate a single word ---
+    function animateWord() {
+        if (currentWordIndex >= wordSequence.length) {
+            currentWordIndex = 0; // Loop back
+        }
+
+        const wordData = wordSequence[currentWordIndex];
+        const wordEl = document.createElement('span');
+        wordEl.textContent = wordData.text;
+        wordEl.className = `amara-word ${wordData.classes}`;
+        wordEl.style.color = wordData.color;
+        wordEl.style.left = `${wordData.x}%`;
+        wordEl.style.top = `${wordData.y}%`;
+
+        dynamicWordsContainer.appendChild(wordEl);
+        currentWordIndex++;
+
+        // Schedule removal
+        // 1. Fade out after 2.5 seconds
         setTimeout(() => {
-            // Change index to the next prompt
-            index = (index + 1) % prompts.length;
-            const nextPrompt = prompts[index];
-            
-            // 3. Set new text and the "start" state for the "in" animation
-            const startAnimation = nextPrompt.type === 'knowledge' ? 'amara-text-fall-start' : 'amara-text-swipe-start';
-            promptEl.textContent = `"${nextPrompt.text}"`;
-            promptEl.className = startAnimation;
+            wordEl.classList.add('amara-word-fade-out');
+        }, 2500); 
 
-            // 4. Wait a tiny bit (a "tick") for the browser to apply the "start" state
-            setTimeout(() => {
-                // 5. Apply the "in" animation
-                const inAnimation = nextPrompt.type === 'knowledge' ? 'amara-text-fall-in' : 'amara-text-swipe-in';
-                promptEl.className = inAnimation;
-            }, 50);
-
-        }, 400); // This MUST match the CSS transition-duration (0.4s)
+        // 2. Remove from DOM after fade out (2.5s + 0.5s fade)
+        setTimeout(() => {
+            wordEl.remove();
+        }, 3000); 
     }
 
-    // --- Start the animation ---
-    const firstPrompt = prompts[index];
-    promptEl.textContent = `"${firstPrompt.text}"`;
-    promptEl.className = 'amara-text-fall-in';
-    
-    // Loop every 4 seconds
-    setInterval(rotatePrompts, 4000);
+    // --- Function to start the main "Ask Amara AI" expansion ---
+    function startExpandingText() {
+        // Reset animation by removing and re-adding the class
+        expandingTextElement.classList.remove('expanding');
+        // Void reflow (a trick to force CSS to restart the animation)
+        void expandingTextElement.offsetWidth; 
+        expandingTextElement.classList.add('expanding');
+    }
 
-    // --- Click handler for the button has been REMOVED ---
-    // The <a> tag now handles the click all by itself.
+    // --- Main function to start and repeat the whole show ---
+    function startFullAnimationCycle() {
+        // 1. Clear any old timers
+        clearInterval(mainLoopTimer);
+        clearInterval(wordLoopTimer);
+        
+        // 2. Clear any leftover words
+        dynamicWordsContainer.innerHTML = '';
+        currentWordIndex = 0;
+
+        // 3. Start the "Ask Amara AI" expansion
+        startExpandingText();
+
+        // 4. Start the word loop
+        // It spawns a new word every 1.5 seconds
+        animateWord(); // Spawn the first word immediately
+        wordLoopTimer = setInterval(animateWord, 1500);
+    }
+
+    // --- Start the show! ---
+    startFullAnimationCycle(); // Run it once on load
+    // Repeat the entire 8-second cycle
+    mainLoopTimer = setInterval(startFullAnimationCycle, 8000); 
 });
