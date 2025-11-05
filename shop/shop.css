@@ -428,3 +428,17 @@ footer {
   font-weight: 500;
   color: var(--text-secondary);
 }
+.price-service span {
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: block; /* Makes it appear on a new line */
+  margin-top: -5px;
+}
+
+.product-card .location-name i {
+    margin-right: 5px;
+    width: 1.2em;
+    text-align: center;
+    color: var(--ko-primary);
+}
