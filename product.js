@@ -10,18 +10,13 @@ let currentUser = null;
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
 
-// A function to show a pop-up modal (assuming it exists in a shared script or on the page)
+// A function to show a pop-up modal
 function showModal({ icon, title, message, theme = 'info', buttons }) {
-    // This function requires the modal HTML and CSS to be on your product-details.html page.
-    const modal = document.getElementById('custom-modal'); // You'll need to add this modal HTML to your page
+    const modal = document.getElementById('custom-modal'); 
     if (!modal) {
-        alert(message); // Fallback to a simple alert if modal doesn't exist
-        
-        // Find the primary button's action (like redirecting) and run it
+        alert(message); // Fallback to a simple alert
         const primaryAction = buttons.find(b => b.class === 'primary')?.onClick;
-        if (primaryAction) {
-            primaryAction();
-        }
+        if (primaryAction) primaryAction();
         return;
     }
     const modalIcon = document.getElementById('modal-icon');
@@ -30,10 +25,10 @@ function showModal({ icon, title, message, theme = 'info', buttons }) {
     const modalButtons = document.getElementById('modal-buttons');
     
     modal.className = `modal-overlay modal-theme-${theme}`;
-    modalIcon.innerHTML = icon;
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    modalButtons.innerHTML = '';
+    if (modalIcon) modalIcon.innerHTML = icon;
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
+    if (modalButtons) modalButtons.innerHTML = '';
 
     buttons.forEach(btnInfo => {
         const button = document.createElement('button');
@@ -73,7 +68,6 @@ async function loadProductAndSeller() {
 
         const productData = productSnap.data();
         
-        // Set page title dynamically
         document.title = `${productData.name || 'Product'} | Kabale Online`;
 
         const sellerRef = doc(db, 'users', productData.sellerId);
@@ -91,47 +85,85 @@ async function loadProductAndSeller() {
     }
 }
 
+// =================================================================
+// ===           UPGRADED RENDERPRODUCTDETAILS FUNCTION          ===
+// =================================================================
 function renderProductDetails(product, seller) {
     productDetailContent.innerHTML = '';
     const productElement = document.createElement('div');
     productElement.className = 'product-detail-container';
     const whatsappLink = `https://wa.me/${product.whatsapp}?text=Hello, I'm interested in your listing for '${product.name}' on Kabale Online.`;
 
-    // Logic for stock status
+    // --- NEW: Service-Aware Logic ---
     let stockStatusHTML = '';
-    const quantity = product.quantity;
-    if (product.isSold || (!quantity && quantity !== 0) || quantity <= 0) {
-        stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
-    } else if (quantity > 5) {
-        stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
-    } else if (quantity > 0 && quantity <= 5) {
-        stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left in stock - order soon!</p>`;
-    }
-
-    // --- Product Specs (Location, Condition, Type) ---
     let specsHTML = '';
-    if (product.location) {
-        specsHTML += `<div class="product-spec"><i class="fa-solid fa-location-dot"></i><span><strong>Location:</strong> ${product.location}</span></div>`;
+    let priceHTML = '';
+    let addToCartHTML = '';
+
+    if (product.listing_type === 'service') {
+        // --- This is a SERVICE ---
+        priceHTML = `
+            <h2 id="product-price" class="price-service">
+                UGX ${product.price ? product.price.toLocaleString() : 'N/A'}
+                ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
+            </h2>`;
+        
+        if (product.service_location_type) {
+            const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
+            specsHTML += `<div class="product-spec"><i class="${icon}"></i><span><strong>Location:</strong> ${product.service_location_type}</span></div>`;
+        }
+        if (product.service_availability) {
+            specsHTML += `<div class="product-spec"><i class="fa-solid fa-clock"></i><span><strong>Availability:</strong> ${product.service_availability}</span></div>`;
+        }
+        
+        // No stock status for services
+        stockStatusHTML = '';
+        
+        // No "Add to Cart" for services
+        addToCartHTML = '';
+
+    } else {
+        // --- This is a PRODUCT ---
+        priceHTML = `<h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>`;
+        
+        const quantity = product.quantity;
+        if (product.isSold || (!quantity && quantity !== 0) || quantity <= 0) {
+            stockStatusHTML = `<p class="stock-info out-of-stock">Out of Stock</p>`;
+        } else if (quantity > 5) {
+            stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+        } else if (quantity > 0 && quantity <= 5) {
+            stockStatusHTML = `<p class="stock-info low-stock">Only ${quantity} left in stock - order soon!</p>`;
+        }
+
+        if (product.location) {
+            specsHTML += `<div class="product-spec"><i class="fa-solid fa-location-dot"></i><span><strong>Location:</strong> ${product.location}</span></div>`;
+        }
+        if (product.condition) {
+            const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1);
+            specsHTML += `<div class="product-spec"><i class="fa-solid fa-tag"></i><span><strong>Condition:</strong> ${conditionText}</span></div>`;
+        }
+        if (product.listing_type) {
+            const typeText = product.listing_type === 'sale' ? 'For Sale' : 'For Rent';
+            specsHTML += `<div class="product-spec"><i class="fa-solid fa-clipboard-list"></i><span><strong>Type:</strong> ${typeText}</span></div>`;
+        }
+        
+        // Only show "Add to Cart" for products
+        addToCartHTML = `
+            <button id="add-to-cart-btn" class="cta-button primary-action-btn">
+                <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>`;
     }
-    if (product.condition) {
-        const conditionText = product.condition.charAt(0).toUpperCase() + product.condition.slice(1);
-        specsHTML += `<div class="product-spec"><i class="fa-solid fa-tag"></i><span><strong>Condition:</strong> ${conditionText}</span></div>`;
-    }
-    if (product.listing_type) {
-        const typeText = product.listing_type === 'sale' ? 'For Sale' : 'For Rent';
-        specsHTML += `<div class="product-spec"><i class="fa-solid fa-clipboard-list"></i><span><strong>Type:</strong> ${typeText}</span></div>`;
-    }
+    // --- END NEW LOGIC ---
+
     const specsGridHTML = specsHTML ? `<div class="product-specs-grid">${specsHTML}</div>` : '';
 
-    // --- Create a prominent Verified Seller badge ---
-    const isVerified = (seller.badges || []).includes('verified') || seller.isVerified; // Check both user data fields
+    const isVerified = (seller.badges || []).includes('verified') || seller.isVerified;
     const prominentVerifiedBadgeHTML = isVerified 
         ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
         : '';
 
-    // Primary and hover colors from your site's theme
-    const primaryColor = '#007aff'; // Your site's blue
-    const hoverColor = '#0056b3'; // Darker blue for hover
+    const primaryColor = '#007aff';
+    const hoverColor = '#0056b3';
 
     productElement.innerHTML = `
         <div class="product-images">
@@ -141,21 +173,19 @@ function renderProductDetails(product, seller) {
             }
         </div>
         
-        <!-- This div has the corrected class="product-info" (no typo) -->
         <div class="product-info">
         
             <div class="product-title-header">
                 <h1 id="product-name">${product.name}</h1>
             </div>
-            <h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>
             
+            ${priceHTML} <!-- Dynamic Price -->
             ${prominentVerifiedBadgeHTML}
-            ${stockStatusHTML}
-            ${specsGridHTML}
+            ${stockStatusHTML} <!-- Dynamic Stock -->
+            ${specsGridHTML} <!-- Dynamic Specs -->
             
             <p id="product-description">${product.description.replace(/\n/g, '<br>')}</p>
             
-            <!-- Share Button with ALL styles inline (This one was already working) -->
             <button id="share-btn"
                 style="
                     background-color: ${primaryColor};
@@ -181,7 +211,7 @@ function renderProductDetails(product, seller) {
                 onmouseover="this.style.backgroundColor='${hoverColor}'"
                 onmouseout="this.style.backgroundColor='${primaryColor}'"
             >
-                <i class="fa-solid fa-share-alt"></i> Share This Product
+                <i class="fa-solid fa-share-alt"></i> Share This Listing
             </button>
             
             <div class="seller-card">
@@ -196,12 +226,9 @@ function renderProductDetails(product, seller) {
                     </div>
                 </div>
 
-                <!-- This container will stack all buttons vertically -->
                 <div class="contact-buttons">
                 
-                    <button id="add-to-cart-btn" class="cta-button primary-action-btn">
-                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                    </button>
+                    ${addToCartHTML} <!-- Dynamic Add to Cart -->
                     
                     <button id="wishlist-btn" class="cta-button wishlist-btn" style="display: none;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
                     
@@ -209,14 +236,6 @@ function renderProductDetails(product, seller) {
                     
                     <a href="${whatsappLink}" target="_blank" class="cta-button whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>
                     
-                    <!-- 
-                      *****************************************************************
-                      * THIS IS THE NEW "VIEW PUBLIC PROFILE" BUTTON FIX
-                      * All classes are REMOVED.
-                      * All styles are INLINE, just like the Share button.
-                      * It does NOT have "width: 100%" so it will fit correctly.
-                      *****************************************************************
-                    -->
                     <a href="/profile.html?sellerId=${product.sellerId}"
                         style="
                             background-color: ${primaryColor};
@@ -234,8 +253,7 @@ function renderProductDetails(product, seller) {
                             align-items: center;
                             justify-content: center;
                             gap: 8px;
-                            /* This is needed to match the other buttons */
-                            margin-top: 10px; /* This was 20px, changing to 10px to match others */
+                            margin-top: 10px; 
                             transition: background-color 0.2s;
                         "
                         onmouseover="this.style.backgroundColor='${hoverColor}'"
@@ -243,8 +261,6 @@ function renderProductDetails(product, seller) {
                     >
                         View Public Profile
                     </a>
-                    <!-- * END OF NEW PROFILE BUTTON FIX * -->
-
                 </div>
             </div>
         </div>`;
@@ -252,24 +268,33 @@ function renderProductDetails(product, seller) {
     productDetailContent.appendChild(productElement);
 
     // --- SETUP ALL BUTTONS ---
-    setupShareButton(product); // This function is still needed for the *click action*
-    setupAddToCartButton(product);
+    setupShareButton(product);
+    // Only set up cart button if it was rendered
+    if (addToCartHTML !== '') {
+        setupAddToCartButton(product);
+    }
     if (currentUser && currentUser.uid !== product.sellerId) {
         setupWishlistButton(product);
     }
     if (currentUser && currentUser.uid === product.sellerId) {
         const contactBtn = productElement.querySelector('#contact-seller-btn');
         const whatsappBtn = productElement.querySelector('.whatsapp-btn');
-        contactBtn.style.pointerEvents = 'none';
-        contactBtn.style.backgroundColor = '#6c757d'; // 'disabled' grey
-        contactBtn.textContent = 'This is your listing';
-        whatsappBtn.style.display = 'none'; // Hide WhatsApp button for own listing
+        if (contactBtn) {
+            contactBtn.style.pointerEvents = 'none';
+            contactBtn.style.backgroundColor = '#6c757d'; // 'disabled' grey
+            contactBtn.textContent = 'This is your listing';
+        }
+        if (whatsappBtn) whatsappBtn.style.display = 'none';
     }
 }
+// =================================================================
+// ===           END UPGRADED RENDERPRODUCTDETAILS               ===
+// =================================================================
+
 
 function setupAddToCartButton(product) {
     const addToCartBtn = document.getElementById('add-to-cart-btn');
-    if (!addToCartBtn) return;
+    if (!addToCartBtn) return; // Exit if button doesn't exist (i.e., for services)
 
     // Handle out of stock case
     if (product.isSold || !product.quantity || product.quantity <= 0) {
@@ -317,7 +342,6 @@ function setupAddToCartButton(product) {
 
             await setDoc(cartRef, cartItem);
             
-            // Show a success pop-up
             showModal({
                 icon: '✅',
                 title: 'Added to Cart!',
@@ -329,7 +353,6 @@ function setupAddToCartButton(product) {
                 ]
             });
             
-            // Reset the button
             addToCartBtn.disabled = false;
             addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
 
@@ -352,9 +375,6 @@ function setupShareButton(product) {
     const shareBtn = document.getElementById('share-btn'); 
     if (!shareBtn) return;
     
-    // The button is ALREADY STYLED by the inline styles we added in renderProductDetails.
-    // This function just adds the click logic.
-    
     shareBtn.addEventListener('click', async () => {
         const sellerName = product.sellerName || 'Kabale Online Seller'; 
         const productPrice = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price N/A';
@@ -376,7 +396,7 @@ function setupShareButton(product) {
                 showModal({
                     icon: '📋',
                     title: 'Link Copied!',
-                    message: 'Product details and link copied to clipboard. You can now paste it anywhere!',
+                    message: 'Listing details and link copied to clipboard. You can now paste it anywhere!',
                     theme: 'success',
                     buttons: [{ text: 'Got It!', class: 'primary', onClick: hideModal }]
                 });
@@ -387,7 +407,7 @@ function setupShareButton(product) {
                  showModal({
                     icon: '⚠️',
                     title: 'Share Failed',
-                    message: 'Could not share the product details. Please try again.',
+                    message: 'Could not share the listing details. Please try again.',
                     theme: 'error',
                     buttons: [{ text: 'OK', class: 'primary', onClick: hideModal }]
                 });
@@ -410,6 +430,7 @@ async function setupWishlistButton(product) {
         console.error("Error checking wishlist:", e);
     }
 
+    // --- TYPO FIX: Renamed this function ---
     function updateButtonState() {
         if (isInWishlist) {
             wishlistBtn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
@@ -420,7 +441,7 @@ async function setupWishlistButton(product) {
         }
     }
     
-    updateButtonS_tate();
+    updateButtonState(); // <-- Call the correctly named function
 
     wishlistBtn.addEventListener('click', async () => {
         wishlistBtn.disabled = true;
@@ -512,20 +533,5 @@ async function submitQuestion(e, sellerId) {
         button.disabled = false;
         button.textContent = 'Submit Question';
         setTimeout(() => messageEl.textContent = '', 3000);
-    }
-}
-
-// Typo fix in setupWishlistButton
-function updateButtonS_tate() {
-    const wishlistBtn = document.getElementById('wishlist-btn');
-    if (!wishlistBtn) return;
-    const isInWishlist = wishlistBtn.classList.contains('active-internal'); // Use a different way to track state
-
-    if (isInWishlist) {
-        wishlistBtn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
-        wishlistBtn.classList.add('active');
-    } else {
-        wishlistBtn.innerHTML = `<i class="fa-regular fa-heart"></i> Add to Wishlist`;
-        wishlistBtn.classList.remove('active');
     }
 }
