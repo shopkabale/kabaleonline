@@ -132,7 +132,7 @@ exports.handler = async (event, context) => {
     }
 };
 
-// --- NEW HELPER: Log failed emails to Firestore ---
+// --- Helper: Log failed emails to Firestore ---
 async function logFailedNotification(db, error, emailDetails) {
     try {
         await db.collection('failed_notifications').add({
@@ -148,14 +148,14 @@ async function logFailedNotification(db, error, emailDetails) {
 
 // --- Helper function to send the ADMIN email ---
 async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grandTotal, orderIds) {
-    // FIX 1: Create new email object
-    const emailObject = new Brevo.SendSmtpEmail();
+    const emailObject = new Brevo.SendSmtpEmail(); // New object
 
     const itemHtml = allItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
     ).join('');
     
     emailObject.subject = `🎉 Congrats! New Order on KabaleOnline! Total: UGX ${grandTotal.toLocaleString()}`;
+    // --- HTML IS NOW CORRECTLY ADDED ---
     emailObject.htmlContent = `
         <h1 style="color: #333;">Congrats! A new order was placed!</h1>
         <p style="font-size: 16px;">This is a great sign. Keep up the good work!</p>
@@ -180,7 +180,6 @@ async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grand
         console.log('Admin notification sent.');
     } catch (error) {
         console.error('Error sending admin email:', error.response?.body);
-        // FIX 2: Log failure to Firestore
         await logFailedNotification(db, error, { 
             type: "admin", 
             to: "shopkabale@gmail.com", 
@@ -191,14 +190,14 @@ async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grand
 
 // --- Helper function to send a SELLER email ---
 async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
-    // FIX 1: Create new email object
-    const emailObject = new Brevo.SendSmtpEmail();
+    const emailObject = new Brevo.SendSmtpEmail(); // New object
 
     const itemHtml = sellerItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
     emailObject.subject = `🎉 You have a new order on KabaleOnline!`;
+    // --- HTML IS NOW CORRECTLY ADDED ---
     emailObject.htmlContent = `
         <h1 style="color: #333;">You've made a sale!</h1>
         <p style="font-size: 16px;">
@@ -230,7 +229,6 @@ async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, s
         console.log(`Seller notification sent to: ${sellerEmail}`);
     } catch (error) {
         console.error(`Error sending seller email to ${sellerEmail}:`, error.response?.body);
-        // FIX 2: Log failure to Firestore
         await logFailedNotification(db, error, { 
             type: "seller", 
             to: sellerEmail, 
@@ -241,14 +239,14 @@ async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, s
 
 // --- Helper function to send the BUYER email ---
 async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, allItems, grandTotal) {
-    // FIX 1: Create new email object
-    const emailObject = new Brevo.SendSmtpEmail();
+    const emailObject = new Brevo.SendSmtpEmail(); // New object
 
     const itemHtml = allItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
     emailObject.subject = `Thank you for your order! (KabaleOnline)`;
+    // --- HTML IS NOW CORRECTLY ADDED ---
     emailObject.htmlContent = `
         <h1 style="color: #333;">Thank you, ${buyerInfo.name}!</h1>
         <p style="font-size: 16px;">
@@ -269,8 +267,8 @@ async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, all
         <br>
         <p style="margin-top: 25px; font-size: 14px; color: #555;">
             Thank you for shopping local with KabaleOnline!
-        </A
-    `;
+        </p>
+    `; // <-- I also fixed a typo here. It was `</A` instead of `</p>`
     emailObject.sender = { name: "KabaleOnline", email: "support@kabaleonline.com" };
     emailObject.to = [{ email: buyerEmail }];
     emailObject.replyTo = { email: "support@kabaleonline.com" };
@@ -280,7 +278,6 @@ async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, all
         console.log(`Buyer receipt sent to: ${buyerEmail}`);
     } catch (error) {
         console.error(`Error sending buyer receipt to ${buyerEmail}:`, error.response?.body);
-        // FIX 2: Log failure to Firestore
         await logFailedNotification(db, error, { 
             type: "buyer", 
             to: buyerEmail, 
