@@ -313,109 +313,6 @@
             }
         }
         /* --- END MODAL CSS --- */
-
-
-        /* === NEW CSS FOR PRODUCT SUGGESTIONS === */
-        .carousel-section {
-            margin-top: 40px;
-        }
-        .carousel-section h2 {
-            font-size: 1.6em;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 20px;
-        }
-        .product-grid-carousel {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        @media (min-width: 768px) {
-            .product-grid-carousel {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
-        .product-card-link {
-            text-decoration: none;
-            color: inherit;
-        }
-        .product-card {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        }
-        .product-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background-color: var(--bg-main);
-        }
-        .product-card-info {
-            padding: 15px;
-        }
-        .product-card h3 {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 0 0 8px 0;
-            /* Clamp text to 2 lines */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-        .product-card .price {
-            font-size: 1.1em;
-            font-weight: 700;
-            color: var(--ko-primary);
-            margin-bottom: 8px;
-        }
-        .product-card .location-name {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-        .product-card .seller-name {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-        }
-        .product-card .verified-text {
-            font-size: 0.85em;
-            font-weight: bold;
-            color: var(--ko-primary);
-            margin-top: 5px;
-        }
-        .skeleton-card {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 10px;
-            border: 1px solid var(--border-color);
-        }
-        .skeleton-image {
-            width: 100%;
-            height: 160px;
-            background-color: var(--bg-main);
-            border-radius: 8px;
-        }
-        .skeleton-text {
-            height: 1.2em;
-            background-color: var(--bg-main);
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-        .w-75 { width: 75%; }
-        .w-50 { width: 50%; }
-        /* === END NEW CSS === */
-
     </style>
 </head>
 <body>
@@ -428,6 +325,7 @@
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
+                <!-- === LINK 1: CORRECTED === -->
                 <a href="/shop/?type=service" class="nav-link">Services</a>
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
@@ -447,6 +345,7 @@
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <!-- === LINK 2: CORRECTED === -->
             <a href="/shop/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
             <a href="/stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
             <a href="/wishlist.html" class="nav-link"><i class="fa-solid fa-heart"></i> My Wishlist</a>
@@ -458,6 +357,8 @@
     </nav>
 
     <main class="container page-container">
+        <!-- This div is intentionally left simple. 
+             product.js will populate it with the product details. -->
         <div id="product-detail-content">
             <p style="text-align:center; padding: 40px; font-size: 1.2em;">
                 <i class="fa-solid fa-spinner fa-spin"></i> Loading...
@@ -469,32 +370,7 @@
             <div id="qa-list"><p>Loading questions...</p></div>
             <div id="qa-form-container"></div>
         </div>
-
-        <section id="suggestions-section" class="carousel-section" style="display: none;"> <h2>You might also like</h2>
-            <div id="suggestions-grid" class="product-grid-carousel">
-                <div class="skeleton-card">
-                    <div class="skeleton-image"></div>
-                    <div class="skeleton-text w-75"></div>
-                    <div class="skeleton-text w-50"></div>
-                </div>
-                <div class="skeleton-card">
-                    <div class="skeleton-image"></div>
-                    <div class="skeleton-text w-75"></div>
-                    <div class="skeleton-text w-50"></div>
-                </div>
-                <div class="skeleton-card">
-                    <div class="skeleton-image"></div>
-                    <div class="skeleton-text w-75"></div>
-                    <div class="skeleton-text w-50"></div>
-                </div>
-                <div class="skeleton-card">
-                    <div class="skeleton-image"></div>
-                    <div class="skeleton-text w-75"></div>
-                    <div class="skeleton-text w-50"></div>
-                </div>
-            </div>
-        </section>
-        </main>
+    </main>
 
     <footer>
         <div class="container">
@@ -515,15 +391,23 @@
         </div>
     </footer>
 
+    <!-- === OLD SERVICE MODAL (REMOVED) === -->
+    <!-- The "service-notice" modal has been deleted. -->
+
+    <!-- This is the Modal HTML that your showModal() function in product.js needs -->
     <div id="custom-modal" class="modal-overlay modal-theme-info">
         <div class="modal-content">
             <div id="modal-icon" class="modal-icon">ℹ️</div>
             <h3 id="modal-title">Modal Title</h3>
             <p id="modal-message">This is the modal message.</p>
             <div id="modal-buttons" class="modal-buttons">
-                </div>
+                <!-- Buttons are added here by JavaScript -->
+            </div>
         </div>
     </div>
+    <!-- End Modal HTML -->
+
+    <!-- === UPDATED SCRIPT (REMOVED MODAL LOGIC) === -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Logic for the mobile nav toggle (This is still needed)
@@ -540,12 +424,15 @@
               overlay.classList.remove('active');
           });
       }
+
+      // The old "service-notice" modal logic has been removed.
     });
     </script>
 
     <script type="module" src="ui.js"></script>
     <script type="module" src="shared.js"></script>
     
+    <!-- This script is what loads your product details -->
     <script type="module" src="product.js"></script>
 </body>
 </html>
