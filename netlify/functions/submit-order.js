@@ -58,9 +58,15 @@ exports.handler = async (event, context) => {
 
         const sellerEmailMap = new Map();
         sellerDocsSnapshots.forEach(doc => {
+            // This line was already correct
             if (doc.exists) sellerEmailMap.set(doc.id, doc.data().email); 
         });
-        const buyerEmail = buyerDoc.exists() ? buyerDoc.data().email : null;
+        
+        // --- THIS IS THE FIX ---
+        // Changed buyerDoc.exists() to buyerDoc.exists
+        const buyerEmail = buyerDoc.exists ? buyerDoc.data().email : null;
+
+        // --- End of Email Fetching ---
 
         // Save the order to Firestore
         const batch = db.batch();
@@ -148,14 +154,13 @@ async function logFailedNotification(db, error, emailDetails) {
 
 // --- Helper function to send the ADMIN email ---
 async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grandTotal, orderIds) {
-    const emailObject = new Brevo.SendSmtpEmail(); // New object
+    const emailObject = new Brevo.SendSmtpEmail(); 
 
     const itemHtml = allItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
     ).join('');
     
     emailObject.subject = `🎉 Congrats! New Order on KabaleOnline! Total: UGX ${grandTotal.toLocaleString()}`;
-    // --- HTML IS NOW CORRECTLY ADDED ---
     emailObject.htmlContent = `
         <h1 style="color: #333;">Congrats! A new order was placed!</h1>
         <p style="font-size: 16px;">This is a great sign. Keep up the good work!</p>
@@ -190,14 +195,13 @@ async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grand
 
 // --- Helper function to send a SELLER email ---
 async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
-    const emailObject = new Brevo.SendSmtpEmail(); // New object
+    const emailObject = new Brevo.SendSmtpEmail(); 
 
     const itemHtml = sellerItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
     emailObject.subject = `🎉 You have a new order on KabaleOnline!`;
-    // --- HTML IS NOW CORRECTLY ADDED ---
     emailObject.htmlContent = `
         <h1 style="color: #333;">You've made a sale!</h1>
         <p style="font-size: 16px;">
@@ -239,14 +243,13 @@ async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, s
 
 // --- Helper function to send the BUYER email ---
 async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, allItems, grandTotal) {
-    const emailObject = new Brevo.SendSmtpEmail(); // New object
+    const emailObject = new Brevo.SendSmtpEmail(); 
 
     const itemHtml = allItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
     emailObject.subject = `Thank you for your order! (KabaleOnline)`;
-    // --- HTML IS NOW CORRECTLY ADDED ---
     emailObject.htmlContent = `
         <h1 style="color: #333;">Thank you, ${buyerInfo.name}!</h1>
         <p style="font-size: 16px;">
@@ -268,7 +271,7 @@ async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, all
         <p style="margin-top: 25px; font-size: 14px; color: #555;">
             Thank you for shopping local with KabaleOnline!
         </p>
-    `; // <-- I also fixed a typo here. It was `</A` instead of `</p>`
+    `;
     emailObject.sender = { name: "KabaleOnline", email: "support@kabaleonline.com" };
     emailObject.to = [{ email: buyerEmail }];
     emailObject.replyTo = { email: "support@kabaleonline.com" };
