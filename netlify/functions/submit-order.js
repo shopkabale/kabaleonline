@@ -7,9 +7,6 @@ const Brevo = require('@getbrevo/brevo');
 const apiInstance = new Brevo.TransactionalEmailsApi();
 apiInstance.apiClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
 
-// Create a reusable email object
-const sendSmtpEmail = new Brevo.SendSmtpEmail();
-
 // Firebase Admin SDK configuration
 const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
@@ -26,12 +23,8 @@ const authAdmin = getAuth();
 exports.handler = async (event, context) => {
     // Manually verify the Firebase token
     const token = event.headers.authorization?.split('Bearer ')[1];
-
     if (!token) {
-        return { 
-            statusCode: 401, 
-            body: JSON.stringify({ error: "No authentication token provided." }) 
-        };
+        return { statusCode: 401, body: JSON.stringify({ error: "No authentication token provided." }) };
     }
 
     let decodedToken;
@@ -39,10 +32,7 @@ exports.handler = async (event, context) => {
         decodedToken = await authAdmin.verifyIdToken(token);
     } catch (error) {
         console.error("Error verifying token:", error);
-        return { 
-            statusCode: 401, 
-            body: JSON.stringify({ error: "Invalid or expired token." }) 
-        };
+        return { statusCode: 401, body: JSON.stringify({ error: "Invalid or expired token." }) };
     }
 
     const buyerId = decodedToken.uid;
@@ -50,7 +40,6 @@ exports.handler = async (event, context) => {
     try {
         const orderDetails = JSON.parse(event.body);
         const { buyerInfo, items, totalPrice } = orderDetails;
-
         buyerInfo.buyerId = buyerId;
 
         const ordersBySeller = {};
@@ -61,30 +50,17 @@ exports.handler = async (event, context) => {
             ordersBySeller[item.sellerId].push(item);
         });
 
-        // --- NEW: Fetch Buyer and Seller Emails ---
-        
-        // Get seller emails in parallel
+        // Fetch Buyer and Seller Emails
         const sellerIds = Object.keys(ordersBySeller);
         const sellerDocPromises = sellerIds.map(id => db.collection('users').doc(id).get());
-        
-        // Get buyer email
         const buyerDocPromise = db.collection('users').doc(buyerId).get();
-
-        // Wait for all database requests
         const [buyerDoc, ...sellerDocsSnapshots] = await Promise.all([buyerDocPromise, ...sellerDocPromises]);
 
-        // Process seller emails
         const sellerEmailMap = new Map();
         sellerDocsSnapshots.forEach(doc => {
-            if (doc.exists) {
-                sellerEmailMap.set(doc.id, doc.data().email); 
-            }
+            if (doc.exists) sellerEmailMap.set(doc.id, doc.data().email); 
         });
-
-        // Process buyer email
         const buyerEmail = buyerDoc.exists() ? buyerDoc.data().email : null;
-
-        // --- End of Email Fetching ---
 
         // Save the order to Firestore
         const batch = db.batch();
@@ -94,14 +70,10 @@ exports.handler = async (event, context) => {
         for (const sellerId in ordersBySeller) {
             const sellerItems = ordersBySeller[sellerId];
             const sellerTotalPrice = sellerItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
             const newOrderRef = ordersRef.doc();
             batch.set(newOrderRef, {
-                buyerInfo,
-                sellerId,
-                items: sellerItems,
-                totalPrice: sellerTotalPrice,
-                status: "Pending",
+                buyerInfo, sellerId, items: sellerItems,
+                totalPrice: sellerTotalPrice, status: "Pending",
                 createdAt: FieldValue.serverTimestamp()
             });
             newOrderIds.push(newOrderRef.id);
@@ -113,12 +85,12 @@ exports.handler = async (event, context) => {
 
         await batch.commit();
 
-        // Send all notifications (after batch is successful)
+        // Send all notifications
         const notificationPromises = [];
 
         // 1. Send to Admin
         notificationPromises.push(
-            sendAdminNotification(apiInstance, sendSmtpEmail, buyerInfo, items, totalPrice, newOrderIds)
+            sendAdminNotification(db, apiInstance, buyerInfo, items, totalPrice, newOrderIds)
         );
 
         // 2. Send to Sellers
@@ -127,19 +99,18 @@ exports.handler = async (event, context) => {
             if (sellerEmail) {
                 const sellerItems = ordersBySeller[sellerId];
                 const sellerTotalPrice = sellerItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                
                 notificationPromises.push(
-                    sendSellerNotification(apiInstance, sendSmtpEmail, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice)
+                    sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice)
                 );
             } else {
                 console.warn(`No email found for sellerId: ${sellerId}. Cannot notify.`);
             }
         }
         
-        // --- NEW: 3. Send to Buyer ---
+        // 3. Send to Buyer
         if (buyerEmail) {
             notificationPromises.push(
-                sendBuyerNotification(apiInstance, sendSmtpEmail, buyerEmail, buyerInfo, items, totalPrice)
+                sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, items, totalPrice)
             );
         } else {
             console.warn(`No email found for buyerId: ${buyerId}. Cannot send receipt.`);
@@ -161,8 +132,25 @@ exports.handler = async (event, context) => {
     }
 };
 
+// --- NEW HELPER: Log failed emails to Firestore ---
+async function logFailedNotification(db, error, emailDetails) {
+    try {
+        await db.collection('failed_notifications').add({
+            ...emailDetails,
+            error: error.message || "Unknown error",
+            errorBody: error.response?.body || "No response body",
+            timestamp: FieldValue.serverTimestamp()
+        });
+    } catch (logError) {
+        console.error("CRITICAL: Failed to log notification failure:", logError);
+    }
+}
+
 // --- Helper function to send the ADMIN email ---
-async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allItems, grandTotal, orderIds) {
+async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grandTotal, orderIds) {
+    // FIX 1: Create new email object
+    const emailObject = new Brevo.SendSmtpEmail();
+
     const itemHtml = allItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
     ).join('');
@@ -192,11 +180,20 @@ async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allIte
         console.log('Admin notification sent.');
     } catch (error) {
         console.error('Error sending admin email:', error.response?.body);
+        // FIX 2: Log failure to Firestore
+        await logFailedNotification(db, error, { 
+            type: "admin", 
+            to: "shopkabale@gmail.com", 
+            subject: emailObject.subject 
+        });
     }
 }
 
 // --- Helper function to send a SELLER email ---
-async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
+async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
+    // FIX 1: Create new email object
+    const emailObject = new Brevo.SendSmtpEmail();
+
     const itemHtml = sellerItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
@@ -233,11 +230,20 @@ async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buy
         console.log(`Seller notification sent to: ${sellerEmail}`);
     } catch (error) {
         console.error(`Error sending seller email to ${sellerEmail}:`, error.response?.body);
+        // FIX 2: Log failure to Firestore
+        await logFailedNotification(db, error, { 
+            type: "seller", 
+            to: sellerEmail, 
+            subject: emailObject.subject 
+        });
     }
 }
 
-// --- NEW: Helper function to send the BUYER email ---
-async function sendBuyerNotification(apiInstance, emailObject, buyerEmail, buyerInfo, allItems, grandTotal) {
+// --- Helper function to send the BUYER email ---
+async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, allItems, grandTotal) {
+    // FIX 1: Create new email object
+    const emailObject = new Brevo.SendSmtpEmail();
+
     const itemHtml = allItems.map(item => 
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
@@ -263,10 +269,10 @@ async function sendBuyerNotification(apiInstance, emailObject, buyerEmail, buyer
         <br>
         <p style="margin-top: 25px; font-size: 14px; color: #555;">
             Thank you for shopping local with KabaleOnline!
-        </p>
+        </A
     `;
     emailObject.sender = { name: "KabaleOnline", email: "support@kabaleonline.com" };
-    emailObject.to = [{ email: buyerEmail }]; // The buyer's email
+    emailObject.to = [{ email: buyerEmail }];
     emailObject.replyTo = { email: "support@kabaleonline.com" };
 
     try {
@@ -274,5 +280,11 @@ async function sendBuyerNotification(apiInstance, emailObject, buyerEmail, buyer
         console.log(`Buyer receipt sent to: ${buyerEmail}`);
     } catch (error) {
         console.error(`Error sending buyer receipt to ${buyerEmail}:`, error.response?.body);
+        // FIX 2: Log failure to Firestore
+        await logFailedNotification(db, error, { 
+            type: "buyer", 
+            to: buyerEmail, 
+            subject: emailObject.subject 
+        });
     }
 }
