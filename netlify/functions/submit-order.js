@@ -129,7 +129,8 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error("Error creating order:", error.
+        // --- THIS WAS THE FIRST TYPO ---
+        console.error("Error creating order:", error); 
         return {
             statusCode: 500,
             body: JSON.stringify({ error: "Failed to place order." }),
@@ -140,7 +141,6 @@ exports.handler = async (event, context) => {
 // --- Helper function to send the ADMIN email ---
 async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allItems, grandTotal, orderIds) {
     const itemHtml = allItems.map(item => 
-        // --- THIS IS THE FIX ---
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
     ).join('');
     
@@ -175,7 +175,6 @@ async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allIte
 // --- Helper function to send a SELLER email ---
 async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
     const itemHtml = sellerItems.map(item => 
-        // --- THIS IS THE FIX ---
         `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
@@ -210,6 +209,7 @@ async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buy
         await apiInstance.sendTransacEmail(emailObject);
         console.log(`Seller notification sent to: ${sellerEmail}`);
     } catch (error) {
+        // --- THIS WAS THE SECOND TYPO ---
         console.error(`Error sending seller email to ${sellerEmail}:`, error.response?.body);
     }
 }
