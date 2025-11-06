@@ -61,17 +61,30 @@ exports.handler = async (event, context) => {
             ordersBySeller[item.sellerId].push(item);
         });
 
-        // Get all seller emails in parallel
+        // --- NEW: Fetch Buyer and Seller Emails ---
+        
+        // Get seller emails in parallel
         const sellerIds = Object.keys(ordersBySeller);
         const sellerDocPromises = sellerIds.map(id => db.collection('users').doc(id).get());
-        const sellerDocsSnapshots = await Promise.all(sellerDocPromises);
         
+        // Get buyer email
+        const buyerDocPromise = db.collection('users').doc(buyerId).get();
+
+        // Wait for all database requests
+        const [buyerDoc, ...sellerDocsSnapshots] = await Promise.all([buyerDocPromise, ...sellerDocPromises]);
+
+        // Process seller emails
         const sellerEmailMap = new Map();
         sellerDocsSnapshots.forEach(doc => {
             if (doc.exists) {
                 sellerEmailMap.set(doc.id, doc.data().email); 
             }
         });
+
+        // Process buyer email
+        const buyerEmail = buyerDoc.exists() ? buyerDoc.data().email : null;
+
+        // --- End of Email Fetching ---
 
         // Save the order to Firestore
         const batch = db.batch();
@@ -103,10 +116,12 @@ exports.handler = async (event, context) => {
         // Send all notifications (after batch is successful)
         const notificationPromises = [];
 
+        // 1. Send to Admin
         notificationPromises.push(
             sendAdminNotification(apiInstance, sendSmtpEmail, buyerInfo, items, totalPrice, newOrderIds)
         );
 
+        // 2. Send to Sellers
         for (const sellerId of sellerIds) {
             const sellerEmail = sellerEmailMap.get(sellerId);
             if (sellerEmail) {
@@ -120,6 +135,15 @@ exports.handler = async (event, context) => {
                 console.warn(`No email found for sellerId: ${sellerId}. Cannot notify.`);
             }
         }
+        
+        // --- NEW: 3. Send to Buyer ---
+        if (buyerEmail) {
+            notificationPromises.push(
+                sendBuyerNotification(apiInstance, sendSmtpEmail, buyerEmail, buyerInfo, items, totalPrice)
+            );
+        } else {
+            console.warn(`No email found for buyerId: ${buyerId}. Cannot send receipt.`);
+        }
 
         await Promise.allSettled(notificationPromises);
 
@@ -129,7 +153,6 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        // --- THIS WAS THE FIRST TYPO ---
         console.error("Error creating order:", error); 
         return {
             statusCode: 500,
@@ -209,7 +232,47 @@ async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buy
         await apiInstance.sendTransacEmail(emailObject);
         console.log(`Seller notification sent to: ${sellerEmail}`);
     } catch (error) {
-        // --- THIS WAS THE SECOND TYPO ---
         console.error(`Error sending seller email to ${sellerEmail}:`, error.response?.body);
+    }
+}
+
+// --- NEW: Helper function to send the BUYER email ---
+async function sendBuyerNotification(apiInstance, emailObject, buyerEmail, buyerInfo, allItems, grandTotal) {
+    const itemHtml = allItems.map(item => 
+        `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
+    ).join('');
+
+    emailObject.subject = `Thank you for your order! (KabaleOnline)`;
+    emailObject.htmlContent = `
+        <h1 style="color: #333;">Thank you, ${buyerInfo.name}!</h1>
+        <p style="font-size: 16px;">
+            We've successfully received your order. An admin will contact you at <strong>${buyerInfo.phone}</strong> to confirm delivery details.
+        </p>
+        <p>This email is your official receipt.</p>
+        <hr>
+        <h3>Your Order Summary:</h3>
+        <ul>${itemHtml}</ul>
+        <hr>
+        <h2 style="color: #333;">Total: UGX ${grandTotal.toLocaleString()}</h2>
+        <p>(Payment is made on delivery)</p>
+        <hr>
+        <h3>Delivery Details:</h3>
+        <p><strong>Name:</strong> ${buyerInfo.name}</p>
+        <p><strong>Phone:</strong> ${buyerInfo.phone}</p>
+        <p><strong>Location:</strong> ${buyerInfo.location}</p>
+        <br>
+        <p style="margin-top: 25px; font-size: 14px; color: #555;">
+            Thank you for shopping local with KabaleOnline!
+        </p>
+    `;
+    emailObject.sender = { name: "KabaleOnline", email: "support@kabaleonline.com" };
+    emailObject.to = [{ email: buyerEmail }]; // The buyer's email
+    emailObject.replyTo = { email: "support@kabaleonline.com" };
+
+    try {
+        await apiInstance.sendTransacEmail(emailObject);
+        console.log(`Buyer receipt sent to: ${buyerEmail}`);
+    } catch (error) {
+        console.error(`Error sending buyer receipt to ${buyerEmail}:`, error.response?.body);
     }
 }
