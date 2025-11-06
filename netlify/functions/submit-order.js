@@ -1,18 +1,16 @@
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
-// --- NEW (Brevo) ---
 const Brevo = require('@getbrevo/brevo');
 
-// --- NEW (Brevo API setup) ---
-// 1. Configure the Brevo API client
+// Brevo API setup
 const apiInstance = new Brevo.TransactionalEmailsApi();
 apiInstance.apiClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
 
-// 2. Create a reusable email object
+// Create a reusable email object
 const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
-// Your Firebase Admin SDK configuration
+// Firebase Admin SDK configuration
 const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -47,14 +45,12 @@ exports.handler = async (event, context) => {
         };
     }
 
-    // This is the secure, verified user ID
     const buyerId = decodedToken.uid;
 
     try {
         const orderDetails = JSON.parse(event.body);
         const { buyerInfo, items, totalPrice } = orderDetails;
 
-        // Add the secure buyerId to the buyerInfo object
         buyerInfo.buyerId = buyerId;
 
         const ordersBySeller = {};
@@ -73,7 +69,6 @@ exports.handler = async (event, context) => {
         const sellerEmailMap = new Map();
         sellerDocsSnapshots.forEach(doc => {
             if (doc.exists) {
-                // Assumes email is stored on the user's document
                 sellerEmailMap.set(doc.id, doc.data().email); 
             }
         });
@@ -105,15 +100,13 @@ exports.handler = async (event, context) => {
 
         await batch.commit();
 
-        // --- Send all notifications (after batch is successful) ---
+        // Send all notifications (after batch is successful)
         const notificationPromises = [];
 
-        // Promise for Admin Email (with all items)
         notificationPromises.push(
             sendAdminNotification(apiInstance, sendSmtpEmail, buyerInfo, items, totalPrice, newOrderIds)
         );
 
-        // Promises for Seller Emails (one for each seller)
         for (const sellerId of sellerIds) {
             const sellerEmail = sellerEmailMap.get(sellerId);
             if (sellerEmail) {
@@ -128,10 +121,8 @@ exports.handler = async (event, context) => {
             }
         }
 
-        // Wait for all emails to be sent
         await Promise.allSettled(notificationPromises);
 
-        // Return success to the user
         return {
             statusCode: 200,
             body: JSON.stringify({ success: true, message: "Order placed successfully!" }),
@@ -146,16 +137,18 @@ exports.handler = async (event, context) => {
     }
 };
 
-// --- Helper function to send the ADMIN email ---
+// --- Helper function to send the ADMIN email (UPDATED) ---
 async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allItems, grandTotal, orderIds) {
     const itemHtml = allItems.map(item => 
+        // The 'item.name' here is what's 'undefined'. Fix this in your "Add to Cart" code.
         `<li>${item.name} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
     ).join('');
     
-    // Set properties for this specific email
-    emailObject.subject = `🎉 New Master Order! Total: UGX ${grandTotal.toLocaleString()}`;
+    emailObject.subject = `🎉 Congrats! New Order on KabaleOnline! Total: UGX ${grandTotal.toLocaleString()}`;
     emailObject.htmlContent = `
-        <h1>You have a new order!</h1>
+        <h1 style="color: #333;">Congrats! A new order was placed!</h1>
+        <p style="font-size: 16px;">This is a great sign. Keep up the good work!</p>
+        <hr>
         <p><strong>Grand Total:</strong> UGX ${grandTotal.toLocaleString()}</p>
         <p><strong>Firestore Order IDs:</strong> ${orderIds.join(', ')}</p>
         <hr>
@@ -168,7 +161,7 @@ async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allIte
         <ul>${itemHtml}</ul>
     `;
     emailObject.sender = { name: "KabaleOnline Admin", email: "support@kabaleonline.com" };
-    emailObject.to = [{ email: "shopkabale@gmail.com" }]; // <-- YOUR ADMIN EMAIL
+    emailObject.to = [{ email: "shopkabale@gmail.com" }];
     emailObject.replyTo = { email: "support@kabaleonline.com" };
 
     try {
@@ -179,17 +172,20 @@ async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allIte
     }
 }
 
-// --- Helper function to send a SELLER email ---
+// --- Helper function to send a SELLER email (UPDATED) ---
 async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
     const itemHtml = sellerItems.map(item => 
+        // The 'item.name' here is what's 'undefined'. Fix this in your "Add to Cart" code.
         `<li>${item.name} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
-    // Set properties for this specific email
     emailObject.subject = `🎉 You have a new order on KabaleOnline!`;
     emailObject.htmlContent = `
-        <h1>You've made a sale!</h1>
-        <p>A customer has ordered your item(s). Please prepare them for delivery.</p>
+        <h1 style="color: #333;">You've made a sale!</h1>
+        <p style="font-size: 16px;">
+            Thank you for being a valued seller on KabaleOnline. A customer has just ordered your item(s)!
+        </p>
+        <hr>
         <p><strong>Your total for this part of the order:</strong> UGX ${sellerTotalPrice.toLocaleString()}</p>
         <hr>
         <h3>Items to Prepare:</h3>
@@ -201,15 +197,19 @@ async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buy
         <p><strong>Location:</strong> ${buyerInfo.location}</p>
         <br>
         <p>An admin from KabaleOnline will contact you soon to coordinate pickup and payment.</p>
+        
+        <p style="margin-top: 25px; font-size: 14px; color: #555;">
+            We are working hard to bring more customers to your storefront. Thank you for helping us build a great local marketplace!
+        </p>
     `;
     emailObject.sender = { name: "KabaleOnline", email: "support@kabaleonline.com" };
-    emailObject.to = [{ email: sellerEmail }]; // The seller's email
+    emailObject.to = [{ email: sellerEmail }];
     emailObject.replyTo = { email: "support@kabaleonline.com" };
 
     try {
         await apiInstance.sendTransacEmail(emailObject);
         console.log(`Seller notification sent to: ${sellerEmail}`);
-    } catch (error) {
+    } catch (error {
         console.error(`Error sending seller email to ${sellerEmail}:`, error.response?.body);
     }
 }
