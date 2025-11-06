@@ -175,7 +175,7 @@ async function sendAdminNotification(db, apiInstance, buyerInfo, allItems, grand
                     <table width="600" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                         <tr>
                             <td align="center" style="padding: 30px 20px 20px 20px;">
-                                <img src="${LOGO_URL}" alt="KabaleOnline Logo" width="80" style="max-width: 80px;">
+                                <img src="${LOGO_URL}" alt="KabaleOnline Logo" width="160" style="max-width: 160px;">
                             </td>
                         </tr>
                         <tr>
@@ -272,7 +272,7 @@ async function sendSellerNotification(db, apiInstance, sellerEmail, buyerInfo, s
                     <table width="600" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                         <tr>
                             <td align="center" style="padding: 30px 20px 20px 20px;">
-                                <img src="${LOGO_URL}" alt="KabaleOnline Logo" width="80" style="max-width: 80px;">
+                                <img src="${LOGO_URL}" alt="KabaleOnline Logo" width="160" style="max-width: 160px;">
                             </td>
                         </tr>
                         <tr>
@@ -367,7 +367,7 @@ async function sendBuyerNotification(db, apiInstance, buyerEmail, buyerInfo, all
                     <table width="600" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                         <tr>
                             <td align="center" style="padding: 30px 20px 20px 20px;">
-                                <img src="${LOGO_URL}" alt="KabaleOnline Logo" width="80" style="max-width: 80px;">
+                                <img src="${LOGO_URL}" alt="KabaleOnline Logo" width="160" style="max-width: 160px;">
                             </td>
                         </tr>
                         <tr>
