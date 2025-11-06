@@ -1,15 +1,10 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-// === NEW: Added getDocs, limit, and where ===
-import { doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy, limit, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const productDetailContent = document.getElementById('product-detail-content');
 const qaList = document.getElementById('qa-list');
 const qaFormContainer = document.getElementById('qa-form-container');
-
-// === NEW: Added references for suggestions ===
-const suggestionsSection = document.getElementById('suggestions-section');
-const suggestionsGrid = document.getElementById('suggestions-grid');
 
 let currentUser = null;
 const urlParams = new URLSearchParams(window.location.search);
@@ -63,9 +58,13 @@ if (!productId) {
     });
 }
 
+// --- THIS IS THE UPDATED FUNCTION ---
 function saveToLocalStorage(product) {
     try {
+        // --- 1. Update 'lastViewed' (Your existing logic is good) ---
         let lastViewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
+        
+        // Remove this item if it already exists (to avoid duplicates)
         lastViewed = lastViewed.filter(item => item.id !== product.id);
         
         const simplifiedProduct = {
@@ -83,15 +82,26 @@ function saveToLocalStorage(product) {
             sellerIsVerified: product.sellerIsVerified || false, 
             sellerBadges: product.sellerBadges || []
         };
+        // Add the current item to the front of the list
         lastViewed.unshift(simplifiedProduct);
-        lastViewed = lastViewed.slice(0, 8); 
+
+        // Keep the list limited
+        lastViewed = lastViewed.slice(0, 8); // Increased to 8 to match carousel size
         localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
 
+        // --- 2. Update 'userInterests' (NEW LOGIC) ---
         if (product.category) {
             let userInterests = JSON.parse(localStorage.getItem('userInterests')) || [];
+            
+            // Remove the category if it already exists
             userInterests = userInterests.filter(cat => cat !== product.category);
+            
+            // Add the new category to the VERY FRONT (most recent)
             userInterests.unshift(product.category);
+            
+            // Keep only the 20 most recent unique categories
             userInterests = userInterests.slice(0, 20); 
+            
             localStorage.setItem('userInterests', JSON.stringify(userInterests));
         }
 
@@ -99,26 +109,7 @@ function saveToLocalStorage(product) {
         console.error("Error saving to localStorage:", e);
     }
 }
-
-// === NEW HELPER FUNCTION (from main.js) ===
-/**
- * Creates an optimized and transformed Cloudinary URL.
- */
-function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
-    if (!url || !url.includes('res.cloudinary.com')) {
-        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
-    }
-    const transformations = {
-        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
-        placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
-    };
-    const transformString = transformations[type] || transformations.thumbnail;
-    const urlParts = url.split('/upload/');
-    if (urlParts.length !== 2) {
-        return url;
-    }
-    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
-}
+// --- END OF UPDATED FUNCTION ---
 
 
 async function loadProductAndSeller() {
@@ -146,12 +137,8 @@ async function loadProductAndSeller() {
 
         renderProductDetails(productData, sellerData);
         loadQandA(productData.sellerId);
-        saveToLocalStorage(productData); 
 
-        // === NEW: Call to fetch suggestions ===
-        if (productData.category) {
-            fetchAndRenderSuggestions(productData.category, productData.id);
-        }
+        saveToLocalStorage(productData); // This now calls the new function
 
     } catch (error) {
         console.error("Critical error loading product:", error);
@@ -348,104 +335,6 @@ function renderProductDetails(product, seller) {
     }
 }
 
-// === THIS IS THE UPDATED FUNCTION WITH DEBUG LOGS ===
-async function fetchAndRenderSuggestions(productCategory, currentProductId) {
-    if (!suggestionsGrid || !suggestionsSection) return;
-
-    console.log(`%c[Debug] Fetching suggestions for category: "${productCategory}"`, "color: #007aff; font-weight: bold;"); // <-- DEBUG 1
-
-    try {
-        const q = query(
-            collection(db, 'products'),
-            where('category', '==', productCategory),
-            where('isSold', '==', false),
-            orderBy('createdAt', 'desc'),
-            limit(5) // Fetch 5, in case the current product is one of them
-        );
-        
-        const snapshot = await getDocs(q);
-        
-        const products = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(p => p.id !== currentProductId) // Filter out the current product
-            .slice(0, 4); // Take the first 4
-
-        console.log(`%c[Debug] Found ${snapshot.size} docs from query, ${products.length} products after filtering.`, "color: #007aff;"); // <-- DEBUG 2
-
-        if (products.length > 0) {
-            console.log('%c[Debug] ✅ Found suggestions, showing section.', "color: green; font-weight: bold;"); // <-- DEBUG 3
-            renderProductCards(suggestionsGrid, products);
-            suggestionsSection.style.display = 'block'; // Show the section
-        } else {
-            console.log('%c[Debug] ❌ No suggestions found, section will remain hidden.', "color: red; font-weight: bold;"); // <-- DEBUG 4
-            suggestionsSection.style.display = 'none'; // Hide if no suggestions
-        }
-
-    } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        suggestionsSection.style.display = 'none';
-    }
-}
-// === END OF UPDATED FUNCTION ===
-
-// === NEW FUNCTION: Renders product cards (simplified from main.js) ===
-function renderProductCards(gridElement, products) {
-    gridElement.innerHTML = ""; // Clear skeletons
-    
-    if (products.length === 0) {
-        gridElement.innerHTML = "<p>No related items found.</p>";
-        return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    products.forEach(product => {
-        const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
-        const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
-
-        const verifiedTextHTML = (product.sellerBadges?.includes('verified') || product.sellerIsVerified) 
-            ? `<p class="verified-text">✓ Verified Seller</p>` 
-            : '';
-
-        let priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
-        if (product.listing_type === 'service') {
-             priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
-                ${product.service_duration ? `<span style="font-size: 0.7em; color: var(--text-secondary);">/ ${product.service_duration}</span>` : ''}
-            </p>`;
-        }
-        
-        const productLink = document.createElement("a");
-        productLink.href = `/product.html?id=${product.id}`;
-        productLink.className = "product-card-link";
-        
-        productLink.innerHTML = `
-          <div class="product-card">
-            <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy-suggestion">
-            <div class="product-card-info">
-                <h3>${product.name}</h3>
-                ${priceHTML}
-                ${product.location ? `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>` : ''}
-                ${product.sellerName ? `<p class="seller-name">by ${product.sellerName}</p>` : ''} 
-                ${verifiedTextHTML}
-            </div>
-          </div>
-        `;
-        
-        fragment.appendChild(productLink);
-    });
-
-    gridElement.appendChild(fragment);
-
-    // Basic lazy loading for suggestion images
-    const imagesToLoad = gridElement.querySelectorAll('img.lazy-suggestion');
-    imagesToLoad.forEach(img => {
-        img.src = img.dataset.src;
-        img.onload = () => img.classList.add('loaded');
-    });
-}
-
-
-// --- (All functions below are your existing functions) ---
-
 function setupAddToCartButton(product) {
     const addToCartBtn = document.getElementById('add-to-cart-btn');
     if (!addToCartBtn) return;
@@ -630,7 +519,7 @@ function loadQandA(sellerId) {
                     const qa = docSnap.data(); 
                     const div = document.createElement('div'); 
                     div.className = 'question-item'; 
-                    const question = qa.question.replace(/<g, "&lt;").replace(/>/g, "&gt;");
+                    const question = qa.question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     const answer = qa.answer ? qa.answer.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>') : null;
 
                     div.innerHTML = `<p><strong>Q: ${question}</strong></p>${answer ? `<div class="answer-item"><p><strong>A:</strong> ${answer}</p></div>` : ''}`; 
