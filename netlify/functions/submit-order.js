@@ -129,7 +129,7 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error("Error creating order:", error);
+        console.error("Error creating order:", error.
         return {
             statusCode: 500,
             body: JSON.stringify({ error: "Failed to place order." }),
@@ -137,11 +137,11 @@ exports.handler = async (event, context) => {
     }
 };
 
-// --- Helper function to send the ADMIN email (UPDATED) ---
+// --- Helper function to send the ADMIN email ---
 async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allItems, grandTotal, orderIds) {
     const itemHtml = allItems.map(item => 
-        // The 'item.name' here is what's 'undefined'. Fix this in your "Add to Cart" code.
-        `<li>${item.name} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
+        // --- THIS IS THE FIX ---
+        `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()} (Seller: ${item.sellerId})</li>`
     ).join('');
     
     emailObject.subject = `🎉 Congrats! New Order on KabaleOnline! Total: UGX ${grandTotal.toLocaleString()}`;
@@ -172,11 +172,11 @@ async function sendAdminNotification(apiInstance, emailObject, buyerInfo, allIte
     }
 }
 
-// --- Helper function to send a SELLER email (UPDATED) ---
+// --- Helper function to send a SELLER email ---
 async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buyerInfo, sellerItems, sellerTotalPrice) {
     const itemHtml = sellerItems.map(item => 
-        // The 'item.name' here is what's 'undefined'. Fix this in your "Add to Cart" code.
-        `<li>${item.name} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
+        // --- THIS IS THE FIX ---
+        `<li>${item.productName} (Qty: ${item.quantity}) - UGX ${item.price.toLocaleString()}</li>`
     ).join('');
 
     emailObject.subject = `🎉 You have a new order on KabaleOnline!`;
@@ -209,7 +209,7 @@ async function sendSellerNotification(apiInstance, emailObject, sellerEmail, buy
     try {
         await apiInstance.sendTransacEmail(emailObject);
         console.log(`Seller notification sent to: ${sellerEmail}`);
-    } catch (error {
+    } catch (error) {
         console.error(`Error sending seller email to ${sellerEmail}:`, error.response?.body);
     }
 }
