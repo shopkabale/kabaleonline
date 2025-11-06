@@ -348,9 +348,11 @@ function renderProductDetails(product, seller) {
     }
 }
 
-// === NEW FUNCTION: Fetches and renders suggestions ===
+// === THIS IS THE UPDATED FUNCTION WITH DEBUG LOGS ===
 async function fetchAndRenderSuggestions(productCategory, currentProductId) {
     if (!suggestionsGrid || !suggestionsSection) return;
+
+    console.log(`%c[Debug] Fetching suggestions for category: "${productCategory}"`, "color: #007aff; font-weight: bold;"); // <-- DEBUG 1
 
     try {
         const q = query(
@@ -368,10 +370,14 @@ async function fetchAndRenderSuggestions(productCategory, currentProductId) {
             .filter(p => p.id !== currentProductId) // Filter out the current product
             .slice(0, 4); // Take the first 4
 
+        console.log(`%c[Debug] Found ${snapshot.size} docs from query, ${products.length} products after filtering.`, "color: #007aff;"); // <-- DEBUG 2
+
         if (products.length > 0) {
+            console.log('%c[Debug] ✅ Found suggestions, showing section.', "color: green; font-weight: bold;"); // <-- DEBUG 3
             renderProductCards(suggestionsGrid, products);
             suggestionsSection.style.display = 'block'; // Show the section
         } else {
+            console.log('%c[Debug] ❌ No suggestions found, section will remain hidden.', "color: red; font-weight: bold;"); // <-- DEBUG 4
             suggestionsSection.style.display = 'none'; // Hide if no suggestions
         }
 
@@ -380,6 +386,7 @@ async function fetchAndRenderSuggestions(productCategory, currentProductId) {
         suggestionsSection.style.display = 'none';
     }
 }
+// === END OF UPDATED FUNCTION ===
 
 // === NEW FUNCTION: Renders product cards (simplified from main.js) ===
 function renderProductCards(gridElement, products) {
@@ -623,7 +630,7 @@ function loadQandA(sellerId) {
                     const qa = docSnap.data(); 
                     const div = document.createElement('div'); 
                     div.className = 'question-item'; 
-                    const question = qa.question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const question = qa.question.replace(/<g, "&lt;").replace(/>/g, "&gt;");
                     const answer = qa.answer ? qa.answer.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>') : null;
 
                     div.innerHTML = `<p><strong>Q: ${question}</strong></p>${answer ? `<div class="answer-item"><p><strong>A:</strong> ${answer}</p></div>` : ''}`; 
