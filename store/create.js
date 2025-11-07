@@ -1,8 +1,15 @@
+// =================================================================== //
+//                                                                     //
+//             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
+//                   STORE EDITOR SCRIPT (create.js)                   //
+//                                                                     //
+// =================================================================== //
+
 // Imports from your *existing* firebase.js file
 import { auth, db, app } from '../firebase.js'; // 'app' is needed for storage
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-// NEW: Import Firebase Storage for file uploads
+// Import Firebase Storage for file uploads
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 // --- Initialize Storage ---
