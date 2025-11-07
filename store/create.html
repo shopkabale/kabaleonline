@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Your Store</title>
+    <!-- Link to your main stylesheet -->
+    <!-- <link rel="stylesheet" href="../style.css"> -->
+    <style>
+        /* Basic styles - replace with your own CSS */
+        body { font-family: sans-serif; background: #f4f4f4; padding: 1em; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1.5em; }
+        label { display: block; margin-bottom: 0.5em; font-weight: bold; }
+        input, textarea { width: 100%; padding: 0.8em; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .username-input { display: flex; }
+        .username-input span { padding: 0.8em; background: #eee; border: 1px solid #ccc; border-right: 0; border-radius: 4px 0 0 4px; }
+        .username-input input { border-radius: 0 4px 4px 0; }
+        button { width: 100%; padding: 1em; background: #007bff; color: white; border: 0; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        button:disabled { background: #ccc; }
+        .message { padding: 1em; border-radius: 4px; margin-bottom: 1em; }
+        .message.success { background: #d4edda; color: #155724; }
+        .message.error { background: #f8d7da; color: #721c24; }
+        .placeholder-msg { text-align: center; padding: 2em; }
+        .placeholder-msg a { color: #007bff; }
+        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #007bff; border-radius: 50%; margin: 2em auto; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This container will hold either the login message or the form -->
+        <div id="store-create-container">
+            <!-- Initial Loading Spinner -->
+            <div id="loading-spinner" class="loader"></div>
+        </div>
+
+        <!-- 
+          Template for the login message (clones your cart.js logic)
+        -->
+        <template id="login-placeholder">
+             <div class="placeholder-msg">
+                <h3>Please Log In</h3>
+                <p>You need to be logged in to manage your store.</p>
+                <a href="/login/">Go to Login Page</a>
+            </div>
+        </template>
+
+        <!-- 
+          Template for the form
+        -->
+        <template id="form-template">
+            <div>
+                <h1>Manage Your Store</h1>
+                <p>This is your seller identity. Your store username will be your unique link.</p>
+                <p id="userIdDisplay" style="font-size: 0.8em; color: #555;"></p>
+                
+                <div id="messageBox" class="message" style="display: none;"></div>
+
+                <form id="storeForm">
+                    <div class="form-group">
+                        <label for="storeUsername">Store Username</label>
+                        <div class="username-input">
+                            <span>/store/</span>
+                            <input type="text" id="storeUsername" name="storeUsername" placeholder="alines-shoes" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storeName">Store Name (Public)</label>
+                        <input type="text" id="storeName" name="storeName" placeholder="Aline's Premium Shoes" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storeDescription">Store Description (Bio)</label>
+                        <textarea id="storeDescription" name="storeDescription" rows="4" placeholder="We sell the best premium shoes, boots, and sandals..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="storeWhatsapp">Public WhatsApp Number</label>
+                        <input type="tel" id="storeWhatsapp" name="storeWhatsapp" placeholder="+25677...">
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" id="saveButton">
+                            <span id="saveButtonText">Save Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </template>
+
+    </div>
+    
+    <!-- Link to your firebase.js and the new logic file -->
+    <script type="module" src="../firebase.js"></script>
+    <script type="module" src="create.js"></script>
+
+</body>
+</html>
