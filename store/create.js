@@ -42,22 +42,44 @@ async function loadPage(user) {
     const bannerImageInput = document.getElementById('storeBannerFile');
     const bannerImagePreview = document.getElementById('bannerImagePreview');
     
-    // --- Tab Switching Logic ---
-    const tabButtons = container.querySelectorAll('.tab-button');
-    const tabContents = container.querySelectorAll('.tab-content');
-    tabButtons.forEach(button => {
+    // --- NEW: Scroll Navigation Logic ---
+    const navButtons = container.querySelectorAll('.nav-button');
+    const formSections = container.querySelectorAll('.form-section');
+
+    // 1. Click-to-Scroll
+    navButtons.forEach(button => {
         button.addEventListener('click', (e) => {
-            e.preventDefault(); // Stop form submission
-            const tabName = button.dataset.tab;
-
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            tabContents.forEach(content => {
-                content.id === `tab-${tabName}` ? content.classList.add('active') : content.classList.remove('active');
-            });
+            e.preventDefault();
+            const targetId = button.getAttribute('href'); // e.g., "#section-general"
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     });
+
+    // 2. Scroll-to-Highlight (Intersection Observer)
+    const observerOptions = {
+        root: null, // observes intersections relative to the viewport
+        rootMargin: '-50px 0px -50% 0px', // Triggers when section is in the top half of the screen
+        threshold: 0
+    };
+
+    const observerCallback = (entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const activeSectionId = entry.target.id;
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('href') === `#${activeSectionId}`);
+                });
+            }
+        });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    formSections.forEach(section => observer.observe(section));
+    // --- END NEW: Scroll Navigation Logic ---
+
 
     // --- Image Preview Logic ---
     profileImageInput.addEventListener('change', (e) => {
@@ -101,7 +123,7 @@ async function loadPage(user) {
         storeForm.dataset.existingProfileUrl = store.profileImageUrl || '';
         storeForm.dataset.existingBannerUrl = design.bannerUrl || '';
 
-        // Tab 1: General
+        // Section 1: General
         storeForm.storeUsername.value = store.username || '';
         storeForm.storeName.value = store.storeName || '';
         storeForm.storeDescription.value = store.description || '';
@@ -110,7 +132,7 @@ async function loadPage(user) {
             profileImagePreview.style.display = 'block';
         }
 
-        // Tab 2: Design
+        // Section 2: Design
         if (design.bannerUrl) {
             bannerImagePreview.src = design.bannerUrl;
             bannerImagePreview.style.display = 'block';
@@ -118,13 +140,13 @@ async function loadPage(user) {
         storeForm.storeThemeColor.value = design.themeColor || '#007aff';
         storeForm.productLayout.value = design.productLayout || 'default';
 
-        // Tab 3: Links
+        // Section 3: Links
         storeForm.linkWhatsapp.value = links.whatsapp || '';
         storeForm.linkFacebook.value = links.facebook || '';
         storeForm.linkTiktok.value = links.tiktok || '';
         storeForm.linkGithub.value = links.github || '';
         
-        // Tab 4: Footer
+        // Section 4: Footer
         storeForm.footerText.value = footer.text || '';
         storeForm.footerColor.value = footer.color || '#0A0A1F';
     }
