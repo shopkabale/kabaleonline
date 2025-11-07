@@ -1,3 +1,10 @@
+// =================================================================== //
+//                                                                     //
+//             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
+//                     PUBLIC JAVASCRIPT (main.js)                     //
+//                                                                     //
+// =================================================================== //
+
 // Imports from your *existing* firebase.js file
 import { db, auth } from '../firebase.js'; 
 import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
@@ -86,7 +93,7 @@ async function loadStoreContent() {
         applyCustomTheme(storeData.design || {});
         renderHeader(sellerData, storeData);
         renderSocialLinks(storeData.links || {});
-        renderReviews(sellerId); // Call reviews
+        renderReviews(sellerId); // Call reviews (now above products)
         renderProducts(sellerId, sellerData.name, storeData.design || {}); // Call products
         renderFooter(storeData.footer || {});
 
@@ -116,30 +123,16 @@ function applyCustomTheme(design) {
     let customCSS = '';
     
     // 2. Apply Product Layout
+    // We add classes to the grid, which are defined in the <style>
+    // block of store/index.html
     if (design.productLayout === '1-col') {
-        customCSS += `
-            #seller-product-grid { 
-                grid-template-columns: 1fr; 
-                max-width: 500px; 
-                margin: 0 auto;
-            }
-        `;
+        sellerProductGrid.classList.add('layout-1-col');
     } else if (design.productLayout === '2-col') {
-        // Your default is 2-col, but we force it for desktop too
-        customCSS += `
-            @media (min-width: 768px) {
-                #seller-product-grid { grid-template-columns: repeat(2, 1fr); }
-            }
-        `;
+        sellerProductGrid.classList.add('layout-2-col');
     } else if (design.productLayout === '3-col') {
-        // Your CSS has 3-col at 768px, so we just need this
-         customCSS += `
-            @media (min-width: 768px) {
-                #seller-product-grid { grid-template-columns: repeat(3, 1fr); }
-            }
-        `;
+        sellerProductGrid.classList.add('layout-3-col');
     }
-    // If 'default', we add no rules and let your main style.css take over.
+    // "default" will use your .product-grid CSS
     
     themeStyleTag.innerHTML = customCSS;
 }
@@ -260,8 +253,6 @@ function renderFooter(footer) {
             <p>${footerText}</p>
         </div>
     `;
-    // We add 'container' to match your site's padding
-    storeFooter.querySelector('div').className = 'container';
 }
 
 
@@ -315,17 +306,8 @@ function observeLazyImages() {
  */
 async function renderProducts(sellerId, sellerName, design) {
     
-    // Set layout class based on settings
-    sellerProductGrid.className = 'product-grid'; // Start with default
-    if (design.productLayout === '1-col') {
-        sellerProductGrid.classList.add('layout-1-col');
-    } else if (design.productLayout === '2-col') {
-        sellerProductGrid.classList.add('layout-2-col');
-    } else if (design.productLayout === '3-col') {
-        sellerProductGrid.classList.add('layout-3-col');
-    }
-    // "default" will use your .product-grid CSS
-
+    // Note: We're not passing gridElement, but using the global `sellerProductGrid`
+    
     try {
         const q = query(
             collection(db, "products"),
@@ -351,7 +333,7 @@ async function renderProducts(sellerId, sellerName, design) {
             const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
             const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
 
-            // We don't show "Verified Seller" here because the whole *store* is the seller.
+            // This is the full logic from your shop/main.js
             
             const isInWishlist = state.wishlist.has(product.id);
             const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
@@ -407,6 +389,7 @@ async function renderProducts(sellerId, sellerName, design) {
                 productLink.style.cursor = 'default';
             }
 
+            // This is your card structure, but with sellerName and verifiedText removed
             productLink.innerHTML = `
               <div class="product-card ${soldClass}">
                  ${soldOverlayHTML}
@@ -418,7 +401,7 @@ async function renderProducts(sellerId, sellerName, design) {
                 ${stockStatusHTML}
                 ${priceHTML}
                 ${locationHTML}
-                <!-- We don't need seller name here, we are on their store -->
+                <!-- Seller name is removed, as we are on their store -->
               </div>
             `;
             
@@ -443,6 +426,7 @@ async function renderProducts(sellerId, sellerName, design) {
 
 /**
  * Fetches the current user's wishlist to sync state.
+ * (Copied from your shop/main.js)
  */
 async function fetchUserWishlist() {
     if (!state.currentUser) { state.wishlist.clear(); return; }
@@ -456,6 +440,7 @@ async function fetchUserWishlist() {
 
 /**
  * Adds click listeners to all wishlist buttons on the page.
+ * (Copied from your shop/main.js)
  */
 function initializeWishlistButtons() {
     const allProductCards = document.querySelectorAll('.product-card-link');
@@ -470,6 +455,7 @@ function initializeWishlistButtons() {
 
 /**
  * Handles a click on a wishlist button.
+ * (Copied from your shop/main.js)
  */
 async function handleWishlistClick(event) {
     event.preventDefault();
@@ -505,6 +491,7 @@ async function handleWishlistClick(event) {
 
 /**
  * Updates the visual state of a wishlist button.
+ * (Copied from your shop/main.js)
  */
 function updateWishlistButtonUI(button, isInWishlist) {
     const icon = button.querySelector('i');
