@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *LAYOUT FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *THEME & INFO UPDATE* //
 //                                                                     //
 // =================================================================== //
 
@@ -17,36 +17,41 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 const state = {
     currentUser: null,
     wishlist: new Set(),
-    currentSellerId: null 
+    currentSellerId: null,
+    activeThemePrefix: '#theme-default' // Default theme
+};
+const DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_NAMES = {
+    mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
+    fri: 'Friday', sat: 'Saturday', sun: 'Sunday'
 };
 
 // ==================================================== //
 //               DOM ELEMENT REFERENCES                 //
 // ==================================================== //
 
-// --- Single Store Page Elements ---
+// --- Page Containers ---
 const singleStorePage = document.getElementById('single-store-page');
-const storeHeader = document.getElementById('store-header');
-const listingsTitle = document.getElementById('listings-title');
-const sellerProductGrid = document.getElementById('seller-product-grid');
-const avgRatingSummary = document.getElementById('average-rating-summary');
-const reviewsList = document.getElementById('reviews-list');
-const storeFooter = document.getElementById('store-footer');
+const directoryPage = document.getElementById('store-directory-page');
 const loadingHeader = document.getElementById('loading-header');
-const loadingProducts = document.getElementById('loading-products');
-const loadingReviews = document.getElementById('loading-reviews');
-const headerTemplate = document.getElementById('store-header-template');
-const themeStyleTag = document.getElementById('store-theme-styles');
-// NEW Elements for description
-const descriptionSection = document.getElementById('store-description-section');
-const descriptionBody = document.getElementById('store-description-p-body');
 
 // --- Store Directory Page Elements ---
-const directoryPage = document.getElementById('store-directory-page');
-// UPDATED: Changed from grid to list
 const directoryList = document.getElementById('store-directory-list');
-const loadingDirectory = document.getElementById('loading-directory');
 
+// --- Single Store Page Elements (now dynamically selected) ---
+// We will use a helper function to get elements from the active theme
+function $(selector) {
+    // Queries within the active theme container
+    return document.querySelector(`${state.activeThemePrefix} ${selector}`);
+}
+function $all(selector) {
+    // Queries all within the active theme container
+    return document.querySelectorAll(`${state.activeThemePrefix} ${selector}`);
+}
+
+// --- Templates ---
+const headerTemplateAdv = document.getElementById('store-header-template-adv');
+const themeStyleTag = document.getElementById('store-theme-styles');
 
 // ==================================================== //
 //               INITIALIZATION & AUTH                  //
@@ -103,6 +108,7 @@ async function loadPageContent() {
 
 // ==================================================== //
 //               NEW: STORE DIRECTORY LOGIC             //
+//               *UPDATED WITH PHONE & LOCATION* //
 // ==================================================== //
 
 /**
@@ -127,17 +133,26 @@ async function loadStoreDirectory() {
             const store = doc.data();
             const profileImg = store.profileImageUrl || 'https://placehold.co/80x80/e0e0e0/777?text=Store';
             
-            // UPDATED: Using new class names and HTML structure
+            // +++++ NEW: Generate Phone and Location HTML +++++
+            const phoneHTML = store.phone ? 
+                `<p><i class="fa-solid fa-phone"></i> ${store.phone}</p>` : '';
+            const locationHTML = store.location ? 
+                `<p><i class="fa-solid fa-location-dot"></i> ${store.location}</p>` : '';
+            
             const storeCard = document.createElement('a');
-            storeCard.className = 'store-card-list'; // New class
+            storeCard.className = 'store-card-list'; 
             storeCard.href = `/store/${store.username}`; 
             
             storeCard.innerHTML = `
                 <img src="${profileImg}" alt="${store.storeName} profile" class="store-card-list-avatar">
                 <div class="store-card-list-info">
                     <h3>${store.storeName || 'Unnamed Store'}</h3>
-                    <p>${store.description || 'No description available.'}</p>
+                    <p class="description">${store.description || 'No description available.'}</p>
+                    <div class="store-card-list-contact">
+                        ${phoneHTML}
+                        ${locationHTML}
                     </div>
+                </div>
             `;
             fragment.appendChild(storeCard);
         });
@@ -153,28 +168,18 @@ async function loadStoreDirectory() {
 
 // ==================================================== //
 //               EXISTING: SINGLE STORE LOGIC           //
+//               *UPDATED FOR THEMES* //
 // ==================================================== //
 
-/**
- * This is your *original* loadStoreContent function,
- * renamed to loadSingleStore.
- */
 async function loadSingleStore(username) {
-    if (!storeHeader || !listingsTitle || !sellerProductGrid) {
-        console.error("Single store elements not found on page.");
-        return;
-    }
-    
     try {
         // 1. Look up the username
         const usernameDocRef = doc(db, 'storeUsernames', username);
         const usernameDoc = await getDoc(usernameDocRef);
 
         if (!usernameDoc.exists()) {
-            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
+            singleStorePage.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
             if(loadingHeader) loadingHeader.remove();
-            if(loadingProducts) loadingProducts.remove();
-            if(loadingReviews) loadingReviews.remove();
             return;
         }
 
@@ -187,30 +192,43 @@ async function loadSingleStore(username) {
         const sellerDoc = await getDoc(sellerDocRef);
 
         if (!sellerDoc.exists() || !sellerDoc.data().isSeller) {
-            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>This user is not a seller.</p>`;
+            singleStorePage.innerHTML = `<h1>Store Not Found</h1><p>This user is not a seller.</p>`;
             if(loadingHeader) loadingHeader.remove();
-            if(loadingProducts) loadingProducts.remove();
-            if(loadingReviews) loadingReviews.remove();
             return;
         }
 
         const sellerData = sellerDoc.data();
         const storeData = sellerData.store || {};
+        const design = storeData.design || {};
+        
+        // --- +++++ NEW: APPLY THEME +++++ ---
+        const theme = design.theme || 'default';
+        if (theme === 'advanced') {
+            state.activeThemePrefix = '#theme-advanced';
+            document.getElementById('theme-advanced').style.display = 'block';
+        } else {
+            state.activeThemePrefix = '#theme-default';
+            document.getElementById('theme-default').style.display = 'block';
+        }
+        applyThemeColor(design); // Apply custom color
+        // --- +++++ END THEME LOGIC +++++ ---
         
         // --- 2. Build the Page ---
-        applyCustomTheme(storeData.design || {});
-        // UPDATED: Pass full storeData to renderHeader
         renderHeader(sellerData, storeData); 
         renderSocialLinks(storeData.links || {});
+        
+        // +++++ NEW: Render Info (Hours/Map) +++++
+        renderStoreInfo(storeData); 
+        
         renderReviews(sellerId);
-        renderProducts(sellerId, sellerData.name, storeData.design || {});
+        renderProducts(sellerId, sellerData.name, design);
         renderFooter(storeData.footer || {});
 
         if(loadingHeader) loadingHeader.remove(); // Remove final loader
 
     } catch (error) {
         console.error("Error fetching store:", error);
-        storeHeader.innerHTML = `<h1>Error</h1><p>Could not load this store. ${error.message}</p>`;
+        singleStorePage.innerHTML = `<h1>Error</h1><p>Could not load this store. ${error.message}</p>`;
         if(loadingHeader) loadingHeader.remove();
     }
 }
@@ -222,16 +240,15 @@ async function loadSingleStore(username) {
 /**
  * Injects custom CSS into the page based on seller's settings.
  */
-function applyCustomTheme(design) {
+function applyThemeColor(design) {
     const themeColor = design.themeColor || 'var(--ko-primary)';
+    // Set the CSS variable for the whole document
     document.documentElement.style.setProperty('--ko-primary', themeColor);
-    
-    // REMOVED: All productLayout logic has been removed
-    // The grid will now default to your main style.css
 }
 
 /**
  * Renders the store header with banner, avatar, and info.
+ * *UPDATED* to populate both themes.
  */
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
@@ -242,26 +259,70 @@ function renderHeader(sellerData, store) {
     
     const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
     const bannerUrl = store.design?.bannerUrl;
+    
+    // +++++ NEW: Get Phone and Location +++++
+    const storePhone = store.phone;
+    const storeLocation = store.location;
 
     document.title = `${storeName} | Kabale Online Store`;
 
-    const headerNode = headerTemplate.content.cloneNode(true);
-    headerNode.getElementById('store-avatar-img').src = profileImageUrl;
-    headerNode.getElementById('store-avatar-img').alt = storeName;
-    headerNode.getElementById('store-name-h1').textContent = storeName;
-    // UPDATED: Use the new ID and the short bio
-    headerNode.getElementById('store-short-bio-p').textContent = shortBio;
+    // --- Populate Active Theme ---
+    // Universal Elements
+    $(`.store-avatar`).src = profileImageUrl;
+    $(`.store-avatar`).alt = storeName;
+    $(`.store-info h1`).textContent = storeName;
+    $(`.store-bio`).textContent = shortBio;
     
-    if (bannerUrl) {
-        storeHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
-    } else {
-        storeHeader.style.backgroundColor = "var(--ko-primary)";
+    // Phone and Location
+    const phoneEl = $(`.store-contact-info #store-phone-${state.activeThemePrefix.substring(7)}`);
+    const locationEl = $(`.store-contact-info #store-location-${state.activeThemePrefix.substring(7)}`);
+
+    if (phoneEl) {
+        if (storePhone) {
+            phoneEl.querySelector('span').textContent = storePhone;
+        } else {
+            phoneEl.style.display = 'none';
+        }
+    }
+    if (locationEl) {
+        if (storeLocation) {
+            locationEl.querySelector('span').textContent = storeLocation;
+        } else {
+            locationEl.style.display = 'none';
+        }
+    }
+
+    // --- Theme-Specific Elements ---
+    if (state.activeThemePrefix === '#theme-advanced') {
+        // This theme uses a template
+        const headerNode = headerTemplateAdv.content.cloneNode(true);
+        // We query the *template* first, then append
+        headerNode.getElementById('store-avatar-img-adv').src = profileImageUrl;
+        headerNode.getElementById('store-avatar-img-adv').alt = storeName;
+        headerNode.getElementById('store-name-h1-adv').textContent = storeName;
+        headerNode.getElementById('store-short-bio-p-adv').textContent = shortBio;
+        
+        // Phone/Location in template
+        const phoneElAdv = headerNode.getElementById('store-phone-adv');
+        if (storePhone) phoneElAdv.querySelector('span').textContent = storePhone;
+        else phoneElAdv.style.display = 'none';
+        
+        const locationElAdv = headerNode.getElementById('store-location-adv');
+        if (storeLocation) locationElAdv.querySelector('span').textContent = storeLocation;
+        else locationElAdv.style.display = 'none';
+
+        if (bannerUrl) {
+            $('#store-header-adv').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
+        } else {
+            $('#store-header-adv').style.backgroundColor = "var(--ko-primary)";
+        }
+        $('#store-header-adv').innerHTML = ''; 
+        $('#store-header-adv').appendChild(headerNode);
     }
     
-    storeHeader.innerHTML = ''; 
-    storeHeader.appendChild(headerNode);
-
-    // --- NEW: Populate the separate "About" section ---
+    // --- Populate the separate "About" section (for both themes) ---
+    const descriptionSection = $(`#store-description-section-${state.activeThemePrefix.substring(7)}`);
+    const descriptionBody = $(`#store-description-p-body-${state.activeThemePrefix.substring(7)}`);
     if (storeBio && descriptionSection && descriptionBody) {
         descriptionBody.textContent = storeBio;
         descriptionSection.style.display = 'block';
@@ -269,8 +330,8 @@ function renderHeader(sellerData, store) {
 }
 
 function renderSocialLinks(links) {
-    const actionsDiv = document.getElementById('store-actions-div');
-    const socialsDiv = document.getElementById('store-socials-div');
+    const actionsDiv = $(`#store-actions-div-${state.activeThemePrefix.substring(7)}`);
+    const socialsDiv = $(`#store-socials-div-${state.activeThemePrefix.substring(7)}`);
     if (!actionsDiv || !socialsDiv) return;
 
     actionsDiv.innerHTML = '';
@@ -292,7 +353,7 @@ function renderSocialLinks(links) {
         socialsDiv.innerHTML += `<a href="https://github.com/${links.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
     }
     
-    const shareBtn = document.getElementById('share-store-btn');
+    const shareBtn = $('#share-store-btn');
     if(shareBtn) {
         shareBtn.addEventListener('click', () => {
             navigator.clipboard.writeText(window.location.href)
@@ -302,7 +363,54 @@ function renderSocialLinks(links) {
     }
 }
 
+// --- +++++ NEW: Render Store Info (Hours & Map) +++++ ---
+function renderStoreInfo(store) {
+    const workingHours = store.workingHours || {};
+    const location = store.location || 'No location specified.';
+    
+    const hoursList = $(`.hours-list`);
+    const locationText = $(`.store-map-location-text`);
+
+    // 1. Populate Location Text
+    if (locationText) {
+        locationText.textContent = location;
+    }
+    
+    // 2. Populate Working Hours
+    if (hoursList) {
+        hoursList.innerHTML = ''; // Clear 'loading'
+        let hasHours = false;
+        DAYS_OF_WEEK.forEach(day => {
+            const li = document.createElement('li');
+            const dayName = DAY_NAMES[day];
+            if (workingHours[day]) {
+                li.innerHTML = `<strong>${dayName}</strong> <span>${workingHours[day].from} - ${workingHours[day].to}</span>`;
+                hasHours = true;
+            } else {
+                li.innerHTML = `<strong>${dayName}</strong> <span>Closed</span>`;
+            }
+            hoursList.appendChild(li);
+        });
+        
+        if (!hasHours) {
+            hoursList.innerHTML = '<li>Working hours not specified.</li>';
+        }
+    }
+    
+    // 3. TODO: Initialize Google Map
+    // const mapPlaceholder = $(`#map-placeholder`);
+    // if (mapPlaceholder && location !== 'No location specified.') {
+    //    mapPlaceholder.innerHTML = `[Initializing Google Map for: ${location}]`;
+    //    // This is where you would call the Google Maps API
+    // }
+}
+
 async function renderReviews(sellerId) {
+    // Get elements from active theme
+    const avgRatingSummary = $(`#average-rating-summary-${state.activeThemePrefix.substring(7)}`);
+    const reviewsList = $(`#reviews-list-${state.activeThemePrefix.substring(7)}`);
+    const loadingReviews = $(`#loading-reviews-${state.activeThemePrefix.substring(7)}`);
+
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
@@ -336,6 +444,7 @@ async function renderReviews(sellerId) {
 }
 
 function renderFooter(footer) {
+    const storeFooter = $(`#store-footer-${state.activeThemePrefix.substring(7)}`);
     if (!storeFooter) return;
     const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
     const footerColor = footer.color || '#0A0A1F';
@@ -345,7 +454,8 @@ function renderFooter(footer) {
 
 // =================================================================== //
 //                                                                     //
-//    YOUR *FULL* RENDERPRODUCTS FUNCTION (UNCHANGED)                  //
+//    YOUR *FULL* RENDERPRODUCTS FUNCTION (UNCHANGED LOGIC)            //
+//    *UPDATED TO USE ACTIVE THEME SELECTORS* //
 //                                                                     //
 // =================================================================== //
 
@@ -379,11 +489,17 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
 }, { rootMargin: "0px 0px 200px 0px" });
 
 function observeLazyImages() {
-    const imagesToLoad = document.querySelectorAll('img.lazy');
+    // Use $all to query within the active theme
+    const imagesToLoad = $all('img.lazy');
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
 async function renderProducts(sellerId, sellerName, design) {
+    // Get elements from active theme
+    const sellerProductGrid = $(`#seller-product-grid-${state.activeThemePrefix.substring(7)}`);
+    const listingsTitle = $(`#listings-title-${state.activeThemePrefix.substring(7)}`);
+    const loadingProducts = $(`#loading-products-${state.activeThemePrefix.substring(7)}`);
+
     try {
         const q = query(
             collection(db, "products"),
@@ -475,6 +591,7 @@ async function renderProducts(sellerId, sellerName, design) {
 
 // ==================================================== //
 //               WISHLIST FUNCTIONS (UNCHANGED)         //
+//               *UPDATED TO USE $all* //
 // ==================================================== //
 
 async function fetchUserWishlist() {
@@ -488,7 +605,8 @@ async function fetchUserWishlist() {
 }
 
 function initializeWishlistButtons() {
-    const allProductCards = document.querySelectorAll('.product-card-link');
+    // Use $all to query within the active theme
+    const allProductCards = $all('.product-card-link');
     allProductCards.forEach(card => {
         const wishlistButton = card.querySelector('.wishlist-btn');
         if (wishlistButton) {
