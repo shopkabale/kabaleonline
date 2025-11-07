@@ -20,12 +20,17 @@
             overflow: hidden;
             border: 1px solid var(--border-color);
         }
-        .tabs {
+        
+        /* NEW: Sticky Navigation Header */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
             display: flex;
-            background: var(--bg-main);
+            background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
         }
-        .tab-button {
+        .nav-button {
             flex: 1;
             padding: 15px 10px;
             text-align: center;
@@ -35,27 +40,26 @@
             border: none;
             background: none;
             font-size: 0.9em;
+            text-decoration: none;
         }
-        .tab-button.active {
+        .nav-button.active {
             color: var(--ko-primary);
             border-bottom: 3px solid var(--ko-primary);
         }
-        .tab-content {
-            display: none;
+        /* END NEW */
+        
+        .form-section {
             padding: 30px;
+            border-bottom: 1px solid var(--border-color);
         }
-        .tab-content.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 25px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
+        .form-section h2 {
+            margin-top: 0;
+            font-size: 1.5em;
             color: var(--text-main);
         }
+        
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
         input[type="text"], input[type="tel"], input[type="url"], textarea, select {
             width: 100%;
             padding: 12px;
@@ -104,7 +108,7 @@
         input[type="color"] { width: 50px; height: 40px; border: 1px solid #ddd; padding: 0; cursor: pointer; }
         small { color: var(--text-secondary); }
         
-        /* NEW: Image Upload Styles */
+        /* Image Upload Styles */
         .image-uploader {
             border: 2px dashed var(--border-color);
             border-radius: 6px;
@@ -149,17 +153,20 @@
         </template>
 
         <template id="form-template">
-            <div class="tabs">
-                <button class="tab-button active" data-tab="general">General</button>
-                <button class="tab-button" data-tab="design">Design</button>
-                <button class="tab-button" data-tab="links">Links</button>
-                <button class="tab-button" data-tab="footer">Footer</button>
+            <!-- NEW: Sticky Navigation -->
+            <div class="sticky-nav">
+                <a class="nav-button active" href="#section-general" data-section="general">General</a>
+                <a class="nav-button" href="#section-design" data-section="design">Design</a>
+                <a class="nav-button" href="#section-links" data-section="links">Links</a>
+                <a class="nav-button" href="#section-footer" data-section="footer">Footer</a>
             </div>
 
+            <!-- NEW: One long form -->
             <form id="storeForm">
-                <!-- TAB 1: GENERAL -->
-                <div id="tab-general" class="tab-content active">
-                    <h2 style="margin-top:0;">General Settings</h2>
+            
+                <!-- SECTION 1: GENERAL -->
+                <section id="section-general" class="form-section">
+                    <h2>General Settings</h2>
                     <div class="form-group">
                         <label for="storeUsername">Store Username (Your public link)</label>
                         <div class="username-input">
@@ -183,11 +190,11 @@
                         </label>
                         <img id="profileImagePreview" class="profile-pic-preview" alt="Profile preview">
                     </div>
-                </div>
+                </section>
 
-                <!-- TAB 2: DESIGN -->
-                <div id="tab-design" class="tab-content">
-                    <h2 style="margin-top:0;">Design & Layout</h2>
+                <!-- SECTION 2: DESIGN -->
+                <section id="section-design" class="form-section">
+                    <h2>Design & Layout</h2>
                     <div class="form-group">
                         <label for="storeBannerFile">Store Banner (Cover Photo)</label>
                         <input type="file" id="storeBannerFile" name="storeBannerFile" accept="image/png, image/jpeg">
@@ -212,11 +219,11 @@
                             <option value="3-col">3 Columns</option>
                         </select>
                     </div>
-                </div>
+                </section>
 
-                <!-- TAB 3: LINKS -->
-                <div id="tab-links" class="tab-content">
-                    <h2 style="margin-top:0;">Social & Contact Links</h2>
+                <!-- SECTION 3: LINKS -->
+                <section id="section-links" class="form-section">
+                    <h2>Social & Contact Links</h2>
                     <div class="form-group">
                         <label for="linkWhatsapp">WhatsApp Number</label>
                         <input type="tel" id="linkWhatsapp" name="linkWhatsapp" placeholder="+25677...">
@@ -233,11 +240,11 @@
                         <label for="linkGithub">GitHub Username</label>
                         <input type="text" id="linkGithub" name="linkGithub" placeholder="kabaleonline">
                     </div>
-                </div>
+                </section>
 
-                <!-- TAB 4: FOOTER -->
-                <div id="tab-footer" class="tab-content">
-                    <h2 style="margin-top:0;">Custom Footer</h2>
+                <!-- SECTION 4: FOOTER -->
+                <section id="section-footer" class="form-section">
+                    <h2>Custom Footer</h2>
                     <div class="form-group">
                         <label for="footerText">Footer Text</label>
                         <textarea id="footerText" name="footerText" placeholder="© 2025 My Store. All rights reserved."></textarea>
@@ -248,12 +255,12 @@
                             <input type="color" id="footerColor" name="footerColor" value="#0A0A1F">
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- SHARED BUTTON -->
-                <div style="padding: 0 30px 30px 30px; border-top: 1px solid var(--border-color);">
-                    <div id="messageBox" class="message" style="display: none; margin-top: 20px;"></div>
-                    <div class="form-group" style="margin-bottom: 0; margin-top: 20px;">
+                <!-- SHARED BUTTON (at the bottom) -->
+                <div style="padding: 30px;">
+                    <div id="messageBox" class="message" style="display: none;"></div>
+                    <div class="form-group" style="margin-bottom: 0;">
                         <button type="submit" id="saveButton">
                             <span id="saveButtonText">Save Changes</span>
                         </button>
@@ -263,6 +270,7 @@
         </template>
     </div>
     
+    <!-- Make sure to use ../firebase.js because this file is in the /store/ folder -->
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="create.js"></script>
 </body>
