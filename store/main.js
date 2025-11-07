@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *USERNAME FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *DIRECTORY & STORE FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -17,7 +17,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 const state = {
     currentUser: null,
     wishlist: new Set(),
-    // We need to store the sellerId globally so the review function can use it
     currentSellerId: null 
 };
 
@@ -25,6 +24,8 @@ const state = {
 //               DOM ELEMENT REFERENCES                 //
 // ==================================================== //
 
+// --- Single Store Page Elements ---
+const singleStorePage = document.getElementById('single-store-page');
 const storeHeader = document.getElementById('store-header');
 const listingsTitle = document.getElementById('listings-title');
 const sellerProductGrid = document.getElementById('seller-product-grid');
@@ -37,31 +38,35 @@ const loadingReviews = document.getElementById('loading-reviews');
 const headerTemplate = document.getElementById('store-header-template');
 const themeStyleTag = document.getElementById('store-theme-styles');
 
+// --- Store Directory Page Elements ---
+const directoryPage = document.getElementById('store-directory-page');
+const directoryGrid = document.getElementById('store-directory-grid');
+const loadingDirectory = document.getElementById('loading-directory');
+
+
 // ==================================================== //
 //               INITIALIZATION & AUTH                  //
 // ==================================================== //
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Handle Auth for Wishlist functionality
     onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
-        await fetchUserWishlist();
-        // 2. Load Store Content AFTER we know who the user is
-        loadStoreContent();
+        await fetchUserWishlist(); // Fetches wishlist for product cards
+        
+        // This is now the main "router"
+        loadPageContent();
     });
 });
 
+// ==================================================== //
+//               NEW: PAGE ROUTING LOGIC                //
+// ==================================================== //
 
-// ================================================================== //
-//                                                                    //
-//    THIS IS THE UPDATED `loadStoreContent` FUNCTION (STEP 3)        //
-//                                                                    //
-// ================================================================== //
-
-async function loadStoreContent() {
+function getUsernameFromUrl() {
     let username = null;
     const pathParts = window.location.pathname.split("/");
-    if (pathParts.length >= 3 && pathParts[2]) {
+    // Check that part[2] exists and is not just empty space
+    if (pathParts.length >= 3 && pathParts[2] && pathParts[2].trim() !== '') {
         username = decodeURIComponent(pathParts[2]);
     }
 
@@ -70,40 +75,121 @@ async function loadStoreContent() {
         const urlParams = new URLSearchParams(window.location.search);
         username = urlParams.get('username');
     }
+    return username;
+}
 
-    if (!username) {
-        storeHeader.innerHTML = '<h1>Store not found.</h1><p>No username provided in the URL.</p>';
-        loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
+/**
+ * Main "Router" function. Decides whether to show
+ * the directory or a single store.
+ */
+async function loadPageContent() {
+    const username = getUsernameFromUrl();
+
+    if (username) {
+        // --- LOAD SINGLE STORE ---
+        if(directoryPage) directoryPage.style.display = 'none';
+        if(singleStorePage) singleStorePage.style.display = 'block';
+        await loadSingleStore(username);
+    } else {
+        // --- LOAD STORE DIRECTORY ---
+        if(singleStorePage) singleStorePage.style.display = 'none';
+        if(directoryPage) directoryPage.style.display = 'block';
+        document.title = "All Stores | Kabale Online";
+        await loadStoreDirectory();
+    }
+}
+
+// ==================================================== //
+//               NEW: STORE DIRECTORY LOGIC             //
+// ==================================================== //
+
+/**
+ * Fetches all stores from the 'publicStores' collection
+ * and renders them as cards.
+ */
+async function loadStoreDirectory() {
+    if (!directoryGrid) return; // In case element isn't on page
+    try {
+        const q = query(collection(db, "publicStores"), orderBy("storeName"));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            directoryGrid.innerHTML = "<p>No stores have been created yet.</p>";
+            return;
+        }
+
+        directoryGrid.innerHTML = ''; // Clear loader
+        const fragment = document.createDocumentFragment();
+
+        snapshot.forEach(doc => {
+            const store = doc.data();
+            const profileImg = store.profileImageUrl || 'https://placehold.co/80x80/e0e0e0/777?text=Store';
+            
+            const storeCard = document.createElement('a');
+            storeCard.className = 'store-card';
+            // Use the correct URL structure for your site
+            storeCard.href = `/store/${store.username}`; 
+            
+            storeCard.innerHTML = `
+                <img src="${profileImg}" alt="${store.storeName} profile" class="store-card-avatar">
+                <div class="store-card-info">
+                    <h3>${store.storeName || 'Unnamed Store'}</h3>
+                    <p>${store.description || 'No description available.'}</p>
+                </div>
+            `;
+            fragment.appendChild(storeCard);
+        });
+
+        directoryGrid.appendChild(fragment);
+
+    } catch (error) {
+        console.error("Error fetching store directory:", error);
+        directoryGrid.innerHTML = `<p>Error: Could not load store directory. ${error.message}</p>`;
+    }
+}
+
+
+// ==================================================== //
+//               EXISTING: SINGLE STORE LOGIC           //
+// ==================================================== //
+
+/**
+ * This is your *original* loadStoreContent function,
+ * renamed to loadSingleStore.
+ */
+async function loadSingleStore(username) {
+    // Check if the single store elements exist
+    if (!storeHeader || !listingsTitle || !sellerProductGrid) {
+        console.error("Single store elements not found on page.");
         return;
     }
-
-    // --- 1. Find the Seller by Username ---
+    
     try {
-        
-        // +++++ THIS IS THE NEW, SECURE FIX +++++
         // 1. Look up the username in the public 'storeUsernames' collection
         const usernameDocRef = doc(db, 'storeUsernames', username);
         const usernameDoc = await getDoc(usernameDocRef);
 
         if (!usernameDoc.exists()) {
             storeHeader.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
-            loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
+            if(loadingHeader) loadingHeader.remove();
+            if(loadingProducts) loadingProducts.remove();
+            if(loadingReviews) loadingReviews.remove();
             return;
         }
 
         // 2. Get the seller's ID from the lookup document
         const sellerId = usernameDoc.data().userId;
-        state.currentSellerId = sellerId; // <-- Save this for the review system
+        state.currentSellerId = sellerId; // Save for review system
 
         // 3. Get the seller's public data using their ID
-        // This query works because your rule "allow get: if true" on /users/{userId}
         const sellerDocRef = doc(db, 'users', sellerId);
         const sellerDoc = await getDoc(sellerDocRef);
-        // +++++ END OF NEW FIX +++++
 
         if (!sellerDoc.exists() || !sellerDoc.data().isSeller) {
             storeHeader.innerHTML = `<h1>Store Not Found</h1><p>This user is not a seller.</p>`;
-            loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
+            if(loadingHeader) loadingHeader.remove();
+            if(loadingProducts) loadingProducts.remove();
+            if(loadingReviews) loadingReviews.remove();
             return;
         }
 
@@ -114,34 +200,25 @@ async function loadStoreContent() {
         applyCustomTheme(storeData.design || {});
         renderHeader(sellerData, storeData);
         renderSocialLinks(storeData.links || {});
-        renderReviews(sellerId); // Call reviews
-        renderProducts(sellerId, sellerData.name, storeData.design || {}); // Call products
+        renderReviews(sellerId);
+        renderProducts(sellerId, sellerData.name, storeData.design || {});
         renderFooter(storeData.footer || {});
 
-        loadingHeader.remove(); // Remove final loader
+        if(loadingHeader) loadingHeader.remove(); // Remove final loader
 
     } catch (error) {
         console.error("Error fetching store:", error);
-        // This is where your user is seeing the error message!
         storeHeader.innerHTML = `<h1>Error</h1><p>Could not load this store. ${error.message}</p>`;
-        loadingHeader.remove();
+        if(loadingHeader) loadingHeader.remove();
     }
 }
-// ================================================================== //
-//                       END OF UPDATED FUNCTION                      //
-// ================================================================== //
-
 
 // ==================================================== //
-//               PAGE RENDERING FUNCTIONS               //
+//           SINGLE STORE RENDERING FUNCTIONS           //
 // ==================================================== //
 
-/**
- * Injects custom CSS into the page based on seller's settings.
- */
 function applyCustomTheme(design) {
     const themeColor = design.themeColor || 'var(--ko-primary)';
-    
     document.documentElement.style.setProperty('--ko-primary', themeColor);
     
     if (design.productLayout === '1-col') {
@@ -153,9 +230,6 @@ function applyCustomTheme(design) {
     }
 }
 
-/**
- * Renders the store header with banner, avatar, and info.
- */
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
@@ -176,16 +250,19 @@ function renderHeader(sellerData, store) {
         storeHeader.style.backgroundColor = "var(--ko-primary)";
     }
     
+    // Clear header before appending
+    storeHeader.innerHTML = ''; 
     storeHeader.appendChild(headerNode);
 }
 
-/**
- * Renders the social media and action buttons in the header.
- */
 function renderSocialLinks(links) {
     const actionsDiv = document.getElementById('store-actions-div');
     const socialsDiv = document.getElementById('store-socials-div');
     if (!actionsDiv || !socialsDiv) return;
+
+    // Clear existing links
+    actionsDiv.innerHTML = '';
+    socialsDiv.innerHTML = '';
 
     if (links.whatsapp) {
         const whatsappLink = `https://wa.me/${links.whatsapp}?text=Hi, I saw your store on Kabale Online.`;
@@ -213,9 +290,6 @@ function renderSocialLinks(links) {
     }
 }
 
-/**
- * Renders the seller's reviews.
- */
 async function renderReviews(sellerId) {
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
@@ -249,33 +323,20 @@ async function renderReviews(sellerId) {
     }
 }
 
-/**
- * Renders the seller's custom footer.
- */
 function renderFooter(footer) {
     if (!storeFooter) return;
-    
     const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
     const footerColor = footer.color || '#0A0A1F';
-    
     storeFooter.style.backgroundColor = footerColor;
-    storeFooter.innerHTML = `
-        <div class="container">
-            <p>${footerText}</p>
-        </div>
-    `;
+    storeFooter.innerHTML = `<div class="container"><p>${footerText}</p></div>`;
 }
 
-
 // =================================================================== //
 //                                                                     //
-//    THIS IS YOUR *FULL* RENDERPRODUCTS FUNCTION FROM shop/main.js    //
+//    YOUR *FULL* RENDERPRODUCTS FUNCTION (UNCHANGED)                  //
 //                                                                     //
 // =================================================================== //
 
-/**
- * Creates an optimized and transformed Cloudinary URL.
- */
 function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     if (!url || !url.includes('res.cloudinary.com')) {
         return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
@@ -310,11 +371,7 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-/**
- * Renders all products for a seller
- */
 async function renderProducts(sellerId, sellerName, design) {
-    
     try {
         const q = query(
             collection(db, "products"),
@@ -336,26 +393,18 @@ async function renderProducts(sellerId, sellerName, design) {
         const fragment = document.createDocumentFragment();
         snapshot.forEach(doc => {
             const product = { id: doc.id, ...doc.data() };
-            
             const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
             const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
-
             const isInWishlist = state.wishlist.has(product.id);
             const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
             const wishlistClass = isInWishlist ? 'active' : '';
             const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
             const soldClass = isActuallySold ? 'is-sold' : '';
             const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
-
-            let priceHTML = '';
-            let locationHTML = '';
-            let stockStatusHTML = '';
-            let tagsHTML = '';
+            let priceHTML = '', locationHTML = '', stockStatusHTML = '', tagsHTML = '';
 
             if (product.listing_type === 'service') {
-                priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
-                    ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
-                </p>`;
+                priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}</p>`;
                 if (product.service_location_type) {
                     const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
                     locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
@@ -372,18 +421,11 @@ async function renderProducts(sellerId, sellerName, design) {
                 } else if (product.quantity > 0 && product.quantity <= 5) {
                     stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
                 }
-                if (product.listing_type === 'rent') {
-                    tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
-                } else if (product.listing_type === 'sale') {
-                    tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
-                }
-                if (product.condition === 'new') {
-                    tagsHTML += '<span class="product-tag condition-new">NEW</span>';
-                } else if (product.condition === 'used') {
-                    tagsHTML += '<span class="product-tag condition-used">USED</span>';
-                }
+                if (product.listing_type === 'rent') tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+                else if (product.listing_type === 'sale') tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+                if (product.condition === 'new') tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+                else if (product.condition === 'used') tagsHTML += '<span class="product-tag condition-used">USED</span>';
             }
-
             const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
 
             const productLink = document.createElement("a");
@@ -393,7 +435,6 @@ async function renderProducts(sellerId, sellerName, design) {
                 productLink.style.pointerEvents = 'none';
                 productLink.style.cursor = 'default';
             }
-
             productLink.innerHTML = `
               <div class="product-card ${soldClass}">
                  ${soldOverlayHTML}
@@ -407,14 +448,11 @@ async function renderProducts(sellerId, sellerName, design) {
                 ${locationHTML}
               </div>
             `;
-            
             fragment.appendChild(productLink);
         });
-
         sellerProductGrid.appendChild(fragment);
         observeLazyImages();
         initializeWishlistButtons();
-        
     } catch(error) {
         console.error("Error fetching listings:", error);
         listingsTitle.textContent = 'Could not load listings.';
@@ -424,12 +462,9 @@ async function renderProducts(sellerId, sellerName, design) {
 }
 
 // ==================================================== //
-//               WISHLIST FUNCTIONS                     //
+//               WISHLIST FUNCTIONS (UNCHANGED)         //
 // ==================================================== //
 
-/**
- * Fetches the current user's wishlist to sync state.
- */
 async function fetchUserWishlist() {
     if (!state.currentUser) { state.wishlist.clear(); return; }
     try {
@@ -440,9 +475,6 @@ async function fetchUserWishlist() {
     } catch (error) { console.error("Could not fetch user wishlist:", error); }
 }
 
-/**
- * Adds click listeners to all wishlist buttons on the page.
- */
 function initializeWishlistButtons() {
     const allProductCards = document.querySelectorAll('.product-card-link');
     allProductCards.forEach(card => {
@@ -454,9 +486,6 @@ function initializeWishlistButtons() {
     });
 }
 
-/**
- * Handles a click on a wishlist button.
- */
 async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -471,12 +500,10 @@ async function handleWishlistClick(event) {
     button.disabled = true;
     try {
         if (state.wishlist.has(productId)) {
-            // Remove from wishlist
             await deleteDoc(wishlistRef);
             state.wishlist.delete(productId);
             updateWishlistButtonUI(button, false);
         } else {
-            // Add to wishlist
             await setDoc(wishlistRef, { 
                 name: button.dataset.productName, 
                 price: parseFloat(button.dataset.productPrice) || 0, 
@@ -489,9 +516,6 @@ async function handleWishlistClick(event) {
     } catch (error) { console.error("Error updating wishlist:", error); } finally { button.disabled = false; }
 }
 
-/**
- * Updates the visual state of a wishlist button.
- */
 function updateWishlistButtonUI(button, isInWishlist) {
     const icon = button.querySelector('i');
     if (isInWishlist) {
