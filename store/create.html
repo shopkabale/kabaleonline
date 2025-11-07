@@ -20,7 +20,7 @@
             border: 1px solid var(--border-color);
         }
 
-        /* === NEW STICKY NAV STYLES === */
+        /* === STICKY NAV STYLES === */
         .sticky-nav {
             position: sticky;
             top: 0;
@@ -41,7 +41,7 @@
             background: none;
             font-size: 0.9em;
             text-decoration: none;
-            border-bottom: 3px solid transparent; /* Placeholder border */
+            border-bottom: 3px solid transparent; 
             transition: all 0.2s ease;
         }
         .nav-button:hover {
@@ -50,9 +50,8 @@
         }
         .nav-button.active {
             color: var(--ko-primary);
-            border-bottom: 3px solid var(--ko-primary); /* Active color */
+            border-bottom: 3px solid var(--ko-primary); 
         }
-        /* === END STICKY NAV STYLES === */
 
         .form-section {
             padding: 30px;
@@ -66,7 +65,7 @@
 
         .form-group { margin-bottom: 25px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
-        input[type="text"], input[type="tel"], input[type="url"], textarea, select {
+        input[type="text"], input[type="tel"], input[type="url"], input[type="time"], textarea, select {
             width: 100%;
             padding: 12px;
             box-sizing: border-box;
@@ -90,45 +89,36 @@
         body.dark-mode .username-input span { background: var(--bg-dark); }
         .username-input input { border-radius: 0 6px 6px 0; }
 
-
-        /* --- +++++ NEW BUTTON CSS START +++++ --- */
+        /* --- BUTTON CSS --- */
         button[type="submit"] {
             width: 100%;
             padding: 15px;
             background: var(--ko-primary);
             color: white;
             border: none;
-            border-radius: var(--border-radius); /* Use your site's border-radius */
+            border-radius: var(--border-radius); 
             cursor: pointer;
-            font-size: 1.1em; /* Make it a bit bigger */
+            font-size: 1.1em; 
             font-weight: 700;
-            box-shadow: var(--shadow); /* Use your site's shadow */
-            transition: all 0.2s ease-out; /* Smooth hover effect */
+            box-shadow: var(--shadow); 
+            transition: all 0.2s ease-out; 
         }
-
-        /* Professional Hover Effect */
         button[type="submit"]:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1); /* Stronger shadow on hover */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); 
             opacity: 0.95;
         }
-
-        /* Click Effect */
         button[type="submit"]:active:not(:disabled) {
             transform: translateY(-1px);
             box-shadow: var(--shadow);
         }
-
-        /* Improved Disabled State */
         button[type="submit"]:disabled {
             background: var(--border-color);
             color: var(--text-secondary);
             cursor: not-allowed;
             box-shadow: none;
         }
-        /* --- +++++ NEW BUTTON CSS END +++++ --- */
-
-
+     
         .message { padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
         .message.success { background: #d4edda; color: #155724; }
         .message.error { background: #f8d7da; color: #721c24; }
@@ -168,6 +158,128 @@
             border: 2px solid var(--border-color);
         }
         input[type="file"] { display: none; }
+
+        /* --- +++++ NEW WORKING HOURS CSS +++++ --- */
+        .working-hours-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+        .day-row {
+            display: contents; /* Makes children act as direct grid items */
+        }
+        .day-row label {
+            font-weight: 600;
+            margin: 0;
+            cursor: pointer;
+        }
+        .day-row .toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .day-row input[type="checkbox"] {
+            width: auto;
+            accent-color: var(--ko-primary);
+        }
+        .hours-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .hours-inputs span {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+        /* This hides time inputs when checkbox is not checked */
+        .day-row input[type="checkbox"]:not(:checked) ~ .hours-inputs input,
+        .day-row input[type="checkbox"]:not(:checked) ~ .hours-inputs span {
+            visibility: hidden;
+        }
+        /* --- +++++ END WORKING HOURS CSS +++++ --- */
+
+        /* --- +++++ NEW THEME PREVIEW CSS +++++ --- */
+        .theme-preview-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .theme-preview {
+            border: 3px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+        .theme-preview.active {
+            border-color: var(--ko-primary);
+            opacity: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .theme-preview h4 {
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+        }
+        /* Default Preview */
+        #preview-default .p-header {
+            background: var(--bg-light);
+            border-radius: 4px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #preview-default .p-avatar {
+            width: 30px;
+            height: 30px;
+            background: var(--ko-primary);
+            border-radius: 50%;
+        }
+        #preview-default .p-title {
+            height: 10px;
+            background: var(--text-secondary);
+            flex: 1;
+            border-radius: 4px;
+        }
+        #preview-default .p-line {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        /* Advanced Preview */
+        #preview-advanced .p-banner {
+            height: 40px;
+            background: var(--ko-primary);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+        #preview-advanced .p-avatar {
+            width: 30px;
+            height: 30px;
+            background: #fff;
+            border-radius: 50%;
+            border: 2px solid var(--ko-primary);
+            position: absolute;
+            bottom: -15px;
+            left: 10px;
+        }
+        #preview-advanced .p-title {
+            height: 10px;
+            background: var(--text-secondary);
+            border-radius: 4px;
+            margin-top: 25px; /* Space for avatar */
+        }
+        #preview-advanced .p-line {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        /* --- +++++ END THEME PREVIEW CSS +++++ --- */
     </style>
 </head>
 <body>
@@ -188,6 +300,7 @@
         <template id="form-template">
             <div class="sticky-nav">
                 <a class="nav-button active" href="#section-general" data-section="general">General</a>
+                <a class="nav-button" href="#section-info" data-section="info">Store Info</a>
                 <a class="nav-button" href="#section-design" data-section="design">Design</a>
                 <a class="nav-button" href="#section-links" data-section="links">Links</a>
                 <a class="nav-button" href="#section-footer" data-section="footer">Footer</a>
@@ -222,6 +335,101 @@
                     </div>
                 </section>
 
+                <section id="section-info" class="form-section">
+                    <h2>Store Info</h2>
+                    <div class="form-group">
+                        <label for="storePhone">Store Telephone</label>
+                        <input type="tel" id="storePhone" name="storePhone" placeholder="+256 7...">
+                    </div>
+                    <div class="form-group">
+                        <label for="storeLocation">Location / Address</label>
+                        <input type="text" id="storeLocation" name="storeLocation" placeholder="E.g., Kabale Town, Rugarama Road">
+                        <small>This will be shown on your store and used for Google Maps integration.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Working Hours</label>
+                        <div class="working-hours-grid">
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-mon-open" name="day-mon-open" data-day="mon">
+                                    <label for="day-mon-open">Monday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-mon-from" name="day-mon-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-mon-to" name="day-mon-to" disabled>
+                                </div>
+                            </div>
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-tue-open" name="day-tue-open" data-day="tue">
+                                    <label for="day-tue-open">Tuesday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-tue-from" name="day-tue-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-tue-to" name="day-tue-to" disabled>
+                                </div>
+                            </div>
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-wed-open" name="day-wed-open" data-day="wed">
+                                    <label for="day-wed-open">Wednesday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-wed-from" name="day-wed-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-wed-to" name="day-wed-to" disabled>
+                                </div>
+                            </div>
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-thu-open" name="day-thu-open" data-day="thu">
+                                    <label for="day-thu-open">Thursday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-thu-from" name="day-thu-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-thu-to" name="day-thu-to" disabled>
+                                </div>
+                            </div>
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-fri-open" name="day-fri-open" data-day="fri">
+                                    <label for="day-fri-open">Friday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-fri-from" name="day-fri-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-fri-to" name="day-fri-to" disabled>
+                                </div>
+                            </div>
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-sat-open" name="day-sat-open" data-day="sat">
+                                    <label for="day-sat-open">Saturday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-sat-from" name="day-sat-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-sat-to" name="day-sat-to" disabled>
+                                </div>
+                            </div>
+                            <div class="day-row">
+                                <div class="toggle">
+                                    <input type="checkbox" id="day-sun-open" name="day-sun-open" data-day="sun">
+                                    <label for="day-sun-open">Sunday</label>
+                                </div>
+                                <div class="hours-inputs">
+                                    <input type="time" id="day-sun-from" name="day-sun-from" disabled>
+                                    <span>to</span>
+                                    <input type="time" id="day-sun-to" name="day-sun-to" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
                 <section id="section-design" class="form-section">
                     <h2>Design & Layout</h2>
                     <div class="form-group">
@@ -239,7 +447,32 @@
                             <span>This will be your button and link color.</span>
                         </div>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label for="storeTheme">Store Theme</label>
+                        <select id="storeTheme" name="storeTheme">
+                            <option value="default">Default (Compact)</option>
+                            <option value="advanced">Advanced (Full-Width Banner)</option>
+                        </select>
+                        <div class="theme-preview-container">
+                            <div class="theme-preview active" id="preview-default" data-theme="default">
+                                <h4>Default</h4>
+                                <div class="p-header">
+                                    <div class="p-avatar"></div>
+                                    <div class="p-title"></div>
+                                </div>
+                                <div class="p-line"></div>
+                            </div>
+                            <div class="theme-preview" id="preview-advanced" data-theme="advanced">
+                                <h4>Advanced</h4>
+                                <div class="p-banner">
+                                    <div class="p-avatar"></div>
+                                </div>
+                                <div class="p-title"></div>
+                                <div class="p-line"></div>
+                            </div>
+                        </div>
+                    </div>
                     </section>
 
                 <section id="section-links" class="form-section">
