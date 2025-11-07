@@ -282,21 +282,31 @@ async function handleFormSubmit(e) {
 
         // +++++ NEW: UPDATE PUBLIC USERNAME COLLECTION (FIXED) +++++
         
-        // 1. Always create or update the *current* username document.
-        // This is "idempotent" - it's safe to run even if the doc already exists.
+        // 2. Always create or update the *current* username document.
         // This will fix the migration issue for existing users like "test-store".
         const newUsernameRef = doc(db, 'storeUsernames', username);
         await setDoc(newUsernameRef, { userId: currentUser.uid });
 
-        // 2. If the username *changed* and there was an old one, delete the old one.
+        // 3. If the username *changed* and there was an old one, delete the old one.
         if (usernameChanged && existingUsername) {
             const oldUsernameRef = doc(db, 'storeUsernames', existingUsername);
             await deleteDoc(oldUsernameRef).catch(err => {
                 console.warn("Could not delete old username doc:", err);
             });
         }
-        // +++++ END OF NEW LOGIC +++++
 
+        // +++++ 4. NEW: SAVE TO PUBLIC STORE DIRECTORY +++++
+        // We use the user's ID as the document ID here
+        const publicStoreRef = doc(db, 'publicStores', currentUser.uid);
+        await setDoc(publicStoreRef, {
+            userId: currentUser.uid,
+            username: username,
+            storeName: storeData.storeName,
+            description: storeData.description.substring(0, 100), // A short snippet
+            profileImageUrl: profileImageUrl || ''
+        }, { merge: true });
+        // +++++ END OF NEW LOGIC +++++
+        
         showMessage('success', 'Store updated successfully! Your public store link is now active.');
     
     } catch (error) {
