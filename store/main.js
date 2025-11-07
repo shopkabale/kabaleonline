@@ -28,82 +28,83 @@ const loadingReviews = document.getElementById('loading-reviews');
 
 // --- Main Function ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- START DEBUGGING ---
-    console.log("store/main.js loaded.");
-    console.log("Full URL Search Params:", window.location.search);
-    // --- END DEBUGGING ---
-
+    // This is how we get the username from the URL:
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('username');
+    const sellerId = urlParams.get('sellerId'); // <-- NEW: Also check for sellerId
 
-    // --- START DEBUGGING ---
-    console.log("Username extracted from URL:", username);
-    // --- END DEBUGGING ---
-
-    if (!username) {
-        console.error("DEBUG: Username is NULL or empty. The Netlify redirect is not passing the query parameter.");
-        storeHeader.innerHTML = '<h1>Store not found.</h1><p>No username provided in the URL.</p>';
+    if (!username && !sellerId) {
+        storeHeader.innerHTML = '<h1>Store not found.</h1><p>No username or sellerId provided in the URL.</p>';
         loadingHeader.remove();
         loadingProducts.remove();
         loadingReviews.remove();
         return;
     }
 
-    // --- 1. Find the Seller by Username ---
-    let sellerId = null;
+    let sellerDoc = null;
     let sellerData = null;
 
     try {
-        console.log(`DEBUG: Running query: where('store.username', '==', ${username})`);
-        const q = query(collection(db, 'users'), where('store.username', '==', username), limit(1));
-        const snapshot = await getDocs(q);
-        console.log("DEBUG: Query snapshot received. Empty:", snapshot.empty);
+        if (username) {
+            // --- Path 1: Find by username (for the clean URL) ---
+            const q = query(collection(db, 'users'), where('store.username', '==', username), limit(1));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                sellerDoc = snapshot.docs[0];
+            }
+        } else if (sellerId) {
+            // --- Path 2: Find by sellerId (for links from your homepage) ---
+            const docRef = doc(db, 'users', sellerId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                sellerDoc = docSnap;
+            }
+        }
 
-        if (snapshot.empty) {
-            console.warn("DEBUG: Query successful, but no user found with that store username.");
-            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
+        // --- Check if we found a seller ---
+        if (!sellerDoc) {
+            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>This store does not exist.</p>`;
             loadingHeader.remove();
             loadingProducts.remove();
             loadingReviews.remove();
             return;
         }
 
-        const sellerDoc = snapshot.docs[0];
-        sellerId = sellerDoc.id;
+        // --- We found the seller! Now, proceed. ---
+        const finalSellerId = sellerDoc.id;
         sellerData = sellerDoc.data();
-        console.log("DEBUG: Found seller!", sellerId, sellerData);
-
-        // --- 2. Render the Store Header ---
+        
+        // --- Render the Page ---
         renderHeader(sellerData);
         loadingHeader.remove();
 
-        // --- 3. Fetch and Render Products & Reviews (in parallel) ---
-        fetchProducts(sellerId, sellerData.name);
-        fetchReviews(sellerId);
+        // Fetch and Render Products & Reviews (in parallel)
+        fetchProducts(finalSellerId, sellerData.name);
+        fetchReviews(finalSellerId);
 
     } catch (error) {
-        // --- START DEBUGGING ---
-        console.error("!!! FATAL ERROR fetching store:", error);
-        console.error("This is likely an INDEXING problem. Check your console for a Firebase link.");
-        // --- END DEBUGGING ---
+        console.error("Error fetching store:", error);
+        // This is where your indexing error *would* have appeared.
+        // It's good you created the index, but let's log any *other* errors.
         storeHeader.innerHTML = `<h1>Error</h1><p>Could not load this store. ${error.message}</p>`;
         loadingHeader.remove();
     }
 });
-
-// ... (The rest of the file is identical, no need to copy) ...
 
 function renderHeader(sellerData) {
     const store = sellerData.store || {};
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
     const whatsapp = store.whatsapp;
+
     document.title = `${storeName} | Kabale Online Store`;
+
     let whatsappBtn = '';
     if (whatsapp) {
         const whatsappLink = `https://wa.me/${whatsapp}?text=Hi, I saw your store on Kabale Online.`;
         whatsappBtn = `<a href="${whatsappLink}" target="_blank">Chat on WhatsApp</a>`;
     }
+
     storeHeader.innerHTML = `
         <h1>${storeName}</h1>
         <p>${storeBio}</p>
@@ -119,7 +120,8 @@ async function fetchProducts(sellerId, sellerName) {
             orderBy("createdAt", "desc")
         );
         const querySnapshot = await getDocs(q);
-        sellerProductGrid.innerHTML = '';
+
+        sellerProductGrid.innerHTML = ''; // Clear loader
         if (querySnapshot.empty) {
             listingsTitle.textContent = 'This seller has no active listings.';
         } else {
@@ -150,7 +152,8 @@ async function fetchReviews(sellerId) {
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
-        reviewsList.innerHTML = '';
+
+        reviewsList.innerHTML = ''; // Clear loader
         if (reviewsSnapshot.empty) {
             avgRatingSummary.innerHTML = "<p>This seller has no reviews yet.</p>";
         } else {
@@ -167,6 +170,7 @@ async function fetchReviews(sellerId) {
                 `;
                 reviewsList.appendChild(reviewCard);
             });
+
             const avgRating = (totalRating / reviewsSnapshot.size).toFixed(1);
             avgRatingSummary.innerHTML = `<h3>Average Rating: ${avgRating} / 5.0 (${reviewsSnapshot.size} reviews)</h3>`;
         }
