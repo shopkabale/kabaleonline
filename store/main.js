@@ -130,8 +130,6 @@ function applyCustomTheme(design) {
     // This will *automatically* theme your existing CSS!
     document.documentElement.style.setProperty('--ko-primary', themeColor);
     
-    let customCSS = '';
-    
     // 2. Apply Product Layout
     // We add classes to the grid, which are defined in the <style>
     // block of store/index.html
@@ -143,8 +141,6 @@ function applyCustomTheme(design) {
         sellerProductGrid.classList.add('layout-3-col');
     }
     // "default" will use your .product-grid CSS
-    
-    themeStyleTag.innerHTML = customCSS;
 }
 
 /**
