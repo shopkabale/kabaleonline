@@ -10,4 +10,9 @@
   # This new line tells the bundler to NOT bundle the Dialogflow library.
   external_node_modules = ["@google-cloud/dialogflow"]
 
-# The [[redirects]] block is not needed for this fix.
+# --- THIS IS THE NEW RULE FOR YOUR STORE ---
+# This block tells Netlify how to handle your clean URLs.
+[[redirects]]
+  from = "/store/:username"
+  to = "/store/index.html?username=:username"
+  status = 200
