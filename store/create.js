@@ -1,140 +1,329 @@
+// =================================================================== //
+//                                                                     //
+//             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
+//      STORE EDITOR SCRIPT (create.js) - *LAYOUT FIX* //
+//                                                                     //
+// =================================================================== //
+
+// Imports from your *existing* firebase.js file
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, setDoc, getDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, setDoc, getDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// --- DOM Elements ---
 const container = document.getElementById('store-create-container');
+const loadingSpinner = document.getElementById('loading-spinner');
 const loginTemplate = document.getElementById('login-placeholder');
 const formTemplate = document.getElementById('form-template');
 
 let currentUser = null;
 
+// --- Auth Check ---
 onAuthStateChanged(auth, (user) => {
-  if (user) { currentUser = user; loadPage(user); }
-  else {
-    currentUser = null;
-    container.innerHTML = '';
-    container.appendChild(loginTemplate.content.cloneNode(true));
-  }
+    if (user) {
+        currentUser = user;
+        loadPage(user);
+    } else {
+        currentUser = null;
+        const loginNode = loginTemplate.content.cloneNode(true);
+        container.innerHTML = ''; // Clear spinner
+        container.appendChild(loginNode);
+    }
 });
 
+// --- Load the Form and User Data ---
 async function loadPage(user) {
-  const formNode = formTemplate.content.cloneNode(true);
-  container.innerHTML = '';
-  container.appendChild(formNode);
+    const formNode = formTemplate.content.cloneNode(true);
+    container.innerHTML = '';
+    container.appendChild(formNode);
 
-  const storeForm = document.getElementById('storeForm');
-  const profileImageInput = document.getElementById('storeProfileImageFile');
-  const profileImagePreview = document.getElementById('profileImagePreview');
-  const bannerInput = document.getElementById('storeBannerFile');
-  const bannerPreview = document.getElementById('bannerImagePreview');
-  const navButtons = container.querySelectorAll('.nav-button');
-  const sections = container.querySelectorAll('.form-section');
-
-  navButtons.forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      const target = document.querySelector(btn.getAttribute('href'));
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Now that the form is in the DOM, get its elements
+    const storeForm = document.getElementById('storeForm');
+    const profileImageInput = document.getElementById('storeProfileImageFile');
+    const profileImagePreview = document.getElementById('profileImagePreview');
+    const bannerImageInput = document.getElementById('storeBannerFile');
+    const bannerImagePreview = document.getElementById('bannerImagePreview');
+    
+    // --- Scroll Navigation Logic ---
+    const navButtons = container.querySelectorAll('.nav-button');
+    const formSections = container.querySelectorAll('.form-section');
+    navButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = button.getAttribute('href'); 
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
     });
-  });
+    const observerOptions = {
+        root: null, rootMargin: '-50% 0px -50% 0px', threshold: 0
+    };
+    const observerCallback = (entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const activeSectionId = entry.target.id;
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('href') === `#${activeSectionId}`);
+                });
+            }
+        });
+    };
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    formSections.forEach(section => observer.observe(section));
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting) {
-        navButtons.forEach(btn => btn.classList.toggle('active', btn.getAttribute('href') === `#${entry.target.id}`));
-      }
+    // --- Image Preview Logic ---
+    profileImageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                profileImagePreview.src = event.target.result;
+                profileImagePreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
     });
-  }, { root:null, rootMargin:'-50% 0px -50% 0px', threshold:0 });
+    bannerImageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                bannerImagePreview.src = event.target.result;
+                bannerImagePreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
 
-  sections.forEach(sec => observer.observe(sec));
+    // Add form submit listener
+    storeForm.addEventListener('submit', handleFormSubmit);
 
-  // Image previews
-  profileImageInput.addEventListener('change', e => { readFile(e, profileImagePreview); });
-  bannerInput.addEventListener('change', e => { readFile(e, bannerPreview); });
+    // --- Load existing data ---
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
 
-  // Load existing data
-  const userDocRef = doc(db, 'users', user.uid);
-  const userDoc = await getDoc(userDocRef);
-  if(userDoc.exists() && userDoc.data().store) {
-    const s = userDoc.data().store;
-    storeForm.storeUsername.value = s.username||'';
-    storeForm.storeName.value = s.storeName||'';
-    storeForm.storeDescription.value = s.description||'';
-    if(s.profileImageUrl) { profileImagePreview.src = s.profileImageUrl; profileImagePreview.style.display='block'; }
-    if(s.design?.bannerUrl) { bannerPreview.src = s.design.bannerUrl; bannerPreview.style.display='block'; }
-    storeForm.storeThemeColor.value = s.design?.themeColor||'#007aff';
-    storeForm.linkWhatsapp.value = s.links?.whatsapp||'';
-    storeForm.linkFacebook.value = s.links?.facebook||'';
-    storeForm.linkTiktok.value = s.links?.tiktok||'';
-    storeForm.linkGithub.value = s.links?.github||'';
-    storeForm.footerText.value = s.footer?.text||'';
-    storeForm.footerColor.value = s.footer?.color||'#0A0A1F';
-    storeForm.storePhone.value = s.phone||'';
-    storeForm.storeLocation.value = s.location||'';
-    storeForm.storeHours.value = s.hours||'';
-    storeForm.storeMapUrl.value = s.mapUrl||'';
-  }
+    if (userDoc.exists() && userDoc.data().store) {
+        const store = userDoc.data().store;
+        const links = store.links || {};
+        const design = store.design || {};
+        const footer = store.footer || {};
 
-  // Submit/save
-  storeForm.addEventListener('submit', handleFormSubmit);
-  document.getElementById('applyTemplateBtn').addEventListener('click', applyTemplate);
+        storeForm.dataset.existingProfileUrl = store.profileImageUrl || '';
+        storeForm.dataset.existingBannerUrl = design.bannerUrl || '';
+        storeForm.storeUsername.value = store.username || '';
+        storeForm.storeName.value = store.storeName || '';
+        storeForm.storeDescription.value = store.description || '';
+        if (store.profileImageUrl) {
+            profileImagePreview.src = store.profileImageUrl;
+            profileImagePreview.style.display = 'block';
+        }
+        if (design.bannerUrl) {
+            bannerImagePreview.src = design.bannerUrl;
+            bannerImagePreview.style.display = 'block';
+        }
+        storeForm.storeThemeColor.value = design.themeColor || '#007aff';
+        // storeForm.productLayout.value = design.productLayout || 'default'; // <-- REMOVED
+        storeForm.linkWhatsapp.value = links.whatsapp || '';
+        storeForm.linkFacebook.value = links.facebook || '';
+        storeForm.linkTiktok.value = links.tiktok || '';
+        storeForm.linkGithub.value = links.github || '';
+        storeForm.footerText.value = footer.text || '';
+        storeForm.footerColor.value = footer.color || '#0A0A1F';
+    }
 }
 
-function readFile(e, imgPreview) {
-  const file = e.target.files[0];
-  if(file) {
-    const reader = new FileReader();
-    reader.onload = evt => { imgPreview.src = evt.target.result; imgPreview.style.display='block'; };
-    reader.readAsDataURL(file);
-  }
+// +++++ THIS IS YOUR UPLOAD FUNCTION FROM YOUR PRODUCT FORM +++++
+async function uploadImageToCloudinary(file) {
+    try {
+        const response = await fetch('/.netlify/functions/generate-signature');
+        if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
+        const { signature, timestamp, cloudname, apikey } = await response.json();
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', apikey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+        const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+
+        if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            throw new Error(`Cloudinary upload failed: ${errorData.error.message}`);
+        }
+
+        const uploadData = await uploadResponse.json();
+        return uploadData.secure_url;
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        throw error;
+    }
 }
+// +++++ END OF YOUR UPLOAD FUNCTION +++++
+
+// ================================================================== //
+//                                                                    //
+//    THIS IS THE FINAL, CORRECTED `handleFormSubmit` FUNCTION        //
+//                                                                    //
+// ================================================================== //
 
 async function handleFormSubmit(e) {
-  e.preventDefault();
-  if(!currentUser) return;
+    e.preventDefault();
+    if (!currentUser) return;
 
-  const saveBtn = document.getElementById('saveButton');
-  saveBtn.disabled = true; showMessage('info','Saving...');
-  const storeForm = document.getElementById('storeForm');
+    const saveButton = document.getElementById('saveButton');
+    const storeForm = document.getElementById('storeForm');
+    
+    saveButton.disabled = true;
+    saveButton.textContent = 'Saving...';
+    showMessage('info', 'Validating store data...');
 
-  try {
-    const profileUrl = storeForm.storeProfileImageFile.files[0] ? await uploadImageToCloudinary(storeForm.storeProfileImageFile.files[0]) : document.getElementById('profileImagePreview').src;
-    const bannerUrl = storeForm.storeBannerFile.files[0] ? await uploadImageToCloudinary(storeForm.storeBannerFile.files[0]) : document.getElementById('bannerImagePreview').src;
+    const username = storeForm.storeUsername.value.trim().toLowerCase();
+    
+    // --- Validate Username Format ---
+    if (!/^[a-z0-9-]+$/.test(username)) {
+        showMessage('error', 'Username can only contain lowercase letters, numbers, and hyphens (-).');
+        saveButton.disabled = false;
+        saveButton.textContent = 'Save Changes';
+        return;
+    }
+    
+    // --- Get existing username (if any) ---
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const userDoc = await getDoc(userDocRef);
+    const existingUsername = userDoc.exists() ? userDoc.data().store?.username : null;
 
-    const data = {
-      username: storeForm.storeUsername.value.trim(),
-      storeName: storeForm.storeName.value.trim(),
-      description: storeForm.storeDescription.value.trim(),
-      profileImageUrl: profileUrl||'',
-      links: {
-        whatsapp: storeForm.linkWhatsapp.value.trim(),
-        facebook: storeForm.linkFacebook.value.trim(),
-        tiktok: storeForm.linkTiktok.value.trim(),
-        github: storeForm.linkGithub.value.trim()
-      },
-      design: {
-        bannerUrl: bannerUrl||'',
-        themeColor: storeForm.storeThemeColor.value
-      },
-      footer: {
-        text: storeForm.footerText.value,
-        color: storeForm.footerColor.value
-      },
-      phone: storeForm.storePhone.value,
-      location: storeForm.storeLocation.value,
-      hours: storeForm.storeHours.value,
-      mapUrl: storeForm.storeMapUrl.value,
-      updatedAt: new Date()
-    };
+    // +++++ USERNAME CHECK LOGIC +++++
+    let usernameChanged = (username !== existingUsername);
+    
+    if (usernameChanged) {
+        // Check for availability in the new public collection
+        showMessage('info', 'Checking username availability...');
+        const newUsernameRef = doc(db, 'storeUsernames', username);
+        const newUsernameDoc = await getDoc(newUsernameRef);
+        
+        if (newUsernameDoc.exists()) {
+            showMessage('error', 'This store username is already taken. Please choose another.');
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Changes';
+            return;
+        }
+    }
+    // +++++ END USERNAME CHECK LOGIC +++++
 
-    await setDoc(doc(db,'users',currentUser.uid),{store:data,isSeller:true},{merge:true});
-    showMessage('success','Store saved successfully.');
-  } catch(err){ console.error(err); showMessage('error','Could not save store.'); }
-  finally{ saveBtn.disabled=false; saveBtn.textContent='Save Changes'; }
+    try {
+        let profileImageUrl = storeForm.dataset.existingProfileUrl;
+        let bannerUrl = storeForm.dataset.existingBannerUrl;
+        
+        const profileImageFile = storeForm.storeProfileImageFile.files[0];
+        const bannerImageFile = storeForm.storeBannerFile.files[0];
+
+        // --- Upload Profile Pic (if new one is selected) ---
+        if (profileImageFile) {
+            showMessage('info', 'Uploading profile picture...');
+            saveButton.textContent = 'Uploading Profile...';
+            profileImageUrl = await uploadImageToCloudinary(profileImageFile);
+            showMessage('info', 'Profile picture uploaded!');
+        }
+
+        // --- Upload Banner (if new one is selected) ---
+        if (bannerImageFile) {
+            showMessage('info', 'Uploading store banner...');
+            saveButton.textContent = 'Uploading Banner...';
+            bannerUrl = await uploadImageToCloudinary(bannerImageFile);
+            showMessage('info', 'Store banner uploaded!');
+        }
+
+        // --- Prepare Data into a structured object ---
+        showMessage('info', 'Saving settings to database...');
+        saveButton.textContent = 'Saving...';
+        
+        const storeData = {
+            username: username,
+            storeName: storeForm.storeName.value.trim(),
+            description: storeForm.storeDescription.value.trim(),
+            profileImageUrl: profileImageUrl,
+            links: {
+                whatsapp: storeForm.linkWhatsapp.value.trim(),
+                facebook: storeForm.linkFacebook.value.trim(),
+                tiktok: storeForm.linkTiktok.value.trim(),
+                github: storeForm.linkGithub.value.trim()
+            },
+            design: {
+                bannerUrl: bannerUrl,
+                themeColor: storeForm.storeThemeColor.value,
+                // productLayout: storeForm.productLayout.value // <-- REMOVED
+            },
+            footer: {
+                text: storeForm.footerText.value.trim(),
+                color: storeForm.footerColor.value
+            },
+            updatedAt: new Date()
+        };
+
+        // --- Save to Firestore ---
+        // 1. Save the main data to the user's private document
+        await setDoc(userDocRef, {
+            store: storeData,
+            isSeller: true
+        }, { merge: true });
+
+        // 2. Update public username lookup
+        const newUsernameRef = doc(db, 'storeUsernames', username);
+        await setDoc(newUsernameRef, { userId: currentUser.uid });
+
+        if (usernameChanged && existingUsername) {
+            const oldUsernameRef = doc(db, 'storeUsernames', existingUsername);
+            await deleteDoc(oldUsernameRef).catch(err => {
+                console.warn("Could not delete old username doc:", err);
+            });
+        }
+        
+        // 3. NEW: SAVE TO PUBLIC STORE DIRECTORY
+        const publicStoreRef = doc(db, 'publicStores', currentUser.uid);
+        await setDoc(publicStoreRef, {
+            userId: currentUser.uid,
+            username: username,
+            storeName: storeData.storeName,
+            description: storeData.description.substring(0, 100), // A short snippet
+            profileImageUrl: profileImageUrl || ''
+        }, { merge: true });
+        
+        showMessage('success', 'Store updated successfully! Your public store link is now active.');
+    
+    } catch (error) {
+        console.error("Error saving store:", error);
+        let politeError = `Could not save store: ${error.message}`;
+        if (error.message.includes('Cloudinary')) {
+            politeError = 'Polite Error: We had trouble uploading your image.';
+        } else if (error.message.includes('permission')) {
+             politeError = 'Polite Error: Could not save username. Please try again.';
+        }
+        showMessage('error', politeError);
+    } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = 'Save Changes';
+    }
 }
 
-async function applyTemplate(){
-  if(!currentUser){ showMessage('error','Login first'); return; }
-  const storeForm=document.getElementById('storeForm');
-  const design={
-    bannerUrl:document.getElementById('bannerImagePreview
+// --- Helper for showing messages ---
+function showMessage(type, text) {
+    const messageBox = document.getElementById('messageBox');
+    if (!messageBox) return;
+    
+    messageBox.style.display = 'block';
+    messageBox.className = `message ${type}`;
+    messageBox.textContent = text;
+
+    // Add icons like your product form's showMessage
+    if (type === 'error') {
+        messageBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${text}`;
+    } else if (type === 'success') {
+        messageBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${text}`;
+    } else if (type === 'info') {
+        messageBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${text}`;
+    }
+}
