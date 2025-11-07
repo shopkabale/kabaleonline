@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      STORE EDITOR SCRIPT (create.js) - *LAYOUT FIX* //
+//      STORE EDITOR SCRIPT (create.js) - *FEATURE UPDATE* //
 //                                                                     //
 // =================================================================== //
 
@@ -17,6 +17,7 @@ const loginTemplate = document.getElementById('login-placeholder');
 const formTemplate = document.getElementById('form-template');
 
 let currentUser = null;
+const DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
 // --- Auth Check ---
 onAuthStateChanged(auth, (user) => {
@@ -43,7 +44,7 @@ async function loadPage(user) {
     const profileImagePreview = document.getElementById('profileImagePreview');
     const bannerImageInput = document.getElementById('storeBannerFile');
     const bannerImagePreview = document.getElementById('bannerImagePreview');
-    
+
     // --- Scroll Navigation Logic ---
     const navButtons = container.querySelectorAll('.nav-button');
     const formSections = container.querySelectorAll('.form-section');
@@ -97,6 +98,46 @@ async function loadPage(user) {
         }
     });
 
+    // --- +++++ NEW: Working Hours Checkbox Logic +++++ ---
+    const workingHoursCheckboxes = container.querySelectorAll('.working-hours-grid input[type="checkbox"]');
+    workingHoursCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const day = e.target.dataset.day;
+            const fromInput = document.getElementById(`day-${day}-from`);
+            const toInput = document.getElementById(`day-${day}-to`);
+            
+            if (e.target.checked) {
+                fromInput.disabled = false;
+                toInput.disabled = false;
+            } else {
+                fromInput.disabled = true;
+                toInput.disabled = true;
+                fromInput.value = ''; // Clear values
+                toInput.value = '';
+            }
+        });
+    });
+
+    // --- +++++ NEW: Theme Preview Logic +++++ ---
+    const themeSelect = container.querySelector('#storeTheme');
+    const themePreviews = container.querySelectorAll('.theme-preview');
+    themeSelect.addEventListener('change', () => {
+        const selectedTheme = themeSelect.value;
+        themePreviews.forEach(preview => {
+            preview.classList.toggle('active', preview.dataset.theme === selectedTheme);
+        });
+    });
+    themePreviews.forEach(preview => {
+        preview.addEventListener('click', () => {
+            const theme = preview.dataset.theme;
+            themeSelect.value = theme;
+            // Manually trigger the change event
+            themeSelect.dispatchEvent(new Event('change'));
+        });
+    });
+    // --- +++++ END NEW LOGIC +++++ ---
+
+
     // Add form submit listener
     storeForm.addEventListener('submit', handleFormSubmit);
 
@@ -109,12 +150,19 @@ async function loadPage(user) {
         const links = store.links || {};
         const design = store.design || {};
         const footer = store.footer || {};
+        // +++++ NEW: Get new data objects +++++
+        const workingHours = store.workingHours || {};
 
         storeForm.dataset.existingProfileUrl = store.profileImageUrl || '';
         storeForm.dataset.existingBannerUrl = design.bannerUrl || '';
         storeForm.storeUsername.value = store.username || '';
         storeForm.storeName.value = store.storeName || '';
         storeForm.storeDescription.value = store.description || '';
+        
+        // +++++ NEW: Load Phone and Location +++++
+        storeForm.storePhone.value = store.phone || '';
+        storeForm.storeLocation.value = store.location || '';
+        
         if (store.profileImageUrl) {
             profileImagePreview.src = store.profileImageUrl;
             profileImagePreview.style.display = 'block';
@@ -124,7 +172,26 @@ async function loadPage(user) {
             bannerImagePreview.style.display = 'block';
         }
         storeForm.storeThemeColor.value = design.themeColor || '#007aff';
-        // storeForm.productLayout.value = design.productLayout || 'default'; // <-- REMOVED
+        
+        // +++++ NEW: Load Theme Selection +++++
+        storeForm.storeTheme.value = design.theme || 'default';
+        themeSelect.dispatchEvent(new Event('change')); // Trigger preview update
+
+        // +++++ NEW: Load Working Hours +++++
+        DAYS_OF_WEEK.forEach(day => {
+            if (workingHours[day]) {
+                const checkbox = document.getElementById(`day-${day}-open`);
+                const fromInput = document.getElementById(`day-${day}-from`);
+                const toInput = document.getElementById(`day-${day}-to`);
+
+                checkbox.checked = true;
+                fromInput.disabled = false;
+                toInput.disabled = false;
+                fromInput.value = workingHours[day].from || '';
+                toInput.value = workingHours[day].to || '';
+            }
+        });
+
         storeForm.linkWhatsapp.value = links.whatsapp || '';
         storeForm.linkFacebook.value = links.facebook || '';
         storeForm.linkTiktok.value = links.tiktok || '';
@@ -167,6 +234,7 @@ async function uploadImageToCloudinary(file) {
 // ================================================================== //
 //                                                                    //
 //    THIS IS THE FINAL, CORRECTED `handleFormSubmit` FUNCTION        //
+//              *UPDATED WITH NEW FIELDS* //
 //                                                                    //
 // ================================================================== //
 
@@ -176,13 +244,13 @@ async function handleFormSubmit(e) {
 
     const saveButton = document.getElementById('saveButton');
     const storeForm = document.getElementById('storeForm');
-    
+
     saveButton.disabled = true;
     saveButton.textContent = 'Saving...';
     showMessage('info', 'Validating store data...');
 
     const username = storeForm.storeUsername.value.trim().toLowerCase();
-    
+
     // --- Validate Username Format ---
     if (!/^[a-z0-9-]+$/.test(username)) {
         showMessage('error', 'Username can only contain lowercase letters, numbers, and hyphens (-).');
@@ -190,7 +258,7 @@ async function handleFormSubmit(e) {
         saveButton.textContent = 'Save Changes';
         return;
     }
-    
+
     // --- Get existing username (if any) ---
     const userDocRef = doc(db, 'users', currentUser.uid);
     const userDoc = await getDoc(userDocRef);
@@ -198,13 +266,13 @@ async function handleFormSubmit(e) {
 
     // +++++ USERNAME CHECK LOGIC +++++
     let usernameChanged = (username !== existingUsername);
-    
+
     if (usernameChanged) {
         // Check for availability in the new public collection
         showMessage('info', 'Checking username availability...');
         const newUsernameRef = doc(db, 'storeUsernames', username);
         const newUsernameDoc = await getDoc(newUsernameRef);
-        
+
         if (newUsernameDoc.exists()) {
             showMessage('error', 'This store username is already taken. Please choose another.');
             saveButton.disabled = false;
@@ -217,7 +285,7 @@ async function handleFormSubmit(e) {
     try {
         let profileImageUrl = storeForm.dataset.existingProfileUrl;
         let bannerUrl = storeForm.dataset.existingBannerUrl;
-        
+
         const profileImageFile = storeForm.storeProfileImageFile.files[0];
         const bannerImageFile = storeForm.storeBannerFile.files[0];
 
@@ -237,15 +305,34 @@ async function handleFormSubmit(e) {
             showMessage('info', 'Store banner uploaded!');
         }
 
+        // --- +++++ NEW: Prepare Working Hours Object +++++ ---
+        const workingHours = {};
+        DAYS_OF_WEEK.forEach(day => {
+            const checkbox = document.getElementById(`day-${day}-open`);
+            if (checkbox.checked) {
+                const from = document.getElementById(`day-${day}-from`).value;
+                const to = document.getElementById(`day-${day}-to`).value;
+                if (from && to) { // Only save if both times are set
+                    workingHours[day] = { from, to };
+                }
+            }
+        });
+        // --- +++++ END WORKING HOURS +++++ ---
+
         // --- Prepare Data into a structured object ---
         showMessage('info', 'Saving settings to database...');
         saveButton.textContent = 'Saving...';
-        
+
         const storeData = {
             username: username,
             storeName: storeForm.storeName.value.trim(),
             description: storeForm.storeDescription.value.trim(),
             profileImageUrl: profileImageUrl,
+            // +++++ NEW FIELDS +++++
+            phone: storeForm.storePhone.value.trim(),
+            location: storeForm.storeLocation.value.trim(),
+            workingHours: workingHours, // Add the new object
+            // +++++ END NEW FIELDS +++++
             links: {
                 whatsapp: storeForm.linkWhatsapp.value.trim(),
                 facebook: storeForm.linkFacebook.value.trim(),
@@ -255,7 +342,7 @@ async function handleFormSubmit(e) {
             design: {
                 bannerUrl: bannerUrl,
                 themeColor: storeForm.storeThemeColor.value,
-                // productLayout: storeForm.productLayout.value // <-- REMOVED
+                theme: storeForm.storeTheme.value // +++++ NEW THEME FIELD +++++
             },
             footer: {
                 text: storeForm.footerText.value.trim(),
@@ -281,19 +368,22 @@ async function handleFormSubmit(e) {
                 console.warn("Could not delete old username doc:", err);
             });
         }
-        
+
         // 3. NEW: SAVE TO PUBLIC STORE DIRECTORY
+        //    *UPDATED* to include phone and location
         const publicStoreRef = doc(db, 'publicStores', currentUser.uid);
         await setDoc(publicStoreRef, {
             userId: currentUser.uid,
             username: username,
             storeName: storeData.storeName,
             description: storeData.description.substring(0, 100), // A short snippet
-            profileImageUrl: profileImageUrl || ''
+            profileImageUrl: profileImageUrl || '',
+            phone: storeData.phone || '', // +++++ NEW +++++
+            location: storeData.location || '' // +++++ NEW +++++
         }, { merge: true });
-        
+
         showMessage('success', 'Store updated successfully! Your public store link is now active.');
-    
+
     } catch (error) {
         console.error("Error saving store:", error);
         let politeError = `Could not save store: ${error.message}`;
@@ -313,7 +403,7 @@ async function handleFormSubmit(e) {
 function showMessage(type, text) {
     const messageBox = document.getElementById('messageBox');
     if (!messageBox) return;
-    
+
     messageBox.style.display = 'block';
     messageBox.className = `message ${type}`;
     messageBox.textContent = text;
