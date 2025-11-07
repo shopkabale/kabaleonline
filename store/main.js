@@ -1,181 +1,223 @@
-// --- Imports from your existing firebase.js ---
-import { db } from '../firebase.js';
-import { collection, query, where, getDocs, orderBy, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+// Imports from your *existing* firebase.js file
+import { db, auth } from '../firebase.js'; 
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-// --- Cloudinary Image Helper ---
-function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
-    if (!url || !url.includes('res.cloudinary.com')) {
-        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
-    }
-    const transformations = { thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto' };
-    const urlParts = url.split('/upload/');
-    if (urlParts.length !== 2) return url;
-    return `${urlParts[0]}/upload/${transformations[type]}/${urlParts[1]}`;
-}
+// ==================================================== //
+//               GLOBAL STATE (for wishlist)            //
+// ==================================================== //
 
-// --- DOM Elements ---
+const state = {
+    currentUser: null,
+    wishlist: new Set()
+};
+
+// ==================================================== //
+//               DOM ELEMENT REFERENCES                 //
+// ==================================================== //
+
 const storeHeader = document.getElementById('store-header');
 const listingsTitle = document.getElementById('listings-title');
 const sellerProductGrid = document.getElementById('seller-product-grid');
 const avgRatingSummary = document.getElementById('average-rating-summary');
 const reviewsList = document.getElementById('reviews-list');
+const storeFooter = document.getElementById('store-footer');
 const loadingHeader = document.getElementById('loading-header');
 const loadingProducts = document.getElementById('loading-products');
 const loadingReviews = document.getElementById('loading-reviews');
+const headerTemplate = document.getElementById('store-header-template');
+const themeStyleTag = document.getElementById('store-theme-styles');
 
-// --- MAIN FUNCTION ---
-document.addEventListener('DOMContentLoaded', async () => {
-    // --- Handle clean URLs like /store/test-store ---
+// ==================================================== //
+//               INITIALIZATION & AUTH                  //
+// ==================================================== //
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Handle Auth for Wishlist functionality
+    onAuthStateChanged(auth, async (user) => {
+        state.currentUser = user;
+        await fetchUserWishlist();
+        // 2. Load Store Content AFTER we know who the user is
+        loadStoreContent();
+    });
+});
+
+// ==================================================== //
+//               CORE STORE LOADING LOGIC               //
+// ==================================================== //
+
+async function loadStoreContent() {
+    // This is your brilliant logic to get the username from the URL path
     let username = null;
-    let sellerId = null;
-
     const pathParts = window.location.pathname.split("/");
     if (pathParts.length >= 3 && pathParts[2]) {
         username = decodeURIComponent(pathParts[2]); // e.g. "test-store"
     }
 
-    // --- Still support old ?username= or ?sellerId= URLs ---
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!username) username = urlParams.get('username');
-    if (!sellerId) sellerId = urlParams.get('sellerId');
+    if (!username) {
+        // Fallback for ?username= (this is the link we tested)
+        const urlParams = new URLSearchParams(window.location.search);
+        username = urlParams.get('username');
+    }
 
-    if (!username && !sellerId) {
-        storeHeader.innerHTML = '<h1>Store not found</h1><p>No username or sellerId in URL.</p>';
+    if (!username) {
+        storeHeader.innerHTML = '<h1>Store not found.</h1><p>No username provided in the URL.</p>';
         loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
         return;
     }
 
-    let sellerDoc = null;
-    let sellerData = null;
-
+    // --- 1. Find the Seller by Username ---
     try {
-        if (username) {
-            const q = query(collection(db, 'users'), where('store.username', '==', username), limit(1));
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) sellerDoc = snapshot.docs[0];
-        } else if (sellerId) {
-            const docRef = doc(db, 'users', sellerId);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) sellerDoc = docSnap;
-        }
+        const q = query(collection(db, 'users'), where('store.username', '==', username), limit(1));
+        const snapshot = await getDocs(q);
 
-        if (!sellerDoc) {
-            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>This store does not exist.</p>`;
+        if (snapshot.empty) {
+            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
             loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
             return;
         }
 
-        const finalSellerId = sellerDoc.id;
-        sellerData = sellerDoc.data();
+        const sellerDoc = snapshot.docs[0];
+        const sellerId = sellerDoc.id;
+        const sellerData = sellerDoc.data();
+        const storeData = sellerData.store || {};
+        
+        // --- 2. Build the Page ---
+        applyCustomTheme(storeData.design || {});
+        renderHeader(sellerData, storeData);
+        renderSocialLinks(storeData.links || {});
+        renderReviews(sellerId); // Call reviews
+        renderProducts(sellerId, sellerData.name, storeData.design || {}); // Call products
+        renderFooter(storeData.footer || {});
 
-        renderHeader(sellerData, username);
-        loadingHeader.remove();
-
-        fetchProducts(finalSellerId, sellerData.name);
-        fetchReviews(finalSellerId);
+        loadingHeader.remove(); // Remove final loader
 
     } catch (error) {
         console.error("Error fetching store:", error);
         storeHeader.innerHTML = `<h1>Error</h1><p>Could not load this store. ${error.message}</p>`;
         loadingHeader.remove();
     }
-});
+}
 
-// --- Render Store Header ---
-function renderHeader(sellerData, username) {
-    const store = sellerData.store || {};
+// ==================================================== //
+//               PAGE RENDERING FUNCTIONS               //
+// ==================================================== //
+
+/**
+ * Injects custom CSS into the page based on seller's settings.
+ */
+function applyCustomTheme(design) {
+    const themeColor = design.themeColor || 'var(--ko-primary)';
+    
+    // Set the site-wide --ko-primary variable *for this page*
+    // This will *automatically* theme your existing CSS!
+    document.documentElement.style.setProperty('--ko-primary', themeColor);
+    
+    let customCSS = '';
+    
+    // 2. Apply Product Layout
+    if (design.productLayout === '1-col') {
+        customCSS += `
+            #seller-product-grid { 
+                grid-template-columns: 1fr; 
+                max-width: 500px; 
+                margin: 0 auto;
+            }
+        `;
+    } else if (design.productLayout === '2-col') {
+        // Your default is 2-col, but we force it for desktop too
+        customCSS += `
+            @media (min-width: 768px) {
+                #seller-product-grid { grid-template-columns: repeat(2, 1fr); }
+            }
+        `;
+    } else if (design.productLayout === '3-col') {
+        // Your CSS has 3-col at 768px, so we just need this
+         customCSS += `
+            @media (min-width: 768px) {
+                #seller-product-grid { grid-template-columns: repeat(3, 1fr); }
+            }
+        `;
+    }
+    // If 'default', we add no rules and let your main style.css take over.
+    
+    themeStyleTag.innerHTML = customCSS;
+}
+
+/**
+ * Renders the store header with banner, avatar, and info.
+ */
+function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
-    const whatsapp = store.whatsapp;
+    const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
+    const bannerUrl = store.design?.bannerUrl; // Get from design object
 
     document.title = `${storeName} | Kabale Online Store`;
 
-    // Build clean shareable link
-    const cleanLink = `https://kabaleonline.com/store/${encodeURIComponent(username)}`;
-
-    let whatsappBtn = '';
-    if (whatsapp) {
-        const whatsappLink = `https://wa.me/${whatsapp}?text=Hi, I saw your store on Kabale Online.`;
-        whatsappBtn = `<a href="${whatsappLink}" target="_blank" class="whatsapp-btn">Chat on WhatsApp</a>`;
+    // 1. Populate Header Template
+    const headerNode = headerTemplate.content.cloneNode(true);
+    headerNode.getElementById('store-avatar-img').src = profileImageUrl;
+    headerNode.getElementById('store-avatar-img').alt = storeName;
+    headerNode.getElementById('store-name-h1').textContent = storeName;
+    headerNode.getElementById('store-bio-p').textContent = storeBio;
+    
+    // 2. Apply Banner Image
+    if (bannerUrl) {
+        storeHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
+    } else {
+        // Use a default theme color if no banner
+        storeHeader.style.backgroundColor = "var(--ko-primary)";
     }
+    
+    storeHeader.appendChild(headerNode);
+}
 
-    const shareBtn = `<button id="copy-link-btn" class="copy-btn">Copy Store Link</button>`;
+/**
+ * Renders the social media and action buttons in the header.
+ */
+function renderSocialLinks(links) {
+    const actionsDiv = document.getElementById('store-actions-div');
+    const socialsDiv = document.getElementById('store-socials-div');
+    if (!actionsDiv || !socialsDiv) return;
 
-    storeHeader.innerHTML = `
-        <h1>${storeName}</h1>
-        <p>${storeBio}</p>
-        <div class="store-actions">${whatsappBtn} ${shareBtn}</div>
-    `;
+    // 1. Action Buttons
+    if (links.whatsapp) {
+        const whatsappLink = `https://wa.me/${links.whatsapp}?text=Hi, I saw your store on Kabale Online.`;
+        actionsDiv.innerHTML += `<a href="${whatsappLink}" target="_blank" class="whatsapp-btn">Chat on WhatsApp</a>`;
+    }
+    // Add share button
+    actionsDiv.innerHTML += `<button id="share-store-btn" class="share-btn">Share Store</button>`;
 
-    // Copy to clipboard event
-    const copyBtn = document.getElementById('copy-link-btn');
-    copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(cleanLink).then(() => {
-            showPopup("✅ Store link copied!");
-        }).catch(err => {
-            console.error("Copy failed:", err);
-            showPopup("❌ Failed to copy link.");
-        });
+    // 2. Social Media Icons (using Font Awesome)
+    if (links.facebook) {
+        socialsDiv.innerHTML += `<a href="https://facebook.com/${links.facebook}" target="_blank" title="Facebook"><i class="fab fa-facebook"></i></a>`;
+    }
+    if (links.tiktok) {
+        socialsDiv.innerHTML += `<a href="https://tiktok.com/${links.tiktok}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>`;
+    }
+    if (links.github) {
+        socialsDiv.innerHTML += `<a href="https://github.com/${links.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
+    }
+    
+    // 3. Add Event Listeners
+    const shareBtn = document.getElementById('share-store-btn');
+    shareBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => alert("Store link copied to clipboard!"))
+            .catch(err => console.error("Copy failed:", err));
     });
 }
 
-// --- Popup Function ---
-function showPopup(message) {
-    const popup = document.createElement('div');
-    popup.className = 'copy-popup';
-    popup.textContent = message;
-    document.body.appendChild(popup);
-    setTimeout(() => popup.classList.add('show'), 50);
-    setTimeout(() => {
-        popup.classList.remove('show');
-        setTimeout(() => popup.remove(), 300);
-    }, 2500);
-}
-
-// --- Fetch Products ---
-async function fetchProducts(sellerId, sellerName) {
-    try {
-        const q = query(
-            collection(db, "products"),
-            where("sellerId", "==", sellerId),
-            orderBy("createdAt", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-
-        sellerProductGrid.innerHTML = '';
-        if (querySnapshot.empty) {
-            listingsTitle.textContent = 'This seller has no active listings.';
-        } else {
-            listingsTitle.textContent = `Listings from ${sellerName}`;
-            querySnapshot.forEach((doc) => {
-                const product = doc.data();
-                const productLink = document.createElement('a');
-                productLink.href = `/product.html?id=${doc.id}`;
-                productLink.className = 'product-card';
-                const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
-                productLink.innerHTML = `
-                    <img src="${thumbnailUrl}" alt="${product.name}" loading="lazy">
-                    <h3>${product.name}</h3>
-                    <p class="price">UGX ${Number(product.price).toLocaleString()}</p>
-                `;
-                sellerProductGrid.appendChild(productLink);
-            });
-        }
-    } catch (error) {
-        console.error("Error fetching listings:", error);
-        listingsTitle.textContent = 'Could not load listings.';
-    } finally {
-        if (loadingProducts) loadingProducts.remove();
-    }
-}
-
-// --- Fetch Reviews ---
-async function fetchReviews(sellerId) {
+/**
+ * Renders the seller's reviews.
+ */
+async function renderReviews(sellerId) {
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
 
-        reviewsList.innerHTML = '';
+        reviewsList.innerHTML = ''; // Clear loader
         if (reviewsSnapshot.empty) {
             avgRatingSummary.innerHTML = "<p>This seller has no reviews yet.</p>";
         } else {
@@ -186,7 +228,7 @@ async function fetchReviews(sellerId) {
                 const reviewCard = document.createElement('div');
                 reviewCard.className = 'review-card';
                 reviewCard.innerHTML = `
-                    <div>${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                    <div class="star-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
                     <p>${review.text}</p>
                     <p><strong>- ${review.reviewerName || 'Anonymous'}</strong></p>
                 `;
@@ -199,40 +241,280 @@ async function fetchReviews(sellerId) {
         console.error("Error fetching reviews:", error);
         avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
     } finally {
-        if (loadingReviews) loadingReviews.remove();
+        if(loadingReviews) loadingReviews.remove();
     }
 }
 
-// --- Simple CSS for popup + button (optional but stylish) ---
-const style = document.createElement('style');
-style.innerHTML = `
-.copy-btn {
-    background: #007aff;
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-left: 10px;
-    font-size: 14px;
+/**
+ * Renders the seller's custom footer.
+ */
+function renderFooter(footer) {
+    if (!storeFooter) return;
+    
+    const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
+    const footerColor = footer.color || '#0A0A1F'; // Your default footer color
+    
+    storeFooter.style.backgroundColor = footerColor;
+    storeFooter.innerHTML = `
+        <div class="container">
+            <p>${footerText}</p>
+        </div>
+    `;
+    // We add 'container' to match your site's padding
+    storeFooter.querySelector('div').className = 'container';
 }
-.copy-btn:hover { background: #005fcc; }
-.copy-popup {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) scale(0.9);
-    background: #111;
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 30px;
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 9999;
+
+
+// =================================================================== //
+//                                                                     //
+//    THIS IS YOUR *FULL* RENDERPRODUCTS FUNCTION FROM shop/main.js    //
+//    This ensures your product cards look 100% correct.               //
+//                                                                     //
+// =================================================================== //
+
+/**
+ * Creates an optimized and transformed Cloudinary URL.
+ * (Copied from your shop/main.js)
+ */
+function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
+    if (!url || !url.includes('res.cloudinary.com')) {
+        return url || 'https://placehold.co/400x400/e0e0e0/777?text=No+Image';
+    }
+    const transformations = {
+        thumbnail: 'c_fill,g_auto,w_400,h_400,f_auto,q_auto',
+        full: 'c_limit,w_1200,h_675,f_auto,q_auto',
+        placeholder: 'c_fill,g_auto,w_20,h_20,q_1,f_auto'
+    };
+    const transformString = transformations[type] || transformations.thumbnail;
+    const urlParts = url.split('/upload/');
+    if (urlParts.length !== 2) {
+        return url;
+    }
+    return `${urlParts[0]}/upload/${transformString}/${urlParts[1]}`;
 }
-.copy-popup.show {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
+
+const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.onload = () => img.classList.add('loaded');
+            img.onerror = () => { img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error'; img.classList.add('loaded'); };
+            observer.unobserve(img);
+        }
+    });
+}, { rootMargin: "0px 0px 200px 0px" });
+
+function observeLazyImages() {
+    const imagesToLoad = document.querySelectorAll('img.lazy');
+    imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
-`;
-document.head.appendChild(style);
+
+/**
+ * Renders all products for a seller, using your exact logic from shop/main.js
+ */
+async function renderProducts(sellerId, sellerName, design) {
+    
+    // Set layout class based on settings
+    sellerProductGrid.className = 'product-grid'; // Start with default
+    if (design.productLayout === '1-col') {
+        sellerProductGrid.classList.add('layout-1-col');
+    } else if (design.productLayout === '2-col') {
+        sellerProductGrid.classList.add('layout-2-col');
+    } else if (design.productLayout === '3-col') {
+        sellerProductGrid.classList.add('layout-3-col');
+    }
+    // "default" will use your .product-grid CSS
+
+    try {
+        const q = query(
+            collection(db, "products"),
+            where("sellerId", "==", sellerId),
+            orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+
+        sellerProductGrid.innerHTML = ''; // Clear loader
+        
+        if (snapshot.empty) {
+            listingsTitle.textContent = 'This seller has no active listings.';
+            if (loadingProducts) loadingProducts.remove();
+            return;
+        }
+
+        listingsTitle.textContent = `Listings from ${sellerName}`;
+        
+        const fragment = document.createDocumentFragment();
+        snapshot.forEach(doc => {
+            const product = { id: doc.id, ...doc.data() };
+            
+            const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
+            const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
+
+            // We don't show "Verified Seller" here because the whole *store* is the seller.
+            
+            const isInWishlist = state.wishlist.has(product.id);
+            const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
+            const wishlistClass = isInWishlist ? 'active' : '';
+            const isActuallySold = product.isSold || (product.quantity !== undefined && product.quantity <= 0);
+            const soldClass = isActuallySold ? 'is-sold' : '';
+            const soldOverlayHTML = isActuallySold ? '<div class="product-card-sold-overlay"><span>SOLD</span></div>' : '';
+
+            let priceHTML = '';
+            let locationHTML = '';
+            let stockStatusHTML = '';
+            let tagsHTML = '';
+
+            if (product.listing_type === 'service') {
+                priceHTML = `<p class="price price-service">UGX ${product.price ? product.price.toLocaleString() : "N/A"} 
+                    ${product.service_duration ? `<span>/ ${product.service_duration}</span>` : ''}
+                </p>`;
+                if (product.service_location_type) {
+                    const icon = product.service_location_type === 'Online' ? 'fa-solid fa-wifi' : 'fa-solid fa-person-walking';
+                    locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
+                }
+            } else {
+                priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
+                if (product.location) {
+                    locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
+                }
+                if (isActuallySold) {
+                    stockStatusHTML = `<p class="stock-info sold-out">Sold Out</p>`;
+                } else if (product.quantity > 5) {
+                    stockStatusHTML = `<p class="stock-info in-stock">In Stock</p>`;
+                } else if (product.quantity > 0 && product.quantity <= 5) {
+                    stockStatusHTML = `<p class="stock-info low-stock">Only ${product.quantity} left!</p>`;
+                }
+                if (product.listing_type === 'rent') {
+                    tagsHTML += '<span class="product-tag type-rent">FOR RENT</span>';
+                } else if (product.listing_type === 'sale') {
+                    tagsHTML += '<span class="product-tag type-sale">FOR SALE</span>';
+                }
+                if (product.condition === 'new') {
+                    tagsHTML += '<span class="product-tag condition-new">NEW</span>';
+                } else if (product.condition === 'used') {
+                    tagsHTML += '<span class="product-tag condition-used">USED</span>';
+                }
+            }
+
+            const tagsContainerHTML = tagsHTML ? `<div class="product-tags">${tagsHTML}</div>` : '';
+
+            const productLink = document.createElement("a");
+            productLink.href = `/product.html?id=${product.id}`;
+            productLink.className = "product-card-link";
+            if (isActuallySold) {
+                productLink.style.pointerEvents = 'none';
+                productLink.style.cursor = 'default';
+            }
+
+            productLink.innerHTML = `
+              <div class="product-card ${soldClass}">
+                 ${soldOverlayHTML}
+                 ${tagsContainerHTML} <button class="wishlist-btn ${wishlistClass}" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrls?.[0] || ''}" aria-label="Add to wishlist">
+                    <i class="${wishlistIcon} fa-heart"></i>
+                </button>
+                <img src="${placeholderUrl}" data-src="${thumbnailUrl}" alt="${product.name}" class="lazy">
+                <h3>${product.name}</h3>
+                ${stockStatusHTML}
+                ${priceHTML}
+                ${locationHTML}
+                <!-- We don't need seller name here, we are on their store -->
+              </div>
+            `;
+            
+            fragment.appendChild(productLink);
+        });
+
+        sellerProductGrid.appendChild(fragment);
+        observeLazyImages();
+        initializeWishlistButtons();
+        
+    } catch(error) {
+        console.error("Error fetching listings:", error);
+        listingsTitle.textContent = 'Could not load listings.';
+    } finally {
+        if(loadingProducts) loadingProducts.remove();
+    }
+}
+
+// ==================================================== //
+//               WISHLIST FUNCTIONS                     //
+// ==================================================== //
+
+/**
+ * Fetches the current user's wishlist to sync state.
+ */
+async function fetchUserWishlist() {
+    if (!state.currentUser) { state.wishlist.clear(); return; }
+    try {
+        const wishlistCol = collection(db, 'users', state.currentUser.uid, 'wishlist');
+        const wishlistSnapshot = await getDocs(wishlistCol);
+        const wishlistIds = wishlistSnapshot.docs.map(doc => doc.id);
+        state.wishlist = new Set(wishlistIds);
+    } catch (error) { console.error("Could not fetch user wishlist:", error); }
+}
+
+/**
+ * Adds click listeners to all wishlist buttons on the page.
+ */
+function initializeWishlistButtons() {
+    const allProductCards = document.querySelectorAll('.product-card-link');
+    allProductCards.forEach(card => {
+        const wishlistButton = card.querySelector('.wishlist-btn');
+        if (wishlistButton) {
+            wishlistButton.removeEventListener('click', handleWishlistClick);
+            wishlistButton.addEventListener('click', handleWishlistClick);
+        }
+    });
+}
+
+/**
+ * Handles a click on a wishlist button.
+ */
+async function handleWishlistClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!state.currentUser) {
+        alert('Please log in to add items to your wishlist.');
+        window.location.href = '/login/';
+        return;
+    }
+    const button = event.currentTarget;
+    const productId = button.dataset.productId;
+    const wishlistRef = doc(db, 'users', state.currentUser.uid, 'wishlist', productId);
+    button.disabled = true;
+    try {
+        if (state.wishlist.has(productId)) {
+            // Remove from wishlist
+            await deleteDoc(wishlistRef);
+            state.wishlist.delete(productId);
+            updateWishlistButtonUI(button, false);
+        } else {
+            // Add to wishlist
+            await setDoc(wishlistRef, { 
+                name: button.dataset.productName, 
+                price: parseFloat(button.dataset.productPrice) || 0, 
+                imageUrl: button.dataset.productImage || '', 
+                addedAt: serverTimestamp() 
+            });
+            state.wishlist.add(productId);
+            updateWishlistButtonUI(button, true);
+        }
+    } catch (error) { console.error("Error updating wishlist:", error); } finally { button.disabled = false; }
+}
+
+/**
+ * Updates the visual state of a wishlist button.
+ */
+function updateWishlistButtonUI(button, isInWishlist) {
+    const icon = button.querySelector('i');
+    if (isInWishlist) {
+        button.classList.add('active'); 
+        icon.classList.remove('fa-regular'); 
+        icon.classList.add('fa-solid');
+    } else {
+        button.classList.remove('active'); 
+        icon.classList.remove('fa-solid'); 
+        icon.classList.add('fa-regular');
+    }
+}
