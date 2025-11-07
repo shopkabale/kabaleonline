@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//                     PUBLIC JAVASCRIPT (main.js)                     //
+//         PUBLIC JAVASCRIPT (main.js) - *NEW QUERY FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -75,7 +75,17 @@ async function loadStoreContent() {
 
     // --- 1. Find the Seller by Username ---
     try {
-        const q = query(collection(db, 'users'), where('store.username', '==', username), limit(1));
+        
+        // +++++ NEW QUERY - THIS IS THE FIX +++++
+        // This query matches the new 2-field index you are building.
+        const q = query(
+            collection(db, 'users'), 
+            where('store.username', '==', username), 
+            where('isSeller', '==', true), // We add this field
+            limit(1)
+        );
+        // +++++ END NEW QUERY +++++
+
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
