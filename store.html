@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kabale Online Store</title>
+    <!-- Your real CSS file -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* NEW STORE-SPECIFIC STYLES */
+        .store-header {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .store-banner {
+            width: 100%;
+            height: 250px;
+            background-color: #e0e0e0; /* Placeholder */
+            background-size: cover;
+            background-position: center;
+        }
+        .store-info {
+            padding: 1.5rem;
+            position: relative;
+            margin-top: -60px; /* Pulls info up over banner */
+            padding-left: 170px; /* Space for logo */
+            min-height: 100px;
+        }
+        .store-logo {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: absolute;
+            left: 20px;
+            top: -70px; /* Half on banner, half off */
+            background: #f0f0f0;
+            background-size: cover;
+            background-position: center;
+        }
+        .store-name {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: #111;
+            margin-bottom: 0.25rem;
+        }
+        .store-badge {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #007bff;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .store-bio {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+        .store-contact-btn {
+            background-color: #25D366; /* WhatsApp Green */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .store-contact-btn:hover {
+            background-color: #128C7E;
+        }
+        .store-section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+
+        /* --- SKELETON LOADERS (from your main.js) --- */
+        .skeleton-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .skeleton-image { width: 100%; height: 180px; background: #e0e0e0; border-radius: 4px; }
+        .skeleton-text { height: 20px; background: #e0e0e0; border-radius: 4px; margin-top: 10px; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="main-body">
+
+    <!-- Your existing header/nav -->
+    
+    <main class="main-content" style="padding: 1rem;">
+        
+        <!-- Store Header (New) -->
+        <div id="store-header-container">
+            <!-- Skeleton for Store Header -->
+            <div class="store-header" id="store-header-skeleton">
+                <div class="store-banner" style="background-color: #e0e0e0;"></div>
+                <div class="store-info">
+                    <div class="store-logo" style="background-color: #e0e0e0;"></div>
+                    <div class="skeleton-text w-50" style="height: 40px; margin-left: 170px;"></div>
+                    <div class="skeleton-text w-75" style="margin-left: 170px;"></div>
+                </div>
+            </div>
+            <!-- Real Store Header (will be built by JS) -->
+        </div>
+
+        <!-- Store Listings (from your profile.js) -->
+        <section id="store-listings-section" class="product-listings">
+            <h2 id="listings-title" class="store-section-title">Store Listings</h2>
+            <div id="store-product-grid" class="product-grid">
+                <!-- Skeletons will be injected here -->
+            </div>
+        </section>
+        
+        <!-- Store Reviews (from your profile.js) -->
+        <section id="reviews-section" class="reviews-container">
+            <h2 class="store-section-title">Store Reviews</h2>
+            <div id="average-rating-summary"></div>
+            <div id="reviews-list"></div>
+        </section>
+
+    </main>
+
+    <!-- Your existing footer -->
+
+    <!-- This links to your firebase.js and the new store.js logic -->
+    <script type="module" src="store.js"></script>
+</body>
+</html>
