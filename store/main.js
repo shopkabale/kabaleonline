@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *DIRECTORY & STORE FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *LAYOUT FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -37,10 +37,14 @@ const loadingProducts = document.getElementById('loading-products');
 const loadingReviews = document.getElementById('loading-reviews');
 const headerTemplate = document.getElementById('store-header-template');
 const themeStyleTag = document.getElementById('store-theme-styles');
+// NEW Elements for description
+const descriptionSection = document.getElementById('store-description-section');
+const descriptionBody = document.getElementById('store-description-p-body');
 
 // --- Store Directory Page Elements ---
 const directoryPage = document.getElementById('store-directory-page');
-const directoryGrid = document.getElementById('store-directory-grid');
+// UPDATED: Changed from grid to list
+const directoryList = document.getElementById('store-directory-list');
 const loadingDirectory = document.getElementById('loading-directory');
 
 
@@ -65,13 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function getUsernameFromUrl() {
     let username = null;
     const pathParts = window.location.pathname.split("/");
-    // Check that part[2] exists and is not just empty space
     if (pathParts.length >= 3 && pathParts[2] && pathParts[2].trim() !== '') {
         username = decodeURIComponent(pathParts[2]);
     }
 
     if (!username) {
-        // Fallback for ?username=
         const urlParams = new URLSearchParams(window.location.search);
         username = urlParams.get('username');
     }
@@ -108,43 +110,43 @@ async function loadPageContent() {
  * and renders them as cards.
  */
 async function loadStoreDirectory() {
-    if (!directoryGrid) return; // In case element isn't on page
+    if (!directoryList) return; // In case element isn't on page
     try {
         const q = query(collection(db, "publicStores"), orderBy("storeName"));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-            directoryGrid.innerHTML = "<p>No stores have been created yet.</p>";
+            directoryList.innerHTML = "<p>No stores have been created yet.</p>";
             return;
         }
 
-        directoryGrid.innerHTML = ''; // Clear loader
+        directoryList.innerHTML = ''; // Clear loader
         const fragment = document.createDocumentFragment();
 
         snapshot.forEach(doc => {
             const store = doc.data();
             const profileImg = store.profileImageUrl || 'https://placehold.co/80x80/e0e0e0/777?text=Store';
             
+            // UPDATED: Using new class names and HTML structure
             const storeCard = document.createElement('a');
-            storeCard.className = 'store-card';
-            // Use the correct URL structure for your site
+            storeCard.className = 'store-card-list'; // New class
             storeCard.href = `/store/${store.username}`; 
             
             storeCard.innerHTML = `
-                <img src="${profileImg}" alt="${store.storeName} profile" class="store-card-avatar">
-                <div class="store-card-info">
+                <img src="${profileImg}" alt="${store.storeName} profile" class="store-card-list-avatar">
+                <div class="store-card-list-info">
                     <h3>${store.storeName || 'Unnamed Store'}</h3>
                     <p>${store.description || 'No description available.'}</p>
-                </div>
+                    </div>
             `;
             fragment.appendChild(storeCard);
         });
 
-        directoryGrid.appendChild(fragment);
+        directoryList.appendChild(fragment);
 
     } catch (error) {
         console.error("Error fetching store directory:", error);
-        directoryGrid.innerHTML = `<p>Error: Could not load store directory. ${error.message}</p>`;
+        directoryList.innerHTML = `<p>Error: Could not load store directory. ${error.message}</p>`;
     }
 }
 
@@ -158,14 +160,13 @@ async function loadStoreDirectory() {
  * renamed to loadSingleStore.
  */
 async function loadSingleStore(username) {
-    // Check if the single store elements exist
     if (!storeHeader || !listingsTitle || !sellerProductGrid) {
         console.error("Single store elements not found on page.");
         return;
     }
     
     try {
-        // 1. Look up the username in the public 'storeUsernames' collection
+        // 1. Look up the username
         const usernameDocRef = doc(db, 'storeUsernames', username);
         const usernameDoc = await getDoc(usernameDocRef);
 
@@ -177,11 +178,11 @@ async function loadSingleStore(username) {
             return;
         }
 
-        // 2. Get the seller's ID from the lookup document
+        // 2. Get the seller's ID
         const sellerId = usernameDoc.data().userId;
-        state.currentSellerId = sellerId; // Save for review system
+        state.currentSellerId = sellerId; 
 
-        // 3. Get the seller's public data using their ID
+        // 3. Get the seller's public data
         const sellerDocRef = doc(db, 'users', sellerId);
         const sellerDoc = await getDoc(sellerDocRef);
 
@@ -198,7 +199,8 @@ async function loadSingleStore(username) {
         
         // --- 2. Build the Page ---
         applyCustomTheme(storeData.design || {});
-        renderHeader(sellerData, storeData);
+        // UPDATED: Pass full storeData to renderHeader
+        renderHeader(sellerData, storeData); 
         renderSocialLinks(storeData.links || {});
         renderReviews(sellerId);
         renderProducts(sellerId, sellerData.name, storeData.design || {});
@@ -217,22 +219,27 @@ async function loadSingleStore(username) {
 //           SINGLE STORE RENDERING FUNCTIONS           //
 // ==================================================== //
 
+/**
+ * Injects custom CSS into the page based on seller's settings.
+ */
 function applyCustomTheme(design) {
     const themeColor = design.themeColor || 'var(--ko-primary)';
     document.documentElement.style.setProperty('--ko-primary', themeColor);
     
-    if (design.productLayout === '1-col') {
-        sellerProductGrid.classList.add('layout-1-col');
-    } else if (design.productLayout === '2-col') {
-        sellerProductGrid.classList.add('layout-2-col');
-    } else if (design.productLayout === '3-col') {
-        sellerProductGrid.classList.add('layout-3-col');
-    }
+    // REMOVED: All productLayout logic has been removed
+    // The grid will now default to your main style.css
 }
 
+/**
+ * Renders the store header with banner, avatar, and info.
+ */
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
+    // Use the full description here
     const storeBio = store.description || 'Welcome to my store!';
+    // Create a short bio for the header
+    const shortBio = storeBio.substring(0, 70) + (storeBio.length > 70 ? '...' : '');
+    
     const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
     const bannerUrl = store.design?.bannerUrl;
 
@@ -242,7 +249,8 @@ function renderHeader(sellerData, store) {
     headerNode.getElementById('store-avatar-img').src = profileImageUrl;
     headerNode.getElementById('store-avatar-img').alt = storeName;
     headerNode.getElementById('store-name-h1').textContent = storeName;
-    headerNode.getElementById('store-bio-p').textContent = storeBio;
+    // UPDATED: Use the new ID and the short bio
+    headerNode.getElementById('store-short-bio-p').textContent = shortBio;
     
     if (bannerUrl) {
         storeHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
@@ -250,9 +258,14 @@ function renderHeader(sellerData, store) {
         storeHeader.style.backgroundColor = "var(--ko-primary)";
     }
     
-    // Clear header before appending
     storeHeader.innerHTML = ''; 
     storeHeader.appendChild(headerNode);
+
+    // --- NEW: Populate the separate "About" section ---
+    if (storeBio && descriptionSection && descriptionBody) {
+        descriptionBody.textContent = storeBio;
+        descriptionSection.style.display = 'block';
+    }
 }
 
 function renderSocialLinks(links) {
@@ -260,7 +273,6 @@ function renderSocialLinks(links) {
     const socialsDiv = document.getElementById('store-socials-div');
     if (!actionsDiv || !socialsDiv) return;
 
-    // Clear existing links
     actionsDiv.innerHTML = '';
     socialsDiv.innerHTML = '';
 
