@@ -3,42 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Your Store</title>
-    <!-- Link to your main stylesheet -->
-    <!-- <link rel="stylesheet" href="../style.css"> -->
+    <title>Store Editor</title>
+    <!-- Links to your existing site's CSS and Font Awesome -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        /* Basic styles - replace with your own CSS */
-        body { font-family: sans-serif; background: #f4f4f4; padding: 1em; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 1.5em; }
-        label { display: block; margin-bottom: 0.5em; font-weight: bold; }
-        input, textarea { width: 100%; padding: 0.8em; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        /* This CSS is specific to the editor page */
+        body { background-color: var(--bg-main); }
+        .editor-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .tabs {
+            display: flex;
+            background: var(--bg-main);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-button {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: none;
+            background: none;
+            font-size: 0.9em;
+        }
+        .tab-button.active {
+            color: var(--ko-primary);
+            border-bottom: 3px solid var(--ko-primary);
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        input[type="text"], input[type="tel"], input[type="url"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background: var(--bg-main);
+            color: var(--text-main);
+        }
+        textarea { min-height: 100px; }
         .username-input { display: flex; }
-        .username-input span { padding: 0.8em; background: #eee; border: 1px solid #ccc; border-right: 0; border-radius: 4px 0 0 4px; }
-        .username-input input { border-radius: 0 4px 4px 0; }
-        button { width: 100%; padding: 1em; background: #007bff; color: white; border: 0; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        .username-input span {
+            padding: 12px;
+            background: var(--bg-light);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            font-size: 14px;
+        }
+        body.dark-mode .username-input span { background: var(--bg-dark); }
+        .username-input input { border-radius: 0 6px 6px 0; }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background: var(--ko-primary);
+            color: white;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
         button:disabled { background: #ccc; }
-        .message { padding: 1em; border-radius: 4px; margin-bottom: 1em; }
+        .message { padding: 15px; border-radius: 6px; margin-bottom: 20px; }
         .message.success { background: #d4edda; color: #155724; }
         .message.error { background: #f8d7da; color: #721c24; }
-        .placeholder-msg { text-align: center; padding: 2em; }
-        .placeholder-msg a { color: #007bff; }
-        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #007bff; border-radius: 50%; margin: 2em auto; animation: spin 1s linear infinite; }
+        .message.info { background: #cce5ff; color: #004085; }
+        .placeholder-msg { text-align: center; padding: 40px; }
+        .placeholder-msg a { color: var(--ko-primary); font-weight: 600; text-decoration: none; }
+        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--ko-primary); border-radius: 50%; margin: 40px auto; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .color-picker { display: flex; align-items: center; gap: 15px; }
+        input[type="color"] { width: 50px; height: 40px; border: 1px solid #ddd; padding: 0; cursor: pointer; }
+        small { color: var(--text-secondary); }
+        
+        /* NEW: Image Upload Styles */
+        .image-uploader {
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .image-uploader:hover { border-color: var(--ko-primary); }
+        .image-uploader-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+        .profile-pic-preview {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 10px auto;
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- This container will hold either the login message or the form -->
+    <div class="editor-container">
         <div id="store-create-container">
-            <!-- Initial Loading Spinner -->
             <div id="loading-spinner" class="loader"></div>
         </div>
 
-        <!-- 
-          Template for the login message (clones your cart.js logic)
-        -->
         <template id="login-placeholder">
              <div class="placeholder-msg">
                 <h3>Please Log In</h3>
@@ -47,55 +148,122 @@
             </div>
         </template>
 
-        <!-- 
-          Template for the form
-        -->
         <template id="form-template">
-            <div>
-                <h1>Manage Your Store</h1>
-                <p>This is your seller identity. Your store username will be your unique link.</p>
-                <p id="userIdDisplay" style="font-size: 0.8em; color: #555;"></p>
-                
-                <div id="messageBox" class="message" style="display: none;"></div>
+            <div class="tabs">
+                <button class="tab-button active" data-tab="general">General</button>
+                <button class="tab-button" data-tab="design">Design</button>
+                <button class="tab-button" data-tab="links">Links</button>
+                <button class="tab-button" data-tab="footer">Footer</button>
+            </div>
 
-                <form id="storeForm">
+            <form id="storeForm">
+                <!-- TAB 1: GENERAL -->
+                <div id="tab-general" class="tab-content active">
+                    <h2 style="margin-top:0;">General Settings</h2>
                     <div class="form-group">
-                        <label for="storeUsername">Store Username</label>
+                        <label for="storeUsername">Store Username (Your public link)</label>
                         <div class="username-input">
                             <span>/store/</span>
                             <input type="text" id="storeUsername" name="storeUsername" placeholder="alines-shoes" required>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="storeName">Store Name (Public)</label>
                         <input type="text" id="storeName" name="storeName" placeholder="Aline's Premium Shoes" required>
                     </div>
-
                     <div class="form-group">
                         <label for="storeDescription">Store Description (Bio)</label>
-                        <textarea id="storeDescription" name="storeDescription" rows="4" placeholder="We sell the best premium shoes, boots, and sandals..."></textarea>
+                        <textarea id="storeDescription" name="storeDescription" placeholder="We sell the best..."></textarea>
                     </div>
-                    
                     <div class="form-group">
-                        <label for="storeWhatsapp">Public WhatsApp Number</label>
-                        <input type="tel" id="storeWhatsapp" name="storeWhatsapp" placeholder="+25677...">
+                        <label for="storeProfileImageFile">Store Profile Picture</label>
+                        <input type="file" id="storeProfileImageFile" name="storeProfileImageFile" accept="image/png, image/jpeg">
+                        <label for="storeProfileImageFile" class="image-uploader">
+                            <span>Click to upload profile photo</span>
+                        </label>
+                        <img id="profileImagePreview" class="profile-pic-preview" alt="Profile preview">
                     </div>
+                </div>
 
+                <!-- TAB 2: DESIGN -->
+                <div id="tab-design" class="tab-content">
+                    <h2 style="margin-top:0;">Design & Layout</h2>
                     <div class="form-group">
+                        <label for="storeBannerFile">Store Banner (Cover Photo)</label>
+                        <input type="file" id="storeBannerFile" name="storeBannerFile" accept="image/png, image/jpeg">
+                         <label for="storeBannerFile" class="image-uploader">
+                            <span>Click to upload banner image</span>
+                        </label>
+                        <img id="bannerImagePreview" class="image-uploader-preview" alt="Banner preview">
+                    </div>
+                    <div class="form-group">
+                        <label for="storeThemeColor">Store Theme Color</label>
+                        <div class="color-picker">
+                            <input type="color" id="storeThemeColor" name="storeThemeColor" value="#007aff">
+                            <span>This will be your button and link color.</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productLayout">Product Grid Layout</label>
+                        <select id="productLayout" name="productLayout">
+                            <option value="default">Default (2 Columns)</option>
+                            <option value="1-col">1 Column (Large cards)</option>
+                            <option value="2-col">2 Columns</option>
+                            <option value="3-col">3 Columns</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TAB 3: LINKS -->
+                <div id="tab-links" class="tab-content">
+                    <h2 style="margin-top:0;">Social & Contact Links</h2>
+                    <div class="form-group">
+                        <label for="linkWhatsapp">WhatsApp Number</label>
+                        <input type="tel" id="linkWhatsapp" name="linkWhatsapp" placeholder="+25677...">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkFacebook">Facebook Username</label>
+                        <input type="text" id="linkFacebook" name="linkFacebook" placeholder="kabaleonline">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkTiktok">TikTok Handle (with @)</label>
+                        <input type="text" id="linkTiktok" name="linkTiktok" placeholder="@kabaleonline">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkGithub">GitHub Username</label>
+                        <input type="text" id="linkGithub" name="linkGithub" placeholder="kabaleonline">
+                    </div>
+                </div>
+
+                <!-- TAB 4: FOOTER -->
+                <div id="tab-footer" class="tab-content">
+                    <h2 style="margin-top:0;">Custom Footer</h2>
+                    <div class="form-group">
+                        <label for="footerText">Footer Text</label>
+                        <textarea id="footerText" name="footerText" placeholder="© 2025 My Store. All rights reserved."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="footerColor">Footer Background Color</label>
+                        <div class="color-picker">
+                            <input type="color" id="footerColor" name="footerColor" value="#0A0A1F">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHARED BUTTON -->
+                <div style="padding: 0 30px 30px 30px; border-top: 1px solid var(--border-color);">
+                    <div id="messageBox" class="message" style="display: none; margin-top: 20px;"></div>
+                    <div class="form-group" style="margin-bottom: 0; margin-top: 20px;">
                         <button type="submit" id="saveButton">
                             <span id="saveButtonText">Save Changes</span>
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </template>
-
     </div>
     
-    <!-- Link to your firebase.js and the new logic file -->
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="create.js"></script>
-
 </body>
 </html>
