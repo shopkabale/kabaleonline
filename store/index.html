@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store</title>
+    <!-- Link to your main stylesheet -->
+    <!-- <link rel="stylesheet" href="../style.css"> -->
+    <style>
+        /* Basic styles - replace with your own CSS */
+        body { font-family: sans-serif; background: #f4f4f4; padding: 1em; }
+        .store-header { padding: 2em; background: #333; color: white; border-radius: 8px; margin-bottom: 2em; }
+        .store-header h1 { margin: 0; font-size: 2em; }
+        .store-header p { margin: 0.5em 0 0 0; }
+        .store-header a { background: #1DB954; color: white; padding: 0.8em 1.2em; border-radius: 20px; text-decoration: none; font-weight: bold; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5em; }
+        .product-card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px 8px 0 0; }
+        .product-card h3 { padding: 0 1em; margin: 0.5em 0; }
+        .product-card p { padding: 0 1em 1em 1em; margin: 0; color: #007bff; font-weight: bold; }
+        .reviews-section { margin-top: 2em; background: white; padding: 2em; border-radius: 8px; }
+        .review-card { border-bottom: 1px solid #eee; padding: 1em 0; }
+        .review-card:last-child { border: 0; }
+        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #007bff; border-radius: 50%; margin: 2em auto; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    
+    <!-- Header: This is where the store banner, name, and bio will go -->
+    <header id="store-header" class="store-header">
+        <div id="loading-header" class="loader"></div>
+    </header>
+
+    <!-- Listings: This is where the seller's products will go -->
+    <section id="listings-section">
+        <h2 id="listings-title">Listings</h2>
+        <div id="seller-product-grid" class="product-grid">
+             <div id="loading-products" class="loader"></div>
+        </div>
+    </section>
+
+    <!-- Reviews: This is where the seller's reviews will go -->
+    <section id="reviews-section" class="reviews-section">
+        <h2>Reviews</h2>
+        <div id="average-rating-summary"></div>
+        <div id="reviews-list">
+             <div id="loading-reviews" class="loader"></div>
+        </div>
+    </section>
+
+    <!-- Link to your firebase.js and the new logic file -->
+    <script type="module" src="../firebase.js"></script>
+    <script type="module" src="main.js"></script>
+
+</body>
+</html>
