@@ -1,0 +1,2 @@
+/store/* /store/index.html 200
+/store/index.html?username=:username /store/:username 301!
