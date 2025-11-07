@@ -21,7 +21,7 @@
         border: 1px solid var(--border-color);
     }
     
-    /* NEW: Sticky Navigation Header */
+    /* === NEW STICKY NAV STYLES === */
     .sticky-nav {
         position: sticky;
         top: 0;
@@ -29,10 +29,11 @@
         display: flex;
         background: var(--bg-card);
         border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
     .nav-button {
         flex: 1;
-        padding: 15px 10px;
+        padding: 16px 10px;
         text-align: center;
         cursor: pointer;
         font-weight: 600;
@@ -41,12 +42,18 @@
         background: none;
         font-size: 0.9em;
         text-decoration: none;
+        border-bottom: 3px solid transparent; /* Placeholder border */
+        transition: all 0.2s ease;
+    }
+    .nav-button:hover {
+        background-color: var(--bg-main);
+        color: var(--text-main);
     }
     .nav-button.active {
         color: var(--ko-primary);
-        border-bottom: 3px solid var(--ko-primary);
+        border-bottom: 3px solid var(--ko-primary); /* Active color */
     }
-    /* END NEW */
+    /* === END STICKY NAV STYLES === */
     
     .form-section {
         padding: 30px;
