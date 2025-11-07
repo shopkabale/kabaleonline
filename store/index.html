@@ -173,27 +173,244 @@
         .review-card p { margin: 5px 0; }
         .star-rating { color: var(--ko-accent); }
 
-        /* --- 4. Product Layout --- */
-        /* REMOVED: All .layout-X-col classes. 
-           Your main 'style.css' .product-grid will now take over. */
+        /* --- 1. The 2-Column Grid Layout --- */
+/* This starts as 2-columns, just as you wanted */
+.product-grid {
+    display: grid;
+    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+}
 
-        /* --- 5. Custom Footer --- */
-        .store-footer {
-            color: #e2e8f0;
-            padding: 40px 0;
-            margin-top: 40px;
-            text-align: center;
-        }
-        .store-footer .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        .store-footer p {
-            margin: 0;
-            font-size: 0.9em;
-            color: #94a3b8;
-        }
+/* It becomes 3 columns on tablets */
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* And becomes a responsive auto-grid on very large screens */
+@media (min-width: 1400px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* --- 2. The Card Itself --- */
+.product-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: var(--shadow);
+    position: relative; /* Crucial for all overlays */
+    transition: all 0.3s ease-out;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* --- 3. Card Image --- */
+.product-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    transition: transform 0.3s ease-out;
+}
+
+.product-card:hover img {
+    transform: scale(1.05);
+}
+
+/* --- 4. Card Text Content --- */
+.product-card h3 {
+    margin: 10px 15px;
+    font-size: 0.95rem;
+    flex-grow: 1; /* Pushes price to the bottom */
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+.product-card .price {
+    margin: 0 15px 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--ko-primary);
+}
+
+/* Special style for Service prices */
+.price-service span {
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: block; /* Makes it appear on a new line */
+    margin-top: -5px;
+}
+
+.product-card .location-name {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin: -10px 15px 5px;
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+.product-card .location-name i {
+    margin-right: 5px;
+    width: 1.2em;
+    text-align: center;
+    color: var(--ko-primary);
+}
+
+.product-card .seller-name {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin: 0 15px 10px;
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+.product-card .verified-text {
+    font-size: 0.8em;
+    font-weight: 700;
+    color: var(--ko-primary);
+    background-color: rgba(var(--ko-primary-rgb), 0.1);
+    border: 1px solid rgba(var(--ko-primary-rgb), 0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 0 15px 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* --- 5. Stock Status (You asked for this) --- */
+.stock-info {
+    font-size: 0.85em;
+    font-weight: bold;
+    margin: -10px 15px 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.in-stock {
+    color: #155724;
+    background-color: #d4edda;
+}
+
+.low-stock {
+    color: #856404;
+    background-color: #fff3cd;
+}
+
+.out-of-stock,
+.sold-out {
+    color: #721c24;
+    background-color: #f8d7da;
+}
+
+/* --- 6. "SOLD" Banner (You asked for this) --- */
+.product-card.is-sold {
+    position: relative;
+    cursor: not-allowed;
+}
+
+.product-card.is-sold img {
+    filter: grayscale(90%);
+}
+
+.product-card-sold-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(44, 62, 80, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.product-card-sold-overlay span {
+    color: #dc3545;
+    font-size: 1.8em;
+    font-weight: bold;
+    border: 3px solid #dc3545;
+    padding: 5px 15px;
+    border-radius: 5px;
+    transform: rotate(-15deg);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* --- 7. Corner Tags (FOR RENT, USED, etc.) --- */
+.product-tags {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.product-tag {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.product-tag.type-rent {
+    background-color: var(--ko-primary);
+}
+.product-tag.type-sale {
+    background-color: #6c757d;
+}
+.product-tag.condition-new {
+    background-color: #28a745;
+}
+.product-tag.condition-used {
+    background-color: var(--ko-accent);
+    color: #212529;
+}
+
+/* --- 8. Wishlist Button --- */
+.product-card .wishlist-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-main);
+    z-index: 3;
+}
+
+/* (This style makes the heart red when active) */
+.product-card .wishlist-btn.active i {
+    color: var(--ko-danger, #dc3545);
+}
 
         /* --- 6. NEW: Store Directory Styles (Swyft-style List) --- */
         .store-directory-header {
