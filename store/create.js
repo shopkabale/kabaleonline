@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      STORE EDITOR SCRIPT (create.js) - *FINAL VERSION* //
+//      STORE EDITOR SCRIPT (create.js) - *LAYOUT FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -124,7 +124,7 @@ async function loadPage(user) {
             bannerImagePreview.style.display = 'block';
         }
         storeForm.storeThemeColor.value = design.themeColor || '#007aff';
-        storeForm.productLayout.value = design.productLayout || 'default';
+        // storeForm.productLayout.value = design.productLayout || 'default'; // <-- REMOVED
         storeForm.linkWhatsapp.value = links.whatsapp || '';
         storeForm.linkFacebook.value = links.facebook || '';
         storeForm.linkTiktok.value = links.tiktok || '';
@@ -135,26 +135,18 @@ async function loadPage(user) {
 }
 
 // +++++ THIS IS YOUR UPLOAD FUNCTION FROM YOUR PRODUCT FORM +++++
-/**
- * Uploads an image to Cloudinary using your Netlify signature function.
- * @param {File} file The file to upload.
- * @returns {Promise<string>} The secure Cloudinary URL.
- */
 async function uploadImageToCloudinary(file) {
     try {
-        // 1. Get the secure signature from your Netlify function
         const response = await fetch('/.netlify/functions/generate-signature');
         if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
         const { signature, timestamp, cloudname, apikey } = await response.json();
 
-        // 2. Prepare the form data for Cloudinary
         const formData = new FormData();
         formData.append('file', file);
         formData.append('api_key', apikey);
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
 
-        // 3. Upload the file
         const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
 
@@ -167,11 +159,10 @@ async function uploadImageToCloudinary(file) {
         return uploadData.secure_url;
     } catch (error) {
         console.error("Cloudinary upload error:", error);
-        throw error; // Re-throw the error to be caught by handleFormSubmit
+        throw error;
     }
 }
 // +++++ END OF YOUR UPLOAD FUNCTION +++++
-
 
 // ================================================================== //
 //                                                                    //
@@ -264,7 +255,7 @@ async function handleFormSubmit(e) {
             design: {
                 bannerUrl: bannerUrl,
                 themeColor: storeForm.storeThemeColor.value,
-                productLayout: storeForm.productLayout.value
+                // productLayout: storeForm.productLayout.value // <-- REMOVED
             },
             footer: {
                 text: storeForm.footerText.value.trim(),
@@ -280,23 +271,18 @@ async function handleFormSubmit(e) {
             isSeller: true
         }, { merge: true });
 
-        // +++++ NEW: UPDATE PUBLIC USERNAME COLLECTION (FIXED) +++++
-        
-        // 2. Always create or update the *current* username document.
-        // This will fix the migration issue for existing users like "test-store".
+        // 2. Update public username lookup
         const newUsernameRef = doc(db, 'storeUsernames', username);
         await setDoc(newUsernameRef, { userId: currentUser.uid });
 
-        // 3. If the username *changed* and there was an old one, delete the old one.
         if (usernameChanged && existingUsername) {
             const oldUsernameRef = doc(db, 'storeUsernames', existingUsername);
             await deleteDoc(oldUsernameRef).catch(err => {
                 console.warn("Could not delete old username doc:", err);
             });
         }
-
-        // +++++ 4. NEW: SAVE TO PUBLIC STORE DIRECTORY +++++
-        // We use the user's ID as the document ID here
+        
+        // 3. NEW: SAVE TO PUBLIC STORE DIRECTORY
         const publicStoreRef = doc(db, 'publicStores', currentUser.uid);
         await setDoc(publicStoreRef, {
             userId: currentUser.uid,
@@ -305,7 +291,6 @@ async function handleFormSubmit(e) {
             description: storeData.description.substring(0, 100), // A short snippet
             profileImageUrl: profileImageUrl || ''
         }, { merge: true });
-        // +++++ END OF NEW LOGIC +++++
         
         showMessage('success', 'Store updated successfully! Your public store link is now active.');
     
