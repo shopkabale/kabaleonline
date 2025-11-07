@@ -1,4 +1,4 @@
-// Imports from your *existing* firebase.js file
+// Imports from your existing firebase.js
 import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
@@ -11,7 +11,7 @@ const formTemplate = document.getElementById('form-template');
 
 let currentUser = null;
 
-// --- Auth Check (copied from your cart.js) ---
+// --- Auth Check ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -19,7 +19,7 @@ onAuthStateChanged(auth, (user) => {
     } else {
         currentUser = null;
         const loginNode = loginTemplate.content.cloneNode(true);
-        container.innerHTML = ''; // Clear spinner
+        container.innerHTML = '';
         container.appendChild(loginNode);
     }
 });
@@ -30,7 +30,6 @@ async function loadPage(user) {
     container.innerHTML = '';
     container.appendChild(formNode);
 
-    // Now that the form is in the DOM, get its elements
     const storeForm = document.getElementById('storeForm');
     const saveButton = document.getElementById('saveButton');
     const messageBox = document.getElementById('messageBox');
@@ -41,7 +40,7 @@ async function loadPage(user) {
     // Add form submit listener
     storeForm.addEventListener('submit', handleFormSubmit);
 
-    // Load existing data
+    // Load existing store data
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
 
@@ -62,13 +61,13 @@ async function handleFormSubmit(e) {
     const saveButton = document.getElementById('saveButton');
     const messageBox = document.getElementById('messageBox');
     const storeForm = document.getElementById('storeForm');
-    
+
     saveButton.disabled = true;
     saveButton.textContent = 'Saving...';
     showMessage('info', 'Saving your store...');
 
     const username = storeForm.storeUsername.value.trim().toLowerCase();
-    
+
     // --- Validate Username ---
     if (!/^[a-z0-9-]+$/.test(username)) {
         showMessage('error', 'Username can only contain lowercase letters, numbers, and hyphens (-).');
@@ -93,38 +92,58 @@ async function handleFormSubmit(e) {
         }
     }
 
-    // --- Prepare Data ---
+    // --- Prepare Store Data ---
     const storeData = {
         username: username,
         storeName: storeForm.storeName.value.trim(),
         description: storeForm.storeDescription.value.trim(),
         whatsapp: storeForm.storeWhatsapp.value.trim(),
-        updatedAt: new Date() // Using client-side date for simplicity
+        updatedAt: new Date()
     };
 
-    // --- Save to Firestore ---
     try {
-        // We use setDoc with merge: true to avoid overwriting other user data
         await setDoc(userDocRef, {
             store: storeData,
-            isSeller: true // Mark this user as a seller
+            isSeller: true
         }, { merge: true });
 
-        showMessage('success', 'Store updated successfully! Your public store link is now active.');
+        // --- Subdomain URL ---
+        const subdomainUrl = `https://${username}.kabaleonline.com`;
+
+        // --- Display success message with link and copy button ---
+        messageBox.innerHTML = `
+            <p class="success">Store saved successfully! Your public store link is:</p>
+            <div class="subdomain-link">
+                <a href="${subdomainUrl}" target="_blank">${subdomainUrl}</a>
+                <button id="copyLinkBtn">Copy Link</button>
+            </div>
+        `;
+
+        const copyBtn = document.getElementById('copyLinkBtn');
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(subdomainUrl).then(() => {
+                showMessage('success', 'Subdomain link copied to clipboard!');
+            }).catch(() => {
+                showMessage('error', 'Failed to copy. Please copy manually.');
+            });
+        });
+
+        saveButton.disabled = false;
+        saveButton.textContent = 'Save Changes';
+
     } catch (error) {
         console.error("Error saving store:", error);
         showMessage('error', 'Could not save store. Please try again.');
-    } finally {
         saveButton.disabled = false;
         saveButton.textContent = 'Save Changes';
     }
 }
 
-// --- Helper for showing messages ---
+// --- Helper: Show messages ---
 function showMessage(type, text) {
     const messageBox = document.getElementById('messageBox');
     if (!messageBox) return;
-    
+
     messageBox.style.display = 'block';
     messageBox.className = `message ${type}`;
     messageBox.textContent = text;
