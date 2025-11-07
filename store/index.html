@@ -1,567 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <style>
-        /* This CSS is specific to the Store Page layout */
-        body { background-color: var(--bg-main); }
-        
-        /* This is for the single store wrapper */
-        .store-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+  <style>
+    body { background-color: var(--bg-main); }
 
-        /* --- 1. Store Header (Hero) --- */
-        .store-header {
-            background-color: #333; /* Default fallback */
-            background-size: cover;
-            background-position: center;
-            padding: 20px;
-            /* FIX: Increased padding from 80px to 120px */
-            padding-top: 120px; 
-            position: relative;
-            color: #ffffff;
-            border-radius: 0 0 var(--border-radius) var(--border-radius);
-            margin-bottom: 30px;
-        }
-        .store-header-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        .store-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid #fff;
-            background: #eee;
-            position: absolute;
-             /* FIX: Changed from -80px to -60px to move it down */
-            top: -60px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            object-fit: cover;
-        }
-        .store-info {
-            width: 100%;
-            /* FIX: Added padding to push text down from avatar */
-            padding-top: 20px; 
-        }
-        .store-info h1 {
-            font-size: 2.5em;
-            margin: 0 0 5px 0;
-            font-weight: 700;
-        }
-        /* This <p> tag is now for the *short description* (e.g., "just testing") */
-        .store-info p {
-            font-size: 1.1em;
-            margin: 0 0 20px 0;
-            opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .store-actions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        .store-actions a, .store-actions button {
-            padding: 10px 20px;
-            background: var(--ko-primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-        }
-        .store-socials {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .store-socials a {
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 24px;
-        }
-
-        @media (min-width: 768px) {
-            .store-header-content {
-                flex-direction: row;
-                text-align: left;
-                padding-left: 160px; /* Space for avatar */
-            }
-            .store-avatar {
-                position: absolute;
-                /* FIX: Aligned with new padding */
-                top: 20px; 
-                left: 15px;
-            }
-            .store-info {
-                flex: 1;
-                 /* FIX: Removed extra padding on desktop */
-                padding-top: 0;
-            }
-            .store-info p {
-                margin-left: 0;
-                margin-right: 0;
-            }
-            .store-actions, .store-socials {
-                justify-content: flex-start;
-            }
-        }
-
-        /* --- 2. Store Body --- */
-        .store-body {
-            padding: 0 15px; /* Matches your .container padding */
-        }
-        .section-title {
-            border-bottom: 2px solid var(--ko-primary);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 1.4em;
-        }
-
-        /* --- NEW: ABOUT/DESCRIPTION SECTION --- */
-        .store-description-section {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-        }
-        .store-description-section h2 {
-            margin-top: 0;
-            font-size: 1.4em;
-            color: var(--text-main);
-        }
-        .store-description-section p {
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            margin: 0;
-        }
-
-        /* --- 3. Reviews Section --- */
-        .reviews-section {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-        }
-        .review-card {
-            border-bottom: 1px solid var(--border-color);
-            padding: 15px 0;
-        }
-        .review-card:last-child { border: 0; padding-bottom: 0; }
-        .review-card p { margin: 5px 0; }
-        .star-rating { color: var(--ko-accent); }
-
-        /* --- 1. The 2-Column Grid Layout --- */
-/* This starts as 2-columns, just as you wanted */
-.product-grid {
-    display: grid;
-    gap: 15px;
-    grid-template-columns: repeat(2, 1fr);
-}
-
-/* It becomes 3 columns on tablets */
-@media (min-width: 768px) {
-    .product-grid {
-        grid-template-columns: repeat(3, 1fr);
+    .store-container {
+      max-width: 1200px;
+      margin: 0 auto;
     }
-}
 
-/* And becomes a responsive auto-grid on very large screens */
-@media (min-width: 1400px) {
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    /* --- HEADER --- */
+    .store-header {
+      background: linear-gradient(135deg, var(--ko-primary), #222);
+      background-size: cover;
+      background-position: center;
+      padding: 140px 20px 40px;
+      position: relative;
+      color: #fff;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      margin-bottom: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
     }
-}
 
-/* --- 2. The Card Itself --- */
-.product-card-link {
-    text-decoration: none;
-    color: inherit;
-}
+    .store-header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 0;
+    }
 
-.product-card {
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    box-shadow: var(--shadow);
-    position: relative; /* Crucial for all overlays */
-    transition: all 0.3s ease-out;
-}
+    .store-header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 100px;
+      z-index: 1;
+    }
 
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-}
+    .store-avatar {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: #eee;
+      position: absolute;
+      top: -65px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      object-fit: cover;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      z-index: 2;
+    }
 
-/* --- 3. Card Image --- */
-.product-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    transition: transform 0.3s ease-out;
-}
+    .store-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
 
-.product-card:hover img {
-    transform: scale(1.05);
-}
+    .store-info {
+      width: 100%;
+      padding-top: 90px;
+    }
 
-/* --- 4. Card Text Content --- */
-.product-card h3 {
-    margin: 10px 15px;
-    font-size: 0.95rem;
-    flex-grow: 1; /* Pushes price to the bottom */
-    overflow-wrap: break-word;
-    word-break: break-all;
-}
+    .store-info h1 {
+      font-size: 2.4em;
+      margin: 0 0 10px 0;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
 
-.product-card .price {
-    margin: 0 15px 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--ko-primary);
-}
+    .store-info p {
+      font-size: 1.1em;
+      margin: 0 0 20px 0;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
 
-/* Special style for Service prices */
-.price-service span {
-    font-size: 0.8em;
-    font-weight: 500;
-    color: var(--text-secondary);
-    display: block; /* Makes it appear on a new line */
-    margin-top: -5px;
-}
+    .store-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
 
-.product-card .location-name {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    margin: -10px 15px 5px;
-    overflow-wrap: break-word;
-    word-break: break-all;
-}
+    .store-actions a, .store-actions button {
+      padding: 10px 22px;
+      background: var(--ko-primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
 
-.product-card .location-name i {
-    margin-right: 5px;
-    width: 1.2em;
-    text-align: center;
-    color: var(--ko-primary);
-}
+    .store-actions a:hover, .store-actions button:hover {
+      background: #fff;
+      color: var(--ko-primary);
+    }
 
-.product-card .seller-name {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    margin: 0 15px 10px;
-    overflow-wrap: break-word;
-    word-break: break-all;
-}
+    /* --- NEW: FOLLOW BUTTON --- */
+    .follow-btn {
+      background-color: #fff;
+      color: var(--ko-primary);
+      border: 2px solid var(--ko-primary);
+    }
 
-.product-card .verified-text {
-    font-size: 0.8em;
-    font-weight: 700;
-    color: var(--ko-primary);
-    background-color: rgba(var(--ko-primary-rgb), 0.1);
-    border: 1px solid rgba(var(--ko-primary-rgb), 0.2);
-    padding: 3px 10px;
-    border-radius: 20px;
-    display: inline-block;
-    margin: 0 15px 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+    .follow-btn:hover {
+      background-color: var(--ko-primary);
+      color: #fff;
+    }
 
-/* --- 5. Stock Status (You asked for this) --- */
-.stock-info {
-    font-size: 0.85em;
-    font-weight: bold;
-    margin: -10px 15px 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    display: inline-block;
-}
+    .store-socials {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
 
-.in-stock {
-    color: #155724;
-    background-color: #d4edda;
-}
+    .store-socials a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 24px;
+      transition: transform 0.3s ease;
+    }
 
-.low-stock {
-    color: #856404;
-    background-color: #fff3cd;
-}
+    .store-socials a:hover {
+      transform: scale(1.2);
+    }
 
-.out-of-stock,
-.sold-out {
-    color: #721c24;
-    background-color: #f8d7da;
-}
+    /* --- DESKTOP HEADER LAYOUT --- */
+    @media (min-width: 768px) {
+      .store-header-content {
+        flex-direction: row;
+        text-align: left;
+        align-items: center;
+        padding: 60px 15px 60px 180px;
+        position: relative;
+      }
 
-/* --- 6. "SOLD" Banner (You asked for this) --- */
-.product-card.is-sold {
-    position: relative;
-    cursor: not-allowed;
-}
+      .store-avatar {
+        top: 50%;
+        left: 40px;
+        transform: translateY(-50%);
+      }
 
-.product-card.is-sold img {
-    filter: grayscale(90%);
-}
+      .store-info {
+        padding-top: 0;
+      }
 
-.product-card-sold-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(44, 62, 80, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2;
-    pointer-events: none;
-}
+      .store-actions, .store-socials {
+        justify-content: flex-start;
+      }
+    }
 
-.product-card-sold-overlay span {
-    color: #dc3545;
-    font-size: 1.8em;
-    font-weight: bold;
-    border: 3px solid #dc3545;
-    padding: 5px 15px;
-    border-radius: 5px;
-    transform: rotate(-15deg);
-    background-color: rgba(255, 255, 255, 0.9);
-}
+    /* --- MOBILE TWEAKS --- */
+    @media (max-width: 480px) {
+      .store-info h1 {
+        font-size: 1.8em;
+      }
+      .store-info p {
+        font-size: 0.95em;
+      }
+      .store-avatar {
+        width: 110px;
+        height: 110px;
+        top: -55px;
+      }
+    }
 
-/* --- 7. Corner Tags (FOR RENT, USED, etc.) --- */
-.product-tags {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
+    /* ---  BODY SECTIONS --- */
+    .store-body { padding: 0 15px; }
 
-.product-tag {
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    font-weight: 700;
-    text-transform: uppercase;
-}
+    .section-title {
+      border-bottom: 2px solid var(--ko-primary);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      font-size: 1.4em;
+    }
 
-.product-tag.type-rent {
-    background-color: var(--ko-primary);
-}
-.product-tag.type-sale {
-    background-color: #6c757d;
-}
-.product-tag.condition-new {
-    background-color: #28a745;
-}
-.product-tag.condition-used {
-    background-color: var(--ko-accent);
-    color: #212529;
-}
+    .store-description-section,
+    .reviews-section {
+      background: var(--bg-card);
+      padding: 30px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+    }
 
-/* --- 8. Wishlist Button --- */
-.product-card .wishlist-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    font-size: 18px;
-    color: var(--text-main);
-    z-index: 3;
-}
+    .store-description-section h2 {
+      margin-top: 0;
+      font-size: 1.4em;
+      color: var(--text-main);
+    }
 
-/* (This style makes the heart red when active) */
-.product-card .wishlist-btn.active i {
-    color: var(--ko-danger, #dc3545);
-}
+    .store-description-section p {
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 0;
+    }
 
-        /* --- 6. NEW: Store Directory Styles (Swyft-style List) --- */
-        .store-directory-header {
-            background-color: var(--bg-card);
-            padding: 40px 15px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .store-directory-header h1 {
-            margin-top: 0;
-            color: var(--text-main);
-        }
-        .store-directory-header p {
-            font-size: 1.1em;
-            color: var(--text-secondary);
-            margin-bottom: 0;
-        }
-        
-        .store-directory-list {
-            /* This is now a list, not a grid */
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 800px;
-            margin: 0 auto; /* Center the list */
-        }
-        .store-card-list {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            text-decoration: none;
-            color: var(--text-main);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .store-card-list:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-        .store-card-list-avatar {
-            width: 60px; /* Smaller, square-ish */
-            height: 60px;
-            border-radius: 8px; /* Rounded corners */
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-        .store-card-list-info {
-            flex-grow: 1;
-        }
-        .store-card-list-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 1.1em;
-        }
-        .store-card-list-info p {
-            margin: 0;
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            /* Truncate long descriptions */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-        /* We can add this later when we have location data */
-        .store-card-list-info .distance {
-            font-size: 0.8em;
-            color: var(--text-main);
-            font-weight: 600;
-            margin-top: 5px;
-        }
+    /* --- PRODUCT GRID (same as before) --- */
+    .product-grid {
+      display: grid;
+      gap: 15px;
+      grid-template-columns: repeat(2, 1fr);
+    }
 
+    @media (min-width: 768px) {
+      .product-grid { grid-template-columns: repeat(3, 1fr); }
+    }
 
-        /* Loader */
-        .loader { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--ko-primary); border-radius: 50%; margin: 40px auto; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    @media (min-width: 1400px) {
+      .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    }
 
-    <style id="store-theme-styles"></style>
+    .product-card {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: var(--shadow);
+      position: relative;
+      transition: all 0.3s ease-out;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+
+    .product-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      transition: transform 0.3s ease-out;
+    }
+
+    .product-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .product-card h3 {
+      margin: 10px 15px;
+      font-size: 0.95rem;
+      flex-grow: 1;
+      overflow-wrap: break-word;
+      word-break: break-all;
+    }
+
+    .product-card .price {
+      margin: 0 15px 15px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--ko-primary);
+    }
+
+    /* Loader */
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--ko-primary);
+      border-radius: 50%;
+      margin: 40px auto;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <style id="store-theme-styles"></style>
 </head>
 <body>
 
-    <div id="store-directory-page" style="display: none;">
-        <div class="store-directory-header">
-            <div class="container">
-                <h1>Kabale Online Stores</h1>
-                <p>Discover shops, services, and sellers from our community.</p>
-            </div>
-        </div>
-        <div class="container">
-            <div id="store-directory-list" class="store-directory-list">
-                <div id="loading-directory" class="loader"></div>
-            </div>
-        </div>
+  <div id="store-directory-page" style="display: none;">
+    <div class="store-directory-header">
+      <div class="container">
+        <h1>Kabale Online Stores</h1>
+        <p>Discover shops, services, and sellers from our community.</p>
+      </div>
     </div>
-
-    <div id="single-store-page" class="store-container" style="display: none;">
-
-        <header id="store-header" class="store-header">
-            <div id="loading-header" class="loader"></div>
-
-            <template id="store-header-template">
-                <div class="store-header-content">
-                    <img id="store-avatar-img" class="store-avatar" src="https://placehold.co/120x120/e0e0e0/777?text=Store" alt="Store Profile">
-                    <div class="store-info">
-                        <h1 id="store-name-h1">Store Name</h1>
-                        <p id="store-short-bio-p">Store tagline or short bio...</p>
-                        <div id="store-socials-div" class="store-socials">
-                            </div>
-                        <div id="store-actions-div" class="store-actions">
-                            </div>
-                    </div>
-                </div>
-            </template>
-        </header>
-
-        <main class="store-body">
-
-            <section id="store-description-section" class="store-description-section" style="display: none;">
-                <h2 class="section-title">About This Store</h2>
-                <p id="store-description-p-body">Loading description...</p>
-            </section>
-            
-            <section id="reviews-section" class="reviews-section">
-                <h2 class="section-title">Reviews</h2>
-                <div id="average-rating-summary"><p>Loading reviews...</p></div>
-                <div id="reviews-list">
-                     <div id="loading-reviews" class="loader"></div>
-                </div>
-            </section>
-
-            <section id="listings-section">
-                <h2 id="listings-title" class="section-title">Listings</h2>
-                <div id="seller-product-grid" class="product-grid">
-                     <div id="loading-products" class="loader"></div>
-                </div>
-            </section>
-
-        </main>
-
-        <footer id="store-footer" class="store-footer">
-            <div class="container">
-                <p>Loading footer...</p>
-            </div>
-        </footer>
+    <div class="container">
+      <div id="store-directory-list" class="store-directory-list">
+        <div id="loading-directory" class="loader"></div>
+      </div>
     </div>
+  </div>
 
-    <script type="module" src="../firebase.js"></script>
-    <script type="module" src="main.js"></script>
+  <div id="single-store-page" class="store-container" style="display: none;">
+    <header id="store-header" class="store-header">
+      <div id="loading-header" class="loader"></div>
+
+      <template id="store-header-template">
+        <div class="store-header-content">
+          <img id="store-avatar-img" class="store-avatar"
+            src="https://placehold.co/120x120/e0e0e0/777?text=Store" alt="Store Profile">
+          <div class="store-info">
+            <h1 id="store-name-h1">Store Name</h1>
+            <p id="store-short-bio-p">Store tagline or short bio...</p>
+
+            <div id="store-socials-div" class="store-socials"></div>
+
+            <div id="store-actions-div" class="store-actions">
+              <button class="follow-btn"><i class="fas fa-plus"></i> Follow Store</button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </header>
+
+    <main class="store-body">
+      <section id="store-description-section" class="store-description-section" style="display: none;">
+        <h2 class="section-title">About This Store</h2>
+        <p id="store-description-p-body">Loading description...</p>
+      </section>
+
+      <section id="reviews-section" class="reviews-section">
+        <h2 class="section-title">Reviews</h2>
+        <div id="average-rating-summary"><p>Loading reviews...</p></div>
+        <div id="reviews-list">
+          <div id="loading-reviews" class="loader"></div>
+        </div>
+      </section>
+
+      <section id="listings-section">
+        <h2 id="listings-title" class="section-title">Listings</h2>
+        <div id="seller-product-grid" class="product-grid">
+          <div id="loading-products" class="loader"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="store-footer" class="store-footer">
+      <div class="container">
+        <p>Loading footer...</p>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="../firebase.js"></script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
