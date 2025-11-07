@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Editor</title>
-    <!-- Links to your existing site's CSS and Font Awesome -->
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+
     <style>
         /* This CSS is specific to the editor page */
         body { background-color: var(--bg-main); }
@@ -20,7 +19,7 @@
             overflow: hidden;
             border: 1px solid var(--border-color);
         }
-        
+
         /* === NEW STICKY NAV STYLES === */
         .sticky-nav {
             position: sticky;
@@ -54,7 +53,7 @@
             border-bottom: 3px solid var(--ko-primary); /* Active color */
         }
         /* === END STICKY NAV STYLES === */
-        
+
         .form-section {
             padding: 30px;
             border-bottom: 1px solid var(--border-color);
@@ -64,7 +63,7 @@
             font-size: 1.5em;
             color: var(--text-main);
         }
-        
+
         .form-group { margin-bottom: 25px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
         input[type="text"], input[type="tel"], input[type="url"], textarea, select {
@@ -90,8 +89,8 @@
         }
         body.dark-mode .username-input span { background: var(--bg-dark); }
         .username-input input { border-radius: 0 6px 6px 0; }
-        
-        
+
+
         /* --- +++++ NEW BUTTON CSS START +++++ --- */
         button[type="submit"] {
             width: 100%;
@@ -129,8 +128,8 @@
         }
         /* --- +++++ NEW BUTTON CSS END +++++ --- */
 
-        
-        .message { padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+
+        .message { padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
         .message.success { background: #d4edda; color: #155724; }
         .message.error { background: #f8d7da; color: #721c24; }
         .message.info { background: #cce5ff; color: #004085; }
@@ -141,7 +140,7 @@
         .color-picker { display: flex; align-items: center; gap: 15px; }
         input[type="color"] { width: 50px; height: 40px; border: 1px solid #ddd; padding: 0; cursor: pointer; }
         small { color: var(--text-secondary); }
-        
+
         /* Image Upload Styles */
         .image-uploader {
             border: 2px dashed var(--border-color);
@@ -187,7 +186,6 @@
         </template>
 
         <template id="form-template">
-            <!-- NEW: Sticky Navigation -->
             <div class="sticky-nav">
                 <a class="nav-button active" href="#section-general" data-section="general">General</a>
                 <a class="nav-button" href="#section-design" data-section="design">Design</a>
@@ -195,10 +193,8 @@
                 <a class="nav-button" href="#section-footer" data-section="footer">Footer</a>
             </div>
 
-            <!-- NEW: One long form -->
             <form id="storeForm">
-            
-                <!-- SECTION 1: GENERAL -->
+
                 <section id="section-general" class="form-section">
                     <h2>General Settings</h2>
                     <div class="form-group">
@@ -226,7 +222,6 @@
                     </div>
                 </section>
 
-                <!-- SECTION 2: DESIGN -->
                 <section id="section-design" class="form-section">
                     <h2>Design & Layout</h2>
                     <div class="form-group">
@@ -255,7 +250,6 @@
                     </div>
                 </section>
 
-                <!-- SECTION 3: LINKS -->
                 <section id="section-links" class="form-section">
                     <h2>Social & Contact Links</h2>
                     <div class="form-group">
@@ -276,7 +270,6 @@
                     </div>
                 </section>
 
-                <!-- SECTION 4: FOOTER -->
                 <section id="section-footer" class="form-section">
                     <h2>Custom Footer</h2>
                     <div class="form-group">
@@ -291,9 +284,8 @@
                     </div>
                 </section>
 
-                <!-- SHARED BUTTON (at the bottom) -->
                 <div style="padding: 30px;">
-                    <div id="messageBox" class="message" style="display: none;"></div>
+                    <div id="messageBox" class="message"></div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <button type="submit" id="saveButton">
                             <span id="saveButtonText">Save Changes</span>
@@ -303,8 +295,7 @@
             </form>
         </template>
     </div>
-    
-    <!-- Make sure to use ../firebase.js because this file is in the /store/ folder -->
+
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="create.js"></script>
 </body>
