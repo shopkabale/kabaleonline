@@ -1,294 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store Editor</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Store Editor</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ====== Editor page styles (updated & improved) ====== */
+    :root{
+      --editor-max-width: 1100px;
+      --preview-width: 360px;
+    }
+    body { background-color: var(--bg-main); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--text-main); padding:20px; }
 
-    <style>
-        /* This CSS is specific to the editor page */
-        body { background-color: var(--bg-main); }
-        .editor-container {
-            max-width: 800px;
-            margin: 20px auto;
-            background: var(--bg-card);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
+    .editor-wrap { max-width: var(--editor-max-width); margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 20px; align-items:start; }
 
-        /* === NEW STICKY NAV STYLES === */
-        .sticky-nav {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            display: flex;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        .nav-button {
-            flex: 1;
-            padding: 16px 10px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-secondary);
-            border: none;
-            background: none;
-            font-size: 0.9em;
-            text-decoration: none;
-            border-bottom: 3px solid transparent; /* Placeholder border */
-            transition: all 0.2s ease;
-        }
-        .nav-button:hover {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-        }
-        .nav-button.active {
-            color: var(--ko-primary);
-            border-bottom: 3px solid var(--ko-primary); /* Active color */
-        }
-        /* === END STICKY NAV STYLES === */
+    /* left column - form */
+    .editor-container {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
 
-        .form-section {
-            padding: 30px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .form-section h2 {
-            margin-top: 0;
-            font-size: 1.5em;
-            color: var(--text-main);
-        }
+    /* right column - live preview */
+    .preview-panel {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      border: 1px solid var(--border-color);
+      height: fit-content;
+      position: sticky;
+      top: 20px;
+    }
+    .preview-header {
+      height: 160px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      color:white;
+    }
+    .preview-banner { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; filter:brightness(0.5); }
+    .preview-avatar { width:96px; height:96px; border-radius:50%; border:3px solid white; object-fit:cover; position:relative; margin-bottom:-48px; z-index:2; background:#eee; }
+    .preview-body { padding-top: 56px; text-align:center; }
+    .preview-name { font-weight:700; font-size:1.1rem; margin:6px 0; color:var(--text-main); }
+    .preview-desc { font-size:0.9rem; color:var(--text-secondary); margin:0 0 12px 0; }
 
-        .form-group { margin-bottom: 25px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
-        input[type="text"], input[type="tel"], input[type="url"], textarea, select {
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-            background: var(--bg-main);
-            color: var(--text-main);
-        }
-        textarea { min-height: 100px; }
-        .username-input { display: flex; }
-        .username-input span {
-            padding: 12px;
-            background: var(--bg-light);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            border-right: none;
-            border-radius: 6px 0 0 6px;
-            font-size: 14px;
-        }
-        body.dark-mode .username-input span { background: var(--bg-dark); }
-        .username-input input { border-radius: 0 6px 6px 0; }
+    /* sticky nav inside editor */
+    .sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      display:flex;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+    .nav-button{
+      flex:1;
+      padding:12px 10px;
+      text-align:center;
+      cursor:pointer;
+      font-weight:700;
+      color:var(--text-secondary);
+      border:none;
+      background:none;
+      font-size:0.95rem;
+      border-bottom:3px solid transparent;
+      transition: all 0.18s ease;
+    }
+    .nav-button.active { color:var(--ko-primary); border-bottom:3px solid var(--ko-primary); }
 
+    .form-section { padding:22px; border-bottom:1px solid var(--border-color); }
+    .form-section h2 { margin:0 0 12px; font-size:1.2rem; color:var(--text-main); }
 
-        /* --- +++++ NEW BUTTON CSS START +++++ --- */
-        button[type="submit"] {
-            width: 100%;
-            padding: 15px;
-            background: var(--ko-primary);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius); /* Use your site's border-radius */
-            cursor: pointer;
-            font-size: 1.1em; /* Make it a bit bigger */
-            font-weight: 700;
-            box-shadow: var(--shadow); /* Use your site's shadow */
-            transition: all 0.2s ease-out; /* Smooth hover effect */
-        }
+    .form-group { margin-bottom:18px; }
+    label { display:block; font-weight:700; margin-bottom:8px; color:var(--text-main); font-size:0.95rem; }
+    input[type="text"], input[type="tel"], input[type="url"], textarea, select, input[type="time"] {
+      width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-main); color:var(--text-main); font-size:0.95rem;
+    }
+    textarea { min-height:92px; resize:vertical; }
 
-        /* Professional Hover Effect */
-        button[type="submit"]:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1); /* Stronger shadow on hover */
-            opacity: 0.95;
-        }
+    .username-input { display:flex; }
+    .username-input span { padding:10px 12px; background:var(--bg-light); border:1px solid var(--border-color); border-right:none; border-radius:8px 0 0 8px; color:var(--text-secondary); }
+    .username-input input { border-radius:0 8px 8px 0; }
 
-        /* Click Effect */
-        button[type="submit"]:active:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
+    .image-uploader { border:2px dashed var(--border-color); border-radius:8px; padding:14px; text-align:center; cursor:pointer; }
+    .image-uploader:hover { border-color:var(--ko-primary); }
+    input[type="file"] { display:none; }
+    .profile-pic-preview { width:120px;height:120px;border-radius:50%;object-fit:cover;margin:10px auto; display:block; border:2px solid var(--border-color); }
 
-        /* Improved Disabled State */
-        button[type="submit"]:disabled {
-            background: var(--border-color);
-            color: var(--text-secondary);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        /* --- +++++ NEW BUTTON CSS END +++++ --- */
+    /* opening hours table */
+    .hours-list { display:flex; flex-direction:column; gap:8px; }
+    .hour-row { display:flex; gap:8px; align-items:center; }
+    .hour-row select, .hour-row input { flex:1; }
+    .hour-row .btn { padding:8px 10px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-main); cursor:pointer; }
 
+    /* map preview */
+    .map-preview { width:100%; height:200px; border-radius:8px; border:1px solid var(--border-color); overflow:hidden; }
 
-        .message { padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
-        .message.success { background: #d4edda; color: #155724; }
-        .message.error { background: #f8d7da; color: #721c24; }
-        .message.info { background: #cce5ff; color: #004085; }
-        .placeholder-msg { text-align: center; padding: 40px; }
-        .placeholder-msg a { color: var(--ko-primary); font-weight: 600; text-decoration: none; }
-        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--ko-primary); border-radius: 50%; margin: 40px auto; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .color-picker { display: flex; align-items: center; gap: 15px; }
-        input[type="color"] { width: 50px; height: 40px; border: 1px solid #ddd; padding: 0; cursor: pointer; }
-        small { color: var(--text-secondary); }
+    /* template controls */
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .color-picker { display:flex; gap:12px; align-items:center; }
+    input[type="color"]{ width:54px; height:40px; padding:0; border-radius:6px; border:1px solid var(--border-color); }
 
-        /* Image Upload Styles */
-        .image-uploader {
-            border: 2px dashed var(--border-color);
-            border-radius: 6px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .image-uploader:hover { border-color: var(--ko-primary); }
-        .image-uploader-preview {
-            width: 100%;
-            max-height: 200px;
-            object-fit: cover;
-            border-radius: 6px;
-            margin-top: 15px;
-            display: none;
-        }
-        .profile-pic-preview {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin: 10px auto;
-            display: none;
-            border: 2px solid var(--border-color);
-        }
-        input[type="file"] { display: none; }
-    </style>
+    /* submit */
+    button[type="submit"]{ width:100%; padding:14px; border-radius:10px; border:none; background:var(--ko-primary); color:white; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:var(--shadow); }
+    button[type="submit"]:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .message { padding:12px; border-radius:8px; margin-bottom:12px; display:none; font-weight:700; }
+    .message.info{ background:#cce5ff; color:#004085; } .message.success{ background:#d4edda;color:#155724; } .message.error{ background:#f8d7da;color:#721c24; }
+
+    /* responsive */
+    @media(max-width:1100px){ .editor-wrap{ grid-template-columns:1fr; } .preview-panel{ position:relative; top:auto; } }
+  </style>
 </head>
 <body>
+  <div class="editor-wrap">
+    <!-- LEFT: FORM -->
+    <div class="editor-container" id="store-create-container">
+      <div id="loading-spinner" class="loader"></div>
 
-    <div class="editor-container">
-        <div id="store-create-container">
-            <div id="loading-spinner" class="loader"></div>
+      <template id="login-placeholder">
+        <div style="padding:30px;text-align:center;">
+          <h3>Please Log In</h3>
+          <p>You need to be logged in to manage your store.</p>
+          <a href="/login/">Go to Login Page</a>
+        </div>
+      </template>
+
+      <template id="form-template">
+        <div class="sticky-nav">
+          <a class="nav-button active" href="#section-general" data-section="general">General</a>
+          <a class="nav-button" href="#section-contact" data-section="contact">Contact</a>
+          <a class="nav-button" href="#section-design" data-section="design">Design</a>
+          <a class="nav-button" href="#section-template" data-section="template">Template</a>
+          <a class="nav-button" href="#section-links" data-section="links">Links</a>
+          <a class="nav-button" href="#section-footer" data-section="footer">Footer</a>
         </div>
 
-        <template id="login-placeholder">
-             <div class="placeholder-msg">
-                <h3>Please Log In</h3>
-                <p>You need to be logged in to manage your store.</p>
-                <a href="/login/">Go to Login Page</a>
-            </div>
-        </template>
+        <form id="storeForm">
+          <!-- GENERAL -->
+          <section id="section-general" class="form-section">
+            <h2>General Settings</h2>
 
-        <template id="form-template">
-            <div class="sticky-nav">
-                <a class="nav-button active" href="#section-general" data-section="general">General</a>
-                <a class="nav-button" href="#section-design" data-section="design">Design</a>
-                <a class="nav-button" href="#section-links" data-section="links">Links</a>
-                <a class="nav-button" href="#section-footer" data-section="footer">Footer</a>
+            <div class="form-group">
+              <label for="storeUsername">Store Username (Your public link)</label>
+              <div class="username-input">
+                <span>/store/</span>
+                <input type="text" id="storeUsername" name="storeUsername" placeholder="alines-shoes" required>
+              </div>
             </div>
 
-            <form id="storeForm">
+            <div class="form-group">
+              <label for="storeName">Store Name (Public)</label>
+              <input type="text" id="storeName" name="storeName" placeholder="Aline's Premium Shoes" required>
+            </div>
 
-                <section id="section-general" class="form-section">
-                    <h2>General Settings</h2>
-                    <div class="form-group">
-                        <label for="storeUsername">Store Username (Your public link)</label>
-                        <div class="username-input">
-                            <span>/store/</span>
-                            <input type="text" id="storeUsername" name="storeUsername" placeholder="alines-shoes" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="storeName">Store Name (Public)</label>
-                        <input type="text" id="storeName" name="storeName" placeholder="Aline's Premium Shoes" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="storeDescription">Store Description (Bio)</label>
-                        <textarea id="storeDescription" name="storeDescription" placeholder="We sell the best..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="storeProfileImageFile">Store Profile Picture</label>
-                        <input type="file" id="storeProfileImageFile" name="storeProfileImageFile" accept="image/png, image/jpeg">
-                        <label for="storeProfileImageFile" class="image-uploader">
-                            <span>Click to upload profile photo</span>
-                        </label>
-                        <img id="profileImagePreview" class="profile-pic-preview" alt="Profile preview">
-                    </div>
-                </section>
+            <div class="form-group">
+              <label for="storeDescription">Store Description (Bio)</label>
+              <textarea id="storeDescription" name="storeDescription" placeholder="We sell the best..."></textarea>
+            </div>
 
-                <section id="section-design" class="form-section">
-                    <h2>Design & Layout</h2>
-                    <div class="form-group">
-                        <label for="storeBannerFile">Store Banner (Cover Photo)</label>
-                        <input type="file" id="storeBannerFile" name="storeBannerFile" accept="image/png, image/jpeg">
-                         <label for="storeBannerFile" class="image-uploader">
-                            <span>Click to upload banner image</span>
-                        </label>
-                        <img id="bannerImagePreview" class="image-uploader-preview" alt="Banner preview">
-                    </div>
-                    <div class="form-group">
-                        <label for="storeThemeColor">Store Theme Color</label>
-                        <div class="color-picker">
-                            <input type="color" id="storeThemeColor" name="storeThemeColor" value="#007aff">
-                            <span>This will be your button and link color.</span>
-                        </div>
-                    </div>
-                    
-                    </section>
+            <div class="form-group">
+              <label for="storeProfileImageFile">Store Profile Picture</label>
+              <input type="file" id="storeProfileImageFile" name="storeProfileImageFile" accept="image/png, image/jpeg">
+              <label for="storeProfileImageFile" class="image-uploader"><i class="fa-regular fa-image"></i> Click to upload profile photo</label>
+              <img id="profileImagePreview" class="profile-pic-preview" alt="Profile preview">
+            </div>
 
-                <section id="section-links" class="form-section">
-                    <h2>Social & Contact Links</h2>
-                    <div class="form-group">
-                        <label for="linkWhatsapp">WhatsApp Number</label>
-                        <input type="tel" id="linkWhatsapp" name="linkWhatsapp" placeholder="+25677...">
-                    </div>
-                    <div class="form-group">
-                        <label for="linkFacebook">Facebook Username</label>
-                        <input type="text" id="linkFacebook" name="linkFacebook" placeholder="kabaleonline">
-                    </div>
-                    <div class="form-group">
-                        <label for="linkTiktok">TikTok Handle (with @)</label>
-                        <input type="text" id="linkTiktok" name="linkTiktok" placeholder="@kabaleonline">
-                    </div>
-                    <div class="form-group">
-                        <label for="linkGithub">GitHub Username</label>
-                        <input type="text" id="linkGithub" name="linkGithub" placeholder="kabaleonline">
-                    </div>
-                </section>
+            <div class="form-group">
+              <label for="storeBannerFile">Store Banner (optional)</label>
+              <input type="file" id="storeBannerFile" name="storeBannerFile" accept="image/png, image/jpeg">
+              <label for="storeBannerFile" class="image-uploader"><i class="fa-regular fa-image"></i> Click to upload banner</label>
+              <img id="bannerImagePreview" class="image-uploader-preview" alt="Banner preview" style="display:block;width:100%;height:140px;object-fit:cover;margin-top:12px;border-radius:8px;">
+            </div>
+          </section>
 
-                <section id="section-footer" class="form-section">
-                    <h2>Custom Footer</h2>
-                    <div class="form-group">
-                        <label for="footerText">Footer Text</label>
-                        <textarea id="footerText" name="footerText" placeholder="© 2025 My Store. All rights reserved."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="footerColor">Footer Background Color</label>
-                        <div class="color-picker">
-                            <input type="color" id="footerColor" name="footerColor" value="#0A0A1F">
-                        </div>
-                    </div>
-                </section>
+          <!-- CONTACT -->
+          <section id="section-contact" class="form-section">
+            <h2>Contact & Location</h2>
 
-                <div style="padding: 30px;">
-                    <div id="messageBox" class="message"></div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <button type="submit" id="saveButton">
-                            <span id="saveButtonText">Save Changes</span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </template>
+            <div class="form-group">
+              <label for="storeTel">Telephone</label>
+              <input type="tel" id="storeTel" name="storeTel" placeholder="+25677...">
+            </div>
+
+            <div class="form-group">
+              <label for="storeLocation">Location / Address (for map & search)</label>
+              <input type="text" id="storeLocation" name="storeLocation" placeholder="Kabale, Uganda (or full address)">
+              <small>Enter a locality or address. Map preview updates automatically.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Opening Hours (flexible)</label>
+              <div id="hoursList" class="hours-list"></div>
+              <div style="margin-top:8px;">
+                <button type="button" id="addHourBtn" class="btn" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-main);">+ Add opening hours</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Map Preview</label>
+              <div class="map-preview" id="mapPreviewWrap">
+                <iframe id="mapIframe" class="map-iframe" src="" style="width:100%;height:100%;border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+              </div>
+            </div>
+          </section>
+
+          <!-- DESIGN -->
+          <section id="section-design" class="form-section">
+            <h2>Design & Links</h2>
+
+            <div class="form-group">
+              <label for="storeThemeColor">Store Theme Color</label>
+              <div class="color-picker">
+                <input type="color" id="storeThemeColor" name="storeThemeColor" value="#007aff">
+                <span>Theme color used for buttons & accents</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="storeThemeFont">Store Font</label>
+              <select id="storeThemeFont" name="storeThemeFont">
+                <option value="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial">Inter / System</option>
+                <option value="Roboto, system-ui, -apple-system, Arial">Roboto</option>
+                <option value="'Noto Sans', system-ui, sans-serif">Noto Sans</option>
+                <option value="'Poppins', system-ui, sans-serif">Poppins</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="storeLayout">Product Layout</label>
+              <select id="storeLayout" name="storeLayout">
+                <option value="grid">Grid cards</option>
+                <option value="list">Compact list</option>
+                <option value="minimal">Minimal / Focused</option>
+              </select>
+            </div>
+          </section>
+
+          <!-- TEMPLATE / PREVIEW -->
+          <section id="section-template" class="form-section">
+            <h2>Template & Live Preview</h2>
+            <p style="margin-top:0;color:var(--text-secondary)">Live preview updates when you change banner, avatar, color, or font.</p>
+            <div style="margin:14px 0;">
+              <strong>Preview Actions</strong>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button type="button" id="previewApplyBtn" class="btn" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-main);">Apply to preview</button>
+                <button type="button" id="previewResetBtn" class="btn" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-main);">Reset preview</button>
+              </div>
+            </div>
+            <small style="color:var(--text-secondary)">Note: This preview is illustrative — your actual public store page uses your main templates and CSS.</small>
+          </section>
+
+          <!-- LINKS -->
+          <section id="section-links" class="form-section">
+            <h2>Social & Contact Links</h2>
+            <div class="form-group">
+              <label for="linkWhatsapp">WhatsApp Number</label>
+              <input type="tel" id="linkWhatsapp" name="linkWhatsapp" placeholder="+25677...">
+            </div>
+            <div class="form-group">
+              <label for="linkFacebook">Facebook Username</label>
+              <input type="text" id="linkFacebook" name="linkFacebook" placeholder="kabaleonline">
+            </div>
+            <div class="form-group">
+              <label for="linkTiktok">TikTok Handle (with @)</label>
+              <input type="text" id="linkTiktok" name="linkTiktok" placeholder="@kabaleonline">
+            </div>
+            <div class="form-group">
+              <label for="linkGithub">GitHub Username</label>
+              <input type="text" id="linkGithub" name="linkGithub" placeholder="kabaleonline">
+            </div>
+          </section>
+
+          <!-- FOOTER -->
+          <section id="section-footer" class="form-section">
+            <h2>Custom Footer</h2>
+            <div class="form-group">
+              <label for="footerText">Footer Text</label>
+              <textarea id="footerText" name="footerText" placeholder="© 2025 My Store. All rights reserved."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="footerColor">Footer Background Color</label>
+              <div class="color-picker">
+                <input type="color" id="footerColor" name="footerColor" value="#0A0A1F">
+              </div>
+            </div>
+          </section>
+
+          <div style="padding:22px;">
+            <div id="messageBox" class="message info" style="display:none;"></div>
+            <div class="form-group" style="margin-bottom:0;">
+              <button type="submit" id="saveButton"><span id="saveButtonText">Save Changes</span></button>
+            </div>
+          </div>
+        </form>
+      </template>
     </div>
 
-    <script type="module" src="../firebase.js"></script>
-    <script type="module" src="create.js"></script>
+    <!-- RIGHT: LIVE PREVIEW -->
+    <aside class="preview-panel" id="previewPanel" aria-hidden="false">
+      <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div><strong>Live Preview</strong><div style="font-size:12px;color:var(--text-secondary)">How your store header will appear</div></div>
+        <div id="followersDisplay" style="font-size:13px;color:var(--text-secondary)">0 followers</div>
+      </div>
+
+      <div id="previewHeader" class="preview-header" style="background:linear-gradient(135deg,var(--ko-primary),#222);">
+        <img id="previewBanner" class="preview-banner" alt="banner preview" src="">
+        <img id="previewAvatar" class="preview-avatar" alt="avatar preview" src="">
+      </div>
+
+      <div class="preview-body">
+        <div id="previewStoreName" class="preview-name">Store Name</div>
+        <div id="previewStoreDesc" class="preview-desc">Short bio or tagline appears here. Keep it concise.</div>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+          <a id="previewWhats" href="#" target="_blank" style="text-decoration:none;font-weight:700;color:var(--text-secondary)"><i class="fab fa-whatsapp"></i></a>
+          <a id="previewFB" href="#" target="_blank" style="text-decoration:none;font-weight:700;color:var(--text-secondary)"><i class="fab fa-facebook"></i></a>
+          <a id="previewTT" href="#" target="_blank" style="text-decoration:none;font-weight:700;color:var(--text-secondary)"><i class="fab fa-tiktok"></i></a>
+        </div>
+
+        <div style="margin-top:14px;">
+          <strong style="font-size:0.95rem">Contact</strong>
+          <div id="previewContact" style="font-size:0.9rem;color:var(--text-secondary);margin-top:6px;">Tel: — <br>Location: —</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module" src="../firebase.js"></script>
+  <script type="module" src="create.js"></script>
 </body>
 </html>
