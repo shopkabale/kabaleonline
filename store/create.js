@@ -61,7 +61,7 @@ async function loadPage(user) {
     // 2. Scroll-to-Highlight (Intersection Observer)
     const observerOptions = {
         root: null, // observes intersections relative to the viewport
-        rootMargin: '-50px 0px -50% 0px', // Triggers when section is in the top half of the screen
+        rootMargin: '-50% 0px -50% 0px', // Triggers when section is in the middle
         threshold: 0
     };
 
@@ -191,30 +191,44 @@ async function handleFormSubmit(e) {
         }
     }
 
+    // +++++ THIS IS THE NEW, SAFER UPLOAD LOGIC +++++
     try {
-        // --- Handle File Uploads ---
         let profileImageUrl = storeForm.dataset.existingProfileUrl;
         let bannerUrl = storeForm.dataset.existingBannerUrl;
         
         const profileImageFile = storeForm.storeProfileImageFile.files[0];
         const bannerImageFile = storeForm.storeBannerFile.files[0];
 
+        // --- Upload Profile Pic (if new one is selected) ---
         if (profileImageFile) {
             showMessage('info', 'Uploading profile picture...');
-            const storageRef = ref(storage, `stores/${currentUser.uid}/profile.jpg`);
-            await uploadBytes(storageRef, profileImageFile);
-            profileImageUrl = await getDownloadURL(storageRef);
+            saveButton.textContent = 'Uploading picture...';
+            try {
+                const storageRef = ref(storage, `stores/${currentUser.uid}/profile.jpg`);
+                await uploadBytes(storageRef, profileImageFile);
+                profileImageUrl = await getDownloadURL(storageRef);
+            } catch (err) {
+                throw new Error(`Profile picture upload failed: ${err.message}`);
+            }
         }
 
+        // --- Upload Banner (if new one is selected) ---
         if (bannerImageFile) {
             showMessage('info', 'Uploading store banner...');
-            const storageRef = ref(storage, `stores/${currentUser.uid}/banner.jpg`);
-            await uploadBytes(storageRef, bannerImageFile);
-            bannerUrl = await getDownloadURL(storageRef);
+            saveButton.textContent = 'Uploading banner...';
+            try {
+                const storageRef = ref(storage, `stores/${currentUser.uid}/banner.jpg`);
+                await uploadBytes(storageRef, bannerImageFile);
+                bannerUrl = await getDownloadURL(storageRef);
+            } catch (err) {
+                throw new Error(`Banner upload failed: ${err.message}`);
+            }
         }
 
         // --- Prepare Data into a structured object ---
         showMessage('info', 'Saving settings to database...');
+        saveButton.textContent = 'Saving...';
+        
         const storeData = {
             // General
             username: username,
@@ -254,12 +268,15 @@ async function handleFormSubmit(e) {
 
         showMessage('success', 'Store updated successfully! Your public store link is now active.');
     } catch (error) {
+        // This will now catch any error (validation, upload, or save)
         console.error("Error saving store:", error);
         showMessage('error', `Could not save store: ${error.message}`);
     } finally {
+        // This will run no matter what, un-sticking the button
         saveButton.disabled = false;
         saveButton.textContent = 'Save Changes';
     }
+    // +++++ END OF NEW LOGIC +++++
 }
 
 // --- Helper for showing messages ---
