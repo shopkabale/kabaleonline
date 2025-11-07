@@ -4,54 +4,229 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store</title>
-    <!-- Link to your main stylesheet -->
-    <!-- <link rel="stylesheet" href="../style.css"> -->
+    <!-- Links to your existing site's CSS and Font Awesome -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        /* Basic styles - replace with your own CSS */
-        body { font-family: sans-serif; background: #f4f4f4; padding: 1em; }
-        .store-header { padding: 2em; background: #333; color: white; border-radius: 8px; margin-bottom: 2em; }
-        .store-header h1 { margin: 0; font-size: 2em; }
-        .store-header p { margin: 0.5em 0 0 0; }
-        .store-header a { background: #1DB954; color: white; padding: 0.8em 1.2em; border-radius: 20px; text-decoration: none; font-weight: bold; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5em; }
-        .product-card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px 8px 0 0; }
-        .product-card h3 { padding: 0 1em; margin: 0.5em 0; }
-        .product-card p { padding: 0 1em 1em 1em; margin: 0; color: #007bff; font-weight: bold; }
-        .reviews-section { margin-top: 2em; background: white; padding: 2em; border-radius: 8px; }
-        .review-card { border-bottom: 1px solid #eee; padding: 1em 0; }
-        .review-card:last-child { border: 0; }
-        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #007bff; border-radius: 50%; margin: 2em auto; animation: spin 1s linear infinite; }
+        /* This CSS is specific to the Store Page layout */
+        body { background-color: var(--bg-main); }
+        .store-container {
+            max-width: 1200px; /* Use the container width from your style.css */
+            margin: 0 auto;
+        }
+        
+        /* --- 1. Store Header (Hero) --- */
+        .store-header {
+            /* This will be styled by JS with banner image/color */
+            background-color: #333; /* Default fallback */
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            padding-top: 80px; /* Space for the avatar */
+            position: relative;
+            color: #ffffff;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            margin-bottom: 30px;
+        }
+        .store-header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        .store-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            background: #eee;
+            position: absolute;
+            top: -80px; /* Pulls it up halfway */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .store-info h1 {
+            font-size: 2.5em;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+        }
+        .store-info p {
+            font-size: 1.1em;
+            margin: 0 0 20px 0;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+        .store-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .store-actions a {
+            padding: 10px 20px;
+            background: var(--ko-primary); /* Will be themed */
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .store-socials {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .store-socials a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 24px;
+        }
+
+        /* Responsive Header */
+        @media (min-width: 768px) {
+            .store-header-content {
+                flex-direction: row;
+                text-align: left;
+                padding-left: 160px; /* Space for avatar */
+            }
+            .store-avatar {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            .store-info {
+                flex: 1;
+            }
+        }
+        
+        /* --- 2. Store Body --- */
+        .store-body {
+            padding: 0 15px; /* Matches your .container padding */
+        }
+        .section-title {
+            /* This uses your existing CSS class */
+            border-bottom: 2px solid var(--ko-primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+        
+        /* --- 3. Reviews Section --- */
+        .reviews-section {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        .review-card {
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+        }
+        .review-card:last-child { border: 0; padding-bottom: 0; }
+        .review-card p { margin: 5px 0; }
+        .star-rating { color: var(--ko-accent); }
+
+        /* --- 4. Product Layout Classes (JS will add these) --- */
+        .product-grid.layout-1-col {
+            grid-template-columns: 1fr;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .product-grid.layout-2-col {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .product-grid.layout-3-col {
+            grid-template-columns: repeat(2, 1fr); /* 2 on mobile */
+        }
+        @media (min-width: 768px) {
+            .product-grid.layout-3-col {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* --- 5. Custom Footer --- */
+        .store-footer {
+            /* JS will set background-color */
+            color: #e2e8f0; /* Default light text for dark bg */
+            padding: 40px 20px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        .store-footer p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+
+        /* Loader */
+        .loader { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--ko-primary); border-radius: 50%; margin: 40px auto; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
+    
+    <!-- This style tag is where JS will inject the store's custom theme -->
+    <style id="store-theme-styles"></style>
 </head>
 <body>
     
-    <!-- Header: This is where the store banner, name, and bio will go -->
-    <header id="store-header" class="store-header">
-        <div id="loading-header" class="loader"></div>
-    </header>
+    <!-- The store-container uses your existing CSS variables -->
+    <div class="store-container">
+        
+        <!-- HEADER / HERO SECTION -->
+        <header id="store-header" class="store-header">
+            <div id="loading-header" class="loader"></div>
+            
+            <template id="store-header-template">
+                <div class="store-header-content">
+                    <img id="store-avatar-img" class="store-avatar" src="https://placehold.co/120x120/e0e0e0/777?text=Store" alt="Store Profile">
+                    <div class="store-info">
+                        <h1 id="store-name-h1">Store Name</h1>
+                        <p id="store-bio-p">Store description...</p>
+                        <div id="store-socials-div" class="store-socials">
+                            <!-- JS will add social icon links here -->
+                        </div>
+                        <div id="store-actions-div" class="store-actions">
+                            <!-- JS will add buttons (WhatsApp, Share) here -->
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </header>
 
-    <!-- Listings: This is where the seller's products will go -->
-    <section id="listings-section">
-        <h2 id="listings-title">Listings</h2>
-        <div id="seller-product-grid" class="product-grid">
-             <div id="loading-products" class="loader"></div>
-        </div>
-    </section>
+        <main class="store-body">
+            
+            <!-- REVIEWS SECTION (Moved above products as requested) -->
+            <section id="reviews-section" class="reviews-section">
+                <h2 class="section-title">Reviews</h2>
+                <div id="average-rating-summary"><p>Loading reviews...</p></div>
+                <div id="reviews-list">
+                     <div id="loading-reviews" class="loader"></div>
+                </div>
+            </section>
 
-    <!-- Reviews: This is where the seller's reviews will go -->
-    <section id="reviews-section" class="reviews-section">
-        <h2>Reviews</h2>
-        <div id="average-rating-summary"></div>
-        <div id="reviews-list">
-             <div id="loading-reviews" class="loader"></div>
-        </div>
-    </section>
+            <!-- LISTINGS SECTION -->
+            <section id="listings-section">
+                <h2 id="listings-title" class="section-title">Listings</h2>
+                <!-- 
+                  The JS will add layout classes to this grid (e.g., layout-1-col)
+                  It already has .product-grid from your style.css
+                -->
+                <div id="seller-product-grid" class="product-grid">
+                     <div id="loading-products" class="loader"></div>
+                </div>
+            </section>
 
+        </main>
+        
+        <!-- CUSTOM FOOTER -->
+        <footer id="store-footer" class="store-footer">
+            <!-- JS will populate this -->
+        </footer>
+    </div>
+    
     <!-- Link to your firebase.js and the new logic file -->
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="main.js"></script>
-
 </body>
 </html>
