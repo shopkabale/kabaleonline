@@ -1,15 +1,14 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      STORE EDITOR SCRIPT (create.js) - *SIGNED UPLOAD FIX* //
+//      STORE EDITOR SCRIPT (create.js) - *USERNAME FIX* //
 //                                                                     //
 // =================================================================== //
 
 // Imports from your *existing* firebase.js file
-import { auth, db } from '../firebase.js'; // 'app' is no longer needed
+import { auth, db } from '../firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-// We no longer import anything from 'firebase/storage'
+import { doc, setDoc, getDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
 const container = document.getElementById('store-create-container');
@@ -174,13 +173,17 @@ async function uploadImageToCloudinary(file) {
 // +++++ END OF YOUR UPLOAD FUNCTION +++++
 
 
-// --- Handle Form Submit (NOW WITH YOUR UPLOAD LOGIC) ---
+// ================================================================== //
+//                                                                    //
+//    THIS IS THE UPDATED `handleFormSubmit` FUNCTION (STEP 2)        //
+//                                                                    //
+// ================================================================== //
+
 async function handleFormSubmit(e) {
     e.preventDefault();
     if (!currentUser) return;
 
     const saveButton = document.getElementById('saveButton');
-    const messageBox = document.getElementById('messageBox');
     const storeForm = document.getElementById('storeForm');
     
     saveButton.disabled = true;
@@ -189,31 +192,37 @@ async function handleFormSubmit(e) {
 
     const username = storeForm.storeUsername.value.trim().toLowerCase();
     
-    // --- Validate Username ---
+    // --- Validate Username Format ---
     if (!/^[a-z0-9-]+$/.test(username)) {
         showMessage('error', 'Username can only contain lowercase letters, numbers, and hyphens (-).');
         saveButton.disabled = false;
         saveButton.textContent = 'Save Changes';
         return;
     }
-
-    // --- Check if Username is Unique (if changed) ---
+    
+    // --- Get existing username (if any) ---
     const userDocRef = doc(db, 'users', currentUser.uid);
     const userDoc = await getDoc(userDocRef);
     const existingUsername = userDoc.exists() ? userDoc.data().store?.username : null;
 
-    if (username !== existingUsername) {
-        const q = query(collection(db, 'users'), where('store.username', '==', username));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
+    // +++++ NEW USERNAME CHECK LOGIC +++++
+    let usernameChanged = (username !== existingUsername);
+    
+    if (usernameChanged) {
+        // Check for availability in the new public collection
+        showMessage('info', 'Checking username availability...');
+        const newUsernameRef = doc(db, 'storeUsernames', username);
+        const newUsernameDoc = await getDoc(newUsernameRef);
+        
+        if (newUsernameDoc.exists()) {
             showMessage('error', 'This store username is already taken. Please choose another.');
             saveButton.disabled = false;
             saveButton.textContent = 'Save Changes';
             return;
         }
     }
+    // +++++ END NEW USERNAME CHECK LOGIC +++++
 
-    // +++++ THIS IS THE NEW LOGIC USING YOUR FUNCTION +++++
     try {
         let profileImageUrl = storeForm.dataset.existingProfileUrl;
         let bannerUrl = storeForm.dataset.existingBannerUrl;
@@ -225,7 +234,6 @@ async function handleFormSubmit(e) {
         if (profileImageFile) {
             showMessage('info', 'Uploading profile picture...');
             saveButton.textContent = 'Uploading Profile...';
-            // This now calls your secure upload function
             profileImageUrl = await uploadImageToCloudinary(profileImageFile);
             showMessage('info', 'Profile picture uploaded!');
         }
@@ -234,7 +242,6 @@ async function handleFormSubmit(e) {
         if (bannerImageFile) {
             showMessage('info', 'Uploading store banner...');
             saveButton.textContent = 'Uploading Banner...';
-            // This now calls your secure upload function
             bannerUrl = await uploadImageToCloudinary(bannerImageFile);
             showMessage('info', 'Store banner uploaded!');
         }
@@ -244,59 +251,72 @@ async function handleFormSubmit(e) {
         saveButton.textContent = 'Saving...';
         
         const storeData = {
-            // General
             username: username,
             storeName: storeForm.storeName.value.trim(),
             description: storeForm.storeDescription.value.trim(),
-            profileImageUrl: profileImageUrl, // The new or existing URL
-            
-            // Links
+            profileImageUrl: profileImageUrl,
             links: {
                 whatsapp: storeForm.linkWhatsapp.value.trim(),
                 facebook: storeForm.linkFacebook.value.trim(),
                 tiktok: storeForm.linkTiktok.value.trim(),
                 github: storeForm.linkGithub.value.trim()
             },
-            
-            // Design
             design: {
-                bannerUrl: bannerUrl, // The new or existing URL
+                bannerUrl: bannerUrl,
                 themeColor: storeForm.storeThemeColor.value,
                 productLayout: storeForm.productLayout.value
             },
-
-            // Footer
             footer: {
                 text: storeForm.footerText.value.trim(),
                 color: storeForm.footerColor.value
             },
-            
             updatedAt: new Date()
         };
 
         // --- Save to Firestore ---
+        // 1. Save the main data to the user's private document
         await setDoc(userDocRef, {
             store: storeData,
-            isSeller: true // Mark this user as a seller
+            isSeller: true
         }, { merge: true });
 
+        // +++++ NEW: UPDATE PUBLIC USERNAME COLLECTION +++++
+        if (usernameChanged) {
+            // 2. Create the new public username document
+            const newUsernameRef = doc(db, 'storeUsernames', username);
+            await setDoc(newUsernameRef, { userId: currentUser.uid });
+
+            // 3. Delete the old public username document (if it exists)
+            if (existingUsername) {
+                const oldUsernameRef = doc(db, 'storeUsernames', existingUsername);
+                // We add a catch here in case the old doc doesn't exist, to prevent errors
+                await deleteDoc(oldUsernameRef).catch(err => {
+                    console.warn("Could not delete old username doc:", err);
+                });
+            }
+        }
+        // +++++ END OF NEW LOGIC +++++
+
         showMessage('success', 'Store updated successfully! Your public store link is now active.');
+    
     } catch (error) {
-        // This will now catch any error (validation, upload, or save)
         console.error("Error saving store:", error);
-        // Give a polite error just like your product form
         let politeError = `Could not save store: ${error.message}`;
         if (error.message.includes('Cloudinary')) {
-            politeError = 'Polite Error: We had trouble uploading your image. Please check your internet connection or try a different image.';
+            politeError = 'Polite Error: We had trouble uploading your image.';
+        } else if (error.message.includes('permission')) {
+             politeError = 'Polite Error: Could not save username. Please try again.';
         }
         showMessage('error', politeError);
     } finally {
-        // This will run no matter what, un-sticking the button
         saveButton.disabled = false;
         saveButton.textContent = 'Save Changes';
     }
-    // +++++ END OF NEW LOGIC +++++
 }
+// ================================================================== //
+//                       END OF UPDATED FUNCTION                      //
+// ================================================================== //
+
 
 // --- Helper for showing messages ---
 function showMessage(type, text) {
