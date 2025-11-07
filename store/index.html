@@ -35,6 +35,9 @@
             align-items: center;
             text-align: center;
             position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
         }
         .store-avatar {
             width: 120px;
@@ -45,6 +48,10 @@
             position: absolute;
             top: -80px; /* Pulls it up halfway */
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            object-fit: cover; /* Ensures profile pic looks good */
+        }
+        .store-info {
+            width: 100%;
         }
         .store-info h1 {
             font-size: 2.5em;
@@ -56,6 +63,8 @@
             margin: 0 0 20px 0;
             opacity: 0.9;
             max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .store-actions {
             display: flex;
@@ -63,13 +72,17 @@
             justify-content: center;
             gap: 10px;
         }
-        .store-actions a {
+        /* This will be themed by the JS */
+        .store-actions a, .store-actions button {
             padding: 10px 20px;
-            background: var(--ko-primary); /* Will be themed */
+            background: var(--ko-primary);
             color: white;
             text-decoration: none;
             border-radius: 6px;
             font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
         }
         .store-socials {
             display: flex;
@@ -83,7 +96,7 @@
             font-size: 24px;
         }
 
-        /* Responsive Header */
+        /* Responsive Header for desktop */
         @media (min-width: 768px) {
             .store-header-content {
                 flex-direction: row;
@@ -93,10 +106,17 @@
             .store-avatar {
                 position: absolute;
                 top: 0;
-                left: 0;
+                left: 15px;
             }
             .store-info {
                 flex: 1;
+            }
+            .store-info p {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            .store-actions, .store-socials {
+                justify-content: flex-start;
             }
         }
         
@@ -129,20 +149,23 @@
         .star-rating { color: var(--ko-accent); }
 
         /* --- 4. Product Layout Classes (JS will add these) --- */
+        /* .product-grid is already in your style.css */
+        
         .product-grid.layout-1-col {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
             max-width: 500px;
             margin: 0 auto;
         }
         .product-grid.layout-2-col {
-            grid-template-columns: repeat(2, 1fr);
+             /* Your default is 2-col, but we force it for desktop too */
+            grid-template-columns: repeat(2, 1fr) !important;
         }
         .product-grid.layout-3-col {
             grid-template-columns: repeat(2, 1fr); /* 2 on mobile */
         }
         @media (min-width: 768px) {
             .product-grid.layout-3-col {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(3, 1fr) !important;
             }
         }
         
@@ -150,9 +173,14 @@
         .store-footer {
             /* JS will set background-color */
             color: #e2e8f0; /* Default light text for dark bg */
-            padding: 40px 20px;
+            padding: 40px 0;
             margin-top: 40px;
             text-align: center;
+        }
+        .store-footer .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
         }
         .store-footer p {
             margin: 0;
@@ -171,7 +199,7 @@
 <body>
     
     <!-- The store-container uses your existing CSS variables -->
-    <div class="store-container">
+    <div class.store-container">
         
         <!-- HEADER / HERO SECTION -->
         <header id="store-header" class="store-header">
@@ -201,7 +229,7 @@
                 <h2 class="section-title">Reviews</h2>
                 <div id="average-rating-summary"><p>Loading reviews...</p></div>
                 <div id="reviews-list">
-                     <div id="loading-reviews" class="loader"></div>
+                     <div id="loading-reviews" class.loader"></div>
                 </div>
             </section>
 
@@ -222,6 +250,9 @@
         <!-- CUSTOM FOOTER -->
         <footer id="store-footer" class="store-footer">
             <!-- JS will populate this -->
+            <div class="container">
+                <p>Loading footer...</p>
+            </div>
         </footer>
     </div>
     
