@@ -1,19 +1,15 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//         STORE EDITOR SCRIPT (create.js) - *UPLOAD FIX* //
+//      STORE EDITOR SCRIPT (create.js) - *SIGNED UPLOAD FIX* //
 //                                                                     //
 // =================================================================== //
 
 // Imports from your *existing* firebase.js file
-import { auth, db, app } from '../firebase.js'; // 'app' is needed for storage
+import { auth, db } from '../firebase.js'; // 'app' is no longer needed
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-// NEW: Import the *resumable* uploader
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
-
-// --- Initialize Storage ---
-const storage = getStorage(app);
+// We no longer import anything from 'firebase/storage'
 
 // --- DOM Elements ---
 const container = document.getElementById('store-create-container');
@@ -23,7 +19,7 @@ const formTemplate = document.getElementById('form-template');
 
 let currentUser = null;
 
-// --- Auth Check (copied from your cart.js) ---
+// --- Auth Check ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -139,49 +135,46 @@ async function loadPage(user) {
     }
 }
 
-// +++++ NEW UPLOAD HELPER FUNCTION +++++
+// +++++ THIS IS YOUR UPLOAD FUNCTION FROM YOUR PRODUCT FORM +++++
 /**
- * Uploads a file with progress tracking.
+ * Uploads an image to Cloudinary using your Netlify signature function.
  * @param {File} file The file to upload.
- * @param {string} storagePath The path in Firebase Storage.
- * @returns {Promise<string>} The download URL of the uploaded file.
+ * @returns {Promise<string>} The secure Cloudinary URL.
  */
-function uploadFileWithProgress(file, storagePath) {
-    const saveButton = document.getElementById('saveButton');
-    const messageBox = document.getElementById('messageBox');
-    
-    return new Promise((resolve, reject) => {
-        const storageRef = ref(storage, storagePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
+async function uploadImageToCloudinary(file) {
+    try {
+        // 1. Get the secure signature from your Netlify function
+        const response = await fetch('/.netlify/functions/generate-signature');
+        if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
+        const { signature, timestamp, cloudname, apikey } = await response.json();
 
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                // --- This is the new progress logic ---
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                const progressText = `Uploading... ${Math.round(progress)}%`;
-                
-                showMessage('info', progressText);
-                saveButton.textContent = progressText;
-                // --- End of new progress logic ---
-            },
-            (error) => {
-                // Handle unsuccessful uploads
-                console.error("Upload failed:", error);
-                reject(new Error(`File upload failed: ${error.message}`));
-            },
-            () => {
-                // Handle successful uploads on complete
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    resolve(downloadURL);
-                });
-            }
-        );
-    });
+        // 2. Prepare the form data for Cloudinary
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', apikey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+
+        // 3. Upload the file
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+        const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+
+        if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            throw new Error(`Cloudinary upload failed: ${errorData.error.message}`);
+        }
+
+        const uploadData = await uploadResponse.json();
+        return uploadData.secure_url;
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        throw error; // Re-throw the error to be caught by handleFormSubmit
+    }
 }
-// +++++ END NEW UPLOAD HELPER FUNCTION +++++
+// +++++ END OF YOUR UPLOAD FUNCTION +++++
 
 
-// --- Handle Form Submit (NOW WITH THE FIX) ---
+// --- Handle Form Submit (NOW WITH YOUR UPLOAD LOGIC) ---
 async function handleFormSubmit(e) {
     e.preventDefault();
     if (!currentUser) return;
@@ -220,7 +213,7 @@ async function handleFormSubmit(e) {
         }
     }
 
-    // +++++ THIS IS THE NEW, SAFER UPLOAD LOGIC +++++
+    // +++++ THIS IS THE NEW LOGIC USING YOUR FUNCTION +++++
     try {
         let profileImageUrl = storeForm.dataset.existingProfileUrl;
         let bannerUrl = storeForm.dataset.existingBannerUrl;
@@ -231,20 +224,18 @@ async function handleFormSubmit(e) {
         // --- Upload Profile Pic (if new one is selected) ---
         if (profileImageFile) {
             showMessage('info', 'Uploading profile picture...');
-            profileImageUrl = await uploadFileWithProgress(
-                profileImageFile, 
-                `stores/${currentUser.uid}/profile.jpg`
-            );
+            saveButton.textContent = 'Uploading Profile...';
+            // This now calls your secure upload function
+            profileImageUrl = await uploadImageToCloudinary(profileImageFile);
             showMessage('info', 'Profile picture uploaded!');
         }
 
         // --- Upload Banner (if new one is selected) ---
         if (bannerImageFile) {
             showMessage('info', 'Uploading store banner...');
-            bannerUrl = await uploadFileWithProgress(
-                bannerImageFile,
-                `stores/${currentUser.uid}/banner.jpg`
-            );
+            saveButton.textContent = 'Uploading Banner...';
+            // This now calls your secure upload function
+            bannerUrl = await uploadImageToCloudinary(bannerImageFile);
             showMessage('info', 'Store banner uploaded!');
         }
 
@@ -293,7 +284,12 @@ async function handleFormSubmit(e) {
     } catch (error) {
         // This will now catch any error (validation, upload, or save)
         console.error("Error saving store:", error);
-        showMessage('error', `Could not save store: ${error.message}`);
+        // Give a polite error just like your product form
+        let politeError = `Could not save store: ${error.message}`;
+        if (error.message.includes('Cloudinary')) {
+            politeError = 'Polite Error: We had trouble uploading your image. Please check your internet connection or try a different image.';
+        }
+        showMessage('error', politeError);
     } finally {
         // This will run no matter what, un-sticking the button
         saveButton.disabled = false;
@@ -310,4 +306,13 @@ function showMessage(type, text) {
     messageBox.style.display = 'block';
     messageBox.className = `message ${type}`;
     messageBox.textContent = text;
+
+    // Add icons like your product form's showMessage
+    if (type === 'error') {
+        messageBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${text}`;
+    } else if (type === 'success') {
+        messageBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${text}`;
+    } else if (type === 'info') {
+        messageBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${text}`;
+    }
 }
