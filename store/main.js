@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *THEME & INFO UPDATE* //
+//      PUBLIC JAVASCRIPT (main.js) - *BUG FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -250,52 +250,29 @@ function applyThemeColor(design) {
  * Renders the store header with banner, avatar, and info.
  * *UPDATED* to populate both themes.
  */
+// ======================================================== //
+//                                                          //
+//          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
+//                                                          //
+// ======================================================== //
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
-    // Use the full description here
     const storeBio = store.description || 'Welcome to my store!';
-    // Create a short bio for the header
     const shortBio = storeBio.substring(0, 70) + (storeBio.length > 70 ? '...' : '');
-    
     const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
-    const bannerUrl = store.design?.bannerUrl;
     
-    // +++++ NEW: Get Phone and Location +++++
+    // +++++ Get Phone and Location +++++
     const storePhone = store.phone;
     const storeLocation = store.location;
 
     document.title = `${storeName} | Kabale Online Store`;
 
-    // --- Populate Active Theme ---
-    // Universal Elements
-    $(`.store-avatar`).src = profileImageUrl;
-    $(`.store-avatar`).alt = storeName;
-    $(`.store-info h1`).textContent = storeName;
-    $(`.store-bio`).textContent = shortBio;
-    
-    // Phone and Location
-    const phoneEl = $(`.store-contact-info #store-phone-${state.activeThemePrefix.substring(7)}`);
-    const locationEl = $(`.store-contact-info #store-location-${state.activeThemePrefix.substring(7)}`);
-
-    if (phoneEl) {
-        if (storePhone) {
-            phoneEl.querySelector('span').textContent = storePhone;
-        } else {
-            phoneEl.style.display = 'none';
-        }
-    }
-    if (locationEl) {
-        if (storeLocation) {
-            locationEl.querySelector('span').textContent = storeLocation;
-        } else {
-            locationEl.style.display = 'none';
-        }
-    }
-
     // --- Theme-Specific Elements ---
     if (state.activeThemePrefix === '#theme-advanced') {
+        // --- ADVANCED THEME ---
         // This theme uses a template
         const headerNode = headerTemplateAdv.content.cloneNode(true);
+        
         // We query the *template* first, then append
         headerNode.getElementById('store-avatar-img-adv').src = profileImageUrl;
         headerNode.getElementById('store-avatar-img-adv').alt = storeName;
@@ -311,6 +288,7 @@ function renderHeader(sellerData, store) {
         if (storeLocation) locationElAdv.querySelector('span').textContent = storeLocation;
         else locationElAdv.style.display = 'none';
 
+        const bannerUrl = store.design?.bannerUrl;
         if (bannerUrl) {
             $('#store-header-adv').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
         } else {
@@ -318,6 +296,26 @@ function renderHeader(sellerData, store) {
         }
         $('#store-header-adv').innerHTML = ''; 
         $('#store-header-adv').appendChild(headerNode);
+
+    } else { 
+        // --- DEFAULT THEME ---
+        // The elements are already in the DOM, so we can query them directly.
+        $(`.store-avatar`).src = profileImageUrl; 
+        $(`.store-avatar`).alt = storeName;
+        $(`.store-info h1`).textContent = storeName;
+        $(`.store-bio`).textContent = shortBio;
+        
+        // Phone and Location
+        const phoneEl = $(`#store-phone-def`);
+        if (phoneEl) {
+            if (storePhone) phoneEl.querySelector('span').textContent = storePhone;
+            else phoneEl.style.display = 'none';
+        }
+        const locationEl = $(`#store-location-def`);
+        if (locationEl) {
+            if (storeLocation) locationEl.querySelector('span').textContent = storeLocation;
+            else locationEl.style.display = 'none';
+        }
     }
     
     // --- Populate the separate "About" section (for both themes) ---
@@ -328,6 +326,10 @@ function renderHeader(sellerData, store) {
         descriptionSection.style.display = 'block';
     }
 }
+// ======================================================== //
+//          --- +++++ END OF CORRECTED FUNCTION +++++ ---         //
+// ======================================================== //
+
 
 function renderSocialLinks(links) {
     const actionsDiv = $(`#store-actions-div-${state.activeThemePrefix.substring(7)}`);
