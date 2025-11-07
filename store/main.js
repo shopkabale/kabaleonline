@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//         PUBLIC JAVASCRIPT (main.js) - *NEW QUERY FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *USERNAME FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -16,7 +16,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 
 const state = {
     currentUser: null,
-    wishlist: new Set()
+    wishlist: new Set(),
+    // We need to store the sellerId globally so the review function can use it
+    currentSellerId: null 
 };
 
 // ==================================================== //
@@ -49,20 +51,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ==================================================== //
-//               CORE STORE LOADING LOGIC               //
-// ==================================================== //
+
+// ================================================================== //
+//                                                                    //
+//    THIS IS THE UPDATED `loadStoreContent` FUNCTION (STEP 3)        //
+//                                                                    //
+// ================================================================== //
 
 async function loadStoreContent() {
-    // This is your brilliant logic to get the username from the URL path
     let username = null;
     const pathParts = window.location.pathname.split("/");
     if (pathParts.length >= 3 && pathParts[2]) {
-        username = decodeURIComponent(pathParts[2]); // e.g. "test-store"
+        username = decodeURIComponent(pathParts[2]);
     }
 
     if (!username) {
-        // Fallback for ?username= (this is the link we tested)
+        // Fallback for ?username=
         const urlParams = new URLSearchParams(window.location.search);
         username = urlParams.get('username');
     }
@@ -76,26 +80,33 @@ async function loadStoreContent() {
     // --- 1. Find the Seller by Username ---
     try {
         
-        // +++++ NEW QUERY - THIS IS THE FIX +++++
-        // This query matches the new 2-field index you are building.
-        const q = query(
-            collection(db, 'users'), 
-            where('store.username', '==', username), 
-            where('isSeller', '==', true), // We add this field
-            limit(1)
-        );
-        // +++++ END NEW QUERY +++++
+        // +++++ THIS IS THE NEW, SECURE FIX +++++
+        // 1. Look up the username in the public 'storeUsernames' collection
+        const usernameDocRef = doc(db, 'storeUsernames', username);
+        const usernameDoc = await getDoc(usernameDocRef);
 
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
+        if (!usernameDoc.exists()) {
             storeHeader.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
             loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
             return;
         }
 
-        const sellerDoc = snapshot.docs[0];
-        const sellerId = sellerDoc.id;
+        // 2. Get the seller's ID from the lookup document
+        const sellerId = usernameDoc.data().userId;
+        state.currentSellerId = sellerId; // <-- Save this for the review system
+
+        // 3. Get the seller's public data using their ID
+        // This query works because your rule "allow get: if true" on /users/{userId}
+        const sellerDocRef = doc(db, 'users', sellerId);
+        const sellerDoc = await getDoc(sellerDocRef);
+        // +++++ END OF NEW FIX +++++
+
+        if (!sellerDoc.exists() || !sellerDoc.data().isSeller) {
+            storeHeader.innerHTML = `<h1>Store Not Found</h1><p>This user is not a seller.</p>`;
+            loadingHeader.remove(); loadingProducts.remove(); loadingReviews.remove();
+            return;
+        }
+
         const sellerData = sellerDoc.data();
         const storeData = sellerData.store || {};
         
@@ -103,7 +114,7 @@ async function loadStoreContent() {
         applyCustomTheme(storeData.design || {});
         renderHeader(sellerData, storeData);
         renderSocialLinks(storeData.links || {});
-        renderReviews(sellerId); // Call reviews (now above products)
+        renderReviews(sellerId); // Call reviews
         renderProducts(sellerId, sellerData.name, storeData.design || {}); // Call products
         renderFooter(storeData.footer || {});
 
@@ -111,10 +122,15 @@ async function loadStoreContent() {
 
     } catch (error) {
         console.error("Error fetching store:", error);
+        // This is where your user is seeing the error message!
         storeHeader.innerHTML = `<h1>Error</h1><p>Could not load this store. ${error.message}</p>`;
         loadingHeader.remove();
     }
 }
+// ================================================================== //
+//                       END OF UPDATED FUNCTION                      //
+// ================================================================== //
+
 
 // ==================================================== //
 //               PAGE RENDERING FUNCTIONS               //
@@ -126,13 +142,8 @@ async function loadStoreContent() {
 function applyCustomTheme(design) {
     const themeColor = design.themeColor || 'var(--ko-primary)';
     
-    // Set the site-wide --ko-primary variable *for this page*
-    // This will *automatically* theme your existing CSS!
     document.documentElement.style.setProperty('--ko-primary', themeColor);
     
-    // 2. Apply Product Layout
-    // We add classes to the grid, which are defined in the <style>
-    // block of store/index.html
     if (design.productLayout === '1-col') {
         sellerProductGrid.classList.add('layout-1-col');
     } else if (design.productLayout === '2-col') {
@@ -140,7 +151,6 @@ function applyCustomTheme(design) {
     } else if (design.productLayout === '3-col') {
         sellerProductGrid.classList.add('layout-3-col');
     }
-    // "default" will use your .product-grid CSS
 }
 
 /**
@@ -150,22 +160,19 @@ function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
     const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
-    const bannerUrl = store.design?.bannerUrl; // Get from design object
+    const bannerUrl = store.design?.bannerUrl;
 
     document.title = `${storeName} | Kabale Online Store`;
 
-    // 1. Populate Header Template
     const headerNode = headerTemplate.content.cloneNode(true);
     headerNode.getElementById('store-avatar-img').src = profileImageUrl;
     headerNode.getElementById('store-avatar-img').alt = storeName;
     headerNode.getElementById('store-name-h1').textContent = storeName;
     headerNode.getElementById('store-bio-p').textContent = storeBio;
     
-    // 2. Apply Banner Image
     if (bannerUrl) {
         storeHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
     } else {
-        // Use a default theme color if no banner
         storeHeader.style.backgroundColor = "var(--ko-primary)";
     }
     
@@ -180,15 +187,12 @@ function renderSocialLinks(links) {
     const socialsDiv = document.getElementById('store-socials-div');
     if (!actionsDiv || !socialsDiv) return;
 
-    // 1. Action Buttons
     if (links.whatsapp) {
         const whatsappLink = `https://wa.me/${links.whatsapp}?text=Hi, I saw your store on Kabale Online.`;
         actionsDiv.innerHTML += `<a href="${whatsappLink}" target="_blank" class="whatsapp-btn">Chat on WhatsApp</a>`;
     }
-    // Add share button
     actionsDiv.innerHTML += `<button id="share-store-btn" class="share-btn">Share Store</button>`;
 
-    // 2. Social Media Icons (using Font Awesome)
     if (links.facebook) {
         socialsDiv.innerHTML += `<a href="https://facebook.com/${links.facebook}" target="_blank" title="Facebook"><i class="fab fa-facebook"></i></a>`;
     }
@@ -199,13 +203,14 @@ function renderSocialLinks(links) {
         socialsDiv.innerHTML += `<a href="https://github.com/${links.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
     }
     
-    // 3. Add Event Listeners
     const shareBtn = document.getElementById('share-store-btn');
-    shareBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(window.location.href)
-            .then(() => alert("Store link copied to clipboard!"))
-            .catch(err => console.error("Copy failed:", err));
-    });
+    if(shareBtn) {
+        shareBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(window.location.href)
+                .then(() => alert("Store link copied to clipboard!"))
+                .catch(err => console.error("Copy failed:", err));
+        });
+    }
 }
 
 /**
@@ -251,7 +256,7 @@ function renderFooter(footer) {
     if (!storeFooter) return;
     
     const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
-    const footerColor = footer.color || '#0A0A1F'; // Your default footer color
+    const footerColor = footer.color || '#0A0A1F';
     
     storeFooter.style.backgroundColor = footerColor;
     storeFooter.innerHTML = `
@@ -265,13 +270,11 @@ function renderFooter(footer) {
 // =================================================================== //
 //                                                                     //
 //    THIS IS YOUR *FULL* RENDERPRODUCTS FUNCTION FROM shop/main.js    //
-//    This ensures your product cards look 100% correct.               //
 //                                                                     //
 // =================================================================== //
 
 /**
  * Creates an optimized and transformed Cloudinary URL.
- * (Copied from your shop/main.js)
  */
 function getCloudinaryTransformedUrl(url, type = 'thumbnail') {
     if (!url || !url.includes('res.cloudinary.com')) {
@@ -308,11 +311,9 @@ function observeLazyImages() {
 }
 
 /**
- * Renders all products for a seller, using your exact logic from shop/main.js
+ * Renders all products for a seller
  */
 async function renderProducts(sellerId, sellerName, design) {
-    
-    // Note: We're not passing gridElement, but using the global `sellerProductGrid`
     
     try {
         const q = query(
@@ -339,8 +340,6 @@ async function renderProducts(sellerId, sellerName, design) {
             const thumbnailUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'thumbnail');
             const placeholderUrl = getCloudinaryTransformedUrl(product.imageUrls?.[0], 'placeholder');
 
-            // This is the full logic from your shop/main.js
-            
             const isInWishlist = state.wishlist.has(product.id);
             const wishlistIcon = isInWishlist ? 'fa-solid' : 'fa-regular';
             const wishlistClass = isInWishlist ? 'active' : '';
@@ -395,7 +394,6 @@ async function renderProducts(sellerId, sellerName, design) {
                 productLink.style.cursor = 'default';
             }
 
-            // This is your card structure, but with sellerName and verifiedText removed
             productLink.innerHTML = `
               <div class="product-card ${soldClass}">
                  ${soldOverlayHTML}
@@ -407,7 +405,6 @@ async function renderProducts(sellerId, sellerName, design) {
                 ${stockStatusHTML}
                 ${priceHTML}
                 ${locationHTML}
-                <!-- Seller name is removed, as we are on their store -->
               </div>
             `;
             
@@ -432,7 +429,6 @@ async function renderProducts(sellerId, sellerName, design) {
 
 /**
  * Fetches the current user's wishlist to sync state.
- * (Copied from your shop/main.js)
  */
 async function fetchUserWishlist() {
     if (!state.currentUser) { state.wishlist.clear(); return; }
@@ -446,7 +442,6 @@ async function fetchUserWishlist() {
 
 /**
  * Adds click listeners to all wishlist buttons on the page.
- * (Copied from your shop/main.js)
  */
 function initializeWishlistButtons() {
     const allProductCards = document.querySelectorAll('.product-card-link');
@@ -461,7 +456,6 @@ function initializeWishlistButtons() {
 
 /**
  * Handles a click on a wishlist button.
- * (Copied from your shop/main.js)
  */
 async function handleWishlistClick(event) {
     event.preventDefault();
@@ -497,7 +491,6 @@ async function handleWishlistClick(event) {
 
 /**
  * Updates the visual state of a wishlist button.
- * (Copied from your shop/main.js)
  */
 function updateWishlistButtonUI(button, isInWishlist) {
     const icon = button.querySelector('i');
