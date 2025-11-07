@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Your Store</title>
+    <!-- We'll use Tailwind for styling, just like the previous example -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader { border-top-color: #3498db; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="container mx-auto max-w-2xl p-4 pt-10">
+
+        <!-- Initial Loading Spinner -->
+        <div id="loading-spinner" class="flex justify-center items-center h-64">
+            <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-24 w-24"></div>
+        </div>
+
+        <!-- Form Container (Hidden by default) -->
+        <div id="form-container" class="hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Manage Your Store</h1>
+                <p class="text-gray-600 mb-6">This is your seller identity. Your store username will be your unique link.</p>
+                <p id="userIdDisplay" class="text-sm text-gray-500 mb-6 font-mono"></p>
+                
+                <div id="messageBox" class="hidden p-4 rounded-lg mb-6"></div>
+
+                <form id="storeForm">
+                    <div class="space-y-6">
+                        <!-- Store Username -->
+                        <div>
+                            <label for="storeUsername" class="block text-sm font-medium text-gray-700">Store Username</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                    kabaleonline.com/store.html?username=
+                                </span>
+                                <input type="text" id="storeUsername" name="storeUsername" class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3" placeholder="alines-shoes" required>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Required. No spaces or special characters. This is your public link.</p>
+                        </div>
+
+                        <!-- Store Name -->
+                        <div>
+                            <label for="storeName" class="block text-sm font-medium text-gray-700">Store Name (Public)</label>
+                            <input type="text" id="storeName" name="storeName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3" placeholder="Aline's Premium Shoes" required>
+                        </div>
+
+                        <!-- Store Description / Bio -->
+                        <div>
+                            <label for="storeDescription" class="block text-sm font-medium text-gray-700">Store Description (Bio)</label>
+                            <textarea id="storeDescription" name="storeDescription" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3" placeholder="We sell the best premium shoes, boots, and sandals..."></textarea>
+                        </div>
+                        
+                        <!-- Store WhatsApp -->
+                        <div>
+                            <label for="storeWhatsapp" class="block text-sm font-medium text-gray-700">Public WhatsApp Number</label>
+                            <input type="tel" id="storeWhatsapp" name="storeWhatsapp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3" placeholder="+25677...">
+                        </div>
+                        
+                        <!-- Image Uploads (Coming Soon) -->
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="font-medium text-gray-700">Coming Soon:</p>
+                            <p class="text-sm text-gray-600">You will soon be able to upload a store logo and banner image here.</p>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="pt-2">
+                            <button type="submit" id="saveButton" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50">
+                                <span id="saveButtonText">Save Changes</span>
+                                <div id="saveButtonSpinner" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-5 w-5 hidden"></div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- This links to your firebase.js and the new logic file -->
+    <script type="module" src="create-store.js"></script>
+</body>
+</html>
