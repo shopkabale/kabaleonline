@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//                   STORE EDITOR SCRIPT (create.js)                   //
+//         STORE EDITOR SCRIPT (create.js) - *UPLOAD FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -9,8 +9,8 @@
 import { auth, db, app } from '../firebase.js'; // 'app' is needed for storage
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-// Import Firebase Storage for file uploads
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+// NEW: Import the *resumable* uploader
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 // --- Initialize Storage ---
 const storage = getStorage(app);
@@ -49,29 +49,22 @@ async function loadPage(user) {
     const bannerImageInput = document.getElementById('storeBannerFile');
     const bannerImagePreview = document.getElementById('bannerImagePreview');
     
-    // --- NEW: Scroll Navigation Logic ---
+    // --- Scroll Navigation Logic ---
     const navButtons = container.querySelectorAll('.nav-button');
     const formSections = container.querySelectorAll('.form-section');
-
-    // 1. Click-to-Scroll
     navButtons.forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = button.getAttribute('href'); // e.g., "#section-general"
+            const targetId = button.getAttribute('href'); 
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
     });
-
-    // 2. Scroll-to-Highlight (Intersection Observer)
     const observerOptions = {
-        root: null, // observes intersections relative to the viewport
-        rootMargin: '-50% 0px -50% 0px', // Triggers when section is in the middle
-        threshold: 0
+        root: null, rootMargin: '-50% 0px -50% 0px', threshold: 0
     };
-
     const observerCallback = (entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -82,11 +75,8 @@ async function loadPage(user) {
             }
         });
     };
-
     const observer = new IntersectionObserver(observerCallback, observerOptions);
     formSections.forEach(section => observer.observe(section));
-    // --- END NEW: Scroll Navigation Logic ---
-
 
     // --- Image Preview Logic ---
     profileImageInput.addEventListener('change', (e) => {
@@ -112,7 +102,6 @@ async function loadPage(user) {
         }
     });
 
-
     // Add form submit listener
     storeForm.addEventListener('submit', handleFormSubmit);
 
@@ -126,11 +115,8 @@ async function loadPage(user) {
         const design = store.design || {};
         const footer = store.footer || {};
 
-        // Store existing URLs in dataset for comparison
         storeForm.dataset.existingProfileUrl = store.profileImageUrl || '';
         storeForm.dataset.existingBannerUrl = design.bannerUrl || '';
-
-        // Section 1: General
         storeForm.storeUsername.value = store.username || '';
         storeForm.storeName.value = store.storeName || '';
         storeForm.storeDescription.value = store.description || '';
@@ -138,28 +124,64 @@ async function loadPage(user) {
             profileImagePreview.src = store.profileImageUrl;
             profileImagePreview.style.display = 'block';
         }
-
-        // Section 2: Design
         if (design.bannerUrl) {
             bannerImagePreview.src = design.bannerUrl;
             bannerImagePreview.style.display = 'block';
         }
         storeForm.storeThemeColor.value = design.themeColor || '#007aff';
         storeForm.productLayout.value = design.productLayout || 'default';
-
-        // Section 3: Links
         storeForm.linkWhatsapp.value = links.whatsapp || '';
         storeForm.linkFacebook.value = links.facebook || '';
         storeForm.linkTiktok.value = links.tiktok || '';
         storeForm.linkGithub.value = links.github || '';
-        
-        // Section 4: Footer
         storeForm.footerText.value = footer.text || '';
         storeForm.footerColor.value = footer.color || '#0A0A1F';
     }
 }
 
-// --- Handle Form Submit ---
+// +++++ NEW UPLOAD HELPER FUNCTION +++++
+/**
+ * Uploads a file with progress tracking.
+ * @param {File} file The file to upload.
+ * @param {string} storagePath The path in Firebase Storage.
+ * @returns {Promise<string>} The download URL of the uploaded file.
+ */
+function uploadFileWithProgress(file, storagePath) {
+    const saveButton = document.getElementById('saveButton');
+    const messageBox = document.getElementById('messageBox');
+    
+    return new Promise((resolve, reject) => {
+        const storageRef = ref(storage, storagePath);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                // --- This is the new progress logic ---
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                const progressText = `Uploading... ${Math.round(progress)}%`;
+                
+                showMessage('info', progressText);
+                saveButton.textContent = progressText;
+                // --- End of new progress logic ---
+            },
+            (error) => {
+                // Handle unsuccessful uploads
+                console.error("Upload failed:", error);
+                reject(new Error(`File upload failed: ${error.message}`));
+            },
+            () => {
+                // Handle successful uploads on complete
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    resolve(downloadURL);
+                });
+            }
+        );
+    });
+}
+// +++++ END NEW UPLOAD HELPER FUNCTION +++++
+
+
+// --- Handle Form Submit (NOW WITH THE FIX) ---
 async function handleFormSubmit(e) {
     e.preventDefault();
     if (!currentUser) return;
@@ -209,27 +231,21 @@ async function handleFormSubmit(e) {
         // --- Upload Profile Pic (if new one is selected) ---
         if (profileImageFile) {
             showMessage('info', 'Uploading profile picture...');
-            saveButton.textContent = 'Uploading picture...';
-            try {
-                const storageRef = ref(storage, `stores/${currentUser.uid}/profile.jpg`);
-                await uploadBytes(storageRef, profileImageFile);
-                profileImageUrl = await getDownloadURL(storageRef);
-            } catch (err) {
-                throw new Error(`Profile picture upload failed: ${err.message}`);
-            }
+            profileImageUrl = await uploadFileWithProgress(
+                profileImageFile, 
+                `stores/${currentUser.uid}/profile.jpg`
+            );
+            showMessage('info', 'Profile picture uploaded!');
         }
 
         // --- Upload Banner (if new one is selected) ---
         if (bannerImageFile) {
             showMessage('info', 'Uploading store banner...');
-            saveButton.textContent = 'Uploading banner...';
-            try {
-                const storageRef = ref(storage, `stores/${currentUser.uid}/banner.jpg`);
-                await uploadBytes(storageRef, bannerImageFile);
-                bannerUrl = await getDownloadURL(storageRef);
-            } catch (err) {
-                throw new Error(`Banner upload failed: ${err.message}`);
-            }
+            bannerUrl = await uploadFileWithProgress(
+                bannerImageFile,
+                `stores/${currentUser.uid}/banner.jpg`
+            );
+            showMessage('info', 'Store banner uploaded!');
         }
 
         // --- Prepare Data into a structured object ---
