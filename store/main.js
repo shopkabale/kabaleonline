@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *STABILITY & URL FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *FINAL URL & STABILITY FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -17,8 +17,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 const state = {
     currentUser: null,
     wishlist: new Set(),
-    currentSellerId: null,
-    activeThemePrefix: '#theme-default' // Default theme
+    currentSellerId: null
 };
 const DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DAY_NAMES = {
@@ -39,16 +38,6 @@ const loadingHeader = document.getElementById('loading-header');
 
 // --- Store Directory Page Elements ---
 const directoryList = document.getElementById('store-directory-list');
-
-// --- Single Store Page Elements (now dynamically selected) ---
-function $(selector) {
-    // Queries within the active theme container
-    return document.querySelector(`${state.activeThemePrefix} ${selector}`);
-}
-function $all(selector) {
-    // Queries all within the active theme container
-    return document.querySelectorAll(`${state.activeThemePrefix} ${selector}`);
-}
 
 // --- Templates ---
 const headerTemplateAdv = document.getElementById('store-header-template-adv');
@@ -183,51 +172,57 @@ async function loadSingleStore(username) {
         
         // --- APPLY THEME ---
         const theme = design.theme || 'default';
+        let activeThemeContainer; 
         
         if (theme === 'advanced') {
-            state.activeThemePrefix = '#theme-advanced';
-            document.getElementById('theme-advanced').style.display = 'block';
+            activeThemeContainer = document.getElementById('theme-advanced');
         } else {
-            state.activeThemePrefix = '#theme-default';
-            document.getElementById('theme-default').style.display = 'block';
+            activeThemeContainer = document.getElementById('theme-default');
         }
+
+        if (!activeThemeContainer) {
+            throw new Error(`Could not find theme container for ${theme}`);
+        }
+        
+        activeThemeContainer.style.display = 'block';
         applyThemeColor(design); 
 
         // --- +++++ NEW: Run all rendering in "safe" blocks +++++ ---
         // This makes the code flexible, as you asked.
         
         try {
-            renderHeader(sellerData, storeData); 
+            renderHeader(activeThemeContainer, sellerData, storeData); 
         } catch (e) {
             console.error("Error rendering Header:", e);
         }
         
         try {
-            renderSocialLinks(storeData.links || {});
+            renderSocialLinks(activeThemeContainer, storeData.links || {});
         } catch (e) {
             console.error("Error rendering Social Links:", e);
         }
         
         try {
-            renderStoreInfo(storeData); 
+            // This is the function that was crashing
+            renderStoreInfo(activeThemeContainer, storeData); 
         } catch (e) {
             console.error("Error rendering Store Info:", e);
         }
         
         try {
-            await renderReviews(sellerId);
+            await renderReviews(activeThemeContainer, sellerId);
         } catch (e) {
             console.error("Error rendering Reviews:", e);
         }
         
         try {
-            await renderProducts(sellerId, sellerData.name, design);
+            await renderProducts(activeThemeContainer, sellerId, sellerData.name, design);
         } catch (e) {
             console.error("Error rendering Products:", e);
         }
         
         try {
-            renderFooter(storeData.footer || {});
+            renderFooter(activeThemeContainer, storeData.footer || {});
         } catch (e) {
             console.error("Error rendering Footer:", e);
         }
@@ -255,8 +250,13 @@ function applyThemeColor(design) {
     document.documentElement.style.setProperty('--ko-primary', themeColor);
 }
 
-function renderHeader(sellerData, store) {
-    // This function must run *after* the theme container is made visible
+// ======================================================== //
+//                                                          //
+//          --- +++++ All functions now accept `container` +++++ ---  //
+//                                                          //
+// ======================================================== //
+
+function renderHeader(container, sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
     const shortBio = storeBio.substring(0, 70) + (storeBio.length > 70 ? '...' : '');
@@ -268,7 +268,7 @@ function renderHeader(sellerData, store) {
     document.title = `${storeName} | Kabale Online Store`;
 
     // --- Theme-Specific Elements ---
-    if (state.activeThemePrefix === '#theme-advanced') {
+    if (container.id === 'theme-advanced') {
         // --- ADVANCED THEME ---
         const headerNode = headerTemplateAdv.content.cloneNode(true);
         
@@ -286,7 +286,8 @@ function renderHeader(sellerData, store) {
         else locationElAdv.style.display = 'none';
 
         const bannerUrl = store.design?.bannerUrl;
-        const headerElement = document.getElementById('store-header-adv');
+        // Find the header *within* the passed container
+        const headerElement = container.querySelector('#store-header-adv');
         if (bannerUrl) {
             headerElement.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
         } else {
@@ -297,17 +298,18 @@ function renderHeader(sellerData, store) {
 
     } else { 
         // --- DEFAULT THEME ---
-        $(`.store-avatar`).src = profileImageUrl; 
-        $(`.store-avatar`).alt = storeName;
-        $(`.store-info h1`).textContent = storeName;
-        $(`.store-bio`).textContent = shortBio;
+        // Find elements *within* the passed container
+        container.querySelector(`.store-avatar`).src = profileImageUrl; 
+        container.querySelector(`.store-avatar`).alt = storeName;
+        container.querySelector(`.store-info h1`).textContent = storeName;
+        container.querySelector(`.store-bio`).textContent = shortBio;
         
-        const phoneEl = $(`#store-phone-def`);
+        const phoneEl = container.querySelector(`#store-phone-def`);
         if (phoneEl) {
             if (storePhone) phoneEl.querySelector('span').textContent = storePhone;
             else phoneEl.style.display = 'none';
         }
-        const locationEl = $(`#store-location-def`);
+        const locationEl = container.querySelector(`#store-location-def`);
         if (locationEl) {
             if (storeLocation) locationEl.querySelector('span').textContent = storeLocation;
             else locationEl.style.display = 'none';
@@ -315,8 +317,8 @@ function renderHeader(sellerData, store) {
     }
     
     // --- Populate the "About" section (for both themes) ---
-    const descriptionSection = $(`#store-description-section-${state.activeThemePrefix.substring(7)}`);
-    const descriptionBody = $(`#store-description-p-body-${state.activeThemePrefix.substring(7)}`);
+    const descriptionSection = container.querySelector(`.store-description-section`);
+    const descriptionBody = container.querySelector(`.store-description-section p`);
     if (storeBio && descriptionSection && descriptionBody) {
         descriptionBody.textContent = storeBio;
         descriptionSection.style.display = 'block';
@@ -324,9 +326,9 @@ function renderHeader(sellerData, store) {
 }
 
 
-function renderSocialLinks(links) {
-    const actionsDiv = $(`#store-actions-div-${state.activeThemePrefix.substring(7)}`);
-    const socialsDiv = $(`#store-socials-div-${state.activeThemePrefix.substring(7)}`);
+function renderSocialLinks(container, links) {
+    const actionsDiv = container.querySelector(`.store-actions`);
+    const socialsDiv = container.querySelector(`.store-socials`);
     if (!actionsDiv || !socialsDiv) return; 
 
     actionsDiv.innerHTML = '';
@@ -348,7 +350,7 @@ function renderSocialLinks(links) {
         socialsDiv.innerHTML += `<a href="https://github.com/${links.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
     }
     
-    const shareBtn = $('#share-store-btn');
+    const shareBtn = container.querySelector('#share-store-btn');
     if(shareBtn) {
         shareBtn.addEventListener('click', () => {
             navigator.clipboard.writeText(window.location.href)
@@ -363,6 +365,8 @@ function getStoreOpenStatus(workingHours) {
     if (!workingHours) return { status: 'closed', text: 'Closed' };
 
     const now = new Date();
+    // EAT is UTC+3. Your server might be different, but JS `new Date()` uses client's timezone.
+    // Let's assume the user's browser time is correct for their location (Uganda).
     const todayKey = DAY_MAP[now.getDay()]; // 'sun', 'mon', etc.
     const currentTime = now.toTimeString().substring(0, 5); // "14:30"
 
@@ -385,15 +389,15 @@ function getStoreOpenStatus(workingHours) {
 //          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
 //                                                          //
 // ======================================================== //
-function renderStoreInfo(store) {
+function renderStoreInfo(container, store) {
     const workingHours = store.workingHours || {};
     const location = store.location || '';
     
-    // Get all elements first
-    const hoursList = $(`.hours-list`);
-    const locationText = $(`.store-map-location-text`);
-    const directionsBtn = $(`#get-directions-btn-${state.activeThemePrefix.substring(7)}`);
-    const statusBadge = $(`#store-hours-status-${state.activeThemePrefix.substring(7)}`);
+    // Get all elements first, searching *within the container*
+    const hoursList = container.querySelector(`.hours-list`);
+    const locationText = container.querySelector(`.store-map-location-text`);
+    const directionsBtn = container.querySelector(`.get-directions-btn`);
+    const statusBadge = container.querySelector(`.store-hours-status`);
 
     // 1. Populate Location Text (Safe)
     if (locationText) {
@@ -451,10 +455,10 @@ function renderStoreInfo(store) {
 // ======================================================== //
 
 
-async function renderReviews(sellerId) {
-    const avgRatingSummary = $(`#average-rating-summary-${state.activeThemePrefix.substring(7)}`);
-    const reviewsList = $(`#reviews-list-${state.activeThemePrefix.substring(7)}`);
-    const loadingReviews = $(`#loading-reviews-${state.activeThemePrefix.substring(7)}`);
+async function renderReviews(container, sellerId) {
+    const avgRatingSummary = container.querySelector(`.reviews-section #average-rating-summary-${container.id.substring(6)}`);
+    const reviewsList = container.querySelector(`.reviews-section #reviews-list-${container.id.substring(6)}`);
+    const loadingReviews = container.querySelector(`.reviews-section #loading-reviews-${container.id.substring(6)}`);
 
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
@@ -484,13 +488,13 @@ async function renderReviews(sellerId) {
         }
     } catch (error) {
         console.error("Error fetching reviews:", error);
-        avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
+        if (avgRatingSummary) avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
         if (loadingReviews) loadingReviews.remove(); 
     }
 }
 
-function renderFooter(footer) {
-    const storeFooter = $(`#store-footer-${state.activeThemePrefix.substring(7)}`);
+function renderFooter(container, footer) {
+    const storeFooter = container.querySelector(`.store-footer`);
     if (!storeFooter) return; // Safe check
     const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
     const footerColor = footer.color || '#0A0A1F';
@@ -534,15 +538,15 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     });
 }, { rootMargin: "0px 0px 200px 0px" });
 
-function observeLazyImages() {
-    const imagesToLoad = $all('img.lazy');
+function observeLazyImages(container) {
+    const imagesToLoad = container.querySelectorAll('img.lazy');
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-async function renderProducts(sellerId, sellerName, design) {
-    const sellerProductGrid = $(`#seller-product-grid-${state.activeThemePrefix.substring(7)}`);
-    const listingsTitle = $(`#listings-title-${state.activeThemePrefix.substring(7)}`);
-    const loadingProducts = $(`#loading-products-${state.activeThemePrefix.substring(7)}`);
+async function renderProducts(container, sellerId, sellerName, design) {
+    const sellerProductGrid = container.querySelector(`.product-grid`);
+    const listingsTitle = container.querySelector(`.section-title#listings-title-${container.id.substring(6)}`);
+    const loadingProducts = container.querySelector(`#loading-products-${container.id.substring(6)}`);
 
     try {
         const q = query(
@@ -623,11 +627,11 @@ async function renderProducts(sellerId, sellerName, design) {
             fragment.appendChild(productLink);
         });
         sellerProductGrid.appendChild(fragment);
-        observeLazyImages();
-        initializeWishlistButtons();
+        observeLazyImages(container);
+        initializeWishlistButtons(container);
     } catch(error) {
         console.error("Error fetching listings:", error);
-        listingsTitle.textContent = 'Could not load listings.';
+        if(listingsTitle) listingsTitle.textContent = 'Could not load listings.';
         if (loadingProducts) loadingProducts.remove(); 
     }
 }
@@ -646,8 +650,8 @@ async function fetchUserWishlist() {
     } catch (error) { console.error("Could not fetch user wishlist:", error); }
 }
 
-function initializeWishlistButtons() {
-    const allProductCards = $all('.product-card-link');
+function initializeWishlistButtons(container) {
+    const allProductCards = container.querySelectorAll('.product-card-link');
     allProductCards.forEach(card => {
         const wishlistButton = card.querySelector('.wishlist-btn');
         if (wishlistButton) {
