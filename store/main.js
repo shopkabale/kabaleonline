@@ -1,9 +1,9 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *BUG FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *BUG FIX & FEATURE UPDATE* //
 //                                                                     //
-// =================================================================== //
+// =================================S================================== //
 
 // Imports from your *existing* firebase.js file
 import { db, auth } from '../firebase.js'; 
@@ -25,6 +25,8 @@ const DAY_NAMES = {
     mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
     fri: 'Friday', sat: 'Saturday', sun: 'Sunday'
 };
+// +++++ NEW: Map for Date.getDay() [0=Sun, 1=Mon] +++++
+const DAY_MAP = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 // ==================================================== //
 //               DOM ELEMENT REFERENCES                 //
@@ -39,13 +41,10 @@ const loadingHeader = document.getElementById('loading-header');
 const directoryList = document.getElementById('store-directory-list');
 
 // --- Single Store Page Elements (now dynamically selected) ---
-// We will use a helper function to get elements from the active theme
 function $(selector) {
-    // Queries within the active theme container
     return document.querySelector(`${state.activeThemePrefix} ${selector}`);
 }
 function $all(selector) {
-    // Queries all within the active theme container
     return document.querySelectorAll(`${state.activeThemePrefix} ${selector}`);
 }
 
@@ -60,15 +59,13 @@ const themeStyleTag = document.getElementById('store-theme-styles');
 document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, async (user) => {
         state.currentUser = user;
-        await fetchUserWishlist(); // Fetches wishlist for product cards
-        
-        // This is now the main "router"
+        await fetchUserWishlist(); 
         loadPageContent();
     });
 });
 
 // ==================================================== //
-//               NEW: PAGE ROUTING LOGIC                //
+//               PAGE ROUTING LOGIC                     //
 // ==================================================== //
 
 function getUsernameFromUrl() {
@@ -77,7 +74,6 @@ function getUsernameFromUrl() {
     if (pathParts.length >= 3 && pathParts[2] && pathParts[2].trim() !== '') {
         username = decodeURIComponent(pathParts[2]);
     }
-
     if (!username) {
         const urlParams = new URLSearchParams(window.location.search);
         username = urlParams.get('username');
@@ -85,20 +81,13 @@ function getUsernameFromUrl() {
     return username;
 }
 
-/**
- * Main "Router" function. Decides whether to show
- * the directory or a single store.
- */
 async function loadPageContent() {
     const username = getUsernameFromUrl();
-
     if (username) {
-        // --- LOAD SINGLE STORE ---
         if(directoryPage) directoryPage.style.display = 'none';
         if(singleStorePage) singleStorePage.style.display = 'block';
         await loadSingleStore(username);
     } else {
-        // --- LOAD STORE DIRECTORY ---
         if(singleStorePage) singleStorePage.style.display = 'none';
         if(directoryPage) directoryPage.style.display = 'block';
         document.title = "All Stores | Kabale Online";
@@ -107,16 +96,11 @@ async function loadPageContent() {
 }
 
 // ==================================================== //
-//               NEW: STORE DIRECTORY LOGIC             //
-//               *UPDATED WITH PHONE & LOCATION* //
+//               STORE DIRECTORY LOGIC                  //
 // ==================================================== //
 
-/**
- * Fetches all stores from the 'publicStores' collection
- * and renders them as cards.
- */
 async function loadStoreDirectory() {
-    if (!directoryList) return; // In case element isn't on page
+    if (!directoryList) return; 
     try {
         const q = query(collection(db, "publicStores"), orderBy("storeName"));
         const snapshot = await getDocs(q);
@@ -133,7 +117,6 @@ async function loadStoreDirectory() {
             const store = doc.data();
             const profileImg = store.profileImageUrl || 'https://placehold.co/80x80/e0e0e0/777?text=Store';
             
-            // +++++ NEW: Generate Phone and Location HTML +++++
             const phoneHTML = store.phone ? 
                 `<p><i class="fa-solid fa-phone"></i> ${store.phone}</p>` : '';
             const locationHTML = store.location ? 
@@ -156,24 +139,19 @@ async function loadStoreDirectory() {
             `;
             fragment.appendChild(storeCard);
         });
-
         directoryList.appendChild(fragment);
-
     } catch (error) {
         console.error("Error fetching store directory:", error);
         directoryList.innerHTML = `<p>Error: Could not load store directory. ${error.message}</p>`;
     }
 }
 
-
 // ==================================================== //
-//               EXISTING: SINGLE STORE LOGIC           //
-//               *UPDATED FOR THEMES* //
+//               SINGLE STORE LOGIC                     //
 // ==================================================== //
 
 async function loadSingleStore(username) {
     try {
-        // 1. Look up the username
         const usernameDocRef = doc(db, 'storeUsernames', username);
         const usernameDoc = await getDoc(usernameDocRef);
 
@@ -183,11 +161,9 @@ async function loadSingleStore(username) {
             return;
         }
 
-        // 2. Get the seller's ID
         const sellerId = usernameDoc.data().userId;
         state.currentSellerId = sellerId; 
 
-        // 3. Get the seller's public data
         const sellerDocRef = doc(db, 'users', sellerId);
         const sellerDoc = await getDoc(sellerDocRef);
 
@@ -201,7 +177,7 @@ async function loadSingleStore(username) {
         const storeData = sellerData.store || {};
         const design = storeData.design || {};
         
-        // --- +++++ NEW: APPLY THEME +++++ ---
+        // --- APPLY THEME ---
         const theme = design.theme || 'default';
         if (theme === 'advanced') {
             state.activeThemePrefix = '#theme-advanced';
@@ -210,21 +186,17 @@ async function loadSingleStore(username) {
             state.activeThemePrefix = '#theme-default';
             document.getElementById('theme-default').style.display = 'block';
         }
-        applyThemeColor(design); // Apply custom color
-        // --- +++++ END THEME LOGIC +++++ ---
+        applyThemeColor(design); 
         
-        // --- 2. Build the Page ---
+        // --- Build the Page ---
         renderHeader(sellerData, storeData); 
         renderSocialLinks(storeData.links || {});
-        
-        // +++++ NEW: Render Info (Hours/Map) +++++
         renderStoreInfo(storeData); 
-        
         renderReviews(sellerId);
         renderProducts(sellerId, sellerData.name, design);
         renderFooter(storeData.footer || {});
 
-        if(loadingHeader) loadingHeader.remove(); // Remove final loader
+        if(loadingHeader) loadingHeader.remove();
 
     } catch (error) {
         console.error("Error fetching store:", error);
@@ -237,31 +209,17 @@ async function loadSingleStore(username) {
 //           SINGLE STORE RENDERING FUNCTIONS           //
 // ==================================================== //
 
-/**
- * Injects custom CSS into the page based on seller's settings.
- */
 function applyThemeColor(design) {
     const themeColor = design.themeColor || 'var(--ko-primary)';
-    // Set the CSS variable for the whole document
     document.documentElement.style.setProperty('--ko-primary', themeColor);
 }
 
-/**
- * Renders the store header with banner, avatar, and info.
- * *UPDATED* to populate both themes.
- */
-// ======================================================== //
-//                                                          //
-//          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
-//                                                          //
-// ======================================================== //
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
     const shortBio = storeBio.substring(0, 70) + (storeBio.length > 70 ? '...' : '');
     const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
     
-    // +++++ Get Phone and Location +++++
     const storePhone = store.phone;
     const storeLocation = store.location;
 
@@ -270,16 +228,13 @@ function renderHeader(sellerData, store) {
     // --- Theme-Specific Elements ---
     if (state.activeThemePrefix === '#theme-advanced') {
         // --- ADVANCED THEME ---
-        // This theme uses a template
         const headerNode = headerTemplateAdv.content.cloneNode(true);
         
-        // We query the *template* first, then append
         headerNode.getElementById('store-avatar-img-adv').src = profileImageUrl;
         headerNode.getElementById('store-avatar-img-adv').alt = storeName;
         headerNode.getElementById('store-name-h1-adv').textContent = storeName;
         headerNode.getElementById('store-short-bio-p-adv').textContent = shortBio;
         
-        // Phone/Location in template
         const phoneElAdv = headerNode.getElementById('store-phone-adv');
         if (storePhone) phoneElAdv.querySelector('span').textContent = storePhone;
         else phoneElAdv.style.display = 'none';
@@ -299,13 +254,11 @@ function renderHeader(sellerData, store) {
 
     } else { 
         // --- DEFAULT THEME ---
-        // The elements are already in the DOM, so we can query them directly.
         $(`.store-avatar`).src = profileImageUrl; 
         $(`.store-avatar`).alt = storeName;
         $(`.store-info h1`).textContent = storeName;
         $(`.store-bio`).textContent = shortBio;
         
-        // Phone and Location
         const phoneEl = $(`#store-phone-def`);
         if (phoneEl) {
             if (storePhone) phoneEl.querySelector('span').textContent = storePhone;
@@ -318,7 +271,7 @@ function renderHeader(sellerData, store) {
         }
     }
     
-    // --- Populate the separate "About" section (for both themes) ---
+    // --- Populate the "About" section (for both themes) ---
     const descriptionSection = $(`#store-description-section-${state.activeThemePrefix.substring(7)}`);
     const descriptionBody = $(`#store-description-p-body-${state.activeThemePrefix.substring(7)}`);
     if (storeBio && descriptionSection && descriptionBody) {
@@ -326,10 +279,6 @@ function renderHeader(sellerData, store) {
         descriptionSection.style.display = 'block';
     }
 }
-// ======================================================== //
-//          --- +++++ END OF CORRECTED FUNCTION +++++ ---         //
-// ======================================================== //
-
 
 function renderSocialLinks(links) {
     const actionsDiv = $(`#store-actions-div-${state.activeThemePrefix.substring(7)}`);
@@ -365,17 +314,46 @@ function renderSocialLinks(links) {
     }
 }
 
-// --- +++++ NEW: Render Store Info (Hours & Map) +++++ ---
+// --- +++++ NEW: Get Store Open Status +++++ ---
+function getStoreOpenStatus(workingHours) {
+    if (!workingHours) return { status: 'closed', text: 'Closed' };
+
+    const now = new Date();
+    const todayKey = DAY_MAP[now.getDay()]; // 'sun', 'mon', etc.
+    const currentTime = now.toTimeString().substring(0, 5); // "14:30"
+
+    const todayHours = workingHours[todayKey];
+
+    if (!todayHours || !todayHours.from || !todayHours.to) {
+        return { status: 'closed', text: 'Closed Now' };
+    }
+
+    if (currentTime >= todayHours.from && currentTime <= todayHours.to) {
+        return { status: 'open', text: 'Open Now' };
+    } else {
+        return { status: 'closed', text: 'Closed Now' };
+    }
+}
+
+// --- +++++ UPDATED: Render Store Info (Hours & Map) +++++ ---
 function renderStoreInfo(store) {
     const workingHours = store.workingHours || {};
-    const location = store.location || 'No location specified.';
+    const location = store.location || '';
     
     const hoursList = $(`.hours-list`);
     const locationText = $(`.store-map-location-text`);
+    const directionsBtn = $(`#get-directions-btn-${state.activeThemePrefix.substring(7)}`);
+    const statusBadge = $(`#store-hours-status-${state.activeThemePrefix.substring(7)}`);
 
-    // 1. Populate Location Text
-    if (locationText) {
+    // 1. Populate Location Text and Button
+    if (location) {
         locationText.textContent = location;
+        // Format for Google Maps URL: "Kabale Town" -> "Kabale+Town"
+        const mapQuery = encodeURIComponent(location);
+        directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+    } else {
+        locationText.textContent = 'No location specified.';
+        directionsBtn.style.display = 'none'; // Hide button if no location
     }
     
     // 2. Populate Working Hours
@@ -385,8 +363,11 @@ function renderStoreInfo(store) {
         DAYS_OF_WEEK.forEach(day => {
             const li = document.createElement('li');
             const dayName = DAY_NAMES[day];
-            if (workingHours[day]) {
-                li.innerHTML = `<strong>${dayName}</strong> <span>${workingHours[day].from} - ${workingHours[day].to}</span>`;
+            if (workingHours[day] && workingHours[day].from && workingHours[day].to) {
+                // Convert 24-hr to 12-hr
+                const from = workingHours[day].from;
+                const to = workingHours[day].to;
+                li.innerHTML = `<strong>${dayName}</strong> <span>${from} - ${to}</span>`;
                 hasHours = true;
             } else {
                 li.innerHTML = `<strong>${dayName}</strong> <span>Closed</span>`;
@@ -398,17 +379,17 @@ function renderStoreInfo(store) {
             hoursList.innerHTML = '<li>Working hours not specified.</li>';
         }
     }
-    
-    // 3. TODO: Initialize Google Map
-    // const mapPlaceholder = $(`#map-placeholder`);
-    // if (mapPlaceholder && location !== 'No location specified.') {
-    //    mapPlaceholder.innerHTML = `[Initializing Google Map for: ${location}]`;
-    //    // This is where you would call the Google Maps API
-    // }
+
+    // 3. Populate Open/Closed Status
+    if (statusBadge) {
+        const status = getStoreOpenStatus(workingHours);
+        statusBadge.textContent = status.text;
+        statusBadge.className = `store-hours-status ${status.status}`; // 'open' or 'closed'
+    }
 }
 
+// --- +++++ UPDATED: Fixed loader removal +++++ ---
 async function renderReviews(sellerId) {
-    // Get elements from active theme
     const avgRatingSummary = $(`#average-rating-summary-${state.activeThemePrefix.substring(7)}`);
     const reviewsList = $(`#reviews-list-${state.activeThemePrefix.substring(7)}`);
     const loadingReviews = $(`#loading-reviews-${state.activeThemePrefix.substring(7)}`);
@@ -417,7 +398,9 @@ async function renderReviews(sellerId) {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
 
-        reviewsList.innerHTML = ''; // Clear loader
+        if (loadingReviews) loadingReviews.remove(); // <-- REMOVE LOADER HERE
+        reviewsList.innerHTML = ''; // <-- THEN clear the list
+
         if (reviewsSnapshot.empty) {
             avgRatingSummary.innerHTML = "<p>This seller has no reviews yet.</p>";
         } else {
@@ -440,8 +423,7 @@ async function renderReviews(sellerId) {
     } catch (error) {
         console.error("Error fetching reviews:", error);
         avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
-    } finally {
-        if(loadingReviews) loadingReviews.remove();
+        if (loadingReviews) loadingReviews.remove(); // Also remove on error
     }
 }
 
@@ -491,13 +473,12 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
 }, { rootMargin: "0px 0px 200px 0px" });
 
 function observeLazyImages() {
-    // Use $all to query within the active theme
     const imagesToLoad = $all('img.lazy');
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
+// --- +++++ UPDATED: Fixed loader removal +++++ ---
 async function renderProducts(sellerId, sellerName, design) {
-    // Get elements from active theme
     const sellerProductGrid = $(`#seller-product-grid-${state.activeThemePrefix.substring(7)}`);
     const listingsTitle = $(`#listings-title-${state.activeThemePrefix.substring(7)}`);
     const loadingProducts = $(`#loading-products-${state.activeThemePrefix.substring(7)}`);
@@ -510,11 +491,11 @@ async function renderProducts(sellerId, sellerName, design) {
         );
         const snapshot = await getDocs(q);
 
-        sellerProductGrid.innerHTML = ''; // Clear loader
+        if (loadingProducts) loadingProducts.remove(); // <-- REMOVE LOADER HERE
+        sellerProductGrid.innerHTML = ''; // <-- THEN clear the grid
         
         if (snapshot.empty) {
             listingsTitle.textContent = 'This seller has no active listings.';
-            if (loadingProducts) loadingProducts.remove();
             return;
         }
 
@@ -586,14 +567,12 @@ async function renderProducts(sellerId, sellerName, design) {
     } catch(error) {
         console.error("Error fetching listings:", error);
         listingsTitle.textContent = 'Could not load listings.';
-    } finally {
-        if(loadingProducts) loadingProducts.remove();
+        if (loadingProducts) loadingProducts.remove(); // Also remove on error
     }
 }
 
 // ==================================================== //
 //               WISHLIST FUNCTIONS (UNCHANGED)         //
-//               *UPDATED TO USE $all* //
 // ==================================================== //
 
 async function fetchUserWishlist() {
@@ -607,7 +586,6 @@ async function fetchUserWishlist() {
 }
 
 function initializeWishlistButtons() {
-    // Use $all to query within the active theme
     const allProductCards = $all('.product-card-link');
     allProductCards.forEach(card => {
         const wishlistButton = card.querySelector('.wishlist-btn');
