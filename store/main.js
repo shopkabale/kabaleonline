@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *ASYNCHRONOUS FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *FINAL URL FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -241,11 +241,6 @@ function applyThemeColor(design) {
     document.documentElement.style.setProperty('--ko-primary', themeColor);
 }
 
-// =================================================================== //
-//                                                                     //
-//          --- +++++ THIS IS THE CORRECTED renderHeader +++++ ---       //
-//                                                                     //
-// =================================================================== //
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
@@ -260,8 +255,6 @@ function renderHeader(sellerData, store) {
     // --- Theme-Specific Elements ---
     if (state.activeThemePrefix === '#theme-advanced') {
         // --- ADVANCED THEME ---
-        // This function NOW handles adding the template to the DOM.
-        // This is the critical change.
         const headerNode = headerTemplateAdv.content.cloneNode(true);
         
         headerNode.getElementById('store-avatar-img-adv').src = profileImageUrl;
@@ -289,7 +282,6 @@ function renderHeader(sellerData, store) {
 
     } else { 
         // --- DEFAULT THEME ---
-        // This logic is fine, as the elements are already in the DOM.
         $(`.store-avatar`).src = profileImageUrl; 
         $(`.store-avatar`).alt = storeName;
         $(`.store-info h1`).textContent = storeName;
@@ -308,8 +300,6 @@ function renderHeader(sellerData, store) {
     }
     
     // --- Populate the "About" section (for both themes) ---
-    // This is now safe for *both* themes because it runs *after*
-    // the advanced theme template is appended.
     const descriptionSection = $(`#store-description-section-${state.activeThemePrefix.substring(7)}`);
     const descriptionBody = $(`#store-description-p-body-${state.activeThemePrefix.substring(7)}`);
     if (storeBio && descriptionSection && descriptionBody) {
@@ -317,9 +307,6 @@ function renderHeader(sellerData, store) {
         descriptionSection.style.display = 'block';
     }
 }
-// =================================================================== //
-//          --- +++++ END OF CORRECTED renderHeader +++++ ---            //
-// =================================================================== //
 
 
 function renderSocialLinks(links) {
@@ -378,6 +365,11 @@ function getStoreOpenStatus(workingHours) {
 }
 
 
+// ======================================================== //
+//                                                          //
+//          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
+//                                                          //
+// ======================================================== //
 function renderStoreInfo(store) {
     const workingHours = store.workingHours || {};
     const location = store.location || '';
@@ -397,11 +389,11 @@ function renderStoreInfo(store) {
         }
     }
     
-    // 2. Populate Directions Button (Safe)
+    // 2. Populate Directions Button (FIXED AND SAFE)
     if (directionsBtn) { // This check prevents the crash
         if (location) {
             const mapQuery = encodeURIComponent(location);
-            // This is the correct, standard Google Maps search URL
+            // +++++ THIS IS THE CORRECT URL +++++
             directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
             directionsBtn.style.display = 'inline-block'; // Show it
         } else {
@@ -439,6 +431,9 @@ function renderStoreInfo(store) {
         statusBadge.className = `store-hours-status ${status.status}`; // 'open' or 'closed'
     }
 }
+// ======================================================== //
+//          --- +++++ END OF CORRECTED FUNCTION +++++ ---         //
+// ======================================================== //
 
 
 async function renderReviews(sellerId) {
@@ -572,7 +567,7 @@ async function renderProducts(sellerId, sellerName, design) {
                     locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
                 }
             } else {
-                priceHTML = `<p classS="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
+                priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
                 if (product.location) {
                     locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
                 }
