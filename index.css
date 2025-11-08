@@ -1970,7 +1970,20 @@ body.dark-mode .feature-showcase__nav-item--active {
 .feature-showcase__card--blue {
     background: linear-gradient(135deg, #007aff, #0052d4);
 }
+/* --- CSS Additions for 'Feature Showcase' --- */
 
+/* New Subtitle "Element" */
+.feature-showcase__card-subtitle {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: -10px 0 15px 0;
+    line-height: 1.5;
+}
+
+/* New Color "Modifier" */
+.feature-showcase__card--green {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+}
 /* Responsive (Same as before) */
 @media (min-width: 768px) {
     .feature-showcase__title {
