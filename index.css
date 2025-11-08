@@ -1797,3 +1797,188 @@ body.no-scroll {
 .amara-anim-fall-through.amara-word-out {
     opacity: 0; /* Just hide it instantly */
 }
+
+/* --- CSS Snippet for 'Feature Showcase' (Unique Tags) --- */
+
+/* The main component "Block" */
+.feature-showcase {
+    margin: 40px 0; /* Vertical spacing */
+    padding-top: 20px; /* Add some space above */
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden; /* Important for clean look */
+}
+
+/* Title "Element" */
+.feature-showcase__title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: var(--text-main);
+    text-align: left;
+    padding: 0 25px; /* Padding for the title */
+}
+
+/* Scrolling Nav Wrapper "Element" */
+.feature-showcase__nav-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Hide scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+.feature-showcase__nav-wrapper::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+/* Nav List "Element" */
+.feature-showcase__nav-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding-bottom: 10px; /* Space for shadow */
+    margin-bottom: 15px; /* Space between nav and content */
+    padding: 0 25px; /* Padding to match title */
+    border-bottom: 1px solid var(--border-color); /* Separator line */
+}
+
+/* Nav Item "Element" */
+.feature-showcase__nav-item {
+    display: inline-block;
+    text-decoration: none;
+    white-space: nowrap; /* Prevents button text from wrapping */
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 99px; /* Pill shape */
+    background-color: var(--bg-main);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer; /* Show it's clickable */
+}
+.feature-showcase__nav-item:hover {
+    background-color: var(--border-color);
+    color: var(--text-main);
+}
+
+/* Active Nav Item "Modifier" */
+.feature-showcase__nav-item--active {
+    background-color: var(--ko-primary);
+    color: #ffffff;
+    border-color: var(--ko-primary);
+}
+body.dark-mode .feature-showcase__nav-item--active {
+    background-color: var(--ko-primary);
+    color: #ffffff;
+}
+
+/* Content Container (Holds all tab panels) */
+.feature-showcase__content-container {
+    /* This wrapper holds the scrolling lists */
+}
+
+/* Scrolling Content List (A single Tab Panel) */
+.feature-showcase__content-list {
+    /* --- NEW: Hide panels by default --- */
+    display: none;
+    
+    /* --- This part is the same as before --- */
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    padding: 10px 25px 25px 25px; /* Padding for hover shadows and bottom */
+}
+.feature-showcase__content-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* --- NEW: Show the active panel --- */
+.feature-showcase__content-list.is-active {
+    display: flex;
+}
+
+/* Promo Card "Element" (Same as before) */
+.feature-showcase__card {
+    flex: 0 0 280px; /* Fixed width */
+    width: 280px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    padding: 25px;
+    box-sizing: border-box; /* Include padding in width */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes image to bottom */
+    min-height: 350px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.feature-showcase__card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.feature-showcase__card-text {
+    color: #ffffff;
+}
+
+.feature-showcase__card-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+    color: #ffffff;
+}
+
+/* Card CTA "Element" (Same as before) */
+.feature-showcase__card-cta {
+    display: inline-block;
+    background-color: #ffffff;
+    color: #333;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Card Image "Element" (Same as before) */
+.feature-showcase__card-image {
+    width: 100%;
+    height: auto;
+    margin-top: 25px;
+    border-radius: 8px;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+}
+
+/* --- Color "Modifiers" (Same as before) --- */
+.feature-showcase__card--purple {
+    background: linear-gradient(135deg, #a700ff, #5f00ff);
+}
+.feature-showcase__card--orange {
+    background: linear-gradient(135deg, #ff8c00, #ff4500);
+}
+.feature-showcase__card--pink {
+    background: linear-gradient(135deg, #ff4081, #f50057);
+}
+.feature-showcase__card--blue {
+    background: linear-gradient(135deg, #007aff, #0052d4);
+}
+
+/* Responsive (Same as before) */
+@media (min-width: 768px) {
+    .feature-showcase__title {
+        font-size: 2.5rem;
+    }
+    .feature-showcase__card {
+        flex: 0 0 320px; /* Slightly wider on desktop */
+        width: 320px;
+        min-height: 400px;
+    }
+}
