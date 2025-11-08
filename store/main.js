@@ -1,9 +1,9 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *BUG FIX & FEATURE UPDATE* //
+//      PUBLIC JAVASCRIPT (main.js) - *HREF BUG FIX* //
 //                                                                     //
-// =================================S================================== //
+// =================================================================== //
 
 // Imports from your *existing* firebase.js file
 import { db, auth } from '../firebase.js'; 
@@ -314,7 +314,7 @@ function renderSocialLinks(links) {
     }
 }
 
-// --- +++++ NEW: Get Store Open Status +++++ ---
+// --- Get Store Open Status ---
 function getStoreOpenStatus(workingHours) {
     if (!workingHours) return { status: 'closed', text: 'Closed' };
 
@@ -335,7 +335,12 @@ function getStoreOpenStatus(workingHours) {
     }
 }
 
-// --- +++++ UPDATED: Render Store Info (Hours & Map) +++++ ---
+
+// ======================================================== //
+//                                                          //
+//          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
+//                                                          //
+// ======================================================== //
 function renderStoreInfo(store) {
     const workingHours = store.workingHours || {};
     const location = store.location || '';
@@ -345,18 +350,29 @@ function renderStoreInfo(store) {
     const directionsBtn = $(`#get-directions-btn-${state.activeThemePrefix.substring(7)}`);
     const statusBadge = $(`#store-hours-status-${state.activeThemePrefix.substring(7)}`);
 
-    // 1. Populate Location Text and Button
-    if (location) {
-        locationText.textContent = location;
-        // Format for Google Maps URL: "Kabale Town" -> "Kabale+Town"
-        const mapQuery = encodeURIComponent(location);
-        directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
-    } else {
-        locationText.textContent = 'No location specified.';
-        directionsBtn.style.display = 'none'; // Hide button if no location
+    // 1. Populate Location Text
+    if (locationText) {
+        if (location) {
+            locationText.textContent = location;
+        } else {
+            locationText.textContent = 'No location specified.';
+        }
     }
     
-    // 2. Populate Working Hours
+    // 2. Populate Directions Button
+    if (directionsBtn) { // +++++ FIX: Add null check
+        if (location) {
+            // Format for Google Maps URL
+            const mapQuery = encodeURIComponent(location);
+            // +++++ FIX: Use correct Google Maps URL
+            directionsBtn.href = `https://maps.google.com/?q=${mapQuery}`; 
+            directionsBtn.style.display = 'inline-block'; // Make sure it's visible
+        } else {
+            directionsBtn.style.display = 'none'; // Hide button if no location
+        }
+    }
+    
+    // 3. Populate Working Hours
     if (hoursList) {
         hoursList.innerHTML = ''; // Clear 'loading'
         let hasHours = false;
@@ -364,7 +380,6 @@ function renderStoreInfo(store) {
             const li = document.createElement('li');
             const dayName = DAY_NAMES[day];
             if (workingHours[day] && workingHours[day].from && workingHours[day].to) {
-                // Convert 24-hr to 12-hr
                 const from = workingHours[day].from;
                 const to = workingHours[day].to;
                 li.innerHTML = `<strong>${dayName}</strong> <span>${from} - ${to}</span>`;
@@ -380,15 +395,18 @@ function renderStoreInfo(store) {
         }
     }
 
-    // 3. Populate Open/Closed Status
+    // 4. Populate Open/Closed Status
     if (statusBadge) {
         const status = getStoreOpenStatus(workingHours);
         statusBadge.textContent = status.text;
         statusBadge.className = `store-hours-status ${status.status}`; // 'open' or 'closed'
     }
 }
+// ======================================================== //
+//          --- +++++ END OF CORRECTED FUNCTION +++++ ---         //
+// ======================================================== //
 
-// --- +++++ UPDATED: Fixed loader removal +++++ ---
+
 async function renderReviews(sellerId) {
     const avgRatingSummary = $(`#average-rating-summary-${state.activeThemePrefix.substring(7)}`);
     const reviewsList = $(`#reviews-list-${state.activeThemePrefix.substring(7)}`);
@@ -398,8 +416,8 @@ async function renderReviews(sellerId) {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
         const reviewsSnapshot = await getDocs(reviewsQuery);
 
-        if (loadingReviews) loadingReviews.remove(); // <-- REMOVE LOADER HERE
-        reviewsList.innerHTML = ''; // <-- THEN clear the list
+        if (loadingReviews) loadingReviews.remove(); 
+        reviewsList.innerHTML = ''; 
 
         if (reviewsSnapshot.empty) {
             avgRatingSummary.innerHTML = "<p>This seller has no reviews yet.</p>";
@@ -423,7 +441,7 @@ async function renderReviews(sellerId) {
     } catch (error) {
         console.error("Error fetching reviews:", error);
         avgRatingSummary.innerHTML = "<p>Could not load seller reviews.</p>";
-        if (loadingReviews) loadingReviews.remove(); // Also remove on error
+        if (loadingReviews) loadingReviews.remove(); 
     }
 }
 
@@ -477,7 +495,6 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// --- +++++ UPDATED: Fixed loader removal +++++ ---
 async function renderProducts(sellerId, sellerName, design) {
     const sellerProductGrid = $(`#seller-product-grid-${state.activeThemePrefix.substring(7)}`);
     const listingsTitle = $(`#listings-title-${state.activeThemePrefix.substring(7)}`);
@@ -491,8 +508,8 @@ async function renderProducts(sellerId, sellerName, design) {
         );
         const snapshot = await getDocs(q);
 
-        if (loadingProducts) loadingProducts.remove(); // <-- REMOVE LOADER HERE
-        sellerProductGrid.innerHTML = ''; // <-- THEN clear the grid
+        if (loadingProducts) loadingProducts.remove(); 
+        sellerProductGrid.innerHTML = ''; 
         
         if (snapshot.empty) {
             listingsTitle.textContent = 'This seller has no active listings.';
@@ -567,7 +584,7 @@ async function renderProducts(sellerId, sellerName, design) {
     } catch(error) {
         console.error("Error fetching listings:", error);
         listingsTitle.textContent = 'Could not load listings.';
-        if (loadingProducts) loadingProducts.remove(); // Also remove on error
+        if (loadingProducts) loadingProducts.remove(); 
     }
 }
 
