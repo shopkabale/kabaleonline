@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *FINAL URL & STABILITY FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *FINAL STABILITY FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -197,9 +197,17 @@ async function loadSingleStore(username) {
         }
         
         try {
-            renderSocialLinks(activeThemeContainer, storeData.links || {});
+            // This ONLY renders WhatsApp and Share
+            renderHeaderLinks(activeThemeContainer, storeData.links || {});
         } catch (e) {
-            console.error("Error rendering Social Links:", e);
+            console.error("Error rendering Header Links:", e);
+        }
+
+        try {
+            // This ONLY renders social icons in the footer
+            renderFooterLinks(activeThemeContainer, storeData.links || {});
+        } catch (e) {
+            console.error("Error rendering Footer Links:", e);
         }
         
         try {
@@ -209,6 +217,7 @@ async function loadSingleStore(username) {
             console.error("Error rendering Store Info:", e);
         }
         
+        // +++++ CRITICAL FIX: Pass the container to these functions +++++
         try {
             await renderReviews(activeThemeContainer, sellerId);
         } catch (e) {
@@ -220,6 +229,7 @@ async function loadSingleStore(username) {
         } catch (e) {
             console.error("Error rendering Products:", e);
         }
+        // +++++ END CRITICAL FIX +++++
         
         try {
             renderFooter(activeThemeContainer, storeData.footer || {});
@@ -261,9 +271,6 @@ function renderHeader(container, sellerData, store) {
     const storeBio = store.description || 'Welcome to my store!';
     const shortBio = storeBio.substring(0, 70) + (storeBio.length > 70 ? '...' : '');
     const profileImageUrl = store.profileImageUrl || 'https://placehold.co/120x120/e0e0e0/777?text=Store';
-    
-    const storePhone = store.phone;
-    const storeLocation = store.location;
 
     document.title = `${storeName} | Kabale Online Store`;
 
@@ -272,18 +279,12 @@ function renderHeader(container, sellerData, store) {
         // --- ADVANCED THEME ---
         const headerNode = headerTemplateAdv.content.cloneNode(true);
         
+        // Find elements in the *template*
         headerNode.getElementById('store-avatar-img-adv').src = profileImageUrl;
         headerNode.getElementById('store-avatar-img-adv').alt = storeName;
         headerNode.getElementById('store-name-h1-adv').textContent = storeName;
         headerNode.getElementById('store-short-bio-p-adv').textContent = shortBio;
-        
-        const phoneElAdv = headerNode.getElementById('store-phone-adv');
-        if (storePhone) phoneElAdv.querySelector('span').textContent = storePhone;
-        else phoneElAdv.style.display = 'none';
-        
-        const locationElAdv = headerNode.getElementById('store-location-adv');
-        if (storeLocation) locationElAdv.querySelector('span').textContent = storeLocation;
-        else locationElAdv.style.display = 'none';
+        // Phone, Location, Socials removed
 
         const bannerUrl = store.design?.bannerUrl;
         // Find the header *within* the passed container
@@ -303,22 +304,12 @@ function renderHeader(container, sellerData, store) {
         container.querySelector(`.store-avatar`).alt = storeName;
         container.querySelector(`.store-info h1`).textContent = storeName;
         container.querySelector(`.store-bio`).textContent = shortBio;
-        
-        const phoneEl = container.querySelector(`#store-phone-def`);
-        if (phoneEl) {
-            if (storePhone) phoneEl.querySelector('span').textContent = storePhone;
-            else phoneEl.style.display = 'none';
-        }
-        const locationEl = container.querySelector(`#store-location-def`);
-        if (locationEl) {
-            if (storeLocation) locationEl.querySelector('span').textContent = storeLocation;
-            else locationEl.style.display = 'none';
-        }
+        // Phone, Location, Socials removed
     }
     
     // --- Populate the "About" section (for both themes) ---
     const descriptionSection = container.querySelector(`.store-description-section`);
-    const descriptionBody = container.querySelector(`.store-description-section p`);
+    const descriptionBody = descriptionSection.querySelector('p'); // Simpler selector
     if (storeBio && descriptionSection && descriptionBody) {
         descriptionBody.textContent = storeBio;
         descriptionSection.style.display = 'block';
@@ -326,29 +317,20 @@ function renderHeader(container, sellerData, store) {
 }
 
 
-function renderSocialLinks(container, links) {
+/**
+ * Renders ONLY the action buttons (WhatsApp, Share) in the header
+ */
+function renderHeaderLinks(container, links) {
     const actionsDiv = container.querySelector(`.store-actions`);
-    const socialsDiv = container.querySelector(`.store-socials`);
-    if (!actionsDiv || !socialsDiv) return; 
+    if (!actionsDiv) return; 
 
-    actionsDiv.innerHTML = '';
-    socialsDiv.innerHTML = '';
+    actionsDiv.innerHTML = ''; // Clear
 
     if (links.whatsapp) {
         const whatsappLink = `https://wa.me/${links.whatsapp}?text=Hi, I saw your store on Kabale Online.`;
         actionsDiv.innerHTML += `<a href="${whatsappLink}" target="_blank" class="whatsapp-btn">Chat on WhatsApp</a>`;
     }
     actionsDiv.innerHTML += `<button id="share-store-btn" class="share-btn">Share Store</button>`;
-
-    if (links.facebook) {
-        socialsDiv.innerHTML += `<a href="https://facebook.com/${links.facebook}" target="_blank" title="Facebook"><i class="fab fa-facebook"></i></a>`;
-    }
-    if (links.tiktok) {
-        socialsDiv.innerHTML += `<a href="https://tiktok.com/${links.tiktok}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>`;
-    }
-    if (links.github) {
-        socialsDiv.innerHTML += `<a href="https://github.com/${links.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
-    }
     
     const shareBtn = container.querySelector('#share-store-btn');
     if(shareBtn) {
@@ -360,13 +342,32 @@ function renderSocialLinks(container, links) {
     }
 }
 
+/**
+ * Renders ONLY the social icons (FB, TT, GH) in the footer
+ */
+function renderFooterLinks(container, links) {
+    const socialsDiv = container.querySelector(`.store-footer-socials`);
+    if (!socialsDiv) return;
+
+    socialsDiv.innerHTML = ''; // Clear
+
+    if (links.facebook) {
+        socialsDiv.innerHTML += `<a href="https://facebook.com/${links.facebook}" target="_blank" title="Facebook"><i class="fab fa-facebook"></i></a>`;
+    }
+    if (links.tiktok) {
+        socialsDiv.innerHTML += `<a href="https://tiktok.com/${links.tiktok}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>`;
+    }
+    if (links.github) {
+        socialsDiv.innerHTML += `<a href="https://github.com/${links.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
+    }
+}
+
+
 // --- Get Store Open Status ---
 function getStoreOpenStatus(workingHours) {
     if (!workingHours) return { status: 'closed', text: 'Closed' };
 
     const now = new Date();
-    // EAT is UTC+3. Your server might be different, but JS `new Date()` uses client's timezone.
-    // Let's assume the user's browser time is correct for their location (Uganda).
     const todayKey = DAY_MAP[now.getDay()]; // 'sun', 'mon', etc.
     const currentTime = now.toTimeString().substring(0, 5); // "14:30"
 
@@ -392,35 +393,29 @@ function getStoreOpenStatus(workingHours) {
 function renderStoreInfo(container, store) {
     const workingHours = store.workingHours || {};
     const location = store.location || '';
+    const phone = store.phone || '';
     
     // Get all elements first, searching *within the container*
     const hoursList = container.querySelector(`.hours-list`);
-    const locationText = container.querySelector(`.store-map-location-text`);
     const directionsBtn = container.querySelector(`.get-directions-btn`);
     const statusBadge = container.querySelector(`.store-hours-status`);
+    const phoneInfoBox = container.querySelector(`.store-info-box #store-info-phone-${container.id.substring(6)}`);
+    const locationInfoBox = container.querySelector(`.store-info-box #store-info-location-${container.id.substring(6)}`);
 
-    // 1. Populate Location Text (Safe)
-    if (locationText) {
-        if (location) {
-            locationText.textContent = location;
-        } else {
-            locationText.textContent = 'No location specified.';
-        }
-    }
     
-    // 2. Populate Directions Button (FIXED AND SAFE)
-    if (directionsBtn) { // This check prevents the crash
+    // 1. Populate Directions Button (FIXED AND SAFE)
+    if (directionsBtn) {
         if (location) {
             const mapQuery = encodeURIComponent(location);
-            // +++++ THIS IS THE CORRECT, OFFICIAL URL +++++
-            directionsBtn.href = `http://google.com/maps?q=${mapQuery}`;
+            // +++++ THIS IS THE CORRECT, OFFICIAL URL for directions +++++
+            directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=$3{mapQuery}`;
             directionsBtn.style.display = 'inline-block'; // Show it
         } else {
             directionsBtn.style.display = 'none'; // Hide it
         }
     }
     
-    // 3. Populate Working Hours (Safe)
+    // 2. Populate Working Hours (Safe)
     if (hoursList) {
         hoursList.innerHTML = ''; // Clear 'loading'
         let hasHours = false;
@@ -443,11 +438,21 @@ function renderStoreInfo(container, store) {
         }
     }
 
-    // 4. Populate Open/Closed Status (Safe)
+    // 3. Populate Open/Closed Status (Safe)
     if (statusBadge) {
         const status = getStoreOpenStatus(workingHours);
         statusBadge.textContent = status.text;
         statusBadge.className = `store-hours-status ${status.status}`; // 'open' or 'closed'
+    }
+
+    // 4. Populate new Info Box (Phone/Location)
+    if (phoneInfoBox && phone) {
+        phoneInfoBox.querySelector('span').textContent = phone;
+        phoneInfoBox.style.display = 'flex';
+    }
+    if (locationInfoBox && location) {
+        locationInfoBox.querySelector('span').textContent = location;
+        locationInfoBox.style.display = 'flex';
     }
 }
 // ======================================================== //
@@ -456,9 +461,9 @@ function renderStoreInfo(container, store) {
 
 
 async function renderReviews(container, sellerId) {
-    const avgRatingSummary = container.querySelector(`.reviews-section #average-rating-summary-${container.id.substring(6)}`);
-    const reviewsList = container.querySelector(`.reviews-section #reviews-list-${container.id.substring(6)}`);
-    const loadingReviews = container.querySelector(`.reviews-section #loading-reviews-${container.id.substring(6)}`);
+    const avgRatingSummary = container.querySelector(`#average-rating-summary-${container.id.substring(6)}`);
+    const reviewsList = container.querySelector(`#reviews-list-${container.id.substring(6)}`);
+    const loadingReviews = container.querySelector(`#loading-reviews-${container.id.substring(6)}`);
 
     try {
         const reviewsQuery = query(collection(db, `users/${sellerId}/reviews`), orderBy('timestamp', 'desc'));
@@ -494,18 +499,21 @@ async function renderReviews(container, sellerId) {
 }
 
 function renderFooter(container, footer) {
-    const storeFooter = container.querySelector(`.store-footer`);
-    if (!storeFooter) return; // Safe check
+    const footerTextEl = container.querySelector(`#store-footer-text-${container.id.substring(6)}`);
+    const storeFooter = container.querySelector(`#store-footer-${container.id.substring(6)}`);
+
+    if (!storeFooter || !footerTextEl) return; 
+    
     const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
     const footerColor = footer.color || '#0A0A1F';
+    
     storeFooter.style.backgroundColor = footerColor;
-    storeFooter.innerHTML = `<div class="container"><p>${footerText}</p></div>`;
+    footerTextEl.textContent = footerText;
 }
 
 // =================================================================== //
 //                                                                     //
 //                        PRODUCT & WISHLIST CODE                       //
-//                  (This code is now safe to run)                     //
 //                                                                     //
 // =================================================================== //
 
@@ -545,7 +553,7 @@ function observeLazyImages(container) {
 
 async function renderProducts(container, sellerId, sellerName, design) {
     const sellerProductGrid = container.querySelector(`.product-grid`);
-    const listingsTitle = container.querySelector(`.section-title#listings-title-${container.id.substring(6)}`);
+    const listingsTitle = container.querySelector(`#listings-title-${container.id.substring(6)}`);
     const loadingProducts = container.querySelector(`#loading-products-${container.id.substring(6)}`);
 
     try {
