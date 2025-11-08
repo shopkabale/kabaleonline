@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *CRITICAL CRASH FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *ASYNCHRONOUS FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -42,9 +42,11 @@ const directoryList = document.getElementById('store-directory-list');
 
 // --- Single Store Page Elements (now dynamically selected) ---
 function $(selector) {
+    // Queries within the active theme container
     return document.querySelector(`${state.activeThemePrefix} ${selector}`);
 }
 function $all(selector) {
+    // Queries all within the active theme container
     return document.querySelectorAll(`${state.activeThemePrefix} ${selector}`);
 }
 
@@ -146,10 +148,12 @@ async function loadStoreDirectory() {
     }
 }
 
-// ==================================================== //
-//               SINGLE STORE LOGIC                     //
-// ==================================================== //
 
+// =================================================================== //
+//                                                                     //
+//          --- +++++ THIS IS THE CORRECTED loadSingleStore +++++ ---    //
+//                                                                     //
+// =================================================================== //
 async function loadSingleStore(username) {
     try {
         const usernameDocRef = doc(db, 'storeUsernames', username);
@@ -179,24 +183,43 @@ async function loadSingleStore(username) {
         
         // --- APPLY THEME ---
         const theme = design.theme || 'default';
-        if (theme === 'advanced') {
-            state.activeThemePrefix = '#theme-advanced';
-            document.getElementById('theme-advanced').style.display = 'block';
-        } else {
-            state.activeThemePrefix = '#theme-default';
-            document.getElementById('theme-default').style.display = 'block';
-        }
-        applyThemeColor(design); 
         
-        // --- Build the Page ---
-        renderHeader(sellerData, storeData); 
-        renderSocialLinks(storeData.links || {});
-        renderStoreInfo(storeData); // <-- This is the function that was crashing
-        renderReviews(sellerId); // <-- This function was never reached
-        renderProducts(sellerId, sellerData.name, design); // <-- This function was never reached
-        renderFooter(storeData.footer || {});
+        if (theme === 'advanced') {
+            // --- ADVANCED THEME PATH ---
+            state.activeThemePrefix = '#theme-advanced';
+            applyThemeColor(design); 
+            
+            // 1. Render header (which appends the template)
+            renderHeader(sellerData, storeData); 
+            
+            // 2. NOW that the template is in the DOM, run all other functions
+            renderSocialLinks(storeData.links || {});
+            renderStoreInfo(storeData); 
+            renderReviews(sellerId);
+            renderProducts(sellerId, sellerData.name, design);
+            renderFooter(storeData.footer || {});
 
-        if(loadingHeader) loadingHeader.remove();
+            // 3. Show the theme container
+            document.getElementById('theme-advanced').style.display = 'block';
+
+        } else {
+            // --- DEFAULT THEME PATH ---
+            state.activeThemePrefix = '#theme-default';
+            applyThemeColor(design); 
+
+            // 1. Show the theme container *first*
+            document.getElementById('theme-default').style.display = 'block';
+            
+            // 2. Now run all functions (elements are already in DOM)
+            renderHeader(sellerData, storeData); 
+            renderSocialLinks(storeData.links || {});
+            renderStoreInfo(storeData); 
+            renderReviews(sellerId);
+            renderProducts(sellerId, sellerData.name, design);
+            renderFooter(storeData.footer || {});
+        }
+
+        if(loadingHeader) loadingHeader.remove(); // Remove final loader
 
     } catch (error) {
         console.error("Error fetching store:", error);
@@ -204,6 +227,10 @@ async function loadSingleStore(username) {
         if(loadingHeader) loadingHeader.remove();
     }
 }
+// =================================================================== //
+//          --- +++++ END OF CORRECTED loadSingleStore +++++ ---         //
+// =================================================================== //
+
 
 // ==================================================== //
 //           SINGLE STORE RENDERING FUNCTIONS           //
@@ -214,6 +241,11 @@ function applyThemeColor(design) {
     document.documentElement.style.setProperty('--ko-primary', themeColor);
 }
 
+// =================================================================== //
+//                                                                     //
+//          --- +++++ THIS IS THE CORRECTED renderHeader +++++ ---       //
+//                                                                     //
+// =================================================================== //
 function renderHeader(sellerData, store) {
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
@@ -228,6 +260,8 @@ function renderHeader(sellerData, store) {
     // --- Theme-Specific Elements ---
     if (state.activeThemePrefix === '#theme-advanced') {
         // --- ADVANCED THEME ---
+        // This function NOW handles adding the template to the DOM.
+        // This is the critical change.
         const headerNode = headerTemplateAdv.content.cloneNode(true);
         
         headerNode.getElementById('store-avatar-img-adv').src = profileImageUrl;
@@ -244,16 +278,18 @@ function renderHeader(sellerData, store) {
         else locationElAdv.style.display = 'none';
 
         const bannerUrl = store.design?.bannerUrl;
+        const headerElement = document.getElementById('store-header-adv'); // Get the header element
         if (bannerUrl) {
-            $('#store-header-adv').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
+            headerElement.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
         } else {
-            $('#store-header-adv').style.backgroundColor = "var(--ko-primary)";
+            headerElement.style.backgroundColor = "var(--ko-primary)";
         }
-        $('#store-header-adv').innerHTML = ''; 
-        $('#store-header-adv').appendChild(headerNode);
+        headerElement.innerHTML = ''; // Clear it
+        headerElement.appendChild(headerNode); // Append the content
 
     } else { 
         // --- DEFAULT THEME ---
+        // This logic is fine, as the elements are already in the DOM.
         $(`.store-avatar`).src = profileImageUrl; 
         $(`.store-avatar`).alt = storeName;
         $(`.store-info h1`).textContent = storeName;
@@ -272,6 +308,8 @@ function renderHeader(sellerData, store) {
     }
     
     // --- Populate the "About" section (for both themes) ---
+    // This is now safe for *both* themes because it runs *after*
+    // the advanced theme template is appended.
     const descriptionSection = $(`#store-description-section-${state.activeThemePrefix.substring(7)}`);
     const descriptionBody = $(`#store-description-p-body-${state.activeThemePrefix.substring(7)}`);
     if (storeBio && descriptionSection && descriptionBody) {
@@ -279,11 +317,15 @@ function renderHeader(sellerData, store) {
         descriptionSection.style.display = 'block';
     }
 }
+// =================================================================== //
+//          --- +++++ END OF CORRECTED renderHeader +++++ ---            //
+// =================================================================== //
+
 
 function renderSocialLinks(links) {
     const actionsDiv = $(`#store-actions-div-${state.activeThemePrefix.substring(7)}`);
     const socialsDiv = $(`#store-socials-div-${state.activeThemePrefix.substring(7)}`);
-    if (!actionsDiv || !socialsDiv) return;
+    if (!actionsDiv || !socialsDiv) return; // Safe check
 
     actionsDiv.innerHTML = '';
     socialsDiv.innerHTML = '';
@@ -336,11 +378,6 @@ function getStoreOpenStatus(workingHours) {
 }
 
 
-// ======================================================== //
-//                                                          //
-//          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
-//                                                          //
-// ======================================================== //
 function renderStoreInfo(store) {
     const workingHours = store.workingHours || {};
     const location = store.location || '';
@@ -360,12 +397,11 @@ function renderStoreInfo(store) {
         }
     }
     
-    // 2. Populate Directions Button (FIXED AND SAFE)
-    if (directionsBtn) { // <-- The missing null check
+    // 2. Populate Directions Button (Safe)
+    if (directionsBtn) { // This check prevents the crash
         if (location) {
-            // Correct Google Maps URL
             const mapQuery = encodeURIComponent(location);
-            // This is the correct URL to search for a location
+            // This is the correct, standard Google Maps search URL
             directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
             directionsBtn.style.display = 'inline-block'; // Show it
         } else {
@@ -403,9 +439,6 @@ function renderStoreInfo(store) {
         statusBadge.className = `store-hours-status ${status.status}`; // 'open' or 'closed'
     }
 }
-// ======================================================== //
-//          --- +++++ END OF CORRECTED FUNCTION +++++ ---         //
-// ======================================================== //
 
 
 async function renderReviews(sellerId) {
@@ -448,7 +481,7 @@ async function renderReviews(sellerId) {
 
 function renderFooter(footer) {
     const storeFooter = $(`#store-footer-${state.activeThemePrefix.substring(7)}`);
-    if (!storeFooter) return;
+    if (!storeFooter) return; // Safe check
     const footerText = footer.text || `© ${new Date().getFullYear()} ${document.title}. All rights reserved.`;
     const footerColor = footer.color || '#0A0A1F';
     storeFooter.style.backgroundColor = footerColor;
@@ -457,8 +490,8 @@ function renderFooter(footer) {
 
 // =================================================================== //
 //                                                                     //
-//    YOUR *FULL* RENDERPRODUCTS FUNCTION (UNCHANGED LOGIC)            //
-//    *UPDATED TO USE ACTIVE THEME SELECTORS* //
+//                        PRODUCT & WISHLIST CODE                       //
+//                  (This code is now safe to run)                     //
 //                                                                     //
 // =================================================================== //
 
@@ -539,7 +572,7 @@ async function renderProducts(sellerId, sellerName, design) {
                     locationHTML = `<p class="location-name"><i class="${icon}"></i> ${product.service_location_type}</p>`;
                 }
             } else {
-                priceHTML = `<p class="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
+                priceHTML = `<p classS="price">UGX ${product.price ? product.price.toLocaleString() : "N/A"}</p>`;
                 if (product.location) {
                     locationHTML = `<p class="location-name"><i class="fa-solid fa-location-dot"></i> ${product.location}</p>`;
                 }
