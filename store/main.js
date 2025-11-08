@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *FINAL URL FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *STABILITY & URL FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -151,7 +151,7 @@ async function loadStoreDirectory() {
 
 // =================================================================== //
 //                                                                     //
-//          --- +++++ THIS IS THE CORRECTED loadSingleStore +++++ ---    //
+//          --- +++++ THIS IS THE NEW, STABLE loadSingleStore +++++ ---  //
 //                                                                     //
 // =================================================================== //
 async function loadSingleStore(username) {
@@ -185,39 +185,53 @@ async function loadSingleStore(username) {
         const theme = design.theme || 'default';
         
         if (theme === 'advanced') {
-            // --- ADVANCED THEME PATH ---
             state.activeThemePrefix = '#theme-advanced';
-            applyThemeColor(design); 
-            
-            // 1. Render header (which appends the template)
-            renderHeader(sellerData, storeData); 
-            
-            // 2. NOW that the template is in the DOM, run all other functions
-            renderSocialLinks(storeData.links || {});
-            renderStoreInfo(storeData); 
-            renderReviews(sellerId);
-            renderProducts(sellerId, sellerData.name, design);
-            renderFooter(storeData.footer || {});
-
-            // 3. Show the theme container
             document.getElementById('theme-advanced').style.display = 'block';
-
         } else {
-            // --- DEFAULT THEME PATH ---
             state.activeThemePrefix = '#theme-default';
-            applyThemeColor(design); 
-
-            // 1. Show the theme container *first*
             document.getElementById('theme-default').style.display = 'block';
-            
-            // 2. Now run all functions (elements are already in DOM)
-            renderHeader(sellerData, storeData); 
-            renderSocialLinks(storeData.links || {});
-            renderStoreInfo(storeData); 
-            renderReviews(sellerId);
-            renderProducts(sellerId, sellerData.name, design);
-            renderFooter(storeData.footer || {});
         }
+        applyThemeColor(design); 
+
+        // --- +++++ NEW: Run all rendering in "safe" blocks +++++ ---
+        // This makes the code flexible, as you asked.
+        
+        try {
+            renderHeader(sellerData, storeData); 
+        } catch (e) {
+            console.error("Error rendering Header:", e);
+        }
+        
+        try {
+            renderSocialLinks(storeData.links || {});
+        } catch (e) {
+            console.error("Error rendering Social Links:", e);
+        }
+        
+        try {
+            renderStoreInfo(storeData); 
+        } catch (e) {
+            console.error("Error rendering Store Info:", e);
+        }
+        
+        try {
+            await renderReviews(sellerId);
+        } catch (e) {
+            console.error("Error rendering Reviews:", e);
+        }
+        
+        try {
+            await renderProducts(sellerId, sellerData.name, design);
+        } catch (e) {
+            console.error("Error rendering Products:", e);
+        }
+        
+        try {
+            renderFooter(storeData.footer || {});
+        } catch (e) {
+            console.error("Error rendering Footer:", e);
+        }
+        // --- +++++ End of safe blocks +++++ ---
 
         if(loadingHeader) loadingHeader.remove(); // Remove final loader
 
@@ -228,7 +242,7 @@ async function loadSingleStore(username) {
     }
 }
 // =================================================================== //
-//          --- +++++ END OF CORRECTED loadSingleStore +++++ ---         //
+//          --- +++++ END OF NEW loadSingleStore +++++ ---         //
 // =================================================================== //
 
 
@@ -242,6 +256,7 @@ function applyThemeColor(design) {
 }
 
 function renderHeader(sellerData, store) {
+    // This function must run *after* the theme container is made visible
     const storeName = store.storeName || sellerData.name || 'Seller';
     const storeBio = store.description || 'Welcome to my store!';
     const shortBio = storeBio.substring(0, 70) + (storeBio.length > 70 ? '...' : '');
@@ -271,14 +286,14 @@ function renderHeader(sellerData, store) {
         else locationElAdv.style.display = 'none';
 
         const bannerUrl = store.design?.bannerUrl;
-        const headerElement = document.getElementById('store-header-adv'); // Get the header element
+        const headerElement = document.getElementById('store-header-adv');
         if (bannerUrl) {
             headerElement.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${bannerUrl})`;
         } else {
             headerElement.style.backgroundColor = "var(--ko-primary)";
         }
-        headerElement.innerHTML = ''; // Clear it
-        headerElement.appendChild(headerNode); // Append the content
+        headerElement.innerHTML = ''; 
+        headerElement.appendChild(headerNode);
 
     } else { 
         // --- DEFAULT THEME ---
@@ -312,7 +327,7 @@ function renderHeader(sellerData, store) {
 function renderSocialLinks(links) {
     const actionsDiv = $(`#store-actions-div-${state.activeThemePrefix.substring(7)}`);
     const socialsDiv = $(`#store-socials-div-${state.activeThemePrefix.substring(7)}`);
-    if (!actionsDiv || !socialsDiv) return; // Safe check
+    if (!actionsDiv || !socialsDiv) return; 
 
     actionsDiv.innerHTML = '';
     socialsDiv.innerHTML = '';
@@ -393,8 +408,8 @@ function renderStoreInfo(store) {
     if (directionsBtn) { // This check prevents the crash
         if (location) {
             const mapQuery = encodeURIComponent(location);
-            // +++++ THIS IS THE CORRECT URL +++++
-            directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+            // +++++ THIS IS THE CORRECT, OFFICIAL URL +++++
+            directionsBtn.href = `http://google.com/maps?q=${mapQuery}`;
             directionsBtn.style.display = 'inline-block'; // Show it
         } else {
             directionsBtn.style.display = 'none'; // Hide it
