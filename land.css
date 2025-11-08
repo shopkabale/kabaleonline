@@ -247,6 +247,7 @@
         .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
 
         /* Carousel from *original* CSS (for featured, etc.) */
+        /* This is now modified by the new styles at the end */
         .product-carousel-section {
             background-color: var(--bg-card);
             border-radius: var(--border-radius);
@@ -1196,9 +1197,7 @@ text-align: center;
     box-shadow: 0 0 25px rgba(0, 255, 150, 1);
   }
 }
-body, html {
-  overflow-x: hidden; /* prevents horizontal scroll */
-}
+
 /* Link container reset */
 .animated-photo-link {
   display: block;
@@ -1941,20 +1940,48 @@ body.dark-mode .new-hero {
 }
 
 
-/* --- 3. "All the tools" Section --- */
+/* --- 3. "All the tools" Section (FIXED FOR SCROLLING) --- */
 .tools-section {
-    padding: 40px 0;
+    padding: 40px 0 20px 0; /* Adjusted padding */
 }
-.tools-section h2 {
+.section-title-center {
     font-size: 1.8rem;
     font-weight: 700;
     text-align: center;
     margin-bottom: 30px;
+    padding: 0 15px; /* Add padding for a centered title */
+    box-sizing: border-box;
+}
+@media (min-width: 768px) {
+    .section-title-center {
+        font-size: 2.2rem;
+    }
+}
+/* This wrapper is needed to let the grid have full-bleed padding */
+.tools-grid-wrapper {
+    overflow-x: auto;
+    /* Hide scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+.tools-grid-wrapper::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* --- NEW: Make it a horizontal scroll container --- */
+    display: flex;
+    overflow-x: auto;
     gap: 15px;
+    
+    /* Add padding for scrollbar and to align with product carousels */
+    padding: 0 15px 15px 15px; /* Full padding left/right */
+    
+    /* Hide scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+.tools-grid::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 .tool-card {
     background-color: var(--bg-card);
@@ -1966,11 +1993,15 @@ body.dark-mode .new-hero {
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
-    aspect-ratio: 1 / 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
+    /* --- NEW: Give cards a fixed width so they scroll --- */
+    flex: 0 0 120px; /* 120px width, don't grow, don't shrink */
+    width: 120px;
+    aspect-ratio: 1 / 1;
 }
 .tool-card:hover {
     transform: translateY(-5px);
@@ -1993,7 +2024,6 @@ body.dark-mode .new-hero {
     font-weight: 600;
     margin: 0;
 }
-
 /* Icon colors */
 .tool-card.color-1 .tool-icon-wrapper { background-color: #007aff; }
 .tool-card.color-2 .tool-icon-wrapper { background-color: #34c759; }
@@ -2003,28 +2033,237 @@ body.dark-mode .new-hero {
 .tool-card.color-6 .tool-icon-wrapper { background-color: #8e8e93; }
 
 @media (min-width: 768px) {
-    .tools-section h2 {
-        font-size: 2.2rem;
+    /* --- NEW: On desktop, revert to a wrapping grid --- */
+    .tools-grid-wrapper {
+        overflow-x: hidden; /* Turn off scroll */
     }
     .tools-grid {
+        display: grid;
         grid-template-columns: repeat(6, 1fr);
+        overflow-x: hidden; /* Turn off scroll */
+        padding-bottom: 0; /* Remove scroll padding */
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 1200px; /* Constrain to container */
+        margin: 0 auto; /* Center the grid */
+    }
+    .tool-card {
+        /* --- NEW: Reset flex properties for grid --- */
+        flex: auto;
+        width: auto; /* Let the grid control the width */
     }
     .tool-card h3 {
         font-size: 1rem;
     }
 }
+@media (min-width: 1024px) {
+     .tools-grid {
+        grid-template-columns: repeat(8, 1fr); /* 8 columns for 8 items */
+     }
+}
 
 
-/* --- 4. Ecosystem Banners --- */
+/* --- 4. NEW "How To" Banners --- */
+.how-to-banner {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin: 40px 0; /* Spacing */
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.how-to-banner.alt-style {
+    background-color: var(--ko-dark);
+    color: var(--text-main-dark);
+    border-color: var(--border-color-dark);
+}
+body.dark-mode .how-to-banner.alt-style {
+     background-color: var(--bg-card-dark);
+     color: var(--text-main-dark);
+     border-color: var(--border-color-dark);
+}
+.how-to-banner h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.how-to-banner p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+.how-to-banner .banner-btn {
+    width: 100%;
+    text-align: center;
+}
+.how-to-banner .how-to-grid-simple {
+    display: grid;
+    grid-template-columns: 1fr; /* 1 column on mobile */
+    gap: 10px;
+    margin-bottom: 0;
+}
+.how-to-step-simple {
+    background-color: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.how-to-step-simple span {
+    display: block;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+.how-to-banner.alt-style .how-to-step-simple {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.how-to-banner.alt-style .banner-btn {
+    background-color: var(--ko-primary);
+    color: #fff;
+}
+body.light-mode .how-to-banner.alt-style .banner-btn:hover {
+    background-color: #0056d6;
+}
+@media (min-width: 768px) {
+    .how-to-banner {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30px 40px;
+    }
+    .how-to-content {
+        flex: 1;
+    }
+    .how-to-action {
+        flex-shrink: 0;
+        padding-left: 30px;
+    }
+    .how-to-banner .banner-btn {
+        width: auto;
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+    .how-to-banner .how-to-grid-simple {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns in banner */
+    }
+}
+@media (min-width: 1024px) {
+    .how-to-banner .how-to-grid-simple {
+        grid-template-columns: repeat(4, 1fr); /* 4 columns in banner */
+    }
+}
+
+
+/* --- 5. NEW Product Carousel Styles --- */
+.product-carousel-section {
+    padding: 20px 0; /* Tighter padding */
+    background-color: transparent; /* Carousels are on main bg */
+    border: none;
+    box-shadow: none;
+    margin-bottom: 0;
+    overflow: visible; /* Allow shadows */
+}
+.product-carousel-section .section-header {
+    margin-bottom: 20px;
+    padding-left: 0; /* Handled by container */
+    padding-right: 0; /* Handled by container */
+    border-bottom: 2px solid var(--border-color);
+}
+.product-carousel-section .section-header .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: left;
+    border-bottom: none;
+    padding-bottom: 0;
+    position: relative;
+}
+/* Blue line under title */
+.product-carousel-section .section-header .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -12px; /* Aligns with header border */
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background-color: var(--ko-primary);
+}
+
+.product-carousel-wrapper {
+    overflow-x: auto;
+    padding: 10px 0 20px 0; /* Top padding for hover, bottom for scrollbar */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--border-color) var(--bg-main);
+    padding-left: 15px; /* Full bleed padding */
+    padding-right: 15px; /* Full bleed padding */
+    margin: 0 -15px; /* Full bleed padding */
+    -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+}
+.product-carousel-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+.product-carousel-wrapper::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+}
+.product-carousel-wrapper::-webkit-scrollbar-track {
+    background-color: var(--bg-main);
+}
+.product-carousel {
+    display: flex;
+    gap: 15px;
+}
+.product-carousel .product-card {
+    flex: 0 0 170px; /* 1-row card size */
+    width: 170px;
+}
+.product-carousel .skeleton-text.small {
+    /* Add this back for skeleton consistency */
+    height: 0.9rem; width: 60%; margin-top: 8px;
+}
+
+
+/* --- 6. NEW 2-Row Carousel Modifier --- */
+.two-row-carousel .product-carousel-wrapper {
+    padding-bottom: 20px;
+}
+.two-row-carousel .product-carousel {
+    display: grid;
+    /* 2 rows, auto-flowing columns */
+    grid-template-rows: repeat(2, 1fr);
+    grid-auto-flow: column;
+}
+
+/* On desktop, make carousels wider */
+@media (min-width: 768px) {
+    .product-carousel-section .section-header .section-title {
+        font-size: 1.8rem;
+    }
+    .product-carousel .product-card {
+        flex: 0 0 220px; /* Wider cards on desktop */
+        width: 220px; 
+    }
+    /* Stop full bleed on desktop */
+    .product-carousel-wrapper {
+        padding-left: 0;
+        padding-right: 0;
+        margin: 0;
+    }
+}
+
+/* --- 7. "Ecosystem" Section (from previous CSS, adjusted) --- */
 .ecosystem-section {
-    padding: 40px 0;
-    margin-top: 20px;
+    padding: 40px 0 20px 0;
+    margin-top: 0; /* Remove top margin, handled by carousel */
 }
 .ecosystem-section h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 30px;
+    display: none; /* Hide the "Unlock Ecosystem" title */
 }
 .ecosystem-banner {
     background-color: var(--bg-card);
@@ -2042,7 +2281,6 @@ body.dark-mode .new-hero {
     position: relative;
     z-index: 2;
 }
-/* Overlay for text readability on image bgs */
 .ecosystem-banner::before {
     content: '';
     position: absolute;
@@ -2052,20 +2290,13 @@ body.dark-mode .new-hero {
     opacity: 0;
     transition: opacity 0.3s ease;
 }
-.ecosystem-banner.banner-sell,
 .ecosystem-banner.banner-rentals,
 .ecosystem-banner.banner-services {
     color: #fff;
 }
-.ecosystem-banner.banner-sell::before,
 .ecosystem-banner.banner-rentals::before,
 .ecosystem-banner.banner-services::before {
     opacity: 1;
-}
-
-.ecosystem-banner.banner-sell {
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=1200');
-    text-align: center;
 }
 .ecosystem-banner.banner-rentals {
     background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1200');
@@ -2073,13 +2304,10 @@ body.dark-mode .new-hero {
 .ecosystem-banner.banner-services {
     background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1200');
 }
-
-/* Your Amara banner is already a banner, just ensure margin */
 .amara-banner-v4 {
     margin-bottom: 20px;
     border-radius: var(--border-radius);
 }
-
 .ecosystem-banner h3 {
     font-size: 1.5rem;
     font-weight: 700;
@@ -2104,41 +2332,12 @@ body.dark-mode .new-hero {
 .banner-btn:hover {
     transform: translateY(-2px);
 }
-
-.how-to-grid-simple {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-}
-.how-to-step-simple {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-.how-to-step-simple span {
-    display: block;
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-
 .ecosystem-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
 }
-
 @media (min-width: 768px) {
-    .ecosystem-section h2 {
-        font-size: 2.2rem;
-    }
-    .how-to-grid-simple {
-        grid-template-columns: repeat(4, 1fr);
-    }
     .ecosystem-grid {
         grid-template-columns: 1fr 1fr;
     }
@@ -2148,35 +2347,28 @@ body.dark-mode .new-hero {
 }
 
 
-/* --- 5. "Fresh on Marketplace" Section --- */
-/* Your existing styles .recent-products-section and .product-grid are great! */
-/* We just need to adjust the title style slightly. */
-.recent-products-section .section-header .section-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    text-align: left;
-    border-bottom: none;
-    padding-bottom: 0;
+/* --- 8. "Recent Items" section (now a carousel) --- */
+#recent-products-section {
+    /* Uses .product-carousel-section styles */
+    /* We just need to hide the old grid styles */
+    padding-top: 20px; /* Add padding from section above */
 }
-.recent-products-section .section-header {
-    border-bottom: 2px solid var(--ko-primary);
-    padding-bottom: 10px;
+#recent-products-section .product-grid {
+    display: none; /* Hide old grid layout */
 }
-@media (min-width: 768px) {
-    .recent-products-section .section-header .section-title {
-        font-size: 2.2rem;
-    }
+#recent-products-section .product-carousel {
+    display: flex; /* Ensure carousel layout */
 }
 
 
-/* --- 6. Final CTA Section --- */
+/* --- 9. Final CTA --- */
 .final-cta-section {
     padding: 60px 20px;
     text-align: center;
     background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
     color: #ffffff;
     border-radius: var(--border-radius);
-    margin-top: 40px;
+    margin: 40px 0; /* Add top/bottom margin */
 }
 body.dark-mode .final-cta-section {
     background: linear-gradient(135deg, #023E8A 0%, #001233 100%);
@@ -2209,19 +2401,21 @@ body.dark-mode .final-cta-section {
 }
 
 
-/* --- 7. Hide Old/Unused Sections --- */
+/* --- 10. Hide Old/Unused Sections --- */
 /* This hides the sections from your old HTML that we've replaced */
 .hero, /* We replaced the old hero */
 .shop-by-image-section,
-#featured-section,
-#deals-section,
+/* #featured-section, (NOW RE-ENABLED) */
+/* #deals-section, (NOW RE-ENABLED) */
 .cta-card-animated,
-#sponsored-section,
-#save-on-more-section,
+/* #sponsored-section, (NOW RE-ENABLED) */
+/* #save-on-more-section, (NOW RE-ENABLED) */
 .how-to-slider-container, /* Replaced with static banner */
 .category-section, /* Replaced with .tools-section */
 .animated-photo-link,
-.shop-cta-container-spaced /* Replaced with .final-cta-section */ {
+.shop-cta-container-spaced, /* Replaced with .final-cta-section */
+.main-content-wrapper > .product-grid /* Hide direct child grid */
+{
     display: none !important;
 }
 
