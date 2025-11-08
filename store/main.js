@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *FINAL URL FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *STUCK LOADER FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -146,7 +146,7 @@ async function loadStoreDirectory() {
 async function loadSingleStore(username) {
     try {
         const usernameDocRef = doc(db, 'storeUsernames', username);
-        const usernameDoc = await getDoc(usernameDocRef);
+        const usernameDoc = await getDocs(usernameDocRef);
 
         if (!usernameDoc.exists()) {
             singleStorePage.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
@@ -188,7 +188,6 @@ async function loadSingleStore(username) {
         applyThemeColor(design); 
 
         // --- +++++ NEW: Run all rendering in "safe" blocks +++++ ---
-        // This makes the code flexible, as you asked.
         
         try {
             renderHeader(activeThemeContainer, sellerData, storeData); 
