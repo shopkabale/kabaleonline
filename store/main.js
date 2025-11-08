@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *STUCK LOADER FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *CRITICAL FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -146,7 +146,10 @@ async function loadStoreDirectory() {
 async function loadSingleStore(username) {
     try {
         const usernameDocRef = doc(db, 'storeUsernames', username);
-        const usernameDoc = await getDocs(usernameDocRef);
+        // +++++ THIS IS THE BUG FIX +++++
+        // It's getDoc (for one document), NOT getDocs (for a list)
+        const usernameDoc = await getDoc(usernameDocRef);
+        // +++++ END OF BUG FIX +++++
 
         if (!usernameDoc.exists()) {
             singleStorePage.innerHTML = `<h1>Store Not Found</h1><p>No store with the name "${username}" exists.</p>`;
@@ -196,27 +199,23 @@ async function loadSingleStore(username) {
         }
         
         try {
-            // This ONLY renders WhatsApp and Share
             renderHeaderLinks(activeThemeContainer, storeData.links || {});
         } catch (e) {
             console.error("Error rendering Header Links:", e);
         }
 
         try {
-            // This ONLY renders social icons in the footer
             renderFooterLinks(activeThemeContainer, storeData.links || {});
         } catch (e) {
             console.error("Error rendering Footer Links:", e);
         }
         
         try {
-            // This is the function that was crashing
             renderStoreInfo(activeThemeContainer, storeData); 
         } catch (e) {
             console.error("Error rendering Store Info:", e);
         }
         
-        // +++++ CRITICAL FIX: Pass the container to these functions +++++
         try {
             await renderReviews(activeThemeContainer, sellerId);
         } catch (e) {
@@ -228,7 +227,6 @@ async function loadSingleStore(username) {
         } catch (e) {
             console.error("Error rendering Products:", e);
         }
-        // +++++ END CRITICAL FIX +++++
         
         try {
             renderFooter(activeThemeContainer, storeData.footer || {});
