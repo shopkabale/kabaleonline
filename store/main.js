@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *CRITICAL CRASH FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *FINAL URL FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -554,11 +554,6 @@ function observeLazyImages(container) {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// ======================================================== //
-//                                                          //
-//          --- +++++ THIS IS THE CORRECTED FUNCTION +++++ ---         //
-//                                                          //
-// ======================================================== //
 async function renderProducts(container, sellerId, sellerName, design) {
     const sellerProductGrid = container.querySelector(`.product-grid`);
     const listingsTitle = container.querySelector(`#listings-title-${container.id.substring(6)}`);
@@ -623,15 +618,10 @@ async function renderProducts(container, sellerId, sellerName, design) {
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
-
-            // +++++ THIS IS THE FIX +++++
-            // The stray CSS rule is removed and replaced with this JS 'if' block
             if (isActuallySold) {
                 productLink.style.pointerEvents = 'none';
                 productLink.style.cursor = 'default';
             }
-            // +++++ END OF FIX +++++
-
             productLink.innerHTML = `
               <div class="product-card ${soldClass}">
                  ${soldOverlayHTML}
@@ -656,10 +646,6 @@ async function renderProducts(container, sellerId, sellerName, design) {
         if (loadingProducts) loadingProducts.remove(); 
     }
 }
-// ======================================================== //
-//          --- +++++ END OF CORRECTED FUNCTION +++++ ---         //
-// ======================================================== //
-
 
 // ==================================================== //
 //               WISHLIST FUNCTIONS (UNCHANGED)         //
