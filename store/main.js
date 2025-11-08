@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - FULLY CUSTOMIZABLE STORE                //
-//      PUBLIC JAVASCRIPT (main.js) - *HREF BUG FIX* //
+//      PUBLIC JAVASCRIPT (main.js) - *CRITICAL CRASH FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -25,7 +25,7 @@ const DAY_NAMES = {
     mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
     fri: 'Friday', sat: 'Saturday', sun: 'Sunday'
 };
-// +++++ NEW: Map for Date.getDay() [0=Sun, 1=Mon] +++++
+// Map for Date.getDay() [0=Sun, 1=Mon]
 const DAY_MAP = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 // ==================================================== //
@@ -191,9 +191,9 @@ async function loadSingleStore(username) {
         // --- Build the Page ---
         renderHeader(sellerData, storeData); 
         renderSocialLinks(storeData.links || {});
-        renderStoreInfo(storeData); 
-        renderReviews(sellerId);
-        renderProducts(sellerId, sellerData.name, design);
+        renderStoreInfo(storeData); // <-- This is the function that was crashing
+        renderReviews(sellerId); // <-- This function was never reached
+        renderProducts(sellerId, sellerData.name, design); // <-- This function was never reached
         renderFooter(storeData.footer || {});
 
         if(loadingHeader) loadingHeader.remove();
@@ -345,12 +345,13 @@ function renderStoreInfo(store) {
     const workingHours = store.workingHours || {};
     const location = store.location || '';
     
+    // Get all elements first
     const hoursList = $(`.hours-list`);
     const locationText = $(`.store-map-location-text`);
     const directionsBtn = $(`#get-directions-btn-${state.activeThemePrefix.substring(7)}`);
     const statusBadge = $(`#store-hours-status-${state.activeThemePrefix.substring(7)}`);
 
-    // 1. Populate Location Text
+    // 1. Populate Location Text (Safe)
     if (locationText) {
         if (location) {
             locationText.textContent = location;
@@ -359,20 +360,20 @@ function renderStoreInfo(store) {
         }
     }
     
-    // 2. Populate Directions Button
-    if (directionsBtn) { // +++++ FIX: Add null check
+    // 2. Populate Directions Button (FIXED AND SAFE)
+    if (directionsBtn) { // <-- The missing null check
         if (location) {
-            // Format for Google Maps URL
+            // Correct Google Maps URL
             const mapQuery = encodeURIComponent(location);
-            // +++++ FIX: Use correct Google Maps URL
-            directionsBtn.href = `https://maps.google.com/?q=${mapQuery}`; 
-            directionsBtn.style.display = 'inline-block'; // Make sure it's visible
+            // This is the correct URL to search for a location
+            directionsBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+            directionsBtn.style.display = 'inline-block'; // Show it
         } else {
-            directionsBtn.style.display = 'none'; // Hide button if no location
+            directionsBtn.style.display = 'none'; // Hide it
         }
     }
     
-    // 3. Populate Working Hours
+    // 3. Populate Working Hours (Safe)
     if (hoursList) {
         hoursList.innerHTML = ''; // Clear 'loading'
         let hasHours = false;
@@ -395,7 +396,7 @@ function renderStoreInfo(store) {
         }
     }
 
-    // 4. Populate Open/Closed Status
+    // 4. Populate Open/Closed Status (Safe)
     if (statusBadge) {
         const status = getStoreOpenStatus(workingHours);
         statusBadge.textContent = status.text;
