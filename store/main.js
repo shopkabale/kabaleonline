@@ -309,10 +309,13 @@ function renderHeader(container, sellerData, store) {
     
     // --- Populate the "About" section (for both themes) ---
     const descriptionSection = container.querySelector(`.store-description-section`);
-    const descriptionBody = descriptionSection.querySelector('p'); // Simpler selector
-    if (storeBio && descriptionSection && descriptionBody) {
-        descriptionBody.textContent = storeBio;
-        descriptionSection.style.display = 'block';
+    // Check if it exists before trying to query its child
+    if (descriptionSection) {
+        const descriptionBody = descriptionSection.querySelector('p'); // Simpler selector
+        if (storeBio && descriptionBody) {
+            descriptionBody.textContent = storeBio;
+            descriptionSection.style.display = 'block';
+        }
     }
 }
 
@@ -399,12 +402,12 @@ function renderStoreInfo(container, store) {
     const hoursList = container.querySelector(`.hours-list`);
     const directionsBtn = container.querySelector(`.get-directions-btn`);
     const statusBadge = container.querySelector(`.store-hours-status`);
-    const phoneInfoBox = container.querySelector(`.store-info-box #store-info-phone-${container.id.substring(6)}`);
-    const locationInfoBox = container.querySelector(`.store-info-box #store-info-location-${container.id.substring(6)}`);
+    const phoneInfoBox = container.querySelector(`.store-info-box li[id*="store-info-phone"]`);
+    const locationInfoBox = container.querySelector(`.store-info-box li[id*="store-info-location"]`);
 
     
     // 1. Populate Directions Button (FIXED AND SAFE)
-    if (directionsBtn) {
+    if (directionsBtn) { // This check prevents the crash
         if (location) {
             const mapQuery = encodeURIComponent(location);
             // +++++ THIS IS THE CORRECT, OFFICIAL URL for directions +++++
@@ -615,7 +618,7 @@ async function renderProducts(container, sellerId, sellerName, design) {
             const productLink = document.createElement("a");
             productLink.href = `/product.html?id=${product.id}`;
             productLink.className = "product-card-link";
-            if (isActuallySold) {
+            .product-card-link {
                 productLink.style.pointerEvents = 'none';
                 productLink.style.cursor = 'default';
             }
