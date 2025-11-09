@@ -10,9 +10,38 @@
     <style>
         body { background-color: var(--bg-main); }
         .groups-container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        
+        /* NEW: Auth Wall Message */
+        #auth-wall {
+            display: none; /* Hidden by default */
+            text-align: center;
+            padding: 40px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        #auth-wall h3 { font-size: 1.5em; color: var(--text-main); }
+        #auth-wall p { color: var(--text-secondary); }
+        #auth-wall a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: var(--ko-primary);
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        /* This holds the real content, hidden until user is logged in */
+        #groups-content {
+            display: none;
+        }
+
         .page-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; }
         .page-header h1 { color: var(--text-main); margin: 0; }
         .create-group-btn { background: var(--ko-primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        
         .group-list-section h2 { color: var(--text-main); margin-top: 30px; }
         .group-link {
             display: flex;
@@ -64,22 +93,36 @@
 <body>
 
     <div class="groups-container">
-        <div class="page-header">
-            <h1>Groups</h1>
-            <button id="create-group-btn" class="create-group-btn"><i class="fas fa-plus"></i> Create Group</button>
-        </div>
 
-        <!-- Section for Groups user is following -->
-        <div class="group-list-section" id="my-groups-section" style="display: none;">
-            <h2>My Groups</h2>
-            <div id="my-groups-list"></div>
+        <!-- NEW: Auth Wall -->
+        <div id="auth-wall">
+            <div id="loading-spinner" class="loader"></div>
+            <div id="login-message" style="display: none;">
+                <h3><i class="fas fa-lock"></i> Please Log In</h3>
+                <p>You must be logged in to view and create groups.</p>
+                <a href="/login/">Go to Login Page</a>
+            </div>
         </div>
+        
+        <!-- REAL CONTENT (Hidden by default) -->
+        <div id="groups-content">
+            <div class="page-header">
+                <h1>Groups</h1>
+                <button id="create-group-btn" class="create-group-btn"><i class="fas fa-plus"></i> Create Group</button>
+            </div>
 
-        <!-- Section for all other public groups -->
-        <div class="group-list-section">
-            <h2>All Groups</h2>
-            <div id="all-groups-list">
-                <div id="groups-loader" class="loader"></div>
+            <!-- Section for Groups user is following -->
+            <div class="group-list-section" id="my-groups-section" style="display: none;">
+                <h2>My Groups</h2>
+                <div id="my-groups-list"></div>
+            </div>
+
+            <!-- Section for all other public groups -->
+            <div class="group-list-section">
+                <h2>All Groups</h2>
+                <div id="all-groups-list">
+                    <div id="groups-loader" class="loader"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -94,7 +137,7 @@
                     <label for="group-name">Group Name</label>
                     <input type="text" id="group-name" placeholder="e.g., KAB Techies" required>
                 </div>
-                <div class.form-group">
+                <div class="form-group">
                     <label for="group-description">Description</label>
                     <input type="text" id="group-description" placeholder="A group for all tech students..." required>
                 </div>
