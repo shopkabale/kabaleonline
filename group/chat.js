@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FINAL LAYOUT FIX* //
+//      CHAT ROOM SCRIPT (chat.js) - *ALL FEATURES ADDED* //
 //                                                                     //
 // =================================================================== //
 
@@ -20,7 +20,7 @@ import {
     updateDoc,
     limit,
     where,
-    arrayRemove // <-- Added for removing members
+    arrayRemove // <-- NEW: Added for removing members
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
@@ -52,8 +52,8 @@ const modalGroupName = document.getElementById('modal-group-name');
 const modalGroupDescription = document.getElementById('modal-group-description');
 const modalMembersList = document.getElementById('modal-members-list');
 const modalMembersLoader = document.getElementById('modal-members-loader');
-const shareGroupBtn = document.getElementById('share-group-btn'); 
-const toastNotification = document.getElementById('toast-notification'); 
+const shareGroupBtn = document.getElementById('share-group-btn'); // <-- NEW
+const toastNotification = document.getElementById('toast-notification'); // <-- NEW
 
 // Edit Group Modal Elements
 const editGroupModal = document.getElementById('edit-group-modal');
@@ -63,9 +63,9 @@ const editGroupSubmit = document.getElementById('edit-group-submit');
 const editGroupNameInput = document.getElementById('edit-group-name');
 const editGroupDescInput = document.getElementById('edit-group-description');
 const editModalError = document.getElementById('edit-modal-error');
-const editGroupCategorySelect = document.getElementById('edit-group-category'); 
+const editGroupCategorySelect = document.getElementById('edit-group-category'); // <-- NEW
 
-// --- Edit Group Image Elements ---
+// --- NEW: Edit Group Image Elements ---
 const editGroupImageUploadArea = document.getElementById('edit-group-image-upload-area');
 const editGroupImageInput = document.getElementById('edit-group-image-input');
 const editGroupImagePreviewContainer = document.getElementById('edit-group-image-preview-container');
@@ -77,7 +77,7 @@ let currentGroupId = null;
 let currentGroupData = null; 
 let unsubscribe = null; 
 let replyingToMessage = null;
-let editGroupImageFile = null; 
+let editGroupImageFile = null; // NEW: Stores file for editing group image
 
 // --- Main Initialization ---
 async function initializeChat() {
@@ -100,26 +100,29 @@ async function initializeChat() {
 
             if (!currentGroupId) {
                 alert("Error: No group ID specified.");
-                window.location.href = 'index.html'; 
+                window.location.href = 'index.html'; // Back to group list
                 return;
             }
             
+            // Listen for group details in real-time
             const groupDocRef = doc(db, "groups", currentGroupId);
             onSnapshot(groupDocRef, (groupDoc) => {
                 if (groupDoc.exists()) {
                     currentGroupData = groupDoc.data();
-                    updateChatHeader(); 
+                    updateChatHeader(); // Update UI
                 } else {
-                     alert("Error: This group no longer exists."); 
+                     alert("Error: This group no longer exists."); // Changed message
                      window.location.href = 'index.html';
                 }
             });
             
             backButton.href = 'index.html'; 
             listenForMessages(currentGroupId);
-            setupModalListeners(); 
+            setupModalListeners(); // Set up modal logic
 
         } else {
+            // User is not logged in, redirect to group list
+            // The group list (index.html) will show the "Please Log In" message
             window.location.href = 'index.html';
         }
     });
@@ -150,13 +153,14 @@ function listenForMessages(groupId) {
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
-        messageArea.innerHTML = ''; 
+        messageArea.innerHTML = ''; // Clear the chat area *every* time
         
         snapshot.docs.forEach((doc) => {
             const messageData = { id: doc.id, ...doc.data() };
-            renderMessage(messageData); 
+            renderMessage(messageData); // Render *all* messages in order
         });
         
+        // Scroll to bottom
         setTimeout(() => {
             messageArea.scrollTop = messageArea.scrollHeight;
         }, 100); 
@@ -166,10 +170,10 @@ function listenForMessages(groupId) {
     });
 }
 
-// --- Format Time Helper ---
+// --- NEW: Helper Function to Format Time ---
 function formatMessageTime(timestamp) {
     if (!timestamp) {
-        return ''; 
+        return ''; // Handle pending server timestamps
     }
     const date = timestamp.toDate();
     return date.toLocaleTimeString('en-US', {
@@ -225,8 +229,6 @@ function renderMessage(data) {
     `;
 
     // 3. Message Bubble
-    // --- THIS IS YOUR FIX ---
-    // Changed <p> to <div> to correctly contain the time/tick <div>
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
         // Image message bubble
@@ -237,7 +239,7 @@ function renderMessage(data) {
             </div>
         `;
     } else {
-        // Text message bubble
+        // Text message bubble now uses a <span> with class "message-text"
         messageBubbleHTML = `
             <div class="message-bubble">
                 <span class="message-text">${data.text || ''}</span>
@@ -245,9 +247,10 @@ function renderMessage(data) {
             </div>
         `;
     }
-    // --- END FIX ---
 
     // 4. Sender Name (with link)
+    // --- THIS IS THE TELEGRAM-STYLE FIX ---
+    // The sender name and reply quote are now INSIDE the bubble wrapper
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
@@ -262,6 +265,7 @@ function renderMessage(data) {
         </a>
     `;
 
+    // --- THIS IS THE FINAL TELEGRAM-STYLE LAYOUT ---
     messageDiv.innerHTML = `
         ${avatarHTML} 
         <div class="message-content">
