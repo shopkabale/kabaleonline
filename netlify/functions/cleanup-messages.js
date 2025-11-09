@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// --- THIS IS THE UPDATED PART ---
 // It builds the service account using your Base64 private key
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -8,7 +7,6 @@ const serviceAccount = {
   // This line now correctly decodes your Base64 key
   privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
 };
-// --- END OF UPDATED PART ---
 
 // Initialize Firebase Admin (only once)
 try {
@@ -40,32 +38,40 @@ exports.handler = async (event, context) => {
 
     if (snapshot.empty) {
       console.log("No old messages found to delete.");
-      return { statusCode: 200, body: "No old messages." };
+      return { statusCode: 200, body: "No old messages found." };
     }
 
-    // 3. Delete the messages in batches
+    // 3. --- THIS IS THE FIX ---
+    // We must use a 'for...of' loop instead of 'forEach' to use 'await'
     let batch = db.batch();
-    let deleteCount = 0;
+    let deleteCount = 0; // Count for the current batch
+    let totalDeleted = 0; // Total count for the whole run
 
-    snapshot.docs.forEach((doc, index) => {
-      batch.delete(doc.ref);
-      deleteCount++;
+    for (const doc of snapshot.docs) {
+        batch.delete(doc.ref);
+        deleteCount++;
+        totalDeleted++;
 
-      // If we hit 500, commit the batch and start a new one
-      if ((index + 1) % 500 === 0) {
-        console.log("Committing a batch of 500 deletes...");
-        await batch.commit(); // Added await
-        batch = db.batch();
-      }
-    });
+        // Commit the batch every 500 deletes
+        if (deleteCount === 500) {
+            console.log("Committing a batch of 500 deletes...");
+            await batch.commit();
+            batch = db.batch(); // Start a new batch
+            deleteCount = 0; // Reset batch counter
+        }
+    }
 
-    // 4. Commit any remaining messages in the last batch
-    await batch.commit();
+    // 4. Commit any remaining messages in the final batch
+    if (deleteCount > 0) {
+        console.log(`Committing final batch of ${deleteCount} deletes...`);
+        await batch.commit();
+    }
+    // --- END OF FIX ---
 
-    console.log(`Successfully deleted ${deleteCount} old messages.`);
+    console.log(`Successfully deleted ${totalDeleted} old messages.`);
     return {
       statusCode: 200,
-      body: `Successfully deleted ${deleteCount} old messages.`
+      body: `Successfully deleted ${totalDeleted} old messages.`
     };
 
   } catch (error) {
