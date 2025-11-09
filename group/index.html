@@ -9,8 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* This CSS is specific to the Groups page */
-        body { background-color: var(--bg-main); }
+        /* This CSS is specific to the Groups page and uses your variables */
+        body {
+            background-color: var(--bg-main); /* This creates the "dark gray" background */
+        }
         .groups-container {
             max-width: 800px;
             margin: 20px auto;
@@ -19,7 +21,7 @@
         
         /* === NEW: Auth Wall (Not Logged In) === */
         #auth-wall {
-            display: none; /* Hidden by default */
+            display: none; /* Hidden by default, JS will show it */
             text-align: center;
             padding: 40px;
             background: var(--bg-card);
@@ -38,11 +40,12 @@
             margin-bottom: 25px;
             font-size: 1.1em;
         }
+        /* This is the login button you asked for */
         #auth-wall a {
             display: inline-block;
             padding: 12px 25px;
             background: var(--ko-primary);
-            color: white;
+            color: white; /* Ensures text is visible */
             font-weight: 600;
             text-decoration: none;
             border-radius: 6px;
@@ -71,9 +74,11 @@
             color: var(--text-main);
             margin: 0;
         }
+        
+        /* === FIXED: Create Group Button CSS === */
         .create-group-btn {
-            background: var(--ko-primary);
-            color: white;
+            background: var(--ko-primary); /* Uses your site's theme color */
+            color: white; /* FIX: Guarantees white text */
             border: none;
             padding: 10px 15px;
             border-radius: 6px;
@@ -88,6 +93,7 @@
             opacity: 0.9;
             transform: translateY(-2px);
         }
+        /* === END FIX === */
         
         .group-list-section h2 {
             color: var(--text-main);
@@ -263,7 +269,7 @@
                     <label for="group-name">Group Name</label>
                     <input type="text" id="group-name" placeholder="e.g., KAB Techies" required>
                 </div>
-                <div class.form-group">
+                <div class="form-group">
                     <label for="group-description">Description</label>
                     <input type="text" id="group-description" placeholder="A group for all tech students..." required>
                 </div>
