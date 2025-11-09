@@ -4,16 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
-    <link rel="stylesheet" href="../style.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Chat-specific styles */
+        /* =================================================================== */
+        /* === NEW, SELF-CONTAINED STYLESHEET (NO EXTERNAL CSS) === */
+        /* =================================================================== */
+
+        /* --- 1. Root Variables (Professional Dark Theme) --- */
         :root {
+            --bg-main: #121212;
+            --bg-card: #1E1E1E;
+            --bg-modal: #2a2a2a;
+            --border-color: #333333;
+            --text-main: #E0E0E0;
+            --text-secondary: #888888;
+            --ko-primary: #007BFF;
+            --ko-primary-rgb: 0, 123, 255;
+            --ko-accent: #00BFFF;
+            --ko-danger: #E53935;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            --border-radius: 8px;
+            /* Chat specific */
             --own-message-bg: var(--ko-primary);
-            --other-message-bg: var(--bg-card);
-            --own-message-text: white;
+            --other-message-bg: #333333;
+            --own-message-text: #FFFFFF;
             --other-message-text: var(--text-main);
+        }
+
+        /* --- 2. Base & Body Layout (Full Height) --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         body {
             display: flex;
@@ -24,23 +48,23 @@
             color: var(--text-main);
             overflow: hidden; /* Prevent body scroll */
         }
-        
-        /* === NEW: Chat Header (Updated for Image) === */
+
+        /* --- 3. Chat Header --- */
         .chat-header {
             display: flex;
             align-items: center;
             padding: 10px 15px;
             background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
             flex-shrink: 0;
             gap: 10px;
         }
         #back-button {
-            font-size: 1.2em;
+            font-size: 1.3em;
             color: var(--text-main);
             text-decoration: none;
-            padding: 5px;
+            padding: 8px;
+            border-radius: 50%;
         }
         #chat-header-info {
             display: flex;
@@ -51,11 +75,11 @@
             padding: 5px;
             border-radius: 6px;
             transition: background 0.2s ease;
+            min-width: 0; /* Fix flex truncation */
         }
         #chat-header-info:hover {
             background: var(--bg-main);
         }
-        /* Using styles from group-list.js for consistency */
         .group-icon-wrapper-sm {
             width: 40px;
             height: 40px;
@@ -82,9 +106,12 @@
             font-size: 1.2em;
             font-weight: 600;
             margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        /* === END HEADER === */
         
+        /* --- 4. Message Area --- */
         #message-area {
             flex-grow: 1;
             overflow-y: auto;
@@ -94,7 +121,7 @@
             gap: 12px;
         }
 
-        /* === NEW: Modern Chat Bubble Styles === */
+        /* --- 5. Message Bubble Styles --- */
         .message {
             display: flex;
             gap: 10px;
@@ -102,8 +129,8 @@
             align-items: flex-start;
         }
         .message-avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
             flex-shrink: 0;
@@ -111,8 +138,8 @@
         .message-content {
             flex: 1;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            align-items: flex-end; /* Changed */
+            gap: 8px;
         }
         .message-bubble {
             background: var(--other-message-bg);
@@ -128,7 +155,7 @@
             font-weight: 600;
             font-size: 0.9em;
             margin-bottom: 4px;
-            color: var(--ko-primary);
+            color: var(--ko-accent);
         }
         
         /* Own message */
@@ -146,12 +173,11 @@
             border-bottom-right-radius: 4px; /* "Tail" */
         }
         .message.own-message .message-avatar {
-            display: none; /* Don't show your own avatar */
+            display: none; 
         }
         .message.own-message .message-sender {
-            display: none; /* No need to show your own name */
+            display: none;
         }
-        /* === END BUBBLE STYLES === */
         
         /* Reply Button */
         .reply-btn {
@@ -162,16 +188,17 @@
             font-size: 0.9em;
             opacity: 0;
             transition: opacity 0.2s;
+            padding: 5px;
         }
         .message:hover .reply-btn {
             opacity: 1;
         }
 
-        /* Reply Quote */
+        /* --- 6. Reply UI Styles --- */
         .reply-quote {
-            background: rgba(0,0,0,0.05);
-            border-left: 3px solid var(--ko-primary);
-            padding: 5px 10px;
+            background: rgba(0,0,0,0.15);
+            border-left: 3px solid var(--ko-accent);
+            padding: 6px 10px;
             margin-bottom: 5px;
             border-radius: 6px;
         }
@@ -179,13 +206,10 @@
             background: rgba(255,255,255,0.15);
             border-left-color: #fff;
         }
-        body.dark-mode .reply-quote {
-             background: rgba(255,255,255,0.05);
-        }
         .reply-quote-sender {
             font-weight: 600;
             font-size: 0.9em;
-            color: var(--ko-primary);
+            color: var(--ko-accent);
         }
         .message.own-message .reply-quote-sender {
             color: #fff;
@@ -201,7 +225,6 @@
             color: rgba(255,255,255,0.8);
         }
 
-        /* Reply Banner */
         #reply-banner {
             display: none;
             padding: 10px 15px;
@@ -224,12 +247,12 @@
             right: 10px;
             background: none;
             border: none;
-            font-size: 1.2em;
+            font-size: 1.4em;
             color: var(--text-secondary);
             cursor: pointer;
         }
 
-        /* === CSS FIX: Chat Form === */
+        /* --- 7. Chat Form (Input Bar) --- */
         #chat-form {
             display: flex;
             padding: 10px;
@@ -237,19 +260,21 @@
             border-top: 1px solid var(--border-color);
             flex-shrink: 0;
             align-items: center;
-            gap: 8px; /* Adds spacing */
+            gap: 8px;
         }
         #message-input {
             flex-grow: 1;
-            border: 1px solid var(--border-color);
+            border: none;
             border-radius: 20px;
-            padding: 10px 15px;
+            padding: 10px 18px;
             font-size: 1em;
             background: var(--bg-main);
             color: var(--text-main);
-            margin: 0; /* Fix for default margins */
+            margin: 0;
         }
-        /* This styles BOTH buttons */
+        #message-input:focus {
+            outline: none;
+        }
         #chat-form button {
             background: var(--ko-primary);
             border: none;
@@ -260,18 +285,16 @@
             font-size: 1.1em;
             cursor: pointer;
             flex-shrink: 0;
-            /* Added to center icons */
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
             padding: 0;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
         #chat-form button:hover {
             opacity: 0.9;
         }
-        /* This makes the upload button transparent */
         #image-upload-btn {
             background: none;
             color: var(--text-secondary);
@@ -282,9 +305,8 @@
             opacity: 1;
         }
         #image-upload-input { display: none; }
-        /* === END CHAT FORM FIX === */
 
-        /* Image Message Style (Already in your code) */
+        /* --- 8. Image Message Style --- */
         .message-bubble.message-image {
             padding: 5px;
             background: none;
@@ -299,21 +321,24 @@
             border: 1px solid var(--border-color);
         }
         
-        /* === CSS FIX: Group Details Modal === */
+        /* --- 9. Group Details Modal (Full Screen) --- */
         #group-details-modal {
-            display: none; /* Hidden by default */
+            display: none; 
             position: fixed;
             z-index: 2000;
             left: 0;
             top: 0;
             width: 100%;
-            height: 100vh; /* FIX: Use 100vh to cover entire viewport */
+            height: 100vh; /* Cover entire screen */
             background-color: var(--bg-main);
             flex-direction: column;
             overflow-y: auto;
+            transition: transform 0.3s ease;
+            transform: translateX(100%);
         }
         #group-details-modal.active {
             display: flex;
+            transform: translateX(0);
         }
         .modal-header {
             display: flex;
@@ -322,16 +347,16 @@
             background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
-            /* FIX: Add z-index to prevent overlap from chat header */
             position: relative;
             z-index: 10;
         }
         .modal-close-btn {
-            font-size: 1.2em;
+            font-size: 1.3em;
             color: var(--text-main);
             text-decoration: none;
             margin-right: 15px;
             cursor: pointer;
+            padding: 8px;
         }
         .modal-title {
             font-size: 1.2em;
@@ -345,14 +370,13 @@
             color: var(--ko-primary);
             font-size: 1.2em;
             cursor: pointer;
-            display: none; /* Hidden by default */
+            display: none; /* JS shows this */
+            padding: 8px;
         }
         .modal-body {
             padding: 0;
             flex-grow: 1;
         }
-        /* === END MODAL FIX === */
-        
         .group-profile-header {
             display: flex;
             flex-direction: column;
@@ -372,6 +396,7 @@
             font-weight: 600;
             margin-top: 15px;
             margin-bottom: 5px;
+            text-align: center;
         }
         #modal-group-description {
             font-size: 1.1em;
@@ -423,9 +448,8 @@
             animation: spin 1s linear infinite;
         }
         
-        /* === NEW: Edit Group Modal (inside another modal) === */
+        /* --- 10. Edit Group Modal (Modal-on-top) --- */
         #edit-group-modal {
-            /* This is a modal on top of a modal */
             display: none;
             position: fixed;
             z-index: 3000;
@@ -433,8 +457,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            -webkit-backdrop-filter: blur(5px);
+            background-color: rgba(0,0,0,0.6);
             backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
@@ -442,7 +465,60 @@
         #edit-group-modal.active {
             display: flex;
         }
-        /* Uses .modal-content from group-list.js */
+        /* Uses .modal-content styles from index.html, but we need to redefine them */
+        #edit-group-modal .modal-content {
+            background-color: var(--bg-modal);
+            margin: auto;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        #edit-group-modal .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        #edit-group-modal .form-group { margin-bottom: 20px; }
+        #edit-group-modal label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: var(--text-secondary); 
+            font-size: 0.9em;
+        }
+        #edit-group-modal input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background: var(--bg-main);
+            color: var(--text-main);
+        }
+        #edit-group-modal input[type="text"]:focus {
+            outline: none;
+            border-color: var(--ko-primary);
+        }
+        #edit-group-modal .create-group-btn {
+            background: var(--ko-primary);
+            color: #FFFFFF;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #edit-modal-error {
+            color: var(--ko-danger); 
+            display: none; 
+            margin-top: 15px; 
+            text-align: center;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -500,7 +576,7 @@
         </div>
     </div>
     
-    <div id="edit-group-modal" class="modal">
+    <div id="edit-group-modal">
         <div class="modal-content">
             <span id="close-edit-modal-btn" class="close-btn">&times;</span>
             <h2 style="margin-top:0;">Edit Group Info</h2>
@@ -514,7 +590,7 @@
                     <input type="text" id="edit-group-description" required>
                 </div>
                 <button type="submit" id="edit-group-submit" class="create-group-btn" style="width: 100%; margin-top: 10px;">Save Changes</button>
-                <p id="edit-modal-error" style="color: var(--ko-danger); display: none; margin-top: 15px;"></p>
+                <p id="edit-modal-error"></p>
             </form>
         </div>
     </div>
