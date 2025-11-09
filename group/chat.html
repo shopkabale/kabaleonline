@@ -195,26 +195,34 @@
         }
         /* --- END FIX --- */
 
-        /* Own message */
-        .message.own-message {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message.own-message .message-content {
-            flex-direction: row-reverse;
-        }
-        .message.own-message .message-bubble {
-            background: var(--own-message-bg);
-            color: var(--own-message-text);
-            border-bottom-left-radius: 18px;
-            border-bottom-right-radius: 4px; /* "Tail" */
-        }
-        .message.own-message .message-avatar {
-            display: none; 
-        }
-        .message.own-message .message-sender {
-            display: none;
-        }
+        /* Target only your own messages */
+.own-message .message-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 4px;
+  position: relative;
+  top: 4px; /* moves it slightly lower */
+}
+
+/* Make sure the meta elements don’t overlap the text */
+.own-message .message-bubble {
+  position: relative;
+  padding-bottom: 18px; /* add some space at the bottom */
+}
+
+/* Optional – make time and tick smaller and aligned nicely */
+.message-time {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.message-tick {
+  font-size: 0.75rem;
+  color: #cce5ff;
+  margin-left: 2px;
+  transform: translateY(2px);
+}
         
         /* Reply Button */
         .reply-btn {
