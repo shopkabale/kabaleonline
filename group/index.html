@@ -488,7 +488,7 @@ footer {
         <nav class="desktop-nav">
             <a href="/shop/" class="nav-link">Shop</a>
             <a href="/rentals/" class="nav-link">Hostels</a>
-            <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
+            <a href="/home/" class="nav-link service-link">Services</a>
             <a href="/events/" class="nav-link">Events</a>
             <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
         </nav>
@@ -626,5 +626,23 @@ footer {
 </footer>
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="group-list.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Logic for the mobile nav toggle
+  const hamburger = document.querySelector('.hamburger-menu');
+  const mobileNav = document.querySelector('.mobile-nav');
+  const overlay = document.querySelector('.mobile-nav-overlay');
+  if (hamburger && mobileNav && overlay) {
+      hamburger.addEventListener('click', () => {
+          mobileNav.classList.toggle('active');
+          overlay.classList.toggle('active');
+      });
+      overlay.addEventListener('click', () => {
+          mobileNav.classList.remove('active');
+          overlay.classList.remove('active');
+      });
+  }
+});
+</script>
 </body>
 </html>
