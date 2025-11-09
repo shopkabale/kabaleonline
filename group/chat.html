@@ -158,9 +158,7 @@
             margin: 0;
             line-height: 1.5;
             word-break: break-word;
-            /* Make room for time */
-            padding-bottom: 25px; 
-            position: relative;
+            position: relative; /* Stays relative */
         }
         .message-sender {
             font-weight: 600;
@@ -170,7 +168,12 @@
             cursor: pointer;
         }
         
-        /* --- NEW: Time & Tick --- */
+        /* --- THIS IS THE FIX (Part 1) --- */
+        .message-text {
+            /* This makes space for the time/tick */
+            display: block;
+            margin-right: 60px; /* Adjust as needed for time width */
+        }
         .message-meta {
             position: absolute;
             bottom: 6px;
@@ -189,9 +192,8 @@
         .message-tick {
             font-size: 0.8em;
             color: rgba(255, 255, 255, 0.7);
-            /* JS will add this only for own messages */
         }
-        /* --- END NEW --- */
+        /* --- END FIX --- */
 
         /* Own message */
         .message.own-message {
@@ -345,8 +347,21 @@
         .message-bubble.message-image {
             padding: 5px;
             background: none;
-            padding-bottom: 5px; /* Override padding */
         }
+        /* This is the fix for images */
+        .message-bubble.message-image .message-meta {
+            /* On images, time has a dark background for readability */
+            background: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            border-radius: 4px;
+            bottom: 10px; /* Adjust to be inside the image */
+            right: 10px;
+        }
+        .message.own-message .message-bubble.message-image .message-time,
+        .message.own-message .message-bubble.message-image .message-tick {
+             color: rgba(255, 255, 255, 0.9);
+        }
+        /* --- */
         .message.own-message .message-bubble.message-image {
             background: none;
         }
