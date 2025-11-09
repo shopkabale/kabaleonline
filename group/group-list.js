@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//       GROUP DIRECTORY SCRIPT (group-list.js) - *IMAGE UPDATE* //
+//       GROUP DIRECTORY SCRIPT (group-list.js)
 //                                                                     //
 // =================================================================== //
 
@@ -212,11 +212,11 @@ async function handleFollowToggle(groupId, isCurrentlyFollowed) {
     }
 }
 
-// --- NEW: Cloudinary Upload Function (from your upload.js) ---
+// --- UPDATED: Cloudinary Upload Function (for GROUPS) ---
 async function uploadImageToCloudinary(file) {
     try {
-        // Note: Make sure this Netlify function path is correct for your site
-        const response = await fetch('/.netlify/functions/generate-signature');
+        // THIS IS THE CHANGE: Using the new, separate group signature function
+        const response = await fetch('/.netlify/functions/generate-group-signature');
         if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
         const { signature, timestamp, cloudname, apikey } = await response.json();
         
