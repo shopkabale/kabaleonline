@@ -225,6 +225,7 @@ function renderMessage(data) {
     // 3. Message Bubble
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
+        // Image message bubble
         messageBubbleHTML = `
             <p class="message-bubble message-image">
                 <img src="${data.imageData}" alt="User image" loading="lazy">
@@ -232,9 +233,10 @@ function renderMessage(data) {
             </p>
         `;
     } else {
+        // Text message bubble now uses a <span> with class "message-text"
         messageBubbleHTML = `
             <p class="message-bubble">
-                ${data.text || ''}
+                <span class="message-text">${data.text || ''}</span>
                 ${timeMetaHTML}
             </p>
         `;
