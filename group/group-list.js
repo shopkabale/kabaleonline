@@ -6,7 +6,7 @@
 // =================================================================== //
 
 import { auth, db } from '../firebase.js';
-import { onAuthStateChanged } from "https/www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
     collection, 
     query, 
@@ -19,7 +19,7 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+} from "https/www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
 const authWall = document.getElementById('auth-wall');
@@ -136,7 +136,11 @@ function renderFilteredGroups() {
         return nameMatch && categoryMatch;
     });
 
-    if (filteredGroups.length === 0) {
+    if (filteredGroups.length === 0 && currentSearchTerm) {
+        noGroupsMessage.textContent = `No groups found for "${currentSearchTerm}".`;
+        noGroupsMessage.style.display = 'block';
+    } else if (filteredGroups.length === 0) {
+        noGroupsMessage.textContent = "No groups in this category yet.";
         noGroupsMessage.style.display = 'block';
     } else {
         noGroupsMessage.style.display = 'none';
