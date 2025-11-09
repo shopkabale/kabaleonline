@@ -233,6 +233,7 @@ function renderMessage(data) {
             </p>
         `;
     } else {
+        // --- THIS IS THE WHATSAPP LAYOUT FIX ---
         // Text message bubble now uses a <span> with class "message-text"
         messageBubbleHTML = `
             <p class="message-bubble">
@@ -240,6 +241,7 @@ function renderMessage(data) {
                 ${timeMetaHTML}
             </p>
         `;
+        // --- END FIX ---
     }
 
     // 4. Sender Name (with link)
@@ -607,7 +609,7 @@ async function fetchGroupMembers(memberIds) {
                 memberDiv.className = 'member-item';
                 
                 const avatar = userData.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(userData.name || 'U').charAt(0)}`;
-                const role = userDoc.id === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : '';
+                const role = userDoc.id === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : ''
                 
                 // NEW: Make member item clickable
                 memberDiv.innerHTML = `
