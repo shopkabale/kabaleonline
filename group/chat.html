@@ -128,18 +128,26 @@
             max-width: 80%;
             align-items: flex-start;
         }
+        .message-profile-link {
+            text-decoration: none;
+        }
         .message-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
             flex-shrink: 0;
+            cursor: pointer;
         }
         .message-content {
             flex: 1;
             display: flex;
-            align-items: flex-end; /* Changed */
+            align-items: flex-end;
             gap: 8px;
+        }
+        .message-bubble-wrapper {
+            display: flex;
+            flex-direction: column;
         }
         .message-bubble {
             background: var(--other-message-bg);
@@ -150,14 +158,41 @@
             margin: 0;
             line-height: 1.5;
             word-break: break-word;
+            /* Make room for time */
+            padding-bottom: 25px; 
+            position: relative;
         }
         .message-sender {
             font-weight: 600;
             font-size: 0.9em;
             margin-bottom: 4px;
             color: var(--ko-accent);
+            cursor: pointer;
         }
         
+        /* --- NEW: Time & Tick --- */
+        .message-meta {
+            position: absolute;
+            bottom: 6px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .message-time {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+        }
+        .message.own-message .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .message-tick {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+            /* JS will add this only for own messages */
+        }
+        /* --- END NEW --- */
+
         /* Own message */
         .message.own-message {
             align-self: flex-end;
@@ -310,6 +345,7 @@
         .message-bubble.message-image {
             padding: 5px;
             background: none;
+            padding-bottom: 5px; /* Override padding */
         }
         .message.own-message .message-bubble.message-image {
             background: none;
@@ -465,7 +501,6 @@
         #edit-group-modal.active {
             display: flex;
         }
-        /* Uses .modal-content styles from index.html, but we need to redefine them */
         #edit-group-modal .modal-content {
             background-color: var(--bg-modal);
             margin: auto;
@@ -518,6 +553,59 @@
             margin-top: 15px; 
             text-align: center;
             font-weight: 500;
+        }
+
+        /* --- NEW: Edit Group Image Upload Area --- */
+        .group-image-upload-area {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 2px dashed var(--border-color);
+            background: var(--bg-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px auto;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+        .group-image-upload-area:hover {
+            border-color: var(--ko-primary);
+        }
+        .upload-icon {
+            font-size: 2.5em;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+        .group-image-upload-area:hover .upload-icon {
+            color: var(--ko-primary);
+        }
+        .image-preview-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .image-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-image-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 25px;
+            text-align: center;
         }
     </style>
 </head>
@@ -581,6 +669,12 @@
             <span id="close-edit-modal-btn" class="close-btn">&times;</span>
             <h2 style="margin-top:0;">Edit Group Info</h2>
             <form id="edit-group-form">
+                
+                <input type="file" id="edit-group-image-input" accept="image/jpeg, image/png" style="display:none;">
+                <div id="edit-group-image-upload-area" class="group-image-upload-area" title="Upload Group Image">
+                    <div id="edit-group-image-preview-container"></div>
+                    <i id="edit-group-image-upload-icon" class="fas fa-camera upload-icon"></i>
+                </div>
                 <div class="form-group">
                     <label for="edit-group-name">Group Name</label>
                     <input type="text" id="edit-group-name" required>
