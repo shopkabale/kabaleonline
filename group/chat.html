@@ -39,6 +39,8 @@
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+        
+        /* --- THIS IS THE KEYBOARD/SMALL SCREEN FIX --- */
         html {
             height: 100%;
         }
@@ -51,6 +53,7 @@
             color: var(--text-main);
             overflow: hidden; /* Prevent body scroll */
         }
+        /* --- END FIX --- */
 
         /* --- 3. Chat Header --- */
         .chat-header {
@@ -576,7 +579,7 @@
             color: var(--text-secondary); 
             font-size: 0.9em;
         }
-        #edit-group-modal input[type="text"] {
+        #edit-group-modal input[type="text"], #edit-group-modal select { /* ADDED SELECT */
             width: 100%;
             padding: 12px 14px;
             box-sizing: border-box;
@@ -586,7 +589,7 @@
             background: var(--bg-main);
             color: var(--text-main);
         }
-        #edit-group-modal input[type="text"]:focus {
+        #edit-group-modal input[type="text"]:focus, #edit-group-modal select:focus { /* ADDED SELECT */
             outline: none;
             border-color: var(--ko-primary);
         }
@@ -758,6 +761,18 @@
                     <label for="edit-group-description">Description</label>
                     <input type="text" id="edit-group-description" required>
                 </div>
+                
+                <div class="form-group">
+                    <label for="edit-group-category">Category</label>
+                    <select id="edit-group-category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Marketplace">Marketplace</option>
+                        <option value="Events">Events</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
                 <button type="submit" id="edit-group-submit" class="create-group-btn" style="width: 100%; margin-top: 10px;">Save Changes</button>
                 <p id="edit-modal-error"></p>
             </form>
@@ -767,7 +782,7 @@
     <div id="toast-notification">Link copied to clipboard!</div>
 
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=6"></script>
+    <script type="module" src="chat.js?v=7"></script>
 
 </body>
 </html>
