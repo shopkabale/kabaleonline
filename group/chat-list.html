@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chats</title>
+    <!-- Your existing CSS -->
+    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+        .chat-list-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        .chat-list-header {
+            padding: 15px;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .chat-list-group {
+            margin-bottom: 20px;
+        }
+        .chat-list-group h3 {
+            font-size: 1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding: 0 10px;
+        }
+        .chat-link {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+        .chat-link:hover {
+            transform: translateY(-2px);
+        }
+        .chat-link i {
+            font-size: 1.5em;
+            color: var(--ko-primary);
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+        .chat-link-info {
+            flex-grow: 1;
+        }
+        .chat-link-info h4 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .chat-link-info p {
+            margin: 0;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-list-container">
+        <h2 class="chat-list-header">Chats</h2>
+
+        <div class="chat-list-group" id="public-channels">
+            <h3>Public Channels</h3>
+            <!-- This is the "General" chat -->
+            <a href="chat.html?chatId=general" class="chat-link">
+                <i class="fas fa-users"></i>
+                <div class="chat-link-info">
+                    <h4>General Chat</h4>
+                    <p>Talk with the whole community</p>
+                </div>
+            </a>
+            <!-- This is the "Support" chat -->
+            <a href="chat.html?chatId=support" class="chat-link">
+                <i class="fas fa-headset"></i>
+                <div class="chat-link-info">
+                    <h4>Kabale Support</h4>
+                    <p>Get help from an admin</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="chat-list-group" id="private-chats">
+            <h3>My Chats</h3>
+            <!-- This section will be filled by chat-list.js -->
+            <div id="my-chats-list">
+                <!-- Example of a private chat (JS will generate this) -->
+                <!--
+                <a href="chat.html?chatId=USER_ID_123_SELLER_ID_456" class="chat-link">
+                    <i class="fas fa-user"></i>
+                    <div class="chat-link-info">
+                        <h4>Chat with Samuel Ampere</h4>
+                        <p>Last message: Ok, I will be there...</p>
+                    </div>
+                </a>
+                -->
+            </div>
+        </div>
+
+    </div>
+    
+    <script type="module" src="chat-list.js"></script>
+</body>
+</html>
