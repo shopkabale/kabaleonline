@@ -1,4 +1,4 @@
-# netlify.toml (Final Corrected Version)
+# netlify.toml
 
 [build]
   functions = "netlify/functions/"
@@ -10,4 +10,8 @@
   # This new line tells the bundler to NOT bundle the Dialogflow library.
   external_node_modules = ["@google-cloud/dialogflow"]
 
-# The [[redirects]] block is not needed for this fix.
+# --- THIS IS THE NEW PART YOU NEED TO ADD ---
+# This schedules your new cleanup function
+[functions.cleanup-messages]
+  # This means "at 8:00 AM UTC every day"
+  schedule = "0 8 * * *"
