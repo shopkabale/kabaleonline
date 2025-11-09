@@ -20,7 +20,9 @@ import {
     updateDoc,
     limit,
     where,
-    arrayRemove // <-- NEW: Added for removing members
+    arrayRemove,
+    deleteDoc,  // <-- NEW
+    arrayUnion  // <-- NEW
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
@@ -52,8 +54,8 @@ const modalGroupName = document.getElementById('modal-group-name');
 const modalGroupDescription = document.getElementById('modal-group-description');
 const modalMembersList = document.getElementById('modal-members-list');
 const modalMembersLoader = document.getElementById('modal-members-loader');
-const shareGroupBtn = document.getElementById('share-group-btn'); // <-- NEW
-const toastNotification = document.getElementById('toast-notification'); // <-- NEW
+const shareGroupBtn = document.getElementById('share-group-btn'); 
+const toastNotification = document.getElementById('toast-notification'); 
 
 // Edit Group Modal Elements
 const editGroupModal = document.getElementById('edit-group-modal');
@@ -63,13 +65,30 @@ const editGroupSubmit = document.getElementById('edit-group-submit');
 const editGroupNameInput = document.getElementById('edit-group-name');
 const editGroupDescInput = document.getElementById('edit-group-description');
 const editModalError = document.getElementById('edit-modal-error');
-const editGroupCategorySelect = document.getElementById('edit-group-category'); // <-- NEW
+const editGroupCategorySelect = document.getElementById('edit-group-category'); 
 
-// --- NEW: Edit Group Image Elements ---
+// Edit Group Image Elements
 const editGroupImageUploadArea = document.getElementById('edit-group-image-upload-area');
 const editGroupImageInput = document.getElementById('edit-group-image-input');
 const editGroupImagePreviewContainer = document.getElementById('edit-group-image-preview-container');
 const editGroupImageUploadIcon = document.getElementById('edit-group-image-upload-icon');
+
+// NEW: Image Popup Elements
+const imagePopupModal = document.getElementById('image-popup-modal');
+const popupImage = document.getElementById('popup-image');
+const closeImagePopup = document.getElementById('close-image-popup');
+
+// NEW: Leave Group Elements
+const leaveGroupBtn = document.getElementById('leave-group-btn');
+const dangerZoneSection = document.getElementById('danger-zone-section');
+
+// NEW: Edit Message Modal Elements
+const editMessageModal = document.getElementById('edit-message-modal');
+const editMessageForm = document.getElementById('edit-message-form');
+const editMessageInput = document.getElementById('edit-message-input');
+const editMessageIdInput = document.getElementById('edit-message-id-input');
+const editMessageSubmit = document.getElementById('edit-message-submit');
+const closeEditMessageModalBtn = document.getElementById('close-edit-message-modal-btn');
 
 // --- Global State ---
 let currentUser = null;
@@ -77,7 +96,8 @@ let currentGroupId = null;
 let currentGroupData = null; 
 let unsubscribe = null; 
 let replyingToMessage = null;
-let editGroupImageFile = null; // NEW: Stores file for editing group image
+let editGroupImageFile = null; 
+let isUserAdmin = false; // NEW: To check admin status quickly
 
 // --- Main Initialization ---
 async function initializeChat() {
@@ -109,6 +129,17 @@ async function initializeChat() {
             onSnapshot(groupDocRef, (groupDoc) => {
                 if (groupDoc.exists()) {
                     currentGroupData = groupDoc.data();
+                    
+                    // ▼▼▼ NEW ADMIN CHECK ▼▼▼
+                    // Ensure admins array exists, default to empty
+                    if (!currentGroupData.admins) {
+                        currentGroupData.admins = [];
+                    }
+                    // Check if user is an admin
+                    isUserAdmin = currentGroupData.admins.includes(currentUser.uid) || 
+                                  currentGroupData.createdBy === currentUser.uid;
+                    // ▲▲▲ END ADMIN CHECK ▲▲▲
+                    
                     updateChatHeader(); // Update UI
                 } else {
                      alert("Error: This group no longer exists."); // Changed message
@@ -122,7 +153,6 @@ async function initializeChat() {
 
         } else {
             // User is not logged in, redirect to group list
-            // The group list (index.html) will show the "Please Log In" message
             window.location.href = 'index.html';
         }
     });
@@ -195,7 +225,7 @@ function updateReplyUI() {
     }
 }
 
-// --- UPDATED: Renders Messages with Time/Tick & Profile Links ---
+// --- **COMPLETELY REPLACED** Renders Messages with Actions ---
 function renderMessage(data) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
@@ -218,7 +248,7 @@ function renderMessage(data) {
         `;
     }
 
-    // 2. NEW: Time & Tick
+    // 2. Time & Tick
     const messageTime = formatMessageTime(data.createdAt);
     const sentTick = isOwnMessage ? '<i class="fas fa-check message-tick"></i>' : '';
     const timeMetaHTML = `
@@ -239,7 +269,7 @@ function renderMessage(data) {
             </div>
         `;
     } else {
-        // Text message bubble now uses a <span> with class "message-text"
+        // Text message bubble
         messageBubbleHTML = `
             <div class="message-bubble">
                 <span class="message-text">${data.text || ''}</span>
@@ -249,23 +279,58 @@ function renderMessage(data) {
     }
 
     // 4. Sender Name (with link)
-    // --- THIS IS THE TELEGRAM-STYLE FIX ---
-    // The sender name and reply quote are now INSIDE the bubble wrapper
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
         </a>
     `;
     
-    // 5. Render
-    // The avatarHTML is now only added if it is NOT your own message.
+    // 5. NEW: Action Buttons
+    
+    // Check if message is editable (text only, and not too old)
+    const canEdit = isOwnMessage && 
+                    data.type === 'text' && 
+                    isMessageRecent(data.createdAt);
+
+    const editBtnHTML = canEdit ? `
+        <button class="message-action-btn edit-btn" title="Edit"
+                data-id="${data.id}" 
+                data-text="${data.text || ''}">
+            <i class="fas fa-pen"></i>
+        </button>
+    ` : '';
+    
+    // Admin can delete any message
+    const deleteBtnHTML = isUserAdmin ? `
+        <button class="message-action-btn delete-btn" title="Delete" data-id="${data.id}">
+            <i class="fas fa-trash"></i>
+        </button>
+    ` : '';
+    
+    const replyBtnHTML = `
+        <button class="message-action-btn reply-btn" title="Reply"
+                data-id="${data.id}" 
+                data-sender="${data.userName}" 
+                data-text="${data.text || 'Image'}">
+            <i class="fas fa-reply"></i>
+        </button>
+    `;
+
+    const actionsHTML = `
+        <div class="message-actions">
+            ${replyBtnHTML}
+            ${editBtnHTML}
+            ${deleteBtnHTML}
+        </div>
+    `;
+
+    // 6. Render
     const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
         </a>
     `;
 
-    // --- THIS IS THE FINAL TELEGRAM-STYLE LAYOUT ---
     messageDiv.innerHTML = `
         ${avatarHTML} 
         <div class="message-content">
@@ -274,16 +339,75 @@ function renderMessage(data) {
                 ${replyQuoteHTML}
                 ${messageBubbleHTML}
             </div>
-            <button class="reply-btn" data-id="${data.id}" data-sender="${data.userName}" data-text="${data.text || 'Image'}">
-                <i class="fas fa-reply"></i>
-            </button>
+            ${actionsHTML}
         </div>
     `;
     
     messageArea.appendChild(messageDiv);
 }
 
-// --- Form submit (Your existing code) ---
+// --- NEW: Helper function to check if a message is recent ---
+function isMessageRecent(timestamp) {
+    if (!timestamp) return false;
+    const messageTime = timestamp.toDate().getTime();
+    const now = new Date().getTime();
+    const FIFTEEN_MINUTES = 15 * 60 * 1000;
+    return (now - messageTime) < FIFTEEN_MINUTES;
+}
+
+// --- NEW: Edit Message Functions ---
+function openEditMessageModal(messageId, currentText) {
+    editMessageInput.value = currentText;
+    editMessageIdInput.value = messageId; // Store the ID in a hidden input
+    editMessageModal.classList.add('active');
+    editMessageInput.focus();
+}
+
+function closeEditMessageModal() {
+    editMessageModal.classList.remove('active');
+}
+
+async function handleEditMessageSubmit(e) {
+    e.preventDefault();
+    const newText = editMessageInput.value.trim();
+    const messageId = editMessageIdInput.value;
+
+    if (!newText || !messageId) return;
+
+    editMessageSubmit.disabled = true;
+    editMessageSubmit.textContent = "Saving...";
+
+    try {
+        const messageRef = doc(db, "groups", currentGroupId, "messages", messageId);
+        await updateDoc(messageRef, {
+            text: newText
+        });
+        closeEditMessageModal();
+    } catch (error) {
+        console.error("Error editing message:", error);
+    } finally {
+        editMessageSubmit.disabled = false;
+        editMessageSubmit.textContent = "Save Changes";
+    }
+}
+
+// --- NEW: Delete Message Function ---
+async function handleDeleteMessage(messageId) {
+    if (!confirm("Are you sure you want to delete this message? This cannot be undone.")) {
+        return;
+    }
+    
+    try {
+        const messageRef = doc(db, "groups", currentGroupId, "messages", messageId);
+        await deleteDoc(messageRef);
+        // The onSnapshot listener will handle the UI update
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        showToast("Failed to delete message.");
+    }
+}
+
+// --- Form submit (Text) ---
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const messageText = messageInput.value.trim();
@@ -315,7 +439,7 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Image Upload (Your existing code) ---
+// --- Image Upload ---
 imageUploadBtn.addEventListener('click', () => {
     imageUploadInput.click();
 });
@@ -394,8 +518,16 @@ async function sendImageMessage(base64ImageData) {
 }
 
 
-// --- Reply Logic (Your existing code) ---
+// --- **UPDATED** Event Listener for Actions ---
 messageArea.addEventListener('click', (e) => {
+    
+    // --- Image Popup ---
+    const clickedImage = e.target.closest('.message-image img');
+    if (clickedImage) {
+        openImagePopup(clickedImage.src);
+    }
+
+    // --- Reply Button ---
     const replyButton = e.target.closest('.reply-btn');
     if (replyButton) {
         replyingToMessage = {
@@ -405,11 +537,48 @@ messageArea.addEventListener('click', (e) => {
         };
         updateReplyUI();
     }
+    
+    // --- NEW: Edit Button ---
+    const editButton = e.target.closest('.edit-btn');
+    if (editButton) {
+        openEditMessageModal(editButton.dataset.id, editButton.dataset.text);
+    }
+    
+    // --- NEW: Delete Button ---
+    const deleteButton = e.target.closest('.delete-btn');
+    if (deleteButton) {
+        handleDeleteMessage(deleteButton.dataset.id);
+    }
 });
+
+// --- NEW: Add Edit Message Modal Listeners ---
+editMessageForm.addEventListener('submit', handleEditMessageSubmit);
+closeEditMessageModalBtn.addEventListener('click', closeEditMessageModal);
+
 
 cancelReplyBtn.addEventListener('click', () => {
     replyingToMessage = null;
     updateReplyUI();
+});
+
+// --- NEW: Image Popup Logic ---
+function openImagePopup(src) {
+    popupImage.src = src;
+    imagePopupModal.style.display = 'flex';
+}
+
+function closeImagePopupFunction() {
+    imagePopupModal.style.display = 'none';
+    popupImage.src = ''; // Clear src to stop loading
+}
+
+// Close modal listeners
+closeImagePopup.addEventListener('click', closeImagePopupFunction);
+imagePopupModal.addEventListener('click', (e) => {
+    // Close if the user clicks on the dark background, but not the image itself
+    if (e.target === imagePopupModal) {
+        closeImagePopupFunction();
+    }
 });
 
 // --- Cloudinary Upload Function (for Group Profile Images) ---
@@ -489,7 +658,7 @@ function showToast(message) {
     }, 3000);
 }
 
-// --- Group Details Modal Logic (UPDATED) ---
+// --- **UPDATED** Group Details Modal Logic ---
 function setupModalListeners() {
     // Open Details Modal
     chatHeaderInfo.addEventListener('click', () => {
@@ -504,11 +673,19 @@ function setupModalListeners() {
             modalGroupImg.src = `https://placehold.co/150x150/10336d/a7c0e8?text=${(currentGroupData.name || 'G').charAt(0)}`;
         }
         
+        // ▼▼▼ UPDATED ADMIN/MEMBER BUTTON LOGIC ▼▼▼
         if (currentUser.uid === currentGroupData.createdBy) {
             modalEditBtn.style.display = 'block';
-        } else {
-            modalEditBtn.style.display = 'none';
+            dangerZoneSection.style.display = 'none'; // Creator can't leave
+        } else if (isUserAdmin) {
+            modalEditBtn.style.display = 'block'; // Other admins can edit
+            dangerZoneSection.style.display = 'block'; // Other admins *can* leave
         }
+        else {
+            modalEditBtn.style.display = 'none';
+            dangerZoneSection.style.display = 'block'; // Members can leave
+        }
+        // ▲▲▲ END UPDATE ▲▲▲
         
         groupDetailsModal.classList.add('active');
         fetchGroupMembers(currentGroupData.members);
@@ -539,6 +716,33 @@ function setupModalListeners() {
             console.error('Error sharing:', err);
             navigator.clipboard.writeText(shareUrl);
             showToast("Link copied to clipboard!");
+        }
+    });
+
+    // --- NEW: Add Leave Group Listener ---
+    leaveGroupBtn.addEventListener('click', async () => {
+        if (!confirm("Are you sure you want to leave this group?")) {
+            return;
+        }
+        
+        try {
+            const groupDocRef = doc(db, "groups", currentGroupId);
+            const userDocRef = doc(db, "users", currentUser.uid);
+
+            await updateDoc(groupDocRef, {
+                members: arrayRemove(currentUser.uid),
+                admins: arrayRemove(currentUser.uid) // Also remove from admin list if they are one
+            });
+            await updateDoc(userDocRef, {
+                followedGroups: arrayRemove(currentGroupId)
+            });
+            
+            showToast("You have left the group.");
+            window.location.href = 'index.html'; // Go back to group list
+            
+        } catch (error) {
+            console.error("Error leaving group:", error);
+            showToast("Failed to leave group. Please try again.");
         }
     });
 
@@ -629,7 +833,8 @@ async function handleRemoveMember(userIdToRemove, userName) {
         const userDocRef = doc(db, "users", userIdToRemove);
 
         await updateDoc(groupDocRef, {
-            members: arrayRemove(userIdToRemove)
+            members: arrayRemove(userIdToRemove),
+            admins: arrayRemove(userIdToRemove) // Also remove from admin list
         });
         await updateDoc(userDocRef, {
             followedGroups: arrayRemove(currentGroupId)
@@ -643,12 +848,35 @@ async function handleRemoveMember(userIdToRemove, userName) {
     }
 }
 
-// --- Fetch and Render Group Members (UPDATED) ---
+// --- NEW: Promote/Demote Admin Logic ---
+async function handleAdminAction(userId, action) {
+    const groupDocRef = doc(db, "groups", currentGroupId);
+    
+    try {
+        if (action === 'promote') {
+            await updateDoc(groupDocRef, {
+                admins: arrayUnion(userId)
+            });
+            showToast("User promoted to admin.");
+        } else if (action === 'demote') {
+            await updateDoc(groupDocRef, {
+                admins: arrayRemove(userId)
+            });
+            showToast("User demoted from admin.");
+        }
+        // The onSnapshot listener will auto-update the UI
+    } catch (error) {
+        console.error("Error updating admin status:", error);
+        showToast("Failed to update status. Please try again.");
+    }
+}
+
+// --- **COMPLETELY REPLACED** Fetch and Render Group Members ---
 async function fetchGroupMembers(memberIds) {
     modalMembersList.innerHTML = ''; 
     modalMembersLoader.style.display = 'block';
 
-    const isAdmin = currentUser.uid === currentGroupData.createdBy;
+    const isSuperAdmin = currentUser.uid === currentGroupData.createdBy;
 
     try {
         const userPromises = memberIds.map(id => getDoc(doc(db, "users", id)));
@@ -662,26 +890,62 @@ async function fetchGroupMembers(memberIds) {
                 const memberDiv = document.createElement('div');
                 memberDiv.className = 'member-item';
                 
+                // --- NEW: Updated Role & Admin Logic ---
+                const memberId = userDoc.id;
+                const isCreator = memberId === currentGroupData.createdBy;
+                const isGroupAdmin = currentGroupData.admins.includes(memberId) || isCreator;
+
                 const avatar = userData.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(userData.name || 'U').charAt(0)}`;
-                const role = userDoc.id === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : '';
+                const role = isGroupAdmin ? `<span class="member-role">Admin</span>` : '';
                 
-                let removeBtnHTML = '';
-                if (isAdmin && userDoc.id !== currentUser.uid) {
-                    removeBtnHTML = `<button class="remove-member-btn" data-user-id="${userDoc.id}" data-user-name="${userData.name || 'User'}">Remove</button>`;
+                let actionBtnsHTML = '';
+
+                // Super Admin (Creator) can manage admins and remove anyone
+                if (isSuperAdmin && memberId !== currentUser.uid) {
+                    if (isGroupAdmin) {
+                        // Don't show demote for creator, but show for other admins
+                        if (!isCreator) {
+                            actionBtnsHTML += `<button class="admin-action-btn demote-btn" data-user-id="${memberId}">Demote</button>`;
+                        }
+                    } else {
+                        actionBtnsHTML += `<button class="admin-action-btn" data-user-id="${memberId}">Promote</button>`;
+                    }
+                    actionBtnsHTML += `<button class="remove-member-btn" data-user-id="${memberId}" data-user-name="${userData.name || 'User'}">Remove</button>`;
+                
+                // Regular Admins can only remove non-admins
+                } else if (isUserAdmin && !isSuperAdmin && !isGroupAdmin && memberId !== currentUser.uid) {
+                    actionBtnsHTML += `<button class="remove-member-btn" data-user-id="${memberId}" data-user-name="${userData.name || 'User'}">Remove</button>`;
                 }
                 
                 memberDiv.innerHTML = `
-                    <a href="../profile.html?sellerId=${userDoc.id}" class="message-profile-link" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px; width: 100%;">
+                    <a href="../profile.html?sellerId=${memberId}" class="message-profile-link" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px; width: 100%;">
                         <img src="${avatar}" alt="${userData.name}" class="member-avatar">
                         <span class="member-name">${userData.name || 'User'}</span>
                         ${role}
                     </a>
-                    ${removeBtnHTML}
+                    <div style="display: flex; gap: 5px;">
+                        ${actionBtnsHTML}
+                    </div>
                 `;
                 modalMembersList.appendChild(memberDiv);
             }
         });
 
+        // --- NEW: Add Listeners for Promote/Demote ---
+        modalMembersList.querySelectorAll('.admin-action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const userId = e.target.dataset.userId;
+                if (e.target.classList.contains('demote-btn')) {
+                    handleAdminAction(userId, 'demote');
+                } else {
+                    handleAdminAction(userId, 'promote');
+                }
+            });
+        });
+        
+        // --- This listener finds the remove buttons ---
         modalMembersList.querySelectorAll('.remove-member-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
