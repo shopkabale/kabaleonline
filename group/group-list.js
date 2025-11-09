@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//       GROUP DIRECTORY SCRIPT (group-list.js)
+//       GROUP DIRECTORY SCRIPT (group-list.js) - *CRASH FIX*
 //                                                                     //
 // =================================================================== //
 
@@ -19,7 +19,7 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove
-} from "https/www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
 const authWall = document.getElementById('auth-wall');
@@ -86,7 +86,7 @@ function initializePage(uid) {
     getUserProfile(uid);
     listenForAllGroups();
     setupModal();
-    setupFilters();
+    setupFilters(); // Moved here, will run after auth
 }
 
 async function getUserProfile(uid) {
@@ -97,7 +97,6 @@ async function getUserProfile(uid) {
         } else {
             followedGroups = [];
         }
-        // Re-render the lists to update follow statuses
         renderFilteredGroups(); 
     });
 }
@@ -108,14 +107,13 @@ function listenForAllGroups() {
     const q = query(groupsRef, orderBy("createdAt", "desc"));
 
     onSnapshot(q, (snapshot) => {
-        allGroupsCache = []; // Clear cache
+        allGroupsCache = [];
         if (groupsLoader) groupsLoader.remove();
 
         snapshot.forEach((doc) => {
             allGroupsCache.push({ id: doc.id, ...doc.data() });
         });
         
-        // Render the filtered list
         renderFilteredGroups();
 
     }, (error) => {
@@ -125,28 +123,26 @@ function listenForAllGroups() {
 }
 
 function renderFilteredGroups() {
-    // Clear both lists
     allGroupsList.innerHTML = '';
     myGroupsList.innerHTML = ''; 
 
-    // 1. Filter the cached groups
     const filteredGroups = allGroupsCache.filter(group => {
         const nameMatch = group.name.toLowerCase().includes(currentSearchTerm);
         const categoryMatch = currentCategory === 'all' || group.category === currentCategory;
         return nameMatch && categoryMatch;
     });
 
-    if (filteredGroups.length === 0 && currentSearchTerm) {
-        noGroupsMessage.textContent = `No groups found for "${currentSearchTerm}".`;
+    if (filteredGroups.length === 0 && (currentSearchTerm || currentCategory !== 'all')) {
+        noGroupsMessage.textContent = `No groups found.`;
         noGroupsMessage.style.display = 'block';
-    } else if (filteredGroups.length === 0) {
-        noGroupsMessage.textContent = "No groups in this category yet.";
+    } else if (allGroupsCache.length === 0) {
+        noGroupsMessage.textContent = "No groups have been created yet.";
         noGroupsMessage.style.display = 'block';
-    } else {
+    }
+    else {
         noGroupsMessage.style.display = 'none';
     }
 
-    // 2. Render the filtered groups
     filteredGroups.forEach((group) => {
         const isFollowed = followedGroups.includes(group.id);
         const groupCard = createGroupCard(group, isFollowed);
@@ -158,7 +154,6 @@ function renderFilteredGroups() {
         }
     });
     
-    // 3. Show/Hide "My Groups" section
     if (myGroupsList.innerHTML === '') {
         myGroupsSection.style.display = 'none';
     } else {
@@ -168,10 +163,9 @@ function renderFilteredGroups() {
 
 // --- UI Creation ---
 function createGroupCard(group, isFollowed) {
-    // This is now a <div>, not an <a> tag, to handle the click logic
     const card = document.createElement('div');
     card.className = 'group-link';
-    card.dataset.groupId = group.id; // Store ID for click logic
+    card.dataset.groupId = group.id; 
 
     let iconHtml = '';
     if (group.imageUrl) {
@@ -194,22 +188,20 @@ function createGroupCard(group, isFollowed) {
         </button>
     `;
     
-    // Follow button logic
     const followBtn = card.querySelector('.follow-btn');
     followBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Stop the card click from firing
+        e.stopPropagation(); 
         handleFollowToggle(group.id, isFollowed);
     });
 
-    // Card click logic (for "Follow to View")
     card.addEventListener('click', () => {
         if (isFollowed) {
-            // If they follow, go to chat
             window.location.href = `chat.html?groupId=${group.id}`;
         } else {
-            // If they don't follow, show the prompt
             groupToFollow = group.id;
-            followPromptModal.classList.add('active');
+            if (followPromptModal) {
+                followPromptModal.classList.add('active');
+            }
         }
     });
 
@@ -218,28 +210,35 @@ function createGroupCard(group, isFollowed) {
 
 // --- Event Handlers ---
 
+// --- THIS IS THE FIX ---
+// I am adding checks to make sure the elements exist before
+// adding listeners to them. This will PREVENT the blank screen crash.
 function setupFilters() {
-    // Search bar listener
-    searchBar.addEventListener('input', (e) => {
-        currentSearchTerm = e.target.value.toLowerCase();
-        renderFilteredGroups();
-    });
-
-    // Category filter listener
-    categoryFilters.addEventListener('click', (e) => {
-        if (e.target.classList.contains('category-btn')) {
-            // Remove active class from all
-            categoryFilters.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Add active class to clicked button
-            e.target.classList.add('active');
-            // Update state and re-render
-            currentCategory = e.target.dataset.category;
+    if (searchBar) {
+        searchBar.addEventListener('input', (e) => {
+            currentSearchTerm = e.target.value.toLowerCase();
             renderFilteredGroups();
-        }
-    });
+        });
+    } else {
+        console.error("Warning: 'search-bar' element not found in HTML.");
+    }
+
+    if (categoryFilters) {
+        categoryFilters.addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-btn')) {
+                categoryFilters.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                currentCategory = e.target.dataset.category;
+                renderFilteredGroups();
+            }
+        });
+    } else {
+        console.error("Warning: 'category-filters' element not found in HTML.");
+    }
 }
+// --- END OF FIX ---
 
 async function handleFollowToggle(groupId, isCurrentlyFollowed) {
     if (!currentUser) {
@@ -265,90 +264,103 @@ async function handleFollowToggle(groupId, isCurrentlyFollowed) {
 
 // --- Modal Logic ---
 function setupModal() {
-    // --- Create Group Modal ---
-    createGroupBtn.addEventListener('click', () => modal.classList.add('active'));
-    closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.remove('active');
-    });
-    groupImageUploadArea.addEventListener('click', () => groupImageInput.click());
-    groupImageInput.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files[0]) handleFilePreview(e.target.files[0]);
-    });
+    if (createGroupBtn) {
+        createGroupBtn.addEventListener('click', () => modal.classList.add('active'));
+    }
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+    }
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+    }
+    if (groupImageUploadArea) {
+        groupImageUploadArea.addEventListener('click', () => groupImageInput.click());
+    }
+    if (groupImageInput) {
+        groupImageInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) handleFilePreview(e.target.files[0]);
+        });
+    }
 
-    // --- "Follow Prompt" Modal ---
-    const closeFollowModal = () => followPromptModal.classList.remove('active');
-    closeFollowModalBtn.addEventListener('click', closeFollowModal);
-    followModalCancelBtn.addEventListener('click', closeFollowModal);
+    // "Follow Prompt" Modal
+    if (followPromptModal) {
+        const closeFollowModal = () => followPromptModal.classList.remove('active');
+        closeFollowModalBtn.addEventListener('click', closeFollowModal);
+        followModalCancelBtn.addEventListener('click', closeFollowModal);
 
-    followModalConfirmBtn.addEventListener('click', async () => {
-        if (groupToFollow) {
-            followModalConfirmBtn.disabled = true;
-            await handleFollowToggle(groupToFollow, false);
-            followModalConfirmBtn.disabled = false;
-            groupToFollow = null;
-            closeFollowModal();
-        }
-    });
-
-    // --- Create Group Form Logic ---
-    createGroupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-        
-        const groupName = document.getElementById('group-name').value.trim();
-        const groupDesc = document.getElementById('group-description').value.trim();
-        const groupCategory = groupCategorySelect.value; // Get category
-
-        if (!groupName || !groupCategory) {
-            modalError.textContent = "Please enter a name and select a category.";
-            modalError.style.display = 'block';
-            return;
-        }
-        
-        createGroupSubmit.disabled = true;
-        createGroupSubmit.textContent = "Creating...";
-        modalError.style.display = 'none';
-
-        try {
-            let imageUrl = null; 
-
-            if (groupImageFile) {
-                createGroupSubmit.textContent = "Uploading image...";
-                imageUrl = await uploadImageToCloudinary(groupImageFile);
+        followModalConfirmBtn.addEventListener('click', async () => {
+            if (groupToFollow) {
+                followModalConfirmBtn.disabled = true;
+                await handleFollowToggle(groupToFollow, false);
+                followModalConfirmBtn.disabled = false;
+                groupToFollow = null;
+                closeFollowModal();
             }
+        });
+    }
 
-            createGroupSubmit.textContent = "Saving group...";
+    // Create Group Form Logic
+    if (createGroupForm) {
+        createGroupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+            
+            const groupName = document.getElementById('group-name').value.trim();
+            const groupDesc = document.getElementById('group-description').value.trim();
+            const groupCategory = groupCategorySelect.value; 
 
-            const newGroupRef = await addDoc(collection(db, "groups"), {
-                name: groupName,
-                description: groupDesc,
-                category: groupCategory, // Save category
-                imageUrl: imageUrl, 
-                isPublic: true,
-                createdAt: serverTimestamp(),
-                createdBy: currentUser.uid,
-                members: [currentUser.uid] // Creator is the first member
-            });
+            if (!groupName || !groupCategory) {
+                modalError.textContent = "Please enter a name and select a category.";
+                modalError.style.display = 'block';
+                return;
+            }
             
-            const userDocRef = doc(db, 'users', currentUser.uid);
-            await updateDoc(userDocRef, {
-                followedGroups: arrayUnion(newGroupRef.id)
-            });
-            
-            modal.classList.remove('active');
-            createGroupForm.reset();
-            removeFile(); 
-            
-        } catch (error) {
-            console.error("Error creating group:", error);
-            modalError.textContent = error.message || "Could not create group. Please try again.";
-            modalError.style.display = 'block';
-        } finally {
-            createGroupSubmit.disabled = false;
-            createGroupSubmit.textContent = "Create Group";
-        }
-    });
+            createGroupSubmit.disabled = true;
+            createGroupSubmit.textContent = "Creating...";
+            modalError.style.display = 'none';
+
+            try {
+                let imageUrl = null; 
+
+                if (groupImageFile) {
+                    createGroupSubmit.textContent = "Uploading image...";
+                    imageUrl = await uploadImageToCloudinary(groupImageFile);
+                }
+
+                createGroupSubmit.textContent = "Saving group...";
+
+                const newGroupRef = await addDoc(collection(db, "groups"), {
+                    name: groupName,
+                    description: groupDesc,
+                    category: groupCategory, 
+                    imageUrl: imageUrl, 
+                    isPublic: true,
+                    createdAt: serverTimestamp(),
+                    createdBy: currentUser.uid,
+                    members: [currentUser.uid]
+                });
+                
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(userDocRef, {
+                    followedGroups: arrayUnion(newGroupRef.id)
+                });
+                
+                modal.classList.remove('active');
+                createGroupForm.reset();
+                removeFile(); 
+                
+            } catch (error) {
+                console.error("Error creating group:", error);
+                modalError.textContent = error.message || "Could not create group. Please try again.";
+                modalError.style.display = 'block';
+            } finally {
+                createGroupSubmit.disabled = false;
+                createGroupSubmit.textContent = "Create Group";
+            }
+        });
+    }
 }
 
 // --- Image Upload Logic ---
