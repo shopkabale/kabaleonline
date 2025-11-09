@@ -82,7 +82,11 @@ async function getUserProfile(uid) {
     onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
             followedGroups = doc.data().followedGroups || [];
-            myGroupsSection.style.display = 'block';
+            if (followedGroups.length > 0) {
+                myGroupsSection.style.display = 'block';
+            } else {
+                myGroupsSection.style.display = 'none';
+            }
         }
         // Re-render the lists to update the button states
         listenForAllGroups(); 
@@ -113,6 +117,13 @@ function listenForAllGroups() {
                 allGroupsList.appendChild(groupCard);
             }
         });
+        
+        // If "My Groups" is empty, hide it.
+        if (myGroupsList.innerHTML === '') {
+            myGroupsSection.style.display = 'none';
+        } else {
+            myGroupsSection.style.display = 'block';
+        }
 
     }, (error) => {
         console.error("Error fetching groups:", error);
@@ -216,6 +227,7 @@ function setupModal() {
         
         createGroupSubmit.disabled = true;
         createGroupSubmit.textContent = "Creating...";
+        modalError.style.display = 'none';
 
         try {
             // 1. Create the new group document
