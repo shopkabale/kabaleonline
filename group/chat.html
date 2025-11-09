@@ -958,5 +958,24 @@
     <div id="toast-notification">Link copied to clipboard!</div>
 
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=10"></script> </body>
+    <script type="module" src="chat.js?v=10"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Logic for the mobile nav toggle
+  const hamburger = document.querySelector('.hamburger-menu');
+  const mobileNav = document.querySelector('.mobile-nav');
+  const overlay = document.querySelector('.mobile-nav-overlay');
+  if (hamburger && mobileNav && overlay) {
+      hamburger.addEventListener('click', () => {
+          mobileNav.classList.toggle('active');
+          overlay.classList.toggle('active');
+      });
+      overlay.addEventListener('click', () => {
+          mobileNav.classList.remove('active');
+          overlay.classList.remove('active');
+      });
+  }
+});
+</script>
+ </body>
 </html>
