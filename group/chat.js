@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//            CHAT ROOM SCRIPT (chat.js) - *DETAILS UPDATE* //
+//      CHAT ROOM SCRIPT (chat.js) - *MESSAGE & UI FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -16,10 +16,10 @@ import {
     serverTimestamp,
     doc,
     getDoc,
-    getDocs, // NEW: Needed for member list
-    updateDoc, // NEW: Needed for editing
+    getDocs,
+    updateDoc,
     limit,
-    where // NEW: Needed for member list
+    where 
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
@@ -132,6 +132,11 @@ function updateChatHeader() {
     }
 }
 
+// ================================================================= //
+// === THIS IS THE FIX for the "Disappearing Message" bug ===
+// We now clear the list and re-render from snapshot.docs every time
+// This is foolproof and prevents any logic errors.
+// ================================================================= //
 function listenForMessages(groupId) {
     if (unsubscribe) unsubscribe(); 
 
@@ -139,27 +144,25 @@ function listenForMessages(groupId) {
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
-        // Clear on first load (simple approach)
-        if (snapshot.size === snapshot.docChanges().length) {
-             messageArea.innerHTML = '';
-        }
+        messageArea.innerHTML = ''; // Clear the chat area *every* time
         
-        snapshot.docChanges().forEach((change) => {
-            if (change.type === "added") {
-                const messageData = { id: change.doc.id, ...change.doc.data() };
-                renderMessage(messageData);
-            }
+        snapshot.docs.forEach((doc) => {
+            const messageData = { id: doc.id, ...doc.data() };
+            renderMessage(messageData); // Render *all* messages in order
         });
         
-        // Scroll to bottom (This was already in your code)
+        // Scroll to bottom
         setTimeout(() => {
             messageArea.scrollTop = messageArea.scrollHeight;
-        }, 100);
+        }, 100); // Small delay to wait for render
     }, (error) => {
         console.error("Error fetching messages:", error);
         messageArea.innerHTML = `<p style="padding: 20px; text-align: center;">Error: Could not load messages.</p>`;
     });
 }
+// ================================================================= //
+// === END OF FIX ===
+// ================================================================= //
 
 // --- This is YOUR reply UI logic ---
 function updateReplyUI() {
