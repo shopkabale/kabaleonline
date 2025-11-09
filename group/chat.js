@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FINAL LAYOUT FIX* //
+//      CHAT ROOM SCRIPT (chat.js) - *FINAL LAYOUT FIX*                //
 //                                                                     //
 // =================================================================== //
 
@@ -190,6 +190,9 @@ function updateReplyUI() {
 }
 
 // --- UPDATED: Renders Messages with Time/Tick & Profile Links ---
+// NOTE: This implementation is the only change from your original file.
+// It matches the exact structure of your working hardcoded HTML and keeps
+// the time/tick inside the message bubble so CSS positions it correctly.
 function renderMessage(data) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
@@ -201,7 +204,7 @@ function renderMessage(data) {
 
     const avatar = data.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(data.userName || 'U').charAt(0)}`;
     
-    // 1. Reply Quote
+    // 1. Reply Quote (unchanged)
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
         replyQuoteHTML = `
@@ -212,7 +215,7 @@ function renderMessage(data) {
         `;
     }
 
-    // 2. NEW: Time & Tick
+    // 2. Time & Tick (unchanged content but ensure inside bubble)
     const messageTime = formatMessageTime(data.createdAt);
     const sentTick = isOwnMessage ? '<i class="fas fa-check message-tick"></i>' : '';
     const timeMetaHTML = `
@@ -222,45 +225,45 @@ function renderMessage(data) {
         </div>
     `;
 
-    // 3. Message Bubble
+    // 3. Message Bubble (ensure message-meta is inside .message-bubble)
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
         // Image message bubble
         messageBubbleHTML = `
-            <p class="message-bubble message-image">
+            <div class="message-bubble message-image">
                 <img src="${data.imageData}" alt="User image" loading="lazy">
                 ${timeMetaHTML}
-            </p>
+            </div>
         `;
     } else {
-        // Text message bubble now uses a <span> with class "message-text"
+        // Text message bubble - match your working HTML exactly
         messageBubbleHTML = `
-            <p class="message-bubble">
+            <div class="message-bubble">
                 <span class="message-text">${data.text || ''}</span>
                 ${timeMetaHTML}
-            </p>
+            </div>
         `;
     }
 
-    // 4. Sender Name (with link)
+    // 4. Sender Name (with link) - only for others
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?id=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
         </a>
     `;
     
-    // 5. Render
-    // --- THIS IS THE FINAL BUG FIX ---
-    // The avatarHTML is now only added if it is NOT your own message.
-    // This stops the invisible 'a' tag from breaking your layout.
+    // 5. Avatar HTML - only include anchor/avatar for non-own messages
     const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?id=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
         </a>
     `;
 
+    // 6. Compose final HTML matching the hardcoded working structure.
+    // Note: message-meta is *inside* message-bubble so CSS 'position: absolute'
+    // attaches to the bubble context (position: relative).
     messageDiv.innerHTML = `
-        ${avatarHTML} 
+        ${avatarHTML}
         <div class="message-content">
             <div class="message-bubble-wrapper">
                 ${senderName}
@@ -272,8 +275,7 @@ function renderMessage(data) {
             </button>
         </div>
     `;
-    // --- END OF FIX ---
-    
+
     messageArea.appendChild(messageDiv);
 }
 
