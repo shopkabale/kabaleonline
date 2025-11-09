@@ -3,230 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
-    <!-- Your existing CSS -->
-    <link rel="stylesheet" href="style.css"> 
+    <title>Groups</title>
+    <!-- Links to your existing site's CSS and Font Awesome -->
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <style>
-        /* Chat-specific styles */
-        body {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            margin: 0;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-        }
-        .chat-header {
+        body { background-color: var(--bg-main); }
+        .groups-container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ko-primary); padding-bottom: 10px; margin-bottom: 20px; }
+        .page-header h1 { color: var(--text-main); margin: 0; }
+        .create-group-btn { background: var(--ko-primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .group-list-section h2 { color: var(--text-main); margin-top: 30px; }
+        .group-link {
             display: flex;
             align-items: center;
-            padding: 10px 15px;
+            padding: 20px;
             background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            flex-shrink: 0;
-        }
-        #back-button {
-            font-size: 1.2em;
-            color: var(--text-main);
+            border-radius: var(--border-radius);
             text-decoration: none;
-            margin-right: 15px;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
         }
-        #chat-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            margin: 0;
-        }
+        .group-link:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
+        .group-icon { font-size: 1.8em; color: var(--ko-primary); margin-right: 20px; width: 40px; text-align: center; }
+        .group-info { flex-grow: 1; }
+        .group-info h3 { margin: 0 0 5px 0; font-size: 1.2em; }
+        .group-info p { margin: 0; font-size: 0.9em; color: var(--text-secondary); }
+        .follow-btn { background: var(--ko-accent); color: #212529; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .follow-btn.followed { background: var(--bg-main); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .loader { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--ko-primary); border-radius: 50%; margin: 40px auto; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        #message-area {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.5);
         }
-
-        /* Message styles from your code */
-        .message {
-            display: flex;
-            gap: 10px;
-            max-width: 80%;
-            align-items: flex-start;
-        }
-        .message-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .message-content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .message-bubble {
-            background: var(--bg-card);
-            padding: 10px 15px;
-            border-radius: 18px;
-            margin: 0;
-            line-height: 1.5;
-            word-break: break-word;
-        }
-        .message-sender {
-            font-weight: 600;
-            font-size: 0.9em;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-        }
-        
-        /* Own message */
-        .message.own-message {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message.own-message .message-content {
-            flex-direction: row-reverse;
-        }
-        .message.own-message .message-bubble {
-            background: var(--ko-primary);
-            color: white;
-        }
-        .message.own-message .message-sender {
-            display: none; /* No need to show your own name */
-        }
-        
-        /* Reply Button */
-        .reply-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 0.9em;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .message:hover .reply-btn {
-            opacity: 1;
-        }
-
-        /* Reply Quote */
-        .reply-quote {
-            background: rgba(0,0,0,0.05);
-            border-left: 3px solid var(--ko-primary);
-            padding: 5px 10px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-        }
-        body.dark-mode .reply-quote {
-             background: rgba(255,255,255,0.05);
-        }
-        .reply-quote-sender {
-            font-weight: 600;
-            font-size: 0.9em;
-            color: var(--ko-primary);
-        }
-        .reply-quote-text {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* Reply Banner */
-        #reply-banner {
-            display: none;
-            padding: 10px 15px;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border-color);
-            flex-shrink: 0;
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: auto;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
             position: relative;
         }
-        #reply-banner p {
-            margin: 0;
-            font-size: 0.9em;
-        }
-        #reply-to-name {
-            font-weight: 600;
-            color: var(--ko-primary);
-        }
-        #reply-to-preview {
-            color: var(--text-secondary);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        #cancel-reply-btn {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 1.2em;
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-
-        /* Chat Form */
-        #chat-form {
-            display: flex;
-            padding: 10px;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border-color);
-            flex-shrink: 0;
-        }
-        #message-input {
-            flex-grow: 1;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-size: 1em;
-            background: var(--bg-main);
-            color: var(--text-main);
-        }
-        #chat-form button {
-            background: var(--ko-primary);
-            border: none;
-            color: white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            margin-left: 10px;
-            font-size: 1.1em;
-            cursor: pointer;
+        .close-btn { position: absolute; top: 15px; right: 20px; color: var(--text-secondary); font-size: 28px; font-weight: bold; cursor: pointer; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
+        input[type="text"] {
+            width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 16px; background: var(--bg-main); color: var(--text-main);
         }
     </style>
 </head>
 <body>
 
-    <div class="chat-header">
-        <a href="chat-list.html" id="back-button"><i class="fas fa-arrow-left"></i></a>
-        <h2 id="chat-title">Group Chat</h2>
+    <div class="groups-container">
+        <div class="page-header">
+            <h1>Groups</h1>
+            <button id="create-group-btn" class="create-group-btn"><i class="fas fa-plus"></i> Create Group</button>
+        </div>
+
+        <!-- Section for Groups user is following -->
+        <div class="group-list-section" id="my-groups-section" style="display: none;">
+            <h2>My Groups</h2>
+            <div id="my-groups-list"></div>
+        </div>
+
+        <!-- Section for all other public groups -->
+        <div class="group-list-section">
+            <h2>All Groups</h2>
+            <div id="all-groups-list">
+                <div id="groups-loader" class="loader"></div>
+            </div>
+        </div>
     </div>
 
-    <div id="message-area">
-        <!-- Messages will be rendered here by JS -->
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal-btn" class="close-btn">&times;</span>
+            <h2>Create a New Group</h2>
+            <form id="create-group-form">
+                <div class="form-group">
+                    <label for="group-name">Group Name</label>
+                    <input type="text" id="group-name" placeholder="e.g., KAB Techies" required>
+                </div>
+                <div class.form-group">
+                    <label for="group-description">Description</label>
+                    <input type="text" id="group-description" placeholder="A group for all tech students..." required>
+                </div>
+                <button type="submit" id="create-group-submit" class="create-group-btn" style="width: 100%;">Create Group</button>
+                <p id="modal-error" style="color: var(--ko-danger); display: none;"></p>
+            </form>
+        </div>
     </div>
-
-    <div id="reply-banner">
-        <button id="cancel-reply-btn">&times;</button>
-        <p>Replying to <b id="reply-to-name">...</b></p>
-        <p id="reply-to-preview">...</p>
-    </div>
-
-    <form id="chat-form">
-        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
-        <button type-="submit"><i class="fas fa-paper-plane"></i></button>
-    </form>
-
-    <!-- 
-      You are already importing firebase-init.js (or firebase.js)
-      so this script just needs to be a module.
-    -->
-    <script type="module" src="chat.js"></script>
-
+    
+    <script type="module" src="../firebase.js"></script>
+    <script type="module" src="group-list.js"></script>
 </body>
 </html>
