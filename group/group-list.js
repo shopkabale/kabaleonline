@@ -54,8 +54,11 @@ onAuthStateChanged(auth, (user) => {
         // User is logged in!
         currentUser = user;
         // Hide the auth wall and show the real content
-        authWall.style.display = 'none';
-        groupsContent.style.display = 'block';
+        authWall.style.display = 'block'; // Show auth wall first
+        loadingSpinner.style.display = 'none'; // Hide spinner
+        loginMessage.style.display = 'none'; // Hide message
+        authWall.style.display = 'none'; // Then hide auth wall
+        groupsContent.style.display = 'block'; // And show content
         
         // Now, load all the group functions
         initializePage(user.uid);
