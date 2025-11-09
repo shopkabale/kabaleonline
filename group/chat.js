@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FEATURE UPDATE* //
+//      CHAT ROOM SCRIPT (chat.js) - *FINAL FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -609,7 +609,7 @@ async function fetchGroupMembers(memberIds) {
                 memberDiv.className = 'member-item';
                 
                 const avatar = userData.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(userData.name || 'U').charAt(0)}`;
-                const role = userDoc.id === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : ''
+                const role = userDoc.id === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : '';
                 
                 // NEW: Make member item clickable
                 memberDiv.innerHTML = `
