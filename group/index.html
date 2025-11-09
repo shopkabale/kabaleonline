@@ -111,6 +111,48 @@
         .create-group-btn:hover {
             opacity: 0.9;
         }
+        
+        /* --- NEW: Search Bar & Filters --- */
+        .filters-container {
+            margin-bottom: 25px;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--ko-primary);
+        }
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .category-btn {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .category-btn.active {
+            background: var(--ko-primary);
+            color: #FFFFFF;
+            border-color: var(--ko-primary);
+        }
+        /* --- END NEW --- */
+
 
         /* --- 5. Group List Styles --- */
         .group-list-section h2 {
@@ -133,6 +175,7 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
             transition: all 0.2s ease;
+            cursor: pointer; /* Changed from default */
         }
         .group-link:hover {
             transform: translateY(-3px);
@@ -265,7 +308,7 @@
             color: var(--text-secondary); 
             font-size: 0.9em;
         }
-        input[type="text"] {
+        input[type="text"], select {
             width: 100%;
             padding: 12px 14px;
             box-sizing: border-box;
@@ -276,7 +319,7 @@
             color: var(--text-main);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input[type="text"]:focus {
+        input[type="text"]:focus, select:focus {
             outline: none;
             border-color: var(--ko-primary);
             box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.3);
@@ -342,6 +385,44 @@
             text-align: center;
         }
 
+        /* --- NEW: "Follow Prompt" Modal --- */
+        #follow-prompt-modal .modal-content {
+            text-align: center;
+        }
+        #follow-prompt-icon {
+            font-size: 3em;
+            color: var(--ko-primary);
+            margin-bottom: 15px;
+        }
+        #follow-prompt-message {
+            color: var(--text-main);
+            font-size: 1.1em;
+            margin-bottom: 25px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 1em;
+        }
+        .modal-btn-secondary {
+            background: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .modal-btn-primary {
+            background: var(--ko-primary);
+            color: #FFFFFF;
+        }
+        /* --- END NEW --- */
+
     </style>
 </head>
 <body>
@@ -365,6 +446,17 @@
                 </button>
             </div>
 
+            <div class="filters-container">
+                <input type="search" id="search-bar" class="search-bar" placeholder="Search groups...">
+                <div class="category-filters" id="category-filters">
+                    <button class="category-btn active" data-category="all">All</button>
+                    <button class="category-btn" data-category="Technology">Technology</button>
+                    <button class="category-btn" data-category="Housing">Housing</button>
+                    <button class="category-btn" data-category="Marketplace">Marketplace</button>
+                    <button class="category-btn" data-category="Events">Events</button>
+                    <button class="category-btn" data-category="Other">Other</button>
+                </div>
+            </div>
             <div class="group-list-section" id="my-groups-section" style="display: none;">
                 <h2>My Groups</h2>
                 <div id="my-groups-list"></div>
@@ -375,6 +467,7 @@
                 <div id="all-groups-list">
                     <div id="groups-loader" class="loader"></div>
                 </div>
+                <p id="no-groups-message" style="color: var(--text-secondary); text-align: center; display: none;">No groups found.</p>
             </div>
         </div>
     </div>
@@ -399,12 +492,38 @@
                     <label for="group-description">Description</label>
                     <input type="text" id="group-description" placeholder="A group for all tech students..." required>
                 </div>
+                
+                <div class="form-group">
+                    <label for="group-category">Category</label>
+                    <select id="group-category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Marketplace">Marketplace</option>
+                        <option value="Events">Events</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
                 <button type="submit" id="create-group-submit" class="create-group-btn" style="width: 100%; margin-top: 10px; padding: 12px;">Create Group</button>
                 <p id="modal-error"></p>
             </form>
         </div>
     </div>
-    
+
+    <div id="follow-prompt-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-follow-modal-btn" class="close-btn">&times;</span>
+            <div id="follow-prompt-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2 id="follow-prompt-title">Follow Group?</h2>
+            <p id="follow-prompt-message">You must follow this group to see the chat.</p>
+            <div class="modal-actions">
+                <button id="follow-modal-cancel-btn" class="modal-btn modal-btn-secondary">Cancel</button>
+                <button id="follow-modal-confirm-btn" class="modal-btn modal-btn-primary">Follow</button>
+            </div>
+        </div>
+    </div>
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="group-list.js"></script>
 </body>
