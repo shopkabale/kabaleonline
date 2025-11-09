@@ -8,7 +8,7 @@
     
     <style>
         /* =================================================================== */
-        /* === NEW, SELF-CONTAINED STYLESHEET (NO EXTERNAL CSS) === */
+        /* === NEW TELEGRAM-STYLE STYLESHEET === */
         /* =================================================================== */
 
         /* --- 1. Root Variables (Professional Dark Theme) --- */
@@ -19,15 +19,16 @@
             --border-color: #333333;
             --text-main: #E0E0E0;
             --text-secondary: #888888;
-            --ko-primary: #007BFF;
+            --ko-primary: #007BFF; /* Your blue color for your messages */
             --ko-primary-rgb: 0, 123, 255;
-            --ko-accent: #00BFFF;
+            --ko-accent: #00BFFF; /* Bright color for names */
             --ko-danger: #E53935;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             --border-radius: 8px;
-            /* Chat specific */
+            
+            /* NEW: Telegram-style bubbles */
             --own-message-bg: var(--ko-primary);
-            --other-message-bg: #333333;
+            --other-message-bg: #212121; /* Dark grey bubble */
             --own-message-text: #FFFFFF;
             --other-message-text: var(--text-main);
         }
@@ -167,17 +168,22 @@
             position: relative; /* THIS IS CRUCIAL */
             padding-bottom: 30px; /* Add space at the bottom for the time */
         }
+        
+        /* --- NEW: Telegram Style Sender Name --- */
         .message-sender {
             font-weight: 600;
             font-size: 0.9em;
             margin-bottom: 4px;
-            color: var(--ko-accent);
+            color: var(--ko-accent); /* Bright color */
             cursor: pointer;
+            padding: 0 5px; /* Padding inside the bubble */
         }
+        /* --- END NEW --- */
         
         /* --- THIS IS THE WHATSAPP-STYLE FIX --- */
         .message-text {
             /* This makes space for the time/tick */
+            padding: 0 5px; /* Padding inside the bubble */
         }
         .message-meta {
             position: absolute;
@@ -236,12 +242,12 @@
             opacity: 1;
         }
 
-        /* --- 6. Reply UI Styles --- */
+        /* --- 6. Reply UI Styles (NEW Telegram Style) --- */
         .reply-quote {
             background: rgba(0,0,0,0.15);
-            border-left: 3px solid var(--ko-accent);
+            border-left: 2px solid var(--ko-accent); /* Thinner bar */
             padding: 6px 10px;
-            margin-bottom: 5px;
+            margin: 0 5px 5px 5px; /* Inside bubble padding */
             border-radius: 6px;
         }
         .message.own-message .reply-quote {
@@ -782,7 +788,7 @@
     <div id="toast-notification">Link copied to clipboard!</div>
 
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=8"></script>
+    <script type="module" src="chat.js?v=9"></script>
 
 </body>
 </html>
