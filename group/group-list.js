@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//       GROUP DIRECTORY SCRIPT (group-list.js) - *AUTH WALL FIX* //
+//       GROUP DIRECTORY SCRIPT (group-list.js) - *IMAGE UPDATE* //
 //                                                                     //
 // =================================================================== //
 
@@ -38,8 +38,15 @@ const createGroupForm = document.getElementById('create-group-form');
 const createGroupSubmit = document.getElementById('create-group-submit');
 const modalError = document.getElementById('modal-error');
 
+// NEW: Group Image Upload Elements
+const groupImageUploadArea = document.getElementById('group-image-upload-area');
+const groupImageInput = document.getElementById('group-image-input');
+const groupImagePreviewContainer = document.getElementById('group-image-preview-container');
+const groupImageUploadIcon = document.getElementById('group-image-upload-icon');
+
 let currentUser = null;
 let followedGroups = []; // Array of group IDs the user follows
+let groupImageFile = null; // NEW: Stores the file to be uploaded
 
 // --- Auth Check (THIS IS THE NEW "LOGGING FIRST" LOGIC) ---
 onAuthStateChanged(auth, (user) => {
@@ -131,16 +138,25 @@ function listenForAllGroups() {
     });
 }
 
-// --- Create Group Card UI ---
+// --- NEW: Create Group Card UI (Updated for Images) ---
 function createGroupCard(group, isFollowed) {
     const link = document.createElement('a');
     link.href = `chat.html?groupId=${group.id}`;
     link.className = 'group-link';
     
-    const icon = group.isPublic ? 'fa-users' : 'fa-lock';
+    // Determine icon: Use image, or placeholder
+    let iconHtml = '';
+    if (group.imageUrl) {
+        iconHtml = `<img src="${group.imageUrl}" alt="${group.name}" class="group-icon-img">`;
+    } else {
+        const placeholder = (group.name || 'G').charAt(0).toUpperCase();
+        iconHtml = `<div class="group-icon-placeholder">${placeholder}</div>`;
+    }
     
     link.innerHTML = `
-        <i class="fas ${icon} group-icon"></i>
+        <div class="group-icon-wrapper">
+            ${iconHtml}
+        </div>
         <div class="group-info">
             <h3>${group.name}</h3>
             <p>${group.description || 'No description'}</p>
@@ -193,7 +209,67 @@ async function handleFollowToggle(groupId, isCurrentlyFollowed) {
     }
 }
 
-// --- Modal Logic ---
+// --- NEW: Cloudinary Upload Function (from your upload.js) ---
+async function uploadImageToCloudinary(file) {
+    try {
+        // Note: Make sure this Netlify function path is correct for your site
+        const response = await fetch('/.netlify/functions/generate-signature');
+        if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
+        const { signature, timestamp, cloudname, apikey } = await response.json();
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', apikey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
+        const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+        
+        if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            throw new Error(`Cloudinary upload failed: ${errorData.error.message}`);
+        }
+        
+        const uploadData = await uploadResponse.json();
+        return uploadData.secure_url;
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        throw error;
+    }
+}
+
+// --- NEW: File Preview and Removal Functions ---
+function handleFilePreview(file) {
+    groupImageFile = file; // Store the file
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        groupImagePreviewContainer.innerHTML = `
+            <div class="image-preview-wrapper">
+                <img src="${e.target.result}" alt="Image preview" class="image-preview-img">
+                <button type="button" class="remove-image-btn" id="remove-group-image-btn">&times;</button>
+            </div>
+        `;
+        groupImageUploadIcon.style.display = 'none';
+        
+        // Add listener for the new remove button
+        document.getElementById('remove-group-image-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop it from triggering the upload click
+            removeFile();
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFile() {
+    groupImageFile = null;
+    groupImageInput.value = null; // Reset file input
+    groupImagePreviewContainer.innerHTML = ''; // Clear preview
+    groupImageUploadIcon.style.display = 'block';
+}
+
+// --- Modal Logic (Updated) ---
 function setupModal() {
     createGroupBtn.addEventListener('click', () => {
         if (!currentUser) {
@@ -211,7 +287,18 @@ function setupModal() {
         }
     });
 
-    // --- Create Group Form Logic ---
+    // NEW: Listeners for image upload
+    groupImageUploadArea.addEventListener('click', () => {
+        groupImageInput.click();
+    });
+
+    groupImageInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+            handleFilePreview(e.target.files[0]);
+        }
+    });
+
+    // --- Create Group Form Logic (Updated) ---
     createGroupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser) return;
@@ -230,17 +317,32 @@ function setupModal() {
         modalError.style.display = 'none';
 
         try {
-            // 1. Create the new group document
+            let imageUrl = null; // Default image URL
+
+            // 1. Check for and upload image
+            if (groupImageFile) {
+                createGroupSubmit.textContent = "Uploading image...";
+                try {
+                    imageUrl = await uploadImageToCloudinary(groupImageFile);
+                } catch (uploadError) {
+                    throw new Error("Cloudinary upload failed. Please try again.");
+                }
+            }
+
+            createGroupSubmit.textContent = "Saving group...";
+
+            // 2. Create the new group document
             const newGroupRef = await addDoc(collection(db, "groups"), {
                 name: groupName,
                 description: groupDesc,
+                imageUrl: imageUrl, // NEW: Save the image URL
                 isPublic: true,
                 createdAt: serverTimestamp(),
                 createdBy: currentUser.uid,
                 members: [currentUser.uid] // Creator is the first member
             });
             
-            // 2. Automatically "follow" the group you created
+            // 3. Automatically "follow" the group you created
             const userDocRef = doc(db, 'users', currentUser.uid);
             await updateDoc(userDocRef, {
                 followedGroups: arrayUnion(newGroupRef.id)
@@ -249,10 +351,11 @@ function setupModal() {
             // Success
             modal.classList.remove('active');
             createGroupForm.reset();
+            removeFile(); // NEW: Clear the image preview
             
         } catch (error) {
             console.error("Error creating group:", error);
-            modalError.textContent = "Could not create group. Please try again.";
+            modalError.textContent = error.message || "Could not create group. Please try again.";
             modalError.style.display = 'block';
         } finally {
             createGroupSubmit.disabled = false;
