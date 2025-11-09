@@ -686,7 +686,152 @@
             bottom: 30px;
         }
         /* --- END NEW --- */
+/* --- 11. Image Popup Modal --- */
+        #image-popup-modal {
+            display: none;
+            position: fixed;
+            z-index: 4000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            animation: zoomIn 0.2s ease;
+        }
+        #popup-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        #close-image-popup {
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            color: #f1f1f1;
+            font-size: 3em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        /* Add cursor pointer to images in chat */
+        .message-image img {
+            cursor: zoom-in;
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
+        /* --- 12. Danger Zone Button (Leave Group) --- */
+        #danger-zone-section {
+            background: none;
+            padding: 20px;
+        }
+        .danger-btn {
+            background: none;
+            border: 1px solid var(--ko-danger);
+            color: var(--ko-danger);
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .danger-btn:hover {
+            background: var(--ko-danger);
+            color: white;
+        }
+
+        /* --- 13. Message Action Buttons (Edit/Delete) --- */
+        .message-actions {
+            display: flex;
+            flex-direction: column;
+            align-self: flex-start;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+        .message-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 4px;
+        }
+        .message-action-btn:hover {
+            color: var(--ko-primary);
+        }
+        .message-action-btn.delete-btn:hover {
+            color: var(--ko-danger);
+        }
+        .message.own-message .message-actions {
+             /* Move actions to the left for own messages */
+             order: -1;
+             margin-right: 8px;
+        }
+
+        /* --- 14. Edit Message Modal --- */
+        #edit-message-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+        #edit-message-modal.active {
+            display: flex;
+        }
+        #edit-message-modal .modal-content {
+             background-color: var(--bg-modal);
+             margin: auto;
+             padding: 30px;
+             border-radius: var(--border-radius);
+             width: 90%;
+             max-width: 500px;
+             position: relative;
+             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        #edit-message-modal input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background: var(--bg-main);
+            color: var(--text-main);
+        }
+
+        /* --- 15. Promote/Demote Admin Button --- */
+        .admin-action-btn {
+            background: none;
+            border: 1px solid var(--ko-accent);
+            color: var(--ko-accent);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .admin-action-btn.demote-btn {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -744,6 +889,13 @@
                     <div id="modal-members-loader" class="loader-small"></div>
                 </div>
             </div>
+            
+            <div class="modal-section" id="danger-zone-section">
+                <button id="leave-group-btn" class="danger-btn">
+                    <i class="fas fa-sign-out-alt"></i> Leave Group
+                </button>
+            </div>
+            
         </div>
     </div>
     
@@ -783,11 +935,28 @@
             </form>
         </div>
     </div>
+    
+    <div id="edit-message-modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Edit Message</h2>
+            <form id="edit-message-form">
+                <div class="form-group">
+                    <input type="text" id="edit-message-input" required>
+                    <input type="hidden" id="edit-message-id-input">
+                </div>
+                <button type="submit" id="edit-message-submit" class="create-group-btn" style="width: 100%; margin-top: 10px;">Save Changes</button>
+                <button type="button" id="close-edit-message-modal-btn" class="create-group-btn" style="width: 100%; margin-top: 10px; background: #555;">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="image-popup-modal">
+        <span id="close-image-popup">&times;</span>
+        <img id="popup-image" src="" alt="Popup Image">
+    </div>
 
     <div id="toast-notification">Link copied to clipboard!</div>
 
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=9"></script>
-
-</body>
+    <script type="module" src="chat.js?v=10"></script> </body>
 </html>
