@@ -39,15 +39,21 @@
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+
+        /* --- THIS IS THE FIX --- */
+        html {
+            height: 100%;
+        }
         body {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%; /* Changed from 100vh */
             margin: 0;
             background-color: var(--bg-main);
             color: var(--text-main);
             overflow: hidden; /* Prevent body scroll */
         }
+        /* --- END FIX --- */
 
         /* --- 3. Chat Header --- */
         .chat-header {
@@ -159,8 +165,6 @@
             line-height: 1.5;
             word-break: break-word;
             position: relative; /* THIS IS CRUCIAL */
-            
-            /* --- THIS IS THE FIX (Part 1) --- */
             padding-bottom: 30px; /* Add space at the bottom for the time */
         }
         .message-sender {
@@ -171,9 +175,9 @@
             cursor: pointer;
         }
         
-        /* --- THIS IS THE FIX (Part 2) --- */
+        /* --- THIS IS THE WHATSAPP-STYLE FIX --- */
         .message-text {
-            /* REMOVED all styles from here. */
+            /* This makes space for the time/tick */
         }
         .message-meta {
             position: absolute;
@@ -707,7 +711,7 @@
     </div>
 
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=4"></script>
+    <script type="module" src="chat.js?v=5"></script>
 
 </body>
 </html>
