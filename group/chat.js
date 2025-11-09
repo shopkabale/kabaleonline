@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//                   CHAT ROOM SCRIPT (chat.js)                        //
+//            CHAT ROOM SCRIPT (chat.js) - *DETAILS UPDATE* //
 //                                                                     //
 // =================================================================== //
 
@@ -16,7 +16,10 @@ import {
     serverTimestamp,
     doc,
     getDoc,
-    limit
+    getDocs, // NEW: Needed for member list
+    updateDoc, // NEW: Needed for editing
+    limit,
+    where // NEW: Needed for member list
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
@@ -30,13 +33,38 @@ const replyToNameEl = document.getElementById('reply-to-name');
 const replyToPreviewEl = document.getElementById('reply-to-preview');
 const cancelReplyBtn = document.getElementById('cancel-reply-btn');
 
-// NEW: Image Upload Elements
+// Image Upload Elements (Your existing code)
 const imageUploadBtn = document.getElementById('image-upload-btn');
 const imageUploadInput = document.getElementById('image-upload-input');
+
+// NEW: Chat Header Elements
+const chatHeaderInfo = document.getElementById('chat-header-info');
+const chatHeaderImg = document.getElementById('chat-header-img');
+const chatHeaderPlaceholder = document.getElementById('chat-header-placeholder');
+
+// NEW: Group Details Modal Elements
+const groupDetailsModal = document.getElementById('group-details-modal');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const modalEditBtn = document.getElementById('modal-edit-btn');
+const modalGroupImg = document.getElementById('modal-group-img');
+const modalGroupName = document.getElementById('modal-group-name');
+const modalGroupDescription = document.getElementById('modal-group-description');
+const modalMembersList = document.getElementById('modal-members-list');
+const modalMembersLoader = document.getElementById('modal-members-loader');
+
+// NEW: Edit Group Modal Elements
+const editGroupModal = document.getElementById('edit-group-modal');
+const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+const editGroupForm = document.getElementById('edit-group-form');
+const editGroupSubmit = document.getElementById('edit-group-submit');
+const editGroupNameInput = document.getElementById('edit-group-name');
+const editGroupDescInput = document.getElementById('edit-group-description');
+const editModalError = document.getElementById('edit-modal-error');
 
 // --- Global State ---
 let currentUser = null;
 let currentGroupId = null;
+let currentGroupData = null; // NEW: Stores all group data
 let unsubscribe = null; 
 let replyingToMessage = null;
 
@@ -65,14 +93,21 @@ async function initializeChat() {
                 return;
             }
             
-            // Get group details to set title
-            const groupDoc = await getDoc(doc(db, "groups", currentGroupId));
-            if (groupDoc.exists()) {
-                chatTitle.textContent = groupDoc.data().name;
-            }
+            // NEW: Listen for group details in real-time (for edits)
+            const groupDocRef = doc(db, "groups", currentGroupId);
+            onSnapshot(groupDocRef, (groupDoc) => {
+                if (groupDoc.exists()) {
+                    currentGroupData = groupDoc.data();
+                    updateChatHeader(); // Update UI
+                } else {
+                     alert("Error: This group does not exist.");
+                     window.location.href = 'index.html';
+                }
+            });
             
             backButton.href = 'index.html'; // Link back to the group list
             listenForMessages(currentGroupId);
+            setupModalListeners(); // NEW: Set up modal logic
 
         } else {
             window.location.href = '/login/';
@@ -80,21 +115,43 @@ async function initializeChat() {
     });
 }
 
+// NEW: Update Chat Header
+function updateChatHeader() {
+    if (!currentGroupData) return;
+    
+    chatTitle.textContent = currentGroupData.name;
+    
+    if (currentGroupData.imageUrl) {
+        chatHeaderImg.src = currentGroupData.imageUrl;
+        chatHeaderImg.style.display = 'block';
+        chatHeaderPlaceholder.style.display = 'none';
+    } else {
+        chatHeaderPlaceholder.textContent = (currentGroupData.name || 'G').charAt(0).toUpperCase();
+        chatHeaderImg.style.display = 'none';
+        chatHeaderPlaceholder.style.display = 'block';
+    }
+}
+
 function listenForMessages(groupId) {
     if (unsubscribe) unsubscribe(); 
 
-    // Listen to the sub-collection for messages
     const messagesRef = collection(db, "groups", groupId, "messages");
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
+        // Clear on first load (simple approach)
+        if (snapshot.size === snapshot.docChanges().length) {
+             messageArea.innerHTML = '';
+        }
+        
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const messageData = { id: change.doc.id, ...change.doc.data() };
                 renderMessage(messageData);
             }
         });
-        // Scroll to bottom
+        
+        // Scroll to bottom (This was already in your code)
         setTimeout(() => {
             messageArea.scrollTop = messageArea.scrollHeight;
         }, 100);
@@ -133,13 +190,13 @@ function renderMessage(data) {
     if (data.repliedToMessageId) {
         replyQuoteHTML = `
             <div class="reply-quote">
-                <div class="reply-quote-sender">${data.repliedToSender}</div>
-                <div class="reply-quote-text">${data.repliedToText}</div>
+                <div class="reply-quote-sender">${data.repliedToSender || '...'}</div>
+                <div class="reply-quote-text">${data.repliedToText || '...'}</div>
             </div>
         `;
     }
 
-    // 2. Check for Message Type (Text vs Image)
+    // 2. Check for Message Type (Text vs Image) - This is your existing code
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
         // This is an image message
@@ -150,18 +207,20 @@ function renderMessage(data) {
         `;
     } else {
         // This is a standard text message
-        messageBubbleHTML = `<p class="message-bubble">${data.text}</p>`;
+        messageBubbleHTML = `<p class="message-bubble">${data.text || ''}</p>`;
     }
 
     // 3. Render
+    const senderName = isOwnMessage ? '' : `<div class="message-sender">${data.userName}</div>`;
+    
     messageDiv.innerHTML = `
         <a href="../profile.html?id=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
         </a>
         <div class="message-content">
             <div>
-                <a href="../profile.html?id=${data.userId}" class="message-profile-link">
-                    <div class="message-sender">${data.userName}</div>
+                <a href="../profile.html?id=${data.userId}" class="message-profile-link" style="text-decoration:none;">
+                    ${senderName}
                 </a>
                 ${replyQuoteHTML}
                 ${messageBubbleHTML}
@@ -174,7 +233,7 @@ function renderMessage(data) {
     messageArea.appendChild(messageDiv);
 }
 
-// --- MODIFIED: Form submit now handles TEXT messages ---
+// --- Form submit (Your existing code) ---
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const messageText = messageInput.value.trim();
@@ -186,7 +245,7 @@ chatForm.addEventListener('submit', async (e) => {
             userId: currentUser.uid,
             userName: currentUser.name,
             profilePicUrl: currentUser.profilePicUrl || '',
-            createdAt: serverTimestamp() // For TTL auto-delete
+            createdAt: serverTimestamp()
         };
 
         if (replyingToMessage) {
@@ -206,7 +265,7 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- NEW: Handle Image Upload Button ---
+// --- Image Upload (Your existing code) ---
 imageUploadBtn.addEventListener('click', () => {
     imageUploadInput.click(); // Open the file picker
 });
@@ -219,21 +278,15 @@ imageUploadInput.addEventListener('change', (e) => {
         alert("Image is too large. Please choose a file under 500KB.");
         return;
     }
-
-    // Resize and convert to base64
     resizeAndSendImage(file);
-    
-    // Reset the input so you can send the same file again
     e.target.value = null;
 });
 
-// --- NEW: Image Resizing and Sending Logic ---
 function resizeAndSendImage(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const img = new Image();
         img.onload = async () => {
-            // Resize logic
             const canvas = document.createElement('canvas');
             const MAX_WIDTH = 600;
             const MAX_HEIGHT = 600;
@@ -255,11 +308,7 @@ function resizeAndSendImage(file) {
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-
-            // Get the resized image as a base64 string
-            const dataUrl = canvas.toDataURL(file.type, 0.8); // 80% quality
-            
-            // Send this dataUrl to Firestore
+            const dataUrl = canvas.toDataURL(file.type, 0.8);
             sendImageMessage(dataUrl);
         }
         img.src = e.target.result;
@@ -271,15 +320,14 @@ async function sendImageMessage(base64ImageData) {
     if (!currentUser || !currentGroupId) return;
 
     const newMessage = {
-        type: "image", // This is an image message
-        imageData: base64ImageData, // The self-destructing data
+        type: "image",
+        imageData: base64ImageData,
         userId: currentUser.uid,
         userName: currentUser.name,
         profilePicUrl: currentUser.profilePicUrl || '',
-        createdAt: serverTimestamp() // For TTL auto-delete
+        createdAt: serverTimestamp()
     };
     
-    // Add reply info if it exists
     if (replyingToMessage) {
         newMessage.repliedToMessageId = replyingToMessage.id;
         newMessage.repliedToSender = replyingToMessage.sender;
@@ -296,7 +344,7 @@ async function sendImageMessage(base64ImageData) {
 }
 
 
-// --- This is your exact reply logic, unchanged ---
+// --- Reply Logic (Your existing code) ---
 messageArea.addEventListener('click', (e) => {
     const replyButton = e.target.closest('.reply-btn');
     if (replyButton) {
@@ -313,6 +361,128 @@ cancelReplyBtn.addEventListener('click', () => {
     replyingToMessage = null;
     updateReplyUI();
 });
+
+// --- NEW: Group Details Modal Logic ---
+function setupModalListeners() {
+    // Open Details Modal
+    chatHeaderInfo.addEventListener('click', () => {
+        if (!currentGroupData) return;
+        
+        // 1. Populate static info
+        modalGroupName.textContent = currentGroupData.name;
+        modalGroupDescription.textContent = currentGroupData.description;
+        
+        if (currentGroupData.imageUrl) {
+            modalGroupImg.src = currentGroupData.imageUrl;
+        } else {
+            modalGroupImg.src = `https://placehold.co/150x150/10336d/a7c0e8?text=${(currentGroupData.name || 'G').charAt(0)}`;
+        }
+        
+        // 2. Show/Hide Edit button
+        if (currentUser.uid === currentGroupData.createdBy) {
+            modalEditBtn.style.display = 'block';
+        } else {
+            modalEditBtn.style.display = 'none';
+        }
+        
+        // 3. Show modal
+        groupDetailsModal.classList.add('active');
+        
+        // 4. Fetch members
+        fetchGroupMembers(currentGroupData.members);
+    });
+
+    // Close Details Modal
+    modalCloseBtn.addEventListener('click', () => {
+        groupDetailsModal.classList.remove('active');
+    });
+
+    // Open Edit Modal
+    modalEditBtn.addEventListener('click', () => {
+        editGroupNameInput.value = currentGroupData.name;
+        editGroupDescInput.value = currentGroupData.description;
+        editModalError.style.display = 'none';
+        editGroupModal.classList.add('active');
+    });
+
+    // Close Edit Modal
+    closeEditModalBtn.addEventListener('click', () => {
+        editGroupModal.classList.remove('active');
+    });
+
+    // Handle Edit Form Submit
+    editGroupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = editGroupNameInput.value.trim();
+        const newDesc = editGroupDescInput.value.trim();
+        
+        if (!newName) {
+            editModalError.textContent = "Group name is required.";
+            editModalError.style.display = 'block';
+            return;
+        }
+        
+        editGroupSubmit.disabled = true;
+        editGroupSubmit.textContent = "Saving...";
+        
+        try {
+            const groupDocRef = doc(db, "groups", currentGroupId);
+            await updateDoc(groupDocRef, {
+                name: newName,
+                description: newDesc
+            });
+            
+            // Success
+            editGroupModal.classList.remove('active');
+            
+        } catch (error) {
+            console.error("Error updating group:", error);
+            editModalError.textContent = "Could not save. Please try again.";
+            editModalError.style.display = 'block';
+        } finally {
+            editGroupSubmit.disabled = false;
+            editGroupSubmit.textContent = "Save Changes";
+        }
+    });
+}
+
+// NEW: Fetch and Render Group Members
+async function fetchGroupMembers(memberIds) {
+    modalMembersList.innerHTML = ''; // Clear old list
+    modalMembersLoader.style.display = 'block';
+
+    try {
+        // Fetch all user docs in parallel
+        const userPromises = memberIds.map(id => getDoc(doc(db, "users", id)));
+        const userDocs = await Promise.all(userPromises);
+        
+        modalMembersList.innerHTML = ''; // Clear again just in case
+        
+        userDocs.forEach(userDoc => {
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'member-item';
+                
+                const avatar = userData.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(userData.name || 'U').charAt(0)}`;
+                const role = userData.uid === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : '';
+                
+                memberDiv.innerHTML = `
+                    <img src="${avatar}" alt="${userData.name}" class="member-avatar">
+                    <span class="member-name">${userData.name || 'User'}</span>
+                    ${role}
+                `;
+                modalMembersList.appendChild(memberDiv);
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        modalMembersList.innerHTML = '<p style="padding: 20px; text-align: center;">Could not load members.</p>';
+    } finally {
+        modalMembersLoader.style.display = 'none';
+    }
+}
 
 window.addEventListener('beforeunload', () => {
     if (unsubscribe) {
