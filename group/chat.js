@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FINAL BUG FIX* //
+//      CHAT ROOM SCRIPT (chat.js) - *FINAL LAYOUT FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -204,15 +204,12 @@ function renderMessage(data) {
     // 1. Reply Quote
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
-        // --- THIS IS THE BUG FIX ---
-        // I removed the extra '.' from 'class.='
         replyQuoteHTML = `
             <div class="reply-quote">
                 <div class="reply-quote-sender">${data.repliedToSender || '...'}</div>
                 <div class="reply-quote-text">${data.repliedToText || '...'}</div>
             </div>
         `;
-        // --- END BUG FIX ---
     }
 
     // 2. NEW: Time & Tick
@@ -253,10 +250,17 @@ function renderMessage(data) {
     `;
     
     // 5. Render
-    messageDiv.innerHTML = `
+    // --- THIS IS THE FINAL BUG FIX ---
+    // The avatarHTML is now only added if it is NOT your own message.
+    // This stops the invisible 'a' tag from breaking your layout.
+    const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?id=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
         </a>
+    `;
+
+    messageDiv.innerHTML = `
+        ${avatarHTML} 
         <div class="message-content">
             <div class="message-bubble-wrapper">
                 ${senderName}
@@ -268,6 +272,8 @@ function renderMessage(data) {
             </button>
         </div>
     `;
+    // --- END OF FIX ---
+    
     messageArea.appendChild(messageDiv);
 }
 
