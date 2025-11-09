@@ -39,8 +39,6 @@
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-
-        /* --- THIS IS THE FIX --- */
         html {
             height: 100%;
         }
@@ -53,7 +51,6 @@
             color: var(--text-main);
             overflow: hidden; /* Prevent body scroll */
         }
-        /* --- END FIX --- */
 
         /* --- 3. Chat Header --- */
         .chat-header {
@@ -460,6 +457,24 @@
             color: var(--text-secondary);
             text-align: center;
         }
+
+        /* --- NEW: Share Button --- */
+        #share-group-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--ko-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        /* --- END NEW --- */
+
         .modal-section {
             background: var(--bg-card);
             margin-top: 10px;
@@ -494,7 +509,23 @@
             font-size: 0.9em;
             color: var(--ko-primary);
             margin-left: auto;
+            flex-shrink: 0;
         }
+        /* --- NEW: Remove Member Button --- */
+        .remove-member-btn {
+            background: none;
+            border: 1px solid var(--ko-danger);
+            color: var(--ko-danger);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+            display: none; /* JS will show this for admin */
+        }
+        /* --- END NEW --- */
+
         .loader-small {
             width: 25px;
             height: 25px;
@@ -628,6 +659,26 @@
             line-height: 25px;
             text-align: center;
         }
+
+        /* --- NEW: Toast Notification --- */
+        #toast-notification {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--ko-accent);
+            color: #121212;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            z-index: 9999;
+            transition: bottom 0.5s ease;
+        }
+        #toast-notification.show {
+            bottom: 30px;
+        }
+        /* --- END NEW --- */
+
     </style>
 </head>
 <body>
@@ -675,6 +726,9 @@
                 <img id="modal-group-img" src="https://placehold.co/150x150" alt="Group Profile">
                 <h2 id="modal-group-name">...</h2>
                 <p id="modal-group-description">...</p>
+                <button id="share-group-btn">
+                    <i class="fas fa-share-alt"></i> Share Group
+                </button>
             </div>
             <div class="modal-section">
                 <h4 class="modal-section-title">Members</h4>
@@ -710,8 +764,10 @@
         </div>
     </div>
 
+    <div id="toast-notification">Link copied to clipboard!</div>
+
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=5"></script>
+    <script type="module" src="chat.js?v=6"></script>
 
 </body>
 </html>
