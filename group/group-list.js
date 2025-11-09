@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//                   GROUP DIRECTORY SCRIPT (group-list.js)            //
+//       GROUP DIRECTORY SCRIPT (group-list.js) - *AUTH WALL FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -22,6 +22,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
+const authWall = document.getElementById('auth-wall');
+const loadingSpinner = document.getElementById('loading-spinner');
+const loginMessage = document.getElementById('login-message');
+const groupsContent = document.getElementById('groups-content');
+
 const myGroupsSection = document.getElementById('my-groups-section');
 const myGroupsList = document.getElementById('my-groups-list');
 const allGroupsList = document.getElementById('all-groups-list');
@@ -36,20 +41,41 @@ const modalError = document.getElementById('modal-error');
 let currentUser = null;
 let followedGroups = []; // Array of group IDs the user follows
 
-// --- Auth Check ---
+// --- Auth Check (THIS IS THE NEW "LOGGING FIRST" LOGIC) ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        // User is logged in!
         currentUser = user;
-        // Fetch user's followed groups to sync state
-        getUserProfile(user.uid);
+        // Hide the auth wall and show the real content
+        authWall.style.display = 'none';
+        groupsContent.style.display = 'block';
+        
+        // Now, load all the group functions
+        initializePage(user.uid);
     } else {
-        // Not logged in
+        // User is not logged in.
         currentUser = null;
-        myGroupsSection.style.display = 'none';
+        // Show the auth wall and hide the loader
+        authWall.style.display = 'block';
+        loadingSpinner.style.display = 'none';
+        loginMessage.style.display = 'block';
+        
+        // Hide the content
+        groupsContent.style.display = 'none';
     }
-    // Always load all public groups
-    listenForAllGroups();
 });
+
+// --- This function now only runs AFTER login is confirmed ---
+function initializePage(uid) {
+    // 1. Fetch user's profile to see what groups they follow
+    getUserProfile(uid);
+    
+    // 2. Load all public groups
+    listenForAllGroups();
+    
+    // 3. Set up the "Create Group" button and modal
+    setupModal();
+}
 
 async function getUserProfile(uid) {
     const userDocRef = doc(db, 'users', uid);
@@ -157,64 +183,68 @@ async function handleFollowToggle(groupId, isCurrentlyFollowed) {
 }
 
 // --- Modal Logic ---
-createGroupBtn.addEventListener('click', () => {
-    if (!currentUser) {
-        alert("Please log in to create a group.");
-        return;
-    }
-    modal.classList.add('active');
-});
-closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        modal.classList.remove('active');
-    }
-});
+function setupModal() {
+    createGroupBtn.addEventListener('click', () => {
+        if (!currentUser) {
+            alert("Please log in to create a group.");
+            return;
+        }
+        modal.classList.add('active');
+    });
+    
+    closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
 
-// --- Create Group Form Logic ---
-createGroupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!currentUser) return;
-    
-    const groupName = document.getElementById('group-name').value.trim();
-    const groupDesc = document.getElementById('group-description').value.trim();
-    
-    if (!groupName) {
-        modalError.textContent = "Please enter a group name.";
-        modalError.style.display = 'block';
-        return;
-    }
-    
-    createGroupSubmit.disabled = true;
-    createGroupSubmit.textContent = "Creating...";
+    // --- Create Group Form Logic ---
+    createGroupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        
+        const groupName = document.getElementById('group-name').value.trim();
+        const groupDesc = document.getElementById('group-description').value.trim();
+        
+        if (!groupName) {
+            modalError.textContent = "Please enter a group name.";
+            modalError.style.display = 'block';
+            return;
+        }
+        
+        createGroupSubmit.disabled = true;
+        createGroupSubmit.textContent = "Creating...";
 
-    try {
-        // 1. Create the new group document
-        const newGroupRef = await addDoc(collection(db, "groups"), {
-            name: groupName,
-            description: groupDesc,
-            isPublic: true,
-            createdAt: serverTimestamp(),
-            createdBy: currentUser.uid,
-            members: [currentUser.uid] // Creator is the first member
-        });
-        
-        // 2. Automatically "follow" the group you created
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, {
-            followedGroups: arrayUnion(newGroupRef.id)
-        });
-        
-        // Success
-        modal.classList.remove('active');
-        createGroupForm.reset();
-        
-    } catch (error) {
-        console.error("Error creating group:", error);
-        modalError.textContent = "Could not create group. Please try again.";
-        modalError.style.display = 'block';
-    } finally {
-        createGroupSubmit.disabled = false;
-        createGroupSubmit.textContent = "Create Group";
-    }
-});
+        try {
+            // 1. Create the new group document
+            const newGroupRef = await addDoc(collection(db, "groups"), {
+                name: groupName,
+                description: groupDesc,
+                isPublic: true,
+                createdAt: serverTimestamp(),
+                createdBy: currentUser.uid,
+                members: [currentUser.uid] // Creator is the first member
+            });
+            
+            // 2. Automatically "follow" the group you created
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userDocRef, {
+                followedGroups: arrayUnion(newGroupRef.id)
+            });
+            
+            // Success
+            modal.classList.remove('active');
+            createGroupForm.reset();
+            
+        } catch (error) {
+            console.error("Error creating group:", error);
+            modalError.textContent = "Could not create group. Please try again.";
+            modalError.style.display = 'block';
+        } finally {
+            createGroupSubmit.disabled = false;
+            createGroupSubmit.textContent = "Create Group";
+        }
+    });
+}
