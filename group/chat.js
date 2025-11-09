@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FINAL FIX* //
+//      CHAT ROOM SCRIPT (chat.js) - *FINAL BUG FIX* //
 //                                                                     //
 // =================================================================== //
 
@@ -204,12 +204,15 @@ function renderMessage(data) {
     // 1. Reply Quote
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
+        // --- THIS IS THE BUG FIX ---
+        // I removed the extra '.' from 'class.='
         replyQuoteHTML = `
             <div class="reply-quote">
                 <div class="reply-quote-sender">${data.repliedToSender || '...'}</div>
                 <div class="reply-quote-text">${data.repliedToText || '...'}</div>
             </div>
         `;
+        // --- END BUG FIX ---
     }
 
     // 2. NEW: Time & Tick
@@ -233,7 +236,6 @@ function renderMessage(data) {
             </p>
         `;
     } else {
-        // --- THIS IS THE WHATSAPP LAYOUT FIX ---
         // Text message bubble now uses a <span> with class "message-text"
         messageBubbleHTML = `
             <p class="message-bubble">
@@ -241,7 +243,6 @@ function renderMessage(data) {
                 ${timeMetaHTML}
             </p>
         `;
-        // --- END FIX ---
     }
 
     // 4. Sender Name (with link)
