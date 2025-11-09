@@ -159,6 +159,9 @@
             line-height: 1.5;
             word-break: break-word;
             position: relative; /* THIS IS CRUCIAL */
+            
+            /* --- THIS IS THE FIX (Part 1) --- */
+            padding-bottom: 30px; /* Add space at the bottom for the time */
         }
         .message-sender {
             font-weight: 600;
@@ -168,11 +171,9 @@
             cursor: pointer;
         }
         
-        /* --- THIS IS THE WHATSAPP-STYLE FIX --- */
+        /* --- THIS IS THE FIX (Part 2) --- */
         .message-text {
-            /* This makes space for the time/tick */
-            display: block;
-            margin-right: 60px; /* Adjust as needed for time width */
+            /* REMOVED all styles from here. */
         }
         .message-meta {
             position: absolute;
@@ -195,34 +196,26 @@
         }
         /* --- END FIX --- */
 
-        /* Target only your own messages */
-.own-message .message-meta {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 4px;
-  position: relative;
-  top: 4px; /* moves it slightly lower */
-}
-
-/* Make sure the meta elements don’t overlap the text */
-.own-message .message-bubble {
-  position: relative;
-  padding-bottom: 18px; /* add some space at the bottom */
-}
-
-/* Optional – make time and tick smaller and aligned nicely */
-.message-time {
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
-
-.message-tick {
-  font-size: 0.75rem;
-  color: #cce5ff;
-  margin-left: 2px;
-  transform: translateY(2px);
-}
+        /* Own message */
+        .message.own-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message.own-message .message-content {
+            flex-direction: row-reverse;
+        }
+        .message.own-message .message-bubble {
+            background: var(--own-message-bg);
+            color: var(--own-message-text);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 4px; /* "Tail" */
+        }
+        .message.own-message .message-avatar {
+            display: none; 
+        }
+        .message.own-message .message-sender {
+            display: none;
+        }
         
         /* Reply Button */
         .reply-btn {
@@ -355,6 +348,7 @@
         .message-bubble.message-image {
             padding: 5px;
             background: none;
+            padding-bottom: 5px; /* Override padding for image */
         }
         /* This is the fix for images */
         .message-bubble.message-image .message-meta {
@@ -646,7 +640,6 @@
     </div>
 
     <div id="message-area">
-
         </div>
 
     <div id="reply-banner">
@@ -714,7 +707,7 @@
     </div>
 
     <script type="module" src="../firebase.js"></script>
-    <script type="module" src="chat.js?v=3"></script>
+    <script type="module" src="chat.js?v=4"></script>
 
 </body>
 </html>
