@@ -229,7 +229,7 @@
             cursor: pointer;
         }
 
-        /* Chat Form */
+        /* === CSS FIX: Chat Form === */
         #chat-form {
             display: flex;
             padding: 10px;
@@ -237,6 +237,7 @@
             border-top: 1px solid var(--border-color);
             flex-shrink: 0;
             align-items: center;
+            gap: 8px; /* Adds spacing */
         }
         #message-input {
             flex-grow: 1;
@@ -246,7 +247,9 @@
             font-size: 1em;
             background: var(--bg-main);
             color: var(--text-main);
+            margin: 0; /* Fix for default margins */
         }
+        /* This styles BOTH buttons */
         #chat-form button {
             background: var(--ko-primary);
             border: none;
@@ -254,22 +257,32 @@
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            margin-left: 10px;
             font-size: 1.1em;
             cursor: pointer;
             flex-shrink: 0;
+            /* Added to center icons */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            transition: opacity 0.2s;
         }
-        
-        /* Image Upload Button (Already in your code) */
+        #chat-form button:hover {
+            opacity: 0.9;
+        }
+        /* This makes the upload button transparent */
         #image-upload-btn {
             background: none;
-            border: none;
             color: var(--text-secondary);
-            font-size: 1.5em;
-            cursor: pointer;
-            padding: 0 10px;
+            font-size: 1.3em;
+        }
+        #image-upload-btn:hover {
+            color: var(--ko-primary);
+            opacity: 1;
         }
         #image-upload-input { display: none; }
+        /* === END CHAT FORM FIX === */
 
         /* Image Message Style (Already in your code) */
         .message-bubble.message-image {
@@ -286,7 +299,7 @@
             border: 1px solid var(--border-color);
         }
         
-        /* === NEW: Group Details Modal === */
+        /* === CSS FIX: Group Details Modal === */
         #group-details-modal {
             display: none; /* Hidden by default */
             position: fixed;
@@ -294,7 +307,7 @@
             left: 0;
             top: 0;
             width: 100%;
-            height: 100%;
+            height: 100vh; /* FIX: Use 100vh to cover entire viewport */
             background-color: var(--bg-main);
             flex-direction: column;
             overflow-y: auto;
@@ -309,6 +322,9 @@
             background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
+            /* FIX: Add z-index to prevent overlap from chat header */
+            position: relative;
+            z-index: 10;
         }
         .modal-close-btn {
             font-size: 1.2em;
@@ -335,6 +351,8 @@
             padding: 0;
             flex-grow: 1;
         }
+        /* === END MODAL FIX === */
+        
         .group-profile-header {
             display: flex;
             flex-direction: column;
