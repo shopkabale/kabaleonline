@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FINAL LAYOUT FIX* //
+//      CHAT ROOM SCRIPT (chat.js) - *FEATURE UPDATE* //
 //                                                                     //
 // =================================================================== //
 
@@ -19,7 +19,8 @@ import {
     getDocs,
     updateDoc,
     limit,
-    where 
+    where,
+    arrayRemove // <-- NEW: Added for removing members
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
@@ -51,6 +52,8 @@ const modalGroupName = document.getElementById('modal-group-name');
 const modalGroupDescription = document.getElementById('modal-group-description');
 const modalMembersList = document.getElementById('modal-members-list');
 const modalMembersLoader = document.getElementById('modal-members-loader');
+const shareGroupBtn = document.getElementById('share-group-btn'); // <-- NEW
+const toastNotification = document.getElementById('toast-notification'); // <-- NEW
 
 // Edit Group Modal Elements
 const editGroupModal = document.getElementById('edit-group-modal');
@@ -60,8 +63,6 @@ const editGroupSubmit = document.getElementById('edit-group-submit');
 const editGroupNameInput = document.getElementById('edit-group-name');
 const editGroupDescInput = document.getElementById('edit-group-description');
 const editModalError = document.getElementById('edit-modal-error');
-
-// --- NEW: Edit Group Image Elements ---
 const editGroupImageUploadArea = document.getElementById('edit-group-image-upload-area');
 const editGroupImageInput = document.getElementById('edit-group-image-input');
 const editGroupImagePreviewContainer = document.getElementById('edit-group-image-preview-container');
@@ -73,7 +74,7 @@ let currentGroupId = null;
 let currentGroupData = null; 
 let unsubscribe = null; 
 let replyingToMessage = null;
-let editGroupImageFile = null; // NEW: Stores file for editing group image
+let editGroupImageFile = null; 
 
 // --- Main Initialization ---
 async function initializeChat() {
@@ -96,16 +97,15 @@ async function initializeChat() {
 
             if (!currentGroupId) {
                 alert("Error: No group ID specified.");
-                window.location.href = 'index.html'; // Back to group list
+                window.location.href = 'index.html'; 
                 return;
             }
             
-            // Listen for group details in real-time
             const groupDocRef = doc(db, "groups", currentGroupId);
             onSnapshot(groupDocRef, (groupDoc) => {
                 if (groupDoc.exists()) {
                     currentGroupData = groupDoc.data();
-                    updateChatHeader(); // Update UI
+                    updateChatHeader(); 
                 } else {
                      alert("Error: This group does not exist.");
                      window.location.href = 'index.html';
@@ -114,7 +114,7 @@ async function initializeChat() {
             
             backButton.href = 'index.html'; 
             listenForMessages(currentGroupId);
-            setupModalListeners(); // Set up modal logic
+            setupModalListeners(); 
 
         } else {
             window.location.href = '/login/';
@@ -139,7 +139,7 @@ function updateChatHeader() {
     }
 }
 
-// Listen for Messages (with bug fix)
+// Listen for Messages
 function listenForMessages(groupId) {
     if (unsubscribe) unsubscribe(); 
 
@@ -147,14 +147,13 @@ function listenForMessages(groupId) {
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
-        messageArea.innerHTML = ''; // Clear the chat area *every* time
+        messageArea.innerHTML = ''; 
         
         snapshot.docs.forEach((doc) => {
             const messageData = { id: doc.id, ...doc.data() };
-            renderMessage(messageData); // Render *all* messages in order
+            renderMessage(messageData); 
         });
         
-        // Scroll to bottom
         setTimeout(() => {
             messageArea.scrollTop = messageArea.scrollHeight;
         }, 100); 
@@ -164,10 +163,10 @@ function listenForMessages(groupId) {
     });
 }
 
-// --- NEW: Helper Function to Format Time ---
+// Format Time Helper
 function formatMessageTime(timestamp) {
     if (!timestamp) {
-        return ''; // Handle pending server timestamps
+        return ''; 
     }
     const date = timestamp.toDate();
     return date.toLocaleTimeString('en-US', {
@@ -177,7 +176,7 @@ function formatMessageTime(timestamp) {
     });
 }
 
-// --- Reply UI logic ---
+// Reply UI logic
 function updateReplyUI() {
     if (replyingToMessage) {
         replyToNameEl.textContent = replyingToMessage.sender;
@@ -189,7 +188,7 @@ function updateReplyUI() {
     }
 }
 
-// --- UPDATED: Renders Messages with Time/Tick & Profile Links ---
+// Render a single message
 function renderMessage(data) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
@@ -201,7 +200,6 @@ function renderMessage(data) {
 
     const avatar = data.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(data.userName || 'U').charAt(0)}`;
     
-    // 1. Reply Quote
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
         replyQuoteHTML = `
@@ -212,7 +210,6 @@ function renderMessage(data) {
         `;
     }
 
-    // 2. NEW: Time & Tick
     const messageTime = formatMessageTime(data.createdAt);
     const sentTick = isOwnMessage ? '<i class="fas fa-check message-tick"></i>' : '';
     const timeMetaHTML = `
@@ -222,10 +219,8 @@ function renderMessage(data) {
         </div>
     `;
 
-    // 3. Message Bubble
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
-        // Image message bubble
         messageBubbleHTML = `
             <p class="message-bubble message-image">
                 <img src="${data.imageData}" alt="User image" loading="lazy">
@@ -233,7 +228,6 @@ function renderMessage(data) {
             </p>
         `;
     } else {
-        // Text message bubble now uses a <span> with class "message-text"
         messageBubbleHTML = `
             <p class="message-bubble">
                 <span class="message-text">${data.text || ''}</span>
@@ -242,17 +236,12 @@ function renderMessage(data) {
         `;
     }
 
-    // 4. Sender Name (with link)
-    // --- THIS LINE WAS UPDATED ---
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
         </a>
     `;
     
-    // 5. Render
-    // The avatarHTML is now only added if it is NOT your own message.
-    // --- THIS LINE WAS UPDATED ---
     const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
@@ -276,7 +265,7 @@ function renderMessage(data) {
     messageArea.appendChild(messageDiv);
 }
 
-// --- Form submit (Your existing code) ---
+// --- Form and Message Sending ---
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const messageText = messageInput.value.trim();
@@ -308,7 +297,7 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Image Upload (Your existing code) ---
+// Image Upload (in-chat)
 imageUploadBtn.addEventListener('click', () => {
     imageUploadInput.click();
 });
@@ -317,7 +306,7 @@ imageUploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 500 * 1024) { // 500KB size limit
+    if (file.size > 500 * 1024) { 
         alert("Image is too large. Please choose a file under 500KB.");
         return;
     }
@@ -387,7 +376,7 @@ async function sendImageMessage(base64ImageData) {
 }
 
 
-// --- Reply Logic (Your existing code) ---
+// --- Reply Logic ---
 messageArea.addEventListener('click', (e) => {
     const replyButton = e.target.closest('.reply-btn');
     if (replyButton) {
@@ -405,7 +394,7 @@ cancelReplyBtn.addEventListener('click', () => {
     updateReplyUI();
 });
 
-// --- NEW: Cloudinary Upload Function (for GROUPS) ---
+// --- Cloudinary Upload Function (for Group Profile Images) ---
 async function uploadImageToCloudinary(file) {
     try {
         const response = await fetch('/.netlify/functions/generate-group-signature');
@@ -434,9 +423,9 @@ async function uploadImageToCloudinary(file) {
     }
 }
 
-// --- NEW: File Preview and Removal Functions (for Edit Modal) ---
+// --- File Preview Logic (for Edit Modal) ---
 function handleEditFilePreview(file) {
-    editGroupImageFile = file; // Store the file
+    editGroupImageFile = file; 
     
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -450,7 +439,7 @@ function handleEditFilePreview(file) {
         
         document.getElementById('remove-edit-group-image-btn').addEventListener('click', (e) => {
             e.stopPropagation();
-            removeEditFile(null); // Pass null to reset to placeholder
+            removeEditFile(null); 
         });
     };
     reader.readAsDataURL(file);
@@ -461,7 +450,6 @@ function removeEditFile(currentImageUrl = null) {
     editGroupImageInput.value = null; 
     
     if (currentImageUrl) {
-        // Reset to show the *current* group image
         editGroupImagePreviewContainer.innerHTML = `
             <div class="image-preview-wrapper">
                 <img src="${currentImageUrl}" alt="Current group image" class="image-preview-img">
@@ -469,19 +457,26 @@ function removeEditFile(currentImageUrl = null) {
         `;
         editGroupImageUploadIcon.style.display = 'none';
     } else {
-        // Clear preview entirely
         editGroupImagePreviewContainer.innerHTML = ''; 
         editGroupImageUploadIcon.style.display = 'block';
     }
 }
 
-// --- UPDATED: Group Details Modal Logic ---
+// --- NEW: Toast Notification Helper ---
+function showToast(message) {
+    toastNotification.textContent = message;
+    toastNotification.classList.add('show');
+    setTimeout(() => {
+        toastNotification.classList.remove('show');
+    }, 3000);
+}
+
+// --- Group Details Modal Logic (UPDATED) ---
 function setupModalListeners() {
     // Open Details Modal
     chatHeaderInfo.addEventListener('click', () => {
         if (!currentGroupData) return;
         
-        // 1. Populate static info
         modalGroupName.textContent = currentGroupData.name;
         modalGroupDescription.textContent = currentGroupData.description;
         
@@ -491,17 +486,13 @@ function setupModalListeners() {
             modalGroupImg.src = `https://placehold.co/150x150/10336d/a7c0e8?text=${(currentGroupData.name || 'G').charAt(0)}`;
         }
         
-        // 2. Show/Hide Edit button
         if (currentUser.uid === currentGroupData.createdBy) {
             modalEditBtn.style.display = 'block';
         } else {
             modalEditBtn.style.display = 'none';
         }
         
-        // 3. Show modal
         groupDetailsModal.classList.add('active');
-        
-        // 4. Fetch members
         fetchGroupMembers(currentGroupData.members);
     });
 
@@ -510,24 +501,45 @@ function setupModalListeners() {
         groupDetailsModal.classList.remove('active');
     });
 
-    // Open Edit Modal
+    // --- NEW: Share Button Logic ---
+    shareGroupBtn.addEventListener('click', async () => {
+        const shareUrl = `https://kabaleonline.com/group/chat.html?groupId=${currentGroupId}`;
+        const shareData = {
+            title: `Join ${currentGroupData.name} on Kabale Online`,
+            text: `Check out this group: ${currentGroupData.description}`,
+            url: shareUrl
+        };
+
+        try {
+            // Use Web Share API (on mobile)
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                // Fallback for PC: Copy to clipboard
+                await navigator.clipboard.writeText(shareUrl);
+                showToast("Link copied to clipboard!");
+            }
+        } catch (err) {
+            console.error('Error sharing:', err);
+            // Fallback if even clipboard fails
+            navigator.clipboard.writeText(shareUrl);
+            showToast("Link copied to clipboard!");
+        }
+    });
+
+    // --- Edit Group Modal Logic ---
     modalEditBtn.addEventListener('click', () => {
         editGroupNameInput.value = currentGroupData.name;
         editGroupDescInput.value = currentGroupData.description;
         editModalError.style.display = 'none';
-        
-        // NEW: Load current group image into edit preview
         removeEditFile(currentGroupData.imageUrl); 
-        
         editGroupModal.classList.add('active');
     });
 
-    // Close Edit Modal
     closeEditModalBtn.addEventListener('click', () => {
         editGroupModal.classList.remove('active');
     });
 
-    // --- NEW: Listeners for Edit Image Upload ---
     editGroupImageUploadArea.addEventListener('click', () => {
         editGroupImageInput.click();
     });
@@ -538,7 +550,7 @@ function setupModalListeners() {
         }
     });
 
-    // --- UPDATED: Handle Edit Form Submit ---
+    // Handle Edit Form Submit
     editGroupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newName = editGroupNameInput.value.trim();
@@ -556,17 +568,11 @@ function setupModalListeners() {
         try {
             let newImageUrl = null;
             
-            // 1. Check for and upload new image
             if (editGroupImageFile) {
                 editGroupSubmit.textContent = "Uploading image...";
-                try {
-                    newImageUrl = await uploadImageToCloudinary(editGroupImageFile);
-                } catch (uploadError) {
-                    throw new Error("Cloudinary upload failed. Please try again.");
-                }
+                newImageUrl = await uploadImageToCloudinary(editGroupImageFile);
             }
 
-            // 2. Prepare data to update
             const updateData = {
                 name: newName,
                 description: newDesc
@@ -576,14 +582,11 @@ function setupModalListeners() {
                 updateData.imageUrl = newImageUrl;
             }
 
-            // 3. Update Firestore
-            editGroupSubmit.textContent = "Saving...";
             const groupDocRef = doc(db, "groups", currentGroupId);
             await updateDoc(groupDocRef, updateData);
             
-            // Success
             editGroupModal.classList.remove('active');
-            removeEditFile(); // Clear the file
+            removeEditFile(); 
             
         } catch (error) {
             console.error("Error updating group:", error);
@@ -596,17 +599,44 @@ function setupModalListeners() {
     });
 }
 
-// NEW: Fetch and Render Group Members
-async function fetchGroupMembers(memberIds) {
-    modalMembersList.innerHTML = ''; // Clear old list
-    modalMembersLoader.style.display = 'block';
+// --- NEW: Remove Member Logic ---
+async function handleRemoveMember(userIdToRemove, userName) {
+    if (!confirm(`Are you sure you want to remove ${userName} from the group?`)) {
+        return;
+    }
 
     try {
-        // Fetch all user docs in parallel
+        const groupDocRef = doc(db, "groups", currentGroupId);
+        const userDocRef = doc(db, "users", userIdToRemove);
+
+        // Remove from both group's member list and user's followed list
+        await updateDoc(groupDocRef, {
+            members: arrayRemove(userIdToRemove)
+        });
+        await updateDoc(userDocRef, {
+            followedGroups: arrayRemove(currentGroupId)
+        });
+        
+        showToast(`${userName} has been removed.`);
+        // The onSnapshot listener for the groupDoc will trigger and re-render the member list
+    } catch (error) {
+        console.error("Error removing member:", error);
+        showToast("Failed to remove member. Please try again.");
+    }
+}
+
+// --- Fetch and Render Group Members (UPDATED) ---
+async function fetchGroupMembers(memberIds) {
+    modalMembersList.innerHTML = ''; 
+    modalMembersLoader.style.display = 'block';
+
+    const isAdmin = currentUser.uid === currentGroupData.createdBy;
+
+    try {
         const userPromises = memberIds.map(id => getDoc(doc(db, "users", id)));
         const userDocs = await Promise.all(userPromises);
         
-        modalMembersList.innerHTML = ''; // Clear again just in case
+        modalMembersList.innerHTML = ''; 
         
         userDocs.forEach(userDoc => {
             if (userDoc.exists()) {
@@ -617,17 +647,33 @@ async function fetchGroupMembers(memberIds) {
                 const avatar = userData.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(userData.name || 'U').charAt(0)}`;
                 const role = userDoc.id === currentGroupData.createdBy ? '<span class="member-role">Admin</span>' : '';
                 
-                // NEW: Make member item clickable
-                // --- THIS LINE WAS UPDATED ---
+                // --- NEW: Show Remove button for Admin ---
+                let removeBtnHTML = '';
+                if (isAdmin && userDoc.id !== currentUser.uid) {
+                    removeBtnHTML = `<button class="remove-member-btn" data-user-id="${userDoc.id}" data-user-name="${userData.name || 'User'}">Remove</button>`;
+                }
+                
                 memberDiv.innerHTML = `
                     <a href="../profile.html?sellerId=${userDoc.id}" class="message-profile-link" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px; width: 100%;">
                         <img src="${avatar}" alt="${userData.name}" class="member-avatar">
                         <span class="member-name">${userData.name || 'User'}</span>
                         ${role}
                     </a>
+                    ${removeBtnHTML}
                 `;
                 modalMembersList.appendChild(memberDiv);
             }
+        });
+
+        // --- NEW: Add click listeners for all remove buttons ---
+        modalMembersList.querySelectorAll('.remove-member-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const userId = e.target.dataset.userId;
+                const userName = e.target.dataset.userName;
+                handleRemoveMember(userId, userName);
+            });
         });
 
     } catch (error) {
