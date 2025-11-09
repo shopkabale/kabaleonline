@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *FEATURE UPDATE* //
+//      CHAT ROOM SCRIPT (chat.js) - *ALL FEATURES ADDED* //
 //                                                                     //
 // =================================================================== //
 
@@ -63,6 +63,9 @@ const editGroupSubmit = document.getElementById('edit-group-submit');
 const editGroupNameInput = document.getElementById('edit-group-name');
 const editGroupDescInput = document.getElementById('edit-group-description');
 const editModalError = document.getElementById('edit-modal-error');
+const editGroupCategorySelect = document.getElementById('edit-group-category'); // <-- NEW
+
+// --- NEW: Edit Group Image Elements ---
 const editGroupImageUploadArea = document.getElementById('edit-group-image-upload-area');
 const editGroupImageInput = document.getElementById('edit-group-image-input');
 const editGroupImagePreviewContainer = document.getElementById('edit-group-image-preview-container');
@@ -74,7 +77,7 @@ let currentGroupId = null;
 let currentGroupData = null; 
 let unsubscribe = null; 
 let replyingToMessage = null;
-let editGroupImageFile = null; 
+let editGroupImageFile = null; // NEW: Stores file for editing group image
 
 // --- Main Initialization ---
 async function initializeChat() {
@@ -97,27 +100,30 @@ async function initializeChat() {
 
             if (!currentGroupId) {
                 alert("Error: No group ID specified.");
-                window.location.href = 'index.html'; 
+                window.location.href = 'index.html'; // Back to group list
                 return;
             }
             
+            // Listen for group details in real-time
             const groupDocRef = doc(db, "groups", currentGroupId);
             onSnapshot(groupDocRef, (groupDoc) => {
                 if (groupDoc.exists()) {
                     currentGroupData = groupDoc.data();
-                    updateChatHeader(); 
+                    updateChatHeader(); // Update UI
                 } else {
-                     alert("Error: This group does not exist.");
+                     alert("Error: This group no longer exists."); // Changed message
                      window.location.href = 'index.html';
                 }
             });
             
             backButton.href = 'index.html'; 
             listenForMessages(currentGroupId);
-            setupModalListeners(); 
+            setupModalListeners(); // Set up modal logic
 
         } else {
-            window.location.href = '/login/';
+            // User is not logged in, redirect to group list
+            // The group list (index.html) will show the "Please Log In" message
+            window.location.href = 'index.html';
         }
     });
 }
@@ -147,26 +153,27 @@ function listenForMessages(groupId) {
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
-        messageArea.innerHTML = ''; 
+        messageArea.innerHTML = ''; // Clear the chat area *every* time
         
         snapshot.docs.forEach((doc) => {
             const messageData = { id: doc.id, ...doc.data() };
-            renderMessage(messageData); 
+            renderMessage(messageData); // Render *all* messages in order
         });
         
+        // Scroll to bottom
         setTimeout(() => {
             messageArea.scrollTop = messageArea.scrollHeight;
         }, 100); 
     }, (error) => {
         console.error("Error fetching messages:", error);
-        messageArea.innerHTML = `<p style="padding: 20px; text-align: center;">Error: Could not load messages.</p>`;
+        messageArea.innerHTML = `<p style="padding: 20px; text-align: center;">Error: Could not load messages. You may not be a member of this group.</p>`;
     });
 }
 
-// Format Time Helper
+// --- NEW: Helper Function to Format Time ---
 function formatMessageTime(timestamp) {
     if (!timestamp) {
-        return ''; 
+        return ''; // Handle pending server timestamps
     }
     const date = timestamp.toDate();
     return date.toLocaleTimeString('en-US', {
@@ -176,7 +183,7 @@ function formatMessageTime(timestamp) {
     });
 }
 
-// Reply UI logic
+// --- Reply UI logic ---
 function updateReplyUI() {
     if (replyingToMessage) {
         replyToNameEl.textContent = replyingToMessage.sender;
@@ -188,7 +195,7 @@ function updateReplyUI() {
     }
 }
 
-// Render a single message
+// --- CORRECTED: Renders Messages with Time/Tick & Profile Links ---
 function renderMessage(data) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
@@ -200,6 +207,7 @@ function renderMessage(data) {
 
     const avatar = data.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(data.userName || 'U').charAt(0)}`;
     
+    // 1. Reply Quote
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
         replyQuoteHTML = `
@@ -210,6 +218,7 @@ function renderMessage(data) {
         `;
     }
 
+    // 2. NEW: Time & Tick
     const messageTime = formatMessageTime(data.createdAt);
     const sentTick = isOwnMessage ? '<i class="fas fa-check message-tick"></i>' : '';
     const timeMetaHTML = `
@@ -219,8 +228,10 @@ function renderMessage(data) {
         </div>
     `;
 
+    // 3. Message Bubble
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
+        // Image message bubble
         messageBubbleHTML = `
             <p class="message-bubble message-image">
                 <img src="${data.imageData}" alt="User image" loading="lazy">
@@ -228,6 +239,7 @@ function renderMessage(data) {
             </p>
         `;
     } else {
+        // Text message bubble now uses a <span> with class "message-text"
         messageBubbleHTML = `
             <p class="message-bubble">
                 <span class="message-text">${data.text || ''}</span>
@@ -236,12 +248,16 @@ function renderMessage(data) {
         `;
     }
 
+    // 4. Sender Name (with link)
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
         </a>
     `;
     
+    // 5. Render
+    // --- THIS IS THE FINAL LAYOUT FIX ---
+    // The avatarHTML is now only added if it is NOT your own message.
     const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
@@ -265,7 +281,7 @@ function renderMessage(data) {
     messageArea.appendChild(messageDiv);
 }
 
-// --- Form and Message Sending ---
+// --- Form submit (Your existing code) ---
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const messageText = messageInput.value.trim();
@@ -297,7 +313,7 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Image Upload (in-chat)
+// --- Image Upload (Your existing code) ---
 imageUploadBtn.addEventListener('click', () => {
     imageUploadInput.click();
 });
@@ -306,7 +322,7 @@ imageUploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 500 * 1024) { 
+    if (file.size > 500 * 1024) { // 500KB size limit
         alert("Image is too large. Please choose a file under 500KB.");
         return;
     }
@@ -376,7 +392,7 @@ async function sendImageMessage(base64ImageData) {
 }
 
 
-// --- Reply Logic ---
+// --- Reply Logic (Your existing code) ---
 messageArea.addEventListener('click', (e) => {
     const replyButton = e.target.closest('.reply-btn');
     if (replyButton) {
@@ -531,6 +547,7 @@ function setupModalListeners() {
     modalEditBtn.addEventListener('click', () => {
         editGroupNameInput.value = currentGroupData.name;
         editGroupDescInput.value = currentGroupData.description;
+        editGroupCategorySelect.value = currentGroupData.category || ""; // <-- NEW: Pre-fill category
         editModalError.style.display = 'none';
         removeEditFile(currentGroupData.imageUrl); 
         editGroupModal.classList.add('active');
@@ -555,9 +572,10 @@ function setupModalListeners() {
         e.preventDefault();
         const newName = editGroupNameInput.value.trim();
         const newDesc = editGroupDescInput.value.trim();
-        
-        if (!newName) {
-            editModalError.textContent = "Group name is required.";
+        const newCategory = editGroupCategorySelect.value; // <-- NEW: Get new category
+
+        if (!newName || !newCategory) { // <-- NEW: Check category
+            editModalError.textContent = "Name and category are required.";
             editModalError.style.display = 'block';
             return;
         }
@@ -575,7 +593,8 @@ function setupModalListeners() {
 
             const updateData = {
                 name: newName,
-                description: newDesc
+                description: newDesc,
+                category: newCategory // <-- NEW: Add category to update
             };
             
             if (newImageUrl) {
