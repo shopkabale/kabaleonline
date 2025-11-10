@@ -925,11 +925,11 @@
         #menu-reaction-bar {
     display: flex;
     overflow-x: auto; 
-    gap: 10px;         
-    padding: 5px;
+    gap: 6px;  /* <-- REDUCED the gap */
+    padding: 5px 8px; /* Added a little horizontal padding */
     margin-bottom: 5px;
     border-bottom: 1px solid var(--border-color);
-    justify-content: flex-start; /* <-- ADD THIS LINE */
+    justify-content: flex-start; /* <-- ADDED THIS to force left-alignment */
 }
         
         .reaction-btn {
