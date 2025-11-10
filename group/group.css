@@ -924,14 +924,12 @@
         /* NEW: Reaction Bar Styles */
         #menu-reaction-bar {
     display: flex;
-    /* overflow-x: auto;  <-- LETS YOU SCROLL */
     overflow-x: auto; 
-    /* gap: 10px;         <-- ADDS SPACING */
     gap: 10px;         
     padding: 5px;
     margin-bottom: 5px;
     border-bottom: 1px solid var(--border-color);
-    /* Note: We removed 'justify-content: space-around;' */
+    justify-content: flex-start; /* <-- ADD THIS LINE */
 }
         
         .reaction-btn {
