@@ -905,7 +905,12 @@ body {
     padding: 5px 8px;
     margin-bottom: 5px;
     border-bottom: 1px solid var(--border-color);
-    justify-content: flex-start;
+    /* No justify-content needed here. Flex items will be packed from start by default. */
+    /* Remove 'justify-content: center;' if you added it */
+    
+    /* ADD THIS: Forces the reaction bar to only be as wide as its content */
+    width: fit-content; 
+    max-width: 100%; /* Ensure it doesn't exceed its parent's width */
 }
 
 /* --- Reaction Buttons (inside bar) --- */
