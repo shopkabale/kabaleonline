@@ -1,7 +1,7 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT - *LONG PRESS MENU + PROFILE CHECK* //
+//      CHAT ROOM SCRIPT - *REACTIONS + LONG PRESS + PROFILE* //
 //                                                                     //
 // =================================================================== //
 
@@ -97,12 +97,13 @@ const completeProfileForm = document.getElementById('complete-profile-form');
 const profileFullNameInput = document.getElementById('profile-fullName-input');
 const completeProfileSubmit = document.getElementById('complete-profile-submit');
 
-// NEW: Context Menu Elements
+// Context Menu Elements
 const contextMenuOverlay = document.getElementById('context-menu-overlay');
 const messageContextMenu = document.getElementById('message-context-menu');
 const menuReplyBtn = document.getElementById('menu-reply-btn');
 const menuEditBtn = document.getElementById('menu-edit-btn');
 const menuDeleteBtn = document.getElementById('menu-delete-btn');
+const reactionButtons = document.querySelectorAll('.reaction-btn'); // NEW
 
 // --- Global State ---
 let currentUser = null;
@@ -114,13 +115,12 @@ let replyingToMessage = null;
 let editGroupImageFile = null; 
 let isUserAdmin = false;
 
-// NEW: Context Menu State
+// Context Menu State
 let longPressTimer = null;
 let activeMessageData = null;
 
-// --- Helper UI: Join Banner Node (created on demand) ---
+// --- Helper UI: Join Banner Node ---
 function createJoinBanner() {
-    // ... (This function is unchanged)
     const banner = document.createElement('div');
     banner.id = 'join-banner';
     banner.style.cssText = 'padding:12px; text-align:center; background:#fff6e5; border:1px solid #ffd89b; margin:8px; border-radius:8px;';
@@ -135,7 +135,6 @@ function createJoinBanner() {
 }
 
 function removeJoinBanner() {
-    // ... (This function is unchanged)
     const b = document.getElementById('join-banner');
     if (b) b.remove();
 }
@@ -151,27 +150,23 @@ async function initializeChat() {
                 return;
             }
 
-            // Use 'fullName' from your profile script
             currentUser = {
                 uid: user.uid,
-                name: userDoc.data().fullName, // Use fullName
+                name: userDoc.data().fullName, 
                 profilePicUrl: userDoc.data().profilePicUrl
             };
 
-            // NEW PROFILE CHECK
             if (!currentUser.name || currentUser.name.trim() === "") {
                 completeProfileModal.style.display = 'flex';
                 completeProfileForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const newName = profileFullNameInput.value.trim();
                     if (!newName) return;
-
                     completeProfileSubmit.disabled = true;
                     completeProfileSubmit.textContent = "Saving...";
-
                     try {
                         await updateDoc(doc(db, "users", currentUser.uid), {
-                            fullName: newName // Save as 'fullName'
+                            fullName: newName
                         });
                         currentUser.name = newName;
                         completeProfileModal.style.display = 'none';
@@ -192,9 +187,8 @@ async function initializeChat() {
     });
 }
 
-// --- NEW FUNCTION to hold the rest of the chat logic ---
+// --- Chat Logic (Post-Auth) ---
 async function proceedWithChatInitialization() {
-    // ... (This function is unchanged, just moved)
     const urlParams = new URLSearchParams(window.location.search);
     currentGroupId = urlParams.get('groupId');
 
@@ -207,7 +201,6 @@ async function proceedWithChatInitialization() {
     backButton.href = 'index.html'; 
     setupModalListeners(); 
 
-    // Subscribe to group doc and react to membership changes
     const groupDocRef = doc(db, "groups", currentGroupId);
     if (groupDocUnsub) groupDocUnsub();
     groupDocUnsub = onSnapshot(groupDocRef, (groupDoc) => {
@@ -244,13 +237,11 @@ async function proceedWithChatInitialization() {
         messageArea.innerHTML = `<p style="padding: 20px; text-align:center;">Could not load group information.</p>`;
     });
 
-    // --- NEW: Add Context Menu Listeners ---
     setupContextMenuListeners();
 }
 
 // Update Chat Header
 function updateChatHeader() {
-    // ... (This function is unchanged)
     if (!currentGroupData) return;
     chatTitle.textContent = currentGroupData.name;
     if (currentGroupData.imageUrl) {
@@ -266,7 +257,6 @@ function updateChatHeader() {
 
 // Listen for Messages
 function listenForMessages(groupId) {
-    // ... (This function is unchanged)
     if (unsubscribe) return; 
     const messagesRef = collection(db, "groups", groupId, "messages");
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
@@ -286,9 +276,8 @@ function listenForMessages(groupId) {
     });
 }
 
-// --- Helper: show join prompt inside chat area ---
+// --- Join Group Logic ---
 function showJoinPrompt() {
-    // ... (This function is unchanged)
     removeJoinBanner(); 
     const banner = createJoinBanner();
     if (messageArea.firstChild) {
@@ -321,9 +310,7 @@ function showJoinPrompt() {
     }
 }
 
-// --- Join Group Logic ---
 async function joinGroup(groupId) {
-    // ... (This function is unchanged)
     if (!currentUser || !groupId) throw new Error("Missing user or group.");
     const groupDocRef = doc(db, "groups", groupId);
     const userDocRef = doc(db, "users", currentUser.uid);
@@ -354,7 +341,6 @@ async function joinGroup(groupId) {
 
 // --- Format Time ---
 function formatMessageTime(timestamp) {
-    // ... (This function is unchanged)
     if (!timestamp) return '';
     const date = timestamp.toDate();
     return date.toLocaleTimeString('en-US', {
@@ -366,7 +352,6 @@ function formatMessageTime(timestamp) {
 
 // --- Reply UI logic ---
 function updateReplyUI() {
-    // ... (This function is unchanged)
     if (replyingToMessage) {
         replyToNameEl.textContent = replyingToMessage.sender;
         replyToPreviewEl.textContent = replyingToMessage.text;
@@ -377,7 +362,7 @@ function updateReplyUI() {
     }
 }
 
-// --- **MODIFIED** Renders Messages with Actions ---
+// --- **MODIFIED** Renders Messages with Reactions ---
 function renderMessage(data) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
@@ -387,7 +372,6 @@ function renderMessage(data) {
         messageDiv.classList.add('own-message');
     }
 
-    // --- NEW: Add data attributes for context menu ---
     messageDiv.dataset.id = data.id;
     messageDiv.dataset.userId = data.userId;
     messageDiv.dataset.userName = data.userName || '';
@@ -396,14 +380,12 @@ function renderMessage(data) {
     if (data.createdAt) {
         messageDiv.dataset.timestamp = data.createdAt.toMillis();
     }
-    // --- END NEW ---
 
     const avatar = data.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(data.userName || 'U').charAt(0)}`;
 
     // Reply Quote
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
-        // ... (unchanged)
         replyQuoteHTML = `
             <div class="reply-quote">
                 <div class="reply-quote-sender">${data.repliedToSender || '...'}</div>
@@ -422,42 +404,57 @@ function renderMessage(data) {
         </div>
     `;
 
+    // --- NEW: Reaction Logic ---
+    let reactionsHTML = '';
+    let hasReactions = false;
+    if (data.reactions && Object.keys(data.reactions).length > 0) {
+        reactionsHTML = '<div class="reactions-container">';
+        for (const [emoji, userIds] of Object.entries(data.reactions)) {
+            if (userIds && userIds.length > 0) {
+                hasReactions = true;
+                reactionsHTML += `
+                    <div class="reaction-pill">
+                        <span class="reaction-emoji">${emoji}</span>
+                        <span class="reaction-count">${userIds.length}</span>
+                    </div>
+                `;
+            }
+        }
+        reactionsHTML += '</div>';
+    }
+    // --- END NEW ---
+
     // Message Bubble
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
-        // ... (unchanged)
         messageBubbleHTML = `
-            <div class="message-bubble message-image">
+            <div class="message-bubble message-image ${hasReactions ? 'has-reactions' : ''}">
                 <img src="${data.imageData}" alt="User image" loading="lazy">
                 ${timeMetaHTML}
-            </div>
+                ${reactionsHTML} </div>
         `;
     } else {
-        // ... (unchanged)
         messageBubbleHTML = `
-            <div class="message-bubble">
+            <div class="message-bubble ${hasReactions ? 'has-reactions' : ''}">
                 <span class="message-text">${data.text || ''}</span>
                 ${timeMetaHTML}
-            </div>
+                ${reactionsHTML} </div>
         `;
     }
-
-    // Sender Name (with link)
+    
+    // Sender Name
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
         </a>
     `;
     
-    // --- REMOVED action buttons HTML ---
-
     const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
         </a>
     `;
 
-    // --- MODIFIED: No actionsHTML
     messageDiv.innerHTML = `
         ${avatarHTML}
         <div class="message-content">
@@ -466,7 +463,7 @@ function renderMessage(data) {
                 ${replyQuoteHTML}
                 ${messageBubbleHTML}
             </div>
-            </div>
+        </div>
     `;
 
     messageArea.appendChild(messageDiv);
@@ -475,7 +472,6 @@ function renderMessage(data) {
 // --- Helper function to check if a message is recent ---
 function isMessageRecent(timestamp) {
     if (!timestamp) return false;
-    // --- MODIFIED: Timestamp might be a string from dataset ---
     const messageTime = parseInt(timestamp, 10);
     const now = new Date().getTime();
     const FIFTEEN_MINUTES = 15 * 60 * 1000;
@@ -484,7 +480,6 @@ function isMessageRecent(timestamp) {
 
 // --- Edit Message Functions ---
 function openEditMessageModal(messageId, currentText) {
-    // ... (This function is unchanged)
     editMessageInput.value = currentText;
     editMessageIdInput.value = messageId;
     editMessageModal.classList.add('active');
@@ -492,12 +487,10 @@ function openEditMessageModal(messageId, currentText) {
 }
 
 function closeEditMessageModal() {
-    // ... (This function is unchanged)
     editMessageModal.classList.remove('active');
 }
 
 async function handleEditMessageSubmit(e) {
-    // ... (This function is unchanged)
     e.preventDefault();
     const newText = editMessageInput.value.trim();
     const messageId = editMessageIdInput.value;
@@ -518,7 +511,6 @@ async function handleEditMessageSubmit(e) {
 
 // --- Delete Message Function ---
 async function handleDeleteMessage(messageId) {
-    // ... (This function is unchanged)
     if (!confirm("Are you sure you want to delete this message? This cannot be undone.")) {
         return;
     }
@@ -533,7 +525,6 @@ async function handleDeleteMessage(messageId) {
 
 // --- Form submit (Text) ---
 chatForm.addEventListener('submit', async (e) => {
-    // ... (This function is unchanged)
     e.preventDefault();
     const messageText = messageInput.value.trim();
     if (messageText && currentUser && currentGroupId) {
@@ -547,7 +538,8 @@ chatForm.addEventListener('submit', async (e) => {
             userId: currentUser.uid,
             userName: currentUser.name,
             profilePicUrl: currentUser.profilePicUrl || '',
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            reactions: {} // NEW: Initialize reactions map
         };
         if (replyingToMessage) {
             newMessage.repliedToMessageId = replyingToMessage.id;
@@ -568,12 +560,10 @@ chatForm.addEventListener('submit', async (e) => {
 
 // --- Image Upload ---
 imageUploadBtn.addEventListener('click', () => {
-    // ... (This function is unchanged)
     imageUploadInput.click();
 });
 
 imageUploadInput.addEventListener('change', (e) => {
-    // ... (This function is unchanged)
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 500 * 1024) {
@@ -585,7 +575,6 @@ imageUploadInput.addEventListener('change', (e) => {
 });
 
 function resizeAndSendImage(file) {
-    // ... (This function is unchanged)
     const reader = new FileReader();
     reader.onload = (e) => {
         const img = new Image();
@@ -619,7 +608,6 @@ function resizeAndSendImage(file) {
 }
 
 async function sendImageMessage(base64ImageData) {
-    // ... (This function is unchanged)
     if (!currentUser || !currentGroupId) return;
     if (!currentGroupData || !currentGroupData.members || !currentGroupData.members.includes(currentUser.uid)) {
         showToast("You must join the group before sending images.");
@@ -631,7 +619,8 @@ async function sendImageMessage(base64ImageData) {
         userId: currentUser.uid,
         userName: currentUser.name,
         profilePicUrl: currentUser.profilePicUrl || '',
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        reactions: {} // NEW: Initialize reactions map
     };
     if (replyingToMessage) {
         newMessage.repliedToMessageId = replyingToMessage.id;
@@ -648,8 +637,7 @@ async function sendImageMessage(base64ImageData) {
     }
 }
 
-// --- **REMOVED** old messageArea click listener for actions ---
-// We add a new one for just the image popup
+// --- Image Popup Click Listener ---
 messageArea.addEventListener('click', (e) => {
     const clickedImage = e.target.closest('.message-image img');
     if (clickedImage) {
@@ -657,11 +645,11 @@ messageArea.addEventListener('click', (e) => {
     }
 });
 
-
-// --- Add Edit Message Modal Listeners ---
+// --- Edit Message Modal Listeners ---
 editMessageForm.addEventListener('submit', handleEditMessageSubmit);
 closeEditMessageModalBtn.addEventListener('click', closeEditMessageModal);
 
+// --- Cancel Reply Listener ---
 cancelReplyBtn.addEventListener('click', () => {
     replyingToMessage = null;
     updateReplyUI();
@@ -669,38 +657,29 @@ cancelReplyBtn.addEventListener('click', () => {
 
 // --- Image Popup Logic ---
 function openImagePopup(src) {
-    // ... (This function is unchanged)
     popupImage.src = src;
     imagePopupModal.style.display = 'flex';
 }
 
 function closeImagePopupFunction() {
-    // ... (This function is unchanged)
     imagePopupModal.style.display = 'none';
     popupImage.src = '';
 }
 
-// Close modal listeners
 closeImagePopup.addEventListener('click', closeImagePopupFunction);
 imagePopupModal.addEventListener('click', (e) => {
-    // ... (This function is unchanged)
     if (e.target === imagePopupModal) {
         closeImagePopupFunction();
     }
 });
 
-// --- NEW: Context Menu (Long Press) Logic ---
-
+// --- **UPDATED** Context Menu (Long Press) Logic ---
 function setupContextMenuListeners() {
-    // --- Mobile Listeners ---
     messageArea.addEventListener('touchstart', handlePressStart, { passive: true });
     messageArea.addEventListener('touchend', handlePressEnd);
-    messageArea.addEventListener('touchmove', handlePressEnd); // Cancel on drag
-
-    // --- Desktop Listener ---
+    messageArea.addEventListener('touchmove', handlePressEnd);
     messageArea.addEventListener('contextmenu', handleRightClick);
 
-    // --- Listeners for the menu buttons ---
     contextMenuOverlay.addEventListener('click', hideContextMenu);
     
     menuReplyBtn.addEventListener('click', () => {
@@ -725,18 +704,25 @@ function setupContextMenuListeners() {
         handleDeleteMessage(activeMessageData.id);
         hideContextMenu();
     });
+
+    // --- NEW: Listeners for reaction buttons ---
+    reactionButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (!activeMessageData) return;
+            const reaction = button.dataset.reaction;
+            handleReaction(activeMessageData.id, reaction);
+            hideContextMenu();
+        });
+    });
 }
 
 function handlePressStart(e) {
-    clearTimeout(longPressTimer); // Clear any existing timer
-    
+    clearTimeout(longPressTimer);
     const targetMessage = e.target.closest('.message');
     if (!targetMessage) return;
-
-    // Start a new timer
     longPressTimer = setTimeout(() => {
         showContextMenu(e, targetMessage);
-    }, 500); // 500ms for a long press
+    }, 500); 
 }
 
 function handlePressEnd() {
@@ -744,41 +730,39 @@ function handlePressEnd() {
 }
 
 function handleRightClick(e) {
-    e.preventDefault(); // Stop the default browser right-click menu
+    e.preventDefault(); 
     const targetMessage = e.target.closest('.message');
     if (!targetMessage) return;
     showContextMenu(e, targetMessage);
 }
 
 function showContextMenu(e, targetMessage) {
-    // Get all message data from the dataset
     activeMessageData = { ...targetMessage.dataset };
     
     const isOwn = activeMessageData.userId === currentUser.uid;
     const canEdit = isOwn && 
                     activeMessageData.type === 'text' && 
                     isMessageRecent(activeMessageData.timestamp);
+    
+    // Admin can delete any, regular user can delete their own
+    const canDelete = isUserAdmin || isOwn; 
 
-    // Show/Hide buttons based on permissions
     menuReplyBtn.style.display = 'flex';
     menuEditBtn.style.display = canEdit ? 'flex' : 'none';
-    menuDeleteBtn.style.display = isUserAdmin ? 'flex' : 'none'; // Only admin can delete
+    menuDeleteBtn.style.display = canDelete ? 'flex' : 'none';
 
-    // Get position
     let x, y;
     if (e.type === 'contextmenu') {
         x = e.pageX;
         y = e.pageY;
-    } else { // Touch event
+    } else { 
         x = e.touches[0].pageX;
         y = e.touches[0].pageY;
     }
 
-    // Position and show menu
     messageContextMenu.style.display = 'block';
     contextMenuOverlay.style.display = 'block';
 
-    // Reposition if too close to edge
     const menuWidth = messageContextMenu.offsetWidth;
     const menuHeight = messageContextMenu.offsetHeight;
     if (x + menuWidth > window.innerWidth - 10) {
@@ -795,12 +779,62 @@ function showContextMenu(e, targetMessage) {
 function hideContextMenu() {
     messageContextMenu.style.display = 'none';
     contextMenuOverlay.style.display = 'none';
-    activeMessageData = null; // Clear active message
+    activeMessageData = null;
+}
+
+// --- NEW: Handle Reaction ---
+async function handleReaction(messageId, emoji) {
+    if (!currentUser || !currentGroupId) return;
+
+    const messageRef = doc(db, "groups", currentGroupId, "messages", messageId);
+    const userId = currentUser.uid;
+
+    try {
+        const messageSnap = await getDoc(messageRef);
+        if (!messageSnap.exists()) return;
+
+        const messageData = messageSnap.data();
+        const reactions = messageData.reactions || {};
+        
+        let userHasReacted = false;
+        let existingReaction = null;
+
+        // Check if user has reacted at all
+        for (const [key, users] of Object.entries(reactions)) {
+            if (users.includes(userId)) {
+                userHasReacted = true;
+                existingReaction = key;
+                break;
+            }
+        }
+
+        const update = {};
+
+        if (userHasReacted) {
+            // User is changing or removing reaction
+            // First, always remove the old reaction
+            update[`reactions.${existingReaction}`] = arrayRemove(userId);
+
+            if (existingReaction !== emoji) {
+                // If it's a *new* emoji, add it
+                update[`reactions.${emoji}`] = arrayUnion(userId);
+            }
+            // If it's the *same* emoji, we just remove it (toggle off)
+        } else {
+            // User has not reacted, so add the new reaction
+            update[`reactions.${emoji}`] = arrayUnion(userId);
+        }
+
+        await updateDoc(messageRef, update);
+
+    } catch (error) {
+        console.error("Error handling reaction:", error);
+        showToast("Failed to add reaction.");
+    }
 }
 
 // --- Cloudinary Upload Function ---
 async function uploadImageToCloudinary(file) {
-    // ... (This function is unchanged)
     try {
         const response = await fetch('/.netlify/functions/generate-group-signature');
         if (!response.ok) throw new Error('Could not get upload signature.');
@@ -826,7 +860,6 @@ async function uploadImageToCloudinary(file) {
 
 // --- File Preview Logic ---
 function handleEditFilePreview(file) {
-    // ... (This function is unchanged)
     editGroupImageFile = file; 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -846,7 +879,6 @@ function handleEditFilePreview(file) {
 }
 
 function removeEditFile(currentImageUrl = null) {
-    // ... (This function is unchanged)
     editGroupImageFile = null;
     editGroupImageInput.value = null; 
     if (currentImageUrl) {
@@ -864,7 +896,6 @@ function removeEditFile(currentImageUrl = null) {
 
 // --- Toast Notification Helper ---
 function showToast(message) {
-    // ... (This function is unchanged)
     if (!toastNotification) {
         console.log("Toast:", message);
         return;
@@ -878,7 +909,6 @@ function showToast(message) {
 
 // --- Group Details Modal Logic ---
 function setupModalListeners() {
-    // ... (This function is unchanged)
     chatHeaderInfo.addEventListener('click', () => {
         if (!currentGroupData) return;
         modalGroupName.textContent = currentGroupData.name;
@@ -1018,7 +1048,6 @@ function setupModalListeners() {
 
 // --- Remove Member Logic ---
 async function handleRemoveMember(userIdToRemove, userName) {
-    // ... (This function is unchanged)
     if (!confirm(`Are you sure you want to remove ${userName} from the group?`)) {
         return;
     }
@@ -1043,7 +1072,6 @@ async function handleRemoveMember(userIdToRemove, userName) {
 
 // --- Promote/Demote Admin Logic ---
 async function handleAdminAction(userId, action) {
-    // ... (This function is unchanged)
     const groupDocRef = doc(db, "groups", currentGroupId);
     try {
         if (action === 'promote') {
@@ -1065,7 +1093,6 @@ async function handleAdminAction(userId, action) {
 
 // --- Fetch and Render Group Members ---
 async function fetchGroupMembers(memberIds) {
-    // ... (This function is unchanged)
     modalMembersList.innerHTML = ''; 
     modalMembersLoader.style.display = 'block';
     const isSuperAdmin = currentUser.uid === currentGroupData.createdBy;
