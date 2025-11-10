@@ -873,6 +873,60 @@
     background: var(--bg-main);
     color: var(--text-main);
 }
+/* --- 16. Message Context Menu (Long Press) --- */
+        #context-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 4999; /* Below the menu, above everything else */
+        }
+        
+        #message-context-menu {
+            display: none;
+            position: absolute;
+            z-index: 5000;
+            width: 200px;
+            background: var(--bg-modal);
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            padding: 8px;
+            animation: fadeIn 0.1s ease-out;
+        }
+        
+        #message-context-menu button {
+            display: none; /* Hide all by default, JS will show them */
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #message-context-menu button:hover {
+            background: var(--bg-main);
+        }
+        
+        #message-context-menu button.menu-danger {
+            color: var(--ko-danger);
+        }
+        
+        #message-context-menu button.menu-danger:hover {
+            background: rgba(229, 57, 53, 0.1);
+        }
+
+        /* --- THIS IS THE FIX for the "empty space" --- */
+        /* It hides the old, problematic hover action buttons */
+        .message-actions {
+            display: none; 
+        }
     </style>
 </head>
 <body>
@@ -1012,7 +1066,15 @@
     </div>
 
     <div id="toast-notification">Link copied to clipboard!</div>
-
+<div id="context-menu-overlay"></div>
+    <div id="message-context-menu">
+        <button id="menu-reply-btn"><i class="fas fa-reply"></i> Reply</button>
+        <button id="menu-edit-btn"><i class="fas fa-pen"></i> Edit</button>
+        <button id="menu-delete-btn" class="menu-danger">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+    
     <script type="module" src="../firebase.js"></script>
     <script type="module" src="chat.js?v=10"></script> </body>
 </html>
