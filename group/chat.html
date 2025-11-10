@@ -832,10 +832,68 @@
             border-color: var(--text-secondary);
             color: var(--text-secondary);
         }
+/* --- NEW: Complete Profile Modal --- */
+#complete-profile-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 9998;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+#complete-profile-modal .modal-content {
+    background-color: var(--bg-modal);
+    margin: auto;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+/* Re-using existing form styles */
+#complete-profile-modal .form-group { margin-bottom: 20px; }
+#complete-profile-modal label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: 600; 
+    color: var(--text-secondary); 
+    font-size: 0.9em;
+}
+#complete-profile-modal input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
     </style>
 </head>
 <body>
-
+<div id="complete-profile-modal">
+    <div class="modal-content">
+        <h2 style="margin-top:0;">Welcome to Kabale Groups!</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">We need your public display name before you can join the chat.</p>
+        <form id="complete-profile-form">
+            <div class="form-group">
+                <label for="profile-fullName-input">Your Full Name</label>
+                <input type="text" id="profile-fullName-input" required>
+            </div>
+            <button type="submit" id="complete-profile-submit" class="create-group-btn" style="width: 100%; margin-top: 10px;">Save and Join Chat</button>
+            <p style="text-align: center; font-size: 0.9em; color: var(--text-secondary); margin-top: 15px;">
+                You can add more details (like your WhatsApp and bio) on your main <a href="/myprofile/" style="color: var(--ko-primary);">profile page</a> later.
+            </p>
+        </form>
+    </div>
+</div>
     <div class="chat-header">
         <a href="index.html" id="back-button"><i class="fas fa-arrow-left"></i></a>
         <div id="chat-header-info">
