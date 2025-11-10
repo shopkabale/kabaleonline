@@ -923,25 +923,29 @@
 
         /* NEW: Reaction Bar Styles */
         #menu-reaction-bar {
-            display: flex;
-            justify-content: space-around;
-            padding: 5px;
-            margin-bottom: 5px;
-            border-bottom: 1px solid var(--border-color);
-        }
+    display: flex;
+    /* overflow-x: auto;  <-- LETS YOU SCROLL */
+    overflow-x: auto; 
+    /* gap: 10px;         <-- ADDS SPACING */
+    gap: 10px;         
+    padding: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+    /* Note: We removed 'justify-content: space-around;' */
+}
         
         .reaction-btn {
-            background: none;
-            border: none;
-            font-size: 1.5em; /* Bigger emoji */
-            padding: 5px;
-            cursor: pointer;
-            border-radius: 6px;
-            line-height: 1;
-            /* Allow this button to be seen */
-            display: inline-block !important; 
-        }
-        
+    background: none;
+    border: none;
+    font-size: 1.5em; /* Bigger emoji */
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 6px;
+    line-height: 1;
+    /* Allow this button to be seen */
+    display: inline-block !important; 
+    flex-shrink: 0; /* <-- ADD THIS LINE */
+}
         .reaction-btn:hover {
             background: var(--bg-main);
         }
