@@ -1,8 +1,8 @@
 // =================================================================== //
 //                                                                     //
 //             KABALE ONLINE - GROUP CHAT SYSTEM                       //
-//      CHAT ROOM SCRIPT (chat.js) - *ALL FEATURES ADDED* //
-//                                                                     //
+//      CHAT ROOM SCRIPT (chat.js) - *ALL FEATURES ADDED* (FIXED)      //
+//         Fix: ensure members are added to groups/{groupId}/members   //
 // =================================================================== //
 
 import { auth, db } from '../firebase.js';
@@ -18,11 +18,12 @@ import {
     getDoc,
     getDocs,
     updateDoc,
+    setDoc,
     limit,
     where,
     arrayRemove,
-    deleteDoc,  // <-- NEW
-    arrayUnion  // <-- NEW
+    deleteDoc,
+    arrayUnion 
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- DOM Elements ---
@@ -95,9 +96,30 @@ let currentUser = null;
 let currentGroupId = null;
 let currentGroupData = null; 
 let unsubscribe = null; 
+let groupDocUnsub = null;
 let replyingToMessage = null;
 let editGroupImageFile = null; 
 let isUserAdmin = false; // NEW: To check admin status quickly
+
+// --- Helper UI: Join Banner Node (created on demand) ---
+function createJoinBanner() {
+    const banner = document.createElement('div');
+    banner.id = 'join-banner';
+    banner.style.cssText = 'padding:12px; text-align:center; background:#fff6e5; border:1px solid #ffd89b; margin:8px; border-radius:8px;';
+    banner.innerHTML = `
+        <div style="margin-bottom:8px;">You are not a member of this group. Join to see messages and participate.</div>
+        <div style="display:flex; gap:8px; justify-content:center;">
+            <button id="join-group-btn" style="padding:8px 12px; border-radius:6px; border: none; cursor:pointer;">Join Group</button>
+            <button id="cancel-join-btn" style="padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer;">Cancel</button>
+        </div>
+    `;
+    return banner;
+}
+
+function removeJoinBanner() {
+    const b = document.getElementById('join-banner');
+    if (b) b.remove();
+}
 
 // --- Main Initialization ---
 async function initializeChat() {
@@ -123,33 +145,57 @@ async function initializeChat() {
                 window.location.href = 'index.html'; // Back to group list
                 return;
             }
-            
-            // Listen for group details in real-time
+
+            backButton.href = 'index.html'; 
+            setupModalListeners(); // Set up modal logic
+
+            // Subscribe to group doc and react to membership changes
             const groupDocRef = doc(db, "groups", currentGroupId);
-            onSnapshot(groupDocRef, (groupDoc) => {
+            if (groupDocUnsub) groupDocUnsub();
+            groupDocUnsub = onSnapshot(groupDocRef, (groupDoc) => {
                 if (groupDoc.exists()) {
                     currentGroupData = groupDoc.data();
-                    
-                    // ▼▼▼ NEW ADMIN CHECK ▼▼▼
+
                     // Ensure admins array exists, default to empty
                     if (!currentGroupData.admins) {
                         currentGroupData.admins = [];
                     }
+                    if (!currentGroupData.members) {
+                        currentGroupData.members = [];
+                    }
+
                     // Check if user is an admin
                     isUserAdmin = currentGroupData.admins.includes(currentUser.uid) || 
                                   currentGroupData.createdBy === currentUser.uid;
-                    // ▲▲▲ END ADMIN CHECK ▲▲▲
-                    
+
                     updateChatHeader(); // Update UI
+
+                    // If user is a member -> start listening for messages
+                    const isMember = currentGroupData.members.includes(currentUser.uid);
+                    if (isMember) {
+                        removeJoinBanner();
+                        if (!unsubscribe) {
+                            listenForMessages(currentGroupId);
+                        }
+                    } else {
+                        // not a member -> show join banner and stop listening to messages
+                        if (unsubscribe) {
+                            unsubscribe();
+                            unsubscribe = null;
+                        }
+                        showJoinPrompt();
+                        // also clear current message area so user doesn't see stale content
+                        messageArea.innerHTML = `<p style="padding: 20px; text-align:center;">You are not a member of this group. Join to view messages.</p>`;
+                    }
+
                 } else {
                      alert("Error: This group no longer exists."); // Changed message
                      window.location.href = 'index.html';
                 }
+            }, (err) => {
+                console.error("Group doc listener error:", err);
+                messageArea.innerHTML = `<p style="padding: 20px; text-align:center;">Could not load group information.</p>`;
             });
-            
-            backButton.href = 'index.html'; 
-            listenForMessages(currentGroupId);
-            setupModalListeners(); // Set up modal logic
 
         } else {
             // User is not logged in, redirect to group list
@@ -161,9 +207,9 @@ async function initializeChat() {
 // Update Chat Header
 function updateChatHeader() {
     if (!currentGroupData) return;
-    
+
     chatTitle.textContent = currentGroupData.name;
-    
+
     if (currentGroupData.imageUrl) {
         chatHeaderImg.src = currentGroupData.imageUrl;
         chatHeaderImg.style.display = 'block';
@@ -175,21 +221,21 @@ function updateChatHeader() {
     }
 }
 
-// Listen for Messages
+// Listen for Messages (only call this when user is confirmed a member)
 function listenForMessages(groupId) {
-    if (unsubscribe) unsubscribe(); 
+    if (unsubscribe) return; 
 
     const messagesRef = collection(db, "groups", groupId, "messages");
     const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
         messageArea.innerHTML = ''; // Clear the chat area *every* time
-        
-        snapshot.docs.forEach((doc) => {
-            const messageData = { id: doc.id, ...doc.data() };
+
+        snapshot.docs.forEach((docSnap) => {
+            const messageData = { id: docSnap.id, ...docSnap.data() };
             renderMessage(messageData); // Render *all* messages in order
         });
-        
+
         // Scroll to bottom
         setTimeout(() => {
             messageArea.scrollTop = messageArea.scrollHeight;
@@ -197,7 +243,87 @@ function listenForMessages(groupId) {
     }, (error) => {
         console.error("Error fetching messages:", error);
         messageArea.innerHTML = `<p style="padding: 20px; text-align: center;">Error: Could not load messages. You may not be a member of this group.</p>`;
+        showJoinPrompt();
     });
+}
+
+// --- Helper: show join prompt inside chat area ---
+function showJoinPrompt() {
+    removeJoinBanner(); // clear duplicates
+    const banner = createJoinBanner();
+    // put banner at top of messageArea
+    if (messageArea.firstChild) {
+        messageArea.insertBefore(banner, messageArea.firstChild);
+    } else {
+        messageArea.appendChild(banner);
+    }
+
+    // add listeners to the buttons
+    const joinBtn = document.getElementById('join-group-btn');
+    const cancelBtn = document.getElementById('cancel-join-btn');
+
+    if (joinBtn) {
+        joinBtn.addEventListener('click', async () => {
+            joinBtn.disabled = true;
+            joinBtn.textContent = "Joining...";
+            try {
+                await joinGroup(currentGroupId);
+                showToast("Joined group successfully.");
+                // onSnapshot for group doc will detect membership and start message listener
+            } catch (err) {
+                console.error("Join failed:", err);
+                showToast("Failed to join group. Try again.");
+            } finally {
+                joinBtn.disabled = false;
+                joinBtn.textContent = "Join Group";
+            }
+        }, { once: true });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            removeJoinBanner();
+        }, { once: true });
+    }
+}
+
+// --- Join Group: Adds user to groups/{groupId}.members and adds subcollection doc AND adds group to users/{uid}.followedGroups
+async function joinGroup(groupId) {
+    if (!currentUser || !groupId) throw new Error("Missing user or group.");
+
+    const groupDocRef = doc(db, "groups", groupId);
+    const userDocRef = doc(db, "users", currentUser.uid);
+    const memberDocRef = doc(db, "groups", groupId, "members", currentUser.uid);
+
+    try {
+        // Add user UID to group's members array (for quick membership lists)
+        await updateDoc(groupDocRef, {
+            members: arrayUnion(currentUser.uid)
+        });
+
+        // Create membership document in subcollection so security rules that check for existence pass
+        await setDoc(memberDocRef, {
+            userId: currentUser.uid,
+            displayName: currentUser.name || currentUser.uid,
+            joinedAt: serverTimestamp(),
+            role: "member"
+        });
+
+        // Add group to user's followedGroups (create field if missing)
+        await updateDoc(userDocRef, {
+            followedGroups: arrayUnion(groupId)
+        });
+
+    } catch (err) {
+        console.error("Error joining group:", err);
+        // fallback checks
+        const groupSnap = await getDoc(groupDocRef);
+        if (!groupSnap.exists()) {
+            throw new Error("Group no longer exists.");
+        } else {
+            throw err;
+        }
+    }
 }
 
 // --- NEW: Helper Function to Format Time ---
@@ -225,7 +351,7 @@ function updateReplyUI() {
     }
 }
 
-// --- **COMPLETELY REPLACED** Renders Messages with Actions ---
+// --- Renders Messages with Actions ---
 function renderMessage(data) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
@@ -236,8 +362,8 @@ function renderMessage(data) {
     }
 
     const avatar = data.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(data.userName || 'U').charAt(0)}`;
-    
-    // 1. Reply Quote
+
+    // Reply Quote
     let replyQuoteHTML = '';
     if (data.repliedToMessageId) {
         replyQuoteHTML = `
@@ -248,7 +374,7 @@ function renderMessage(data) {
         `;
     }
 
-    // 2. Time & Tick
+    // Time & Tick
     const messageTime = formatMessageTime(data.createdAt);
     const sentTick = isOwnMessage ? '<i class="fas fa-check message-tick"></i>' : '';
     const timeMetaHTML = `
@@ -258,10 +384,9 @@ function renderMessage(data) {
         </div>
     `;
 
-    // 3. Message Bubble
+    // Message Bubble
     let messageBubbleHTML = '';
     if (data.type === 'image' && data.imageData) {
-        // Image message bubble
         messageBubbleHTML = `
             <div class="message-bubble message-image">
                 <img src="${data.imageData}" alt="User image" loading="lazy">
@@ -269,7 +394,6 @@ function renderMessage(data) {
             </div>
         `;
     } else {
-        // Text message bubble
         messageBubbleHTML = `
             <div class="message-bubble">
                 <span class="message-text">${data.text || ''}</span>
@@ -278,40 +402,37 @@ function renderMessage(data) {
         `;
     }
 
-    // 4. Sender Name (with link)
+    // Sender Name (with link)
     const senderName = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link" style="text-decoration:none;">
             <div class="message-sender">${data.userName}</div>
         </a>
     `;
-    
-    // 5. NEW: Action Buttons
-    
-    // Check if message is editable (text only, and not too old)
-    const canEdit = isOwnMessage && 
-                    data.type === 'text' && 
+
+    // Message action buttons
+    const canEdit = isOwnMessage &&
+                    data.type === 'text' &&
                     isMessageRecent(data.createdAt);
 
     const editBtnHTML = canEdit ? `
         <button class="message-action-btn edit-btn" title="Edit"
-                data-id="${data.id}" 
-                data-text="${data.text || ''}">
+                data-id="${data.id}"
+                data-text="${(data.text || '').replace(/"/g, '&quot;')}">
             <i class="fas fa-pen"></i>
         </button>
     ` : '';
-    
-    // Admin can delete any message
+
     const deleteBtnHTML = isUserAdmin ? `
         <button class="message-action-btn delete-btn" title="Delete" data-id="${data.id}">
             <i class="fas fa-trash"></i>
         </button>
     ` : '';
-    
+
     const replyBtnHTML = `
         <button class="message-action-btn reply-btn" title="Reply"
-                data-id="${data.id}" 
-                data-sender="${data.userName}" 
-                data-text="${data.text || 'Image'}">
+                data-id="${data.id}"
+                data-sender="${data.userName || ''}"
+                data-text="${(data.text || 'Image').replace(/"/g, '&quot;')}">
             <i class="fas fa-reply"></i>
         </button>
     `;
@@ -324,7 +445,6 @@ function renderMessage(data) {
         </div>
     `;
 
-    // 6. Render
     const avatarHTML = isOwnMessage ? '' : `
         <a href="../profile.html?sellerId=${data.userId}" class="message-profile-link">
             <img src="${avatar}" alt="${data.userName}" class="message-avatar">
@@ -332,7 +452,7 @@ function renderMessage(data) {
     `;
 
     messageDiv.innerHTML = `
-        ${avatarHTML} 
+        ${avatarHTML}
         <div class="message-content">
             <div class="message-bubble-wrapper">
                 ${senderName}
@@ -342,11 +462,11 @@ function renderMessage(data) {
             ${actionsHTML}
         </div>
     `;
-    
+
     messageArea.appendChild(messageDiv);
 }
 
-// --- NEW: Helper function to check if a message is recent ---
+// --- Helper function to check if a message is recent ---
 function isMessageRecent(timestamp) {
     if (!timestamp) return false;
     const messageTime = timestamp.toDate().getTime();
@@ -355,7 +475,7 @@ function isMessageRecent(timestamp) {
     return (now - messageTime) < FIFTEEN_MINUTES;
 }
 
-// --- NEW: Edit Message Functions ---
+// --- Edit Message Functions ---
 function openEditMessageModal(messageId, currentText) {
     editMessageInput.value = currentText;
     editMessageIdInput.value = messageId; // Store the ID in a hidden input
@@ -391,12 +511,12 @@ async function handleEditMessageSubmit(e) {
     }
 }
 
-// --- NEW: Delete Message Function ---
+// --- Delete Message Function ---
 async function handleDeleteMessage(messageId) {
     if (!confirm("Are you sure you want to delete this message? This cannot be undone.")) {
         return;
     }
-    
+
     try {
         const messageRef = doc(db, "groups", currentGroupId, "messages", messageId);
         await deleteDoc(messageRef);
@@ -413,6 +533,12 @@ chatForm.addEventListener('submit', async (e) => {
     const messageText = messageInput.value.trim();
 
     if (messageText && currentUser && currentGroupId) {
+        // ensure user is a member - double check
+        if (!currentGroupData || !currentGroupData.members || !currentGroupData.members.includes(currentUser.uid)) {
+            showToast("You must join the group before sending messages.");
+            return;
+        }
+
         const newMessage = {
             type: "text", 
             text: messageText,
@@ -435,6 +561,7 @@ chatForm.addEventListener('submit', async (e) => {
             updateReplyUI();
         } catch (error) {
             console.error("Error sending message: ", error);
+            showToast("Failed to send message.");
         }
     }
 });
@@ -493,6 +620,12 @@ function resizeAndSendImage(file) {
 async function sendImageMessage(base64ImageData) {
     if (!currentUser || !currentGroupId) return;
 
+    // ensure membership
+    if (!currentGroupData || !currentGroupData.members || !currentGroupData.members.includes(currentUser.uid)) {
+        showToast("You must join the group before sending images.");
+        return;
+    }
+
     const newMessage = {
         type: "image",
         imageData: base64ImageData,
@@ -501,7 +634,7 @@ async function sendImageMessage(base64ImageData) {
         profilePicUrl: currentUser.profilePicUrl || '',
         createdAt: serverTimestamp()
     };
-    
+
     if (replyingToMessage) {
         newMessage.repliedToMessageId = replyingToMessage.id;
         newMessage.repliedToSender = replyingToMessage.sender;
@@ -513,14 +646,14 @@ async function sendImageMessage(base64ImageData) {
         replyingToMessage = null;
         updateReplyUI();
     } catch (error) {
-        console.error("Error sending image message: ", error);
+        console.error("Error sending image message:", error);
+        showToast("Failed to send image.");
     }
 }
 
-
-// --- **UPDATED** Event Listener for Actions ---
+// --- Event Listener for Actions ---
 messageArea.addEventListener('click', (e) => {
-    
+
     // --- Image Popup ---
     const clickedImage = e.target.closest('.message-image img');
     if (clickedImage) {
@@ -537,13 +670,13 @@ messageArea.addEventListener('click', (e) => {
         };
         updateReplyUI();
     }
-    
+
     // --- NEW: Edit Button ---
     const editButton = e.target.closest('.edit-btn');
     if (editButton) {
         openEditMessageModal(editButton.dataset.id, editButton.dataset.text);
     }
-    
+
     // --- NEW: Delete Button ---
     const deleteButton = e.target.closest('.delete-btn');
     if (deleteButton) {
@@ -587,21 +720,21 @@ async function uploadImageToCloudinary(file) {
         const response = await fetch('/.netlify/functions/generate-group-signature');
         if (!response.ok) throw new Error('Could not get upload signature. Please try again.');
         const { signature, timestamp, cloudname, apikey } = await response.json();
-        
+
         const formData = new FormData();
         formData.append('file', file);
         formData.append('api_key', apikey);
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
-        
+
         const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudname}/image/upload`;
         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
-        
+
         if (!uploadResponse.ok) {
             const errorData = await uploadResponse.json();
             throw new Error(`Cloudinary upload failed: ${errorData.error.message}`);
         }
-        
+
         const uploadData = await uploadResponse.json();
         return uploadData.secure_url;
     } catch (error) {
@@ -613,7 +746,7 @@ async function uploadImageToCloudinary(file) {
 // --- File Preview Logic (for Edit Modal) ---
 function handleEditFilePreview(file) {
     editGroupImageFile = file; 
-    
+
     const reader = new FileReader();
     reader.onload = (e) => {
         editGroupImagePreviewContainer.innerHTML = `
@@ -623,7 +756,7 @@ function handleEditFilePreview(file) {
             </div>
         `;
         editGroupImageUploadIcon.style.display = 'none';
-        
+
         document.getElementById('remove-edit-group-image-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             removeEditFile(null); 
@@ -635,7 +768,7 @@ function handleEditFilePreview(file) {
 function removeEditFile(currentImageUrl = null) {
     editGroupImageFile = null;
     editGroupImageInput.value = null; 
-    
+
     if (currentImageUrl) {
         editGroupImagePreviewContainer.innerHTML = `
             <div class="image-preview-wrapper">
@@ -651,6 +784,10 @@ function removeEditFile(currentImageUrl = null) {
 
 // --- Toast Notification Helper ---
 function showToast(message) {
+    if (!toastNotification) {
+        console.log("Toast:", message);
+        return;
+    }
     toastNotification.textContent = message;
     toastNotification.classList.add('show');
     setTimeout(() => {
@@ -658,21 +795,21 @@ function showToast(message) {
     }, 3000);
 }
 
-// --- **UPDATED** Group Details Modal Logic ---
+// --- Group Details Modal Logic ---
 function setupModalListeners() {
     // Open Details Modal
     chatHeaderInfo.addEventListener('click', () => {
         if (!currentGroupData) return;
-        
+
         modalGroupName.textContent = currentGroupData.name;
         modalGroupDescription.textContent = currentGroupData.description;
-        
+
         if (currentGroupData.imageUrl) {
             modalGroupImg.src = currentGroupData.imageUrl;
         } else {
             modalGroupImg.src = `https://placehold.co/150x150/10336d/a7c0e8?text=${(currentGroupData.name || 'G').charAt(0)}`;
         }
-        
+
         // ▼▼▼ UPDATED ADMIN/MEMBER BUTTON LOGIC ▼▼▼
         if (currentUser.uid === currentGroupData.createdBy) {
             modalEditBtn.style.display = 'block';
@@ -686,9 +823,9 @@ function setupModalListeners() {
             dangerZoneSection.style.display = 'block'; // Members can leave
         }
         // ▲▲▲ END UPDATE ▲▲▲
-        
+
         groupDetailsModal.classList.add('active');
-        fetchGroupMembers(currentGroupData.members);
+        fetchGroupMembers(currentGroupData.members || []);
     });
 
     // Close Details Modal
@@ -724,22 +861,29 @@ function setupModalListeners() {
         if (!confirm("Are you sure you want to leave this group?")) {
             return;
         }
-        
+
         try {
             const groupDocRef = doc(db, "groups", currentGroupId);
             const userDocRef = doc(db, "users", currentUser.uid);
+            const memberDocRef = doc(db, "groups", currentGroupId, "members", currentUser.uid);
 
             await updateDoc(groupDocRef, {
                 members: arrayRemove(currentUser.uid),
                 admins: arrayRemove(currentUser.uid) // Also remove from admin list if they are one
             });
+
+            // remove subcollection membership doc as well
+            await deleteDoc(memberDocRef).catch(err => {
+                // ignore if doesn't exist
+            });
+
             await updateDoc(userDocRef, {
                 followedGroups: arrayRemove(currentGroupId)
             });
-            
+
             showToast("You have left the group.");
             window.location.href = 'index.html'; // Go back to group list
-            
+
         } catch (error) {
             console.error("Error leaving group:", error);
             showToast("Failed to leave group. Please try again.");
@@ -783,13 +927,13 @@ function setupModalListeners() {
             editModalError.style.display = 'block';
             return;
         }
-        
+
         editGroupSubmit.disabled = true;
         editGroupSubmit.textContent = "Saving...";
-        
+
         try {
             let newImageUrl = null;
-            
+
             if (editGroupImageFile) {
                 editGroupSubmit.textContent = "Uploading image...";
                 newImageUrl = await uploadImageToCloudinary(editGroupImageFile);
@@ -800,17 +944,17 @@ function setupModalListeners() {
                 description: newDesc,
                 category: newCategory 
             };
-            
+
             if (newImageUrl) {
                 updateData.imageUrl = newImageUrl;
             }
 
             const groupDocRef = doc(db, "groups", currentGroupId);
             await updateDoc(groupDocRef, updateData);
-            
+
             editGroupModal.classList.remove('active');
             removeEditFile(); 
-            
+
         } catch (error) {
             console.error("Error updating group:", error);
             editModalError.textContent = error.message || "Could not save. Please try again.";
@@ -831,15 +975,20 @@ async function handleRemoveMember(userIdToRemove, userName) {
     try {
         const groupDocRef = doc(db, "groups", currentGroupId);
         const userDocRef = doc(db, "users", userIdToRemove);
+        const memberDocRef = doc(db, "groups", currentGroupId, "members", userIdToRemove);
 
         await updateDoc(groupDocRef, {
             members: arrayRemove(userIdToRemove),
             admins: arrayRemove(userIdToRemove) // Also remove from admin list
         });
+
+        // Remove member doc if present
+        await deleteDoc(memberDocRef).catch(err => { /* ignore if not exist */ });
+
         await updateDoc(userDocRef, {
             followedGroups: arrayRemove(currentGroupId)
         });
-        
+
         showToast(`${userName} has been removed.`);
         // The onSnapshot listener for the groupDoc will trigger and re-render the member list
     } catch (error) {
@@ -848,10 +997,10 @@ async function handleRemoveMember(userIdToRemove, userName) {
     }
 }
 
-// --- NEW: Promote/Demote Admin Logic ---
+// --- Promote/Demote Admin Logic ---
 async function handleAdminAction(userId, action) {
     const groupDocRef = doc(db, "groups", currentGroupId);
-    
+
     try {
         if (action === 'promote') {
             await updateDoc(groupDocRef, {
@@ -871,7 +1020,7 @@ async function handleAdminAction(userId, action) {
     }
 }
 
-// --- **COMPLETELY REPLACED** Fetch and Render Group Members ---
+// --- Fetch and Render Group Members ---
 async function fetchGroupMembers(memberIds) {
     modalMembersList.innerHTML = ''; 
     modalMembersLoader.style.display = 'block';
@@ -879,31 +1028,29 @@ async function fetchGroupMembers(memberIds) {
     const isSuperAdmin = currentUser.uid === currentGroupData.createdBy;
 
     try {
-        const userPromises = memberIds.map(id => getDoc(doc(db, "users", id)));
+        const userPromises = (memberIds || []).map(id => getDoc(doc(db, "users", id)));
         const userDocs = await Promise.all(userPromises);
-        
+
         modalMembersList.innerHTML = ''; 
-        
+
         userDocs.forEach(userDoc => {
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 const memberDiv = document.createElement('div');
                 memberDiv.className = 'member-item';
-                
-                // --- NEW: Updated Role & Admin Logic ---
+
                 const memberId = userDoc.id;
                 const isCreator = memberId === currentGroupData.createdBy;
                 const isGroupAdmin = currentGroupData.admins.includes(memberId) || isCreator;
 
                 const avatar = userData.profilePicUrl || `https://placehold.co/45x45/10336d/a7c0e8?text=${(userData.name || 'U').charAt(0)}`;
                 const role = isGroupAdmin ? `<span class="member-role">Admin</span>` : '';
-                
+
                 let actionBtnsHTML = '';
 
                 // Super Admin (Creator) can manage admins and remove anyone
                 if (isSuperAdmin && memberId !== currentUser.uid) {
                     if (isGroupAdmin) {
-                        // Don't show demote for creator, but show for other admins
                         if (!isCreator) {
                             actionBtnsHTML += `<button class="admin-action-btn demote-btn" data-user-id="${memberId}">Demote</button>`;
                         }
@@ -911,12 +1058,12 @@ async function fetchGroupMembers(memberIds) {
                         actionBtnsHTML += `<button class="admin-action-btn" data-user-id="${memberId}">Promote</button>`;
                     }
                     actionBtnsHTML += `<button class="remove-member-btn" data-user-id="${memberId}" data-user-name="${userData.name || 'User'}">Remove</button>`;
-                
+
                 // Regular Admins can only remove non-admins
                 } else if (isUserAdmin && !isSuperAdmin && !isGroupAdmin && memberId !== currentUser.uid) {
                     actionBtnsHTML += `<button class="remove-member-btn" data-user-id="${memberId}" data-user-name="${userData.name || 'User'}">Remove</button>`;
                 }
-                
+
                 memberDiv.innerHTML = `
                     <a href="../profile.html?sellerId=${memberId}" class="message-profile-link" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px; width: 100%;">
                         <img src="${avatar}" alt="${userData.name}" class="member-avatar">
@@ -931,7 +1078,7 @@ async function fetchGroupMembers(memberIds) {
             }
         });
 
-        // --- NEW: Add Listeners for Promote/Demote ---
+        // --- Add Listeners for Promote/Demote ---
         modalMembersList.querySelectorAll('.admin-action-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -944,7 +1091,7 @@ async function fetchGroupMembers(memberIds) {
                 }
             });
         });
-        
+
         // --- This listener finds the remove buttons ---
         modalMembersList.querySelectorAll('.remove-member-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -967,6 +1114,9 @@ async function fetchGroupMembers(memberIds) {
 window.addEventListener('beforeunload', () => {
     if (unsubscribe) {
         unsubscribe();
+    }
+    if (groupDocUnsub) {
+        groupDocUnsub();
     }
 });
 
