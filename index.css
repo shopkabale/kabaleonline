@@ -2384,6 +2384,7 @@ body.dark-mode .feature-showcase__nav-item--active {
 .promo-text-ticker li {
     height: 1.2em; /* Match fader height */
     line-height: 1.2em;
+    white-space: nowrap; /* <-- ADD THIS LINE */
 }
 
 /* Vertical Ticker Animation */
