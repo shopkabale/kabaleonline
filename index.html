@@ -90,6 +90,20 @@
     <div id="scroll-progress-bar"></div>
 
     <script src="theme.js"></script>
+<div id="promo-banner">
+    <a href="/group/" id="promo-banner-link">
+        <i class="fas fa-bullhorn"></i>
+        <div class="promo-text-fader">
+            <ul class="promo-text-ticker">
+                <li>🎉 Create & Join Groups</li>
+                <li>💬 Chat in Real-Time</li>
+                <li>📸 Share Photos & Reactions</li>
+                <li>🤝 Find Your Community</li>
+                <li>🎉 Create & Join Groups</li> </ul>
+        </div>
+    </a>
+</div>
+
 
     <header class="sticky-header">
         <div class="header-content"> <a href="/" class="site-title">Kabale <span>Online</span></a>
@@ -887,6 +901,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 }); 
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Select all the necessary elements
+    const banner = document.getElementById('promo-banner');
+    const header = document.querySelector('.sticky-header');
+    const content = document.querySelector('.page-content');
+
+    // Safety check in case elements don't exist on a page
+    if (!banner || !header || !content) {
+        console.log("Banner scrolling components not found on this page.");
+        return;
+    }
+
+    // Get the dynamic heights
+    const bannerHeight = banner.offsetHeight;
+    const headerHeight = header.offsetHeight;
+    const initialPadding = bannerHeight + headerHeight;
+
+    // --- Set initial state just in case CSS didn't load ---
+    header.style.top = `${bannerHeight}px`;
+    content.style.paddingTop = `${initialPadding}px`;
+    // --- End initial state ---
+
+    let lastScrollY = window.scrollY;
+
+    // Listen for the scroll event
+    window.addEventListener('scroll', () => {
+        // We only trigger the change near the top
+        if (window.scrollY > 10 && lastScrollY <= 10) { 
+            // --- USER SCROLLED DOWN ---
+            // 1. Hide the banner
+            banner.style.height = '0px';
+            banner.style.paddingTop = '0px';
+            banner.style.paddingBottom = '0px';
+            
+            // 2. Move header to the top
+            header.style.top = '0px';
+            
+            // 3. Adjust page padding
+            content.style.paddingTop = `${headerHeight}px`;
+
+        } else if (window.scrollY <= 10 && lastScrollY > 10) {
+            // --- USER SCROLLED TO TOP ---
+            // 1. Show the banner
+            banner.style.height = `${bannerHeight}px`;
+            banner.style.paddingTop = '';    // Reset padding
+            banner.style.paddingBottom = ''; // Reset padding
+            
+            // 2. Move header back down
+            header.style.top = `${bannerHeight}px`;
+            
+            // 3. Reset page padding
+            content.style.paddingTop = `${initialPadding}px`;
+        }
+        
+        lastScrollY = window.scrollY; // Remember last scroll position
+    }, { passive: true }); // Improves scroll performance
+});
+
 </script>
 
 </body>
