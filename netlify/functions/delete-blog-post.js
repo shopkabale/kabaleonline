@@ -1,18 +1,19 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 
-let cachedDb = null;
+const admin = require('firebase-admin');
 
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    })
   });
-  
-  cachedDb = client.db();
-  return cachedDb;
 }
+
+const db = getFirestore();
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -30,28 +31,28 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const db = await connectToDatabase();
-    const postsCollection = db.collection('blog_posts');
-    
     const { id } = event.queryStringParameters;
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Valid post ID is required' })
+        body: JSON.stringify({ error: 'Post ID is required' })
       };
     }
 
-    const result = await postsCollection.deleteOne({ _id: new ObjectId(id) });
+    const docRef = db.collection('blog_posts').doc(id);
+    const doc = await docRef.get();
 
-    if (result.deletedCount === 0) {
+    if (!doc.exists) {
       return {
         statusCode: 404,
         headers,
         body: JSON.stringify({ error: 'Post not found' })
       };
     }
+
+    await docRef.delete();
 
     return {
       statusCode: 200,
