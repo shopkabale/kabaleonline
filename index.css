@@ -2346,6 +2346,7 @@ body.dark-mode .feature-showcase__nav-item--active {
         font-size: 2.2rem;
     }
 }
+
 /* === GROUP FEATURES SECTION === */
 .group-features-section {
     padding: 20px 0;
@@ -2359,37 +2360,43 @@ body.dark-mode .feature-showcase__nav-item--active {
     padding-left: 20px; 
 }
 
+/* NEW: Wrapper for scroller and arrows */
+.scroller-wrapper {
+    position: relative;
+}
+
 .features-scroller {
     display: flex;
     gap: 15px;
     overflow-x: auto; 
+    overflow-y: hidden; /* 👈 FIX: Prevents vertical scroll */
     scroll-snap-type: x mandatory; 
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
     padding: 10px 20px; 
+    scroll-behavior: smooth; /* 👈 FIX: Enables smooth scrolling */
+    overscroll-behavior-x: contain; /* 👈 FIX: Prevents page scroll */
 }
 .features-scroller::-webkit-scrollbar {
     display: none; /* Chrome/Safari */
 }
 
 .feature-card {
-    flex: 0 0 80%;
-    min-width: 300px;
-    max-width: 350px;
+    flex: 0 0 auto; /* 👈 FIX: Ensures cards don't shrink */
+    width: 300px;   /* 👈 FIX: Fixed width for stable scroll */
+    box-sizing: border-box; /* Ensures padding is included in width */
+    height: 450px;
     padding: 25px;
     border-radius: 16px;
-    /* * REMOVED: background-color: var(--bg-card-dark, #1E1E1E); 
-     * The JS will now add the specific color from data-color.
-     */
     color: #fff;
-    scroll-snap-align: center; 
+    scroll-snap-align: center; /* Changed from 'start' to 'center' */
     cursor: pointer;
     transition: transform 0.2s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 450px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    background-color: var(--bg-card, #1E1E1E); /* Fallback color */
 }
 
 .feature-card:hover {
@@ -2418,10 +2425,9 @@ body.dark-mode .feature-showcase__nav-item--active {
     font-size: 0.9em;
     opacity: 0.5;
     margin-top: 20px;
-    overflow: hidden; /* To contain the image */
+    overflow: hidden; 
 }
 
-/* This will make the [Image] tag fill the container */
 .card-graphic-placeholder img {
     width: 100%;
     height: 100%;
@@ -2432,12 +2438,53 @@ body.dark-mode .feature-showcase__nav-item--active {
     display: block;
     text-align: center;
     background: #fff;
-    color: #333; /* Dark text on white button */
+    color: #333; 
     padding: 12px;
     border-radius: 8px;
     font-weight: 600;
     margin-top: 20px;
 }
+
+/* NEW: Arrow Button Styles */
+.scroller-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+.scroller-arrow:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+.scroller-arrow:disabled {
+    opacity: 0;
+    cursor: not-allowed;
+    transform: translateY(-50%) scale(0.8);
+}
+#scroll-left { 
+    left: 8px; 
+}
+#scroll-right { 
+    right: 8px; 
+}
+/* Hide arrows on mobile (where swiping is easy) */
+@media (max-width: 768px) {
+    .scroller-arrow {
+        display: none;
+    }
+}
+
 
 /* === POP-UP MODAL STYLES === */
 #feature-modal-overlay {
@@ -2457,7 +2504,6 @@ body.dark-mode .feature-showcase__nav-item--active {
     transform: translate(-50%, -50%) scale(0.9);
     width: 90%;
     max-width: 500px;
-    /* The JS will set the background-color here */
     color: #fff;
     border-radius: 16px;
     z-index: 2001;
@@ -2500,8 +2546,8 @@ body.dark-mode .feature-showcase__nav-item--active {
 #modal-cta-button {
     display: block;
     text-align: center;
-    background: #fff; /* White button */
-    color: #333; /* Dark text */
+    background: #fff; 
+    color: #333; 
     padding: 14px;
     border-radius: 8px;
     font-weight: 600;
