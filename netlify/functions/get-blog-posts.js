@@ -1,18 +1,17 @@
-const { MongoClient } = require('mongodb');
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 
-let cachedDb = null;
+const serviceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+};
 
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
-  cachedDb = client.db();
-  return cachedDb;
+if (!global._firebaseApp) {
+  global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
+
+const db = getFirestore();
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -26,9 +25,6 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const db = await connectToDatabase();
-    const postsCollection = db.collection('blog_posts');
-    
     const { 
       page = 1, 
       limit = 10, 
@@ -40,41 +36,68 @@ exports.handler = async (event, context) => {
       sort = 'newest'
     } = event.queryStringParameters || {};
 
-    const query = { status };
-    if (category && category !== 'all') query.category = category;
-    if (tag) query.tags = tag;
-    if (author) query.author = author;
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { excerpt: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } }
-      ];
+    let query = db.collection('blog_posts').where('status', '==', status);
+
+    // Apply filters
+    if (category && category !== 'all') {
+      query = query.where('category', '==', category);
+    }
+    if (author) {
+      query = query.where('author', '==', author);
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const limitNum = parseInt(limit);
+    // Apply sorting
+    let sortField = 'publishedAt';
+    let sortDirection = 'desc';
+    
+    if (sort === 'popular') {
+      sortField = 'views';
+      sortDirection = 'desc';
+    } else if (sort === 'oldest') {
+      sortField = 'publishedAt';
+      sortDirection = 'asc';
+    }
 
-    // Sort options
-    let sortOption = { publishedAt: -1, createdAt: -1 };
-    if (sort === 'popular') sortOption = { views: -1 };
-    if (sort === 'oldest') sortOption = { publishedAt: 1 };
+    query = query.orderBy(sortField, sortDirection);
 
-    const [posts, total] = await Promise.all([
-      postsCollection
-        .find(query)
-        .sort(sortOption)
-        .skip(skip)
-        .limit(limitNum)
-        .toArray(),
-      postsCollection.countDocuments(query)
-    ]);
+    const snapshot = await query.get();
+    let posts = [];
 
-    // Convert MongoDB ObjectId to string for client
-    const sanitizedPosts = posts.map(post => ({
+    snapshot.forEach(doc => {
+      const post = doc.data();
+      // Handle search filtering in memory
+      if (search) {
+        const searchLower = search.toLowerCase();
+        const matchesSearch = 
+          post.title?.toLowerCase().includes(searchLower) ||
+          post.excerpt?.toLowerCase().includes(searchLower) ||
+          post.content?.toLowerCase().includes(searchLower) ||
+          post.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+        
+        if (!matchesSearch) return;
+      }
+
+      // Handle tag filtering
+      if (tag && !post.tags?.includes(tag)) return;
+
+      posts.push({
+        _id: doc.id,
+        ...post,
+        author: post.author || 'KabaleOnline Team'
+      });
+    });
+
+    // Manual pagination
+    const startIndex = (parseInt(page) - 1) * parseInt(limit);
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedPosts = posts.slice(startIndex, endIndex);
+
+    // Convert Firestore timestamps to ISO strings
+    const sanitizedPosts = paginatedPosts.map(post => ({
       ...post,
-      _id: post._id.toString(),
-      author: post.author || 'KabaleOnline Team'
+      createdAt: post.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      updatedAt: post.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      publishedAt: post.publishedAt?.toDate?.()?.toISOString() || null
     }));
 
     return {
@@ -84,9 +107,9 @@ exports.handler = async (event, context) => {
         posts: sanitizedPosts,
         pagination: {
           currentPage: parseInt(page),
-          totalPages: Math.ceil(total / limitNum),
-          totalPosts: total,
-          hasNext: skip + posts.length < total,
+          totalPages: Math.ceil(posts.length / parseInt(limit)),
+          totalPosts: posts.length,
+          hasNext: endIndex < posts.length,
           hasPrev: parseInt(page) > 1
         }
       })
