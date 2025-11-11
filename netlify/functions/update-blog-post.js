@@ -1,18 +1,17 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-let cachedDb = null;
+const serviceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+};
 
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
-  cachedDb = client.db();
-  return cachedDb;
+if (!global._firebaseApp) {
+  global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
+
+const db = getFirestore();
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -30,23 +29,20 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const db = await connectToDatabase();
-    const postsCollection = db.collection('blog_posts');
-    
     const { id } = event.queryStringParameters;
     const data = JSON.parse(event.body);
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Valid post ID is required' })
+        body: JSON.stringify({ error: 'Post ID is required' })
       };
     }
 
     const updateData = {
       ...data,
-      updatedAt: new Date()
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     // Recalculate read time if content changed
@@ -54,31 +50,23 @@ exports.handler = async (event, context) => {
       updateData.readTime = calculateReadTime(data.content);
     }
 
-    // If publishing for the first time, set publishedAt
-    if (data.status === 'published') {
-      const existingPost = await postsCollection.findOne({ _id: new ObjectId(id) });
-      if (existingPost && !existingPost.publishedAt) {
-        updateData.publishedAt = new Date();
-      }
-    }
-
     // Generate new slug if title changed
     if (data.title) {
       updateData.slug = generateSlug(data.title);
     }
 
-    const result = await postsCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    );
-
-    if (result.matchedCount === 0) {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: 'Post not found' })
-      };
+    // If publishing for the first time, set publishedAt
+    if (data.status === 'published') {
+      const existingDoc = await db.collection('blog_posts').doc(id).get();
+      if (existingDoc.exists) {
+        const existingPost = existingDoc.data();
+        if (!existingPost.publishedAt) {
+          updateData.publishedAt = FieldValue.serverTimestamp();
+        }
+      }
     }
+
+    await db.collection('blog_posts').doc(id).update(updateData);
 
     return {
       statusCode: 200,
