@@ -10,12 +10,11 @@ async function connectToDatabase() {
     useUnifiedTopology: true,
   });
   
-  cachedDb = client.db(); // Atlas uses the database from the connection string
+  cachedDb = client.db();
   return cachedDb;
 }
 
 exports.handler = async (event, context) => {
-  // CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
