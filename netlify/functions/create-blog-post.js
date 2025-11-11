@@ -1,18 +1,17 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-let cachedDb = null;
+const serviceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+};
 
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
-  cachedDb = client.db();
-  return cachedDb;
+if (!global._firebaseApp) {
+  global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
+
+const db = getFirestore();
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -30,13 +29,9 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const db = await connectToDatabase();
-    const postsCollection = db.collection('blog_posts');
-    
     const data = JSON.parse(event.body);
     const { title, content, excerpt, category, tags, author, featuredImage, status = 'draft' } = data;
 
-    // Validate required fields
     if (!title || !content || !author) {
       return {
         statusCode: 400,
@@ -45,7 +40,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const now = new Date();
+    const now = FieldValue.serverTimestamp();
     const slug = generateSlug(title);
     
     const postData = {
@@ -66,14 +61,14 @@ exports.handler = async (event, context) => {
       publishedAt: status === 'published' ? now : null
     };
 
-    const result = await postsCollection.insertOne(postData);
+    const docRef = await db.collection('blog_posts').add(postData);
 
     return {
       statusCode: 201,
       headers,
       body: JSON.stringify({ 
         success: true, 
-        postId: result.insertedId,
+        postId: docRef.id,
         slug 
       })
     };
