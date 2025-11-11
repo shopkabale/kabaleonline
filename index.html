@@ -860,6 +860,7 @@
 <script type="module" src="ui.js"></script>
 <script type="module" src="index.js"></script>
 <script type="module" src="/js/amara-banner.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -885,43 +886,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 1. Auto-Scroll Logic ---
     function startAutoScroll() {
-        // Clear any existing interval to prevent speeding up
         clearInterval(scrollInterval);
         isUserInteracting = false;
         
         scrollInterval = setInterval(() => {
-            if (isUserInteracting) return; // Don't scroll if user is busy
+            if (isUserInteracting) return; 
 
-            currentCardIndex = (currentCardIndex + 1) % cards.length; // Loop
+            currentCardIndex = (currentCardIndex + 1) % cards.length; 
             
-            // Scroll to the next card
-            cards[currentCardIndex].scrollIntoView({
-                behavior: "smooth",
-                inline: "center",
-                block: "nearest"
+            // --- THIS IS THE FIX ---
+            // We are now scrolling the *container* (scroller), not the whole window.
+            const cardToScrollTo = cards[currentCardIndex];
+            
+            // Calculate the position to center the card
+            const containerWidth = scroller.offsetWidth;
+            const cardWidth = cardToScrollTo.offsetWidth;
+            const cardLeft = cardToScrollTo.offsetLeft;
+            
+            // Calculate the new scrollLeft position
+            // (card's left edge) - (half container width) + (half card width) - (container padding)
+            // We subtract the container's left padding (which you set to 20px)
+            const scrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2) - 20;
+
+            scroller.scrollTo({
+                left: scrollLeft,
+                behavior: "smooth"
             });
+            // --- END FIX ---
             
         }, 3000); // Change card every 3 seconds
     }
 
     function stopAutoScroll() {
         clearInterval(scrollInterval);
-        isUserInteracting = true; // Mark that user is interacting
+        isUserInteracting = true; 
     }
 
     // --- 2. Modal Pop-up Logic ---
     function openModal(card) {
-        // 1. Get data from the card
         const title = card.dataset.title;
         const desc = card.dataset.desc;
         const color = card.dataset.color;
         
-        // 2. Populate the modal
         modalTitle.textContent = title;
         modalDesc.textContent = desc;
-        modal.style.backgroundColor = color; // Set modal color
+        modal.style.backgroundColor = color; 
         
-        // Set modal button color to contrast with the background
         const hex = color.replace('#', '');
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
@@ -936,7 +946,6 @@ document.addEventListener("DOMContentLoaded", () => {
             modalCtaBtn.style.color = "#333";
         }
         
-        // 3. Show the modal
         modalOverlay.style.display = "block";
         modal.classList.add("active");
     }
@@ -947,10 +956,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 3. Initialization ---
-
-    // **THIS IS THE PART THAT SETS THE COLORS**
     cards.forEach(card => {
-        // SETS THE UNIQUE COLOR FOR EACH CARD
+        // Sets the unique color for each card
         card.style.backgroundColor = card.dataset.color;
         
         card.addEventListener("click", () => {
@@ -958,15 +965,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Listeners to close the modal
+    // Modal close listeners
     modalCloseBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", closeModal);
     
-    // --- Event Listeners for Scrolling ---
-
-    // Pause on user interaction
-    scroller.addEventListener("mouseenter", stopAutoScroll);
-    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true });
+    // --- Scroll Event Listeners ---
+    scroller.addEventListener("mouseenter", stopAutoScroll); // Pause on hover
+    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true }); // Pause on touch
     
     // Resume after a set time
     scroller.addEventListener("mouseleave", () => {
@@ -976,14 +981,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(startAutoScroll, 5000); // Resume after 5s on mobile
     });
 
-    // **THIS IS THE FIX FOR THE PAGE-JUMP**
-    // Start the auto-scroll *after* a 3-second delay
-    setTimeout(startAutoScroll, 3000);
+    // **NO MORE PAGE JUMP**
+    // Start the auto-scroll right away. It won't jump the page.
+    startAutoScroll();
 });
 </script>
+
 <script>
-    
-/* === JavaScript for 'Feature Showcase' Tabs === */
+    /* === JavaScript for 'Feature Showcase' Tabs === */
 document.addEventListener('DOMContentLoaded', () => {
     // Find all showcase components on the page
     const allShowcases = document.querySelectorAll('.feature-showcase');
