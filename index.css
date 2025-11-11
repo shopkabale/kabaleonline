@@ -2346,46 +2346,43 @@ body.dark-mode .feature-showcase__nav-item--active {
         font-size: 2.2rem;
     }
 }
-
 /* === GROUP FEATURES SECTION === */
 .group-features-section {
     padding: 20px 0;
-    overflow: hidden; /* Hides any content that breaks out */
+    overflow: hidden; 
 }
 
 .group-features-section h2 {
     font-size: 1.5em;
     font-weight: 700;
     margin-bottom: 15px;
-    padding-left: 20px; /* Aligns with the card's starting edge */
+    padding-left: 20px; 
 }
 
 .features-scroller {
     display: flex;
     gap: 15px;
-    /* Allows manual touch/mouse scrolling */
     overflow-x: auto; 
-    /* Smoothly snaps cards into place when scrolling */
     scroll-snap-type: x mandatory; 
-    /* Hides the ugly scrollbar */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
-    padding: 10px 20px; /* Ensures cards don't touch the edge */
+    padding: 10px 20px; 
 }
 .features-scroller::-webkit-scrollbar {
     display: none; /* Chrome/Safari */
 }
 
 .feature-card {
-    /* Each card takes up 80% of the screen, with a 300px min-width */
     flex: 0 0 80%;
     min-width: 300px;
     max-width: 350px;
     padding: 25px;
     border-radius: 16px;
-    background-color: var(--bg-card-dark, #1E1E1E); /* Default dark color */
+    /* * REMOVED: background-color: var(--bg-card-dark, #1E1E1E); 
+     * The JS will now add the specific color from data-color.
+     */
     color: #fff;
-    scroll-snap-align: center; /* Snaps the card to the center */
+    scroll-snap-align: center; 
     cursor: pointer;
     transition: transform 0.2s ease;
     display: flex;
@@ -2421,13 +2418,21 @@ body.dark-mode .feature-showcase__nav-item--active {
     font-size: 0.9em;
     opacity: 0.5;
     margin-top: 20px;
+    overflow: hidden; /* To contain the image */
+}
+
+/* This will make the [Image] tag fill the container */
+.card-graphic-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .card-button {
     display: block;
     text-align: center;
     background: #fff;
-    color: #333;
+    color: #333; /* Dark text on white button */
     padding: 12px;
     border-radius: 8px;
     font-weight: 600;
@@ -2436,7 +2441,7 @@ body.dark-mode .feature-showcase__nav-item--active {
 
 /* === POP-UP MODAL STYLES === */
 #feature-modal-overlay {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
@@ -2446,13 +2451,13 @@ body.dark-mode .feature-showcase__nav-item--active {
 }
 
 #feature-modal {
-    display: none; /* Hidden by default */
+    display: none; 
     position: fixed;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%) scale(0.9);
     width: 90%;
     max-width: 500px;
-    background: var(--bg-card-dark, #1E1E1E);
+    /* The JS will set the background-color here */
     color: #fff;
     border-radius: 16px;
     z-index: 2001;
@@ -2495,8 +2500,8 @@ body.dark-mode .feature-showcase__nav-item--active {
 #modal-cta-button {
     display: block;
     text-align: center;
-    background: var(--ko-primary, #007aff);
-    color: #fff;
+    background: #fff; /* White button */
+    color: #333; /* Dark text */
     padding: 14px;
     border-radius: 8px;
     font-weight: 600;
