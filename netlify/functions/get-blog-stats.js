@@ -1,18 +1,19 @@
-const { MongoClient } = require('mongodb');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 
-let cachedDb = null;
+const admin = require('firebase-admin');
 
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    })
   });
-  
-  cachedDb = client.db();
-  return cachedDb;
 }
+
+const db = getFirestore();
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -26,52 +27,48 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const db = await connectToDatabase();
-    const postsCollection = db.collection('blog_posts');
+    const snapshot = await db.collection('blog_posts')
+      .where('status', '==', 'published')
+      .get();
 
-    const stats = await postsCollection.aggregate([
-      {
-        $match: { status: 'published' }
-      },
-      {
-        $group: {
-          _id: null,
-          totalPosts: { $sum: 1 },
-          totalViews: { $sum: '$views' },
-          totalLikes: { $sum: '$likes' },
-          avgReadTime: { $avg: '$readTime' }
-        }
-      }
-    ]).toArray();
+    let totalPosts = 0;
+    let totalViews = 0;
+    let totalLikes = 0;
+    let totalReadTime = 0;
+    const categories = {};
 
-    const categoryStats = await postsCollection.aggregate([
-      {
-        $match: { status: 'published' }
-      },
-      {
-        $group: {
-          _id: '$category',
-          count: { $sum: 1 },
-          totalViews: { $sum: '$views' }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]).toArray();
+    snapshot.forEach(doc => {
+      const post = doc.data();
+      totalPosts++;
+      totalViews += post.views || 0;
+      totalLikes += post.likes || 0;
+      totalReadTime += post.readTime || 0;
 
-    const basicStats = stats[0] || {
-      totalPosts: 0,
-      totalViews: 0,
-      totalLikes: 0,
-      avgReadTime: 0
-    };
+      // Count by category
+      const category = post.category || 'Uncategorized';
+      categories[category] = (categories[category] || 0) + 1;
+    });
+
+    const avgReadTime = totalPosts > 0 ? Math.round(totalReadTime / totalPosts) : 0;
+
+    const categoryStats = Object.entries(categories)
+      .map(([category, count]) => ({
+        _id: category,
+        count,
+        totalViews: snapshot.docs
+          .filter(doc => doc.data().category === category)
+          .reduce((sum, doc) => sum + (doc.data().views || 0), 0)
+      }))
+      .sort((a, b) => b.count - a.count);
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        ...basicStats,
+        totalPosts,
+        totalViews,
+        totalLikes,
+        avgReadTime,
         categories: categoryStats
       })
     };
