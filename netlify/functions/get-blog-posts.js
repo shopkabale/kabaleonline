@@ -1,4 +1,4 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
 
 let cachedDb = null;
 
@@ -29,80 +29,71 @@ exports.handler = async (event, context) => {
     const db = await connectToDatabase();
     const postsCollection = db.collection('blog_posts');
     
-    const { id, slug } = event.queryStringParameters || {};
+    const { 
+      page = 1, 
+      limit = 10, 
+      category, 
+      tag, 
+      status = 'published',
+      author,
+      search,
+      sort = 'newest'
+    } = event.queryStringParameters || {};
 
-    if (!id && !slug) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Post ID or slug is required' })
-      };
+    const query = { status };
+    if (category && category !== 'all') query.category = category;
+    if (tag) query.tags = tag;
+    if (author) query.author = author;
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { excerpt: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ];
     }
 
-    let query;
-    if (id) {
-      if (!ObjectId.isValid(id)) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: 'Invalid post ID' })
-        };
-      }
-      query = { _id: new ObjectId(id) };
-    } else {
-      query = { slug };
-    }
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const limitNum = parseInt(limit);
 
-    const post = await postsCollection.findOne(query);
+    // Sort options
+    let sortOption = { publishedAt: -1, createdAt: -1 };
+    if (sort === 'popular') sortOption = { views: -1 };
+    if (sort === 'oldest') sortOption = { publishedAt: 1 };
 
-    if (!post) {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: 'Post not found' })
-      };
-    }
+    const [posts, total] = await Promise.all([
+      postsCollection
+        .find(query)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNum)
+        .toArray(),
+      postsCollection.countDocuments(query)
+    ]);
 
-    // Increment views
-    await postsCollection.updateOne(
-      query,
-      { $inc: { views: 1 } }
-    );
-
-    // Get related posts (same category, excluding current post)
-    const relatedPosts = await postsCollection
-      .find({ 
-        category: post.category,
-        status: 'published',
-        _id: { $ne: post._id }
-      })
-      .sort({ publishedAt: -1 })
-      .limit(3)
-      .toArray();
-
-    const sanitizedPost = {
+    // Convert MongoDB ObjectId to string for client
+    const sanitizedPosts = posts.map(post => ({
       ...post,
       _id: post._id.toString(),
       author: post.author || 'KabaleOnline Team'
-    };
-
-    const sanitizedRelated = relatedPosts.map(p => ({
-      ...p,
-      _id: p._id.toString(),
-      author: p.author || 'KabaleOnline Team'
     }));
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        post: sanitizedPost,
-        relatedPosts: sanitizedRelated
+        posts: sanitizedPosts,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / limitNum),
+          totalPosts: total,
+          hasNext: skip + posts.length < total,
+          hasPrev: parseInt(page) > 1
+        }
       })
     };
 
   } catch (error) {
-    console.error('Error fetching blog post:', error);
+    console.error('Error fetching blog posts:', error);
     return {
       statusCode: 500,
       headers,
