@@ -387,11 +387,14 @@
     <h2>Explore What's Happening</h2>
     
     <div class="features-scroller">
+        
         <div class="feature-card" data-color="#ff6b6b" data-title="Marketplace" data-desc="Buy and sell items, find deals, and list your products for the Kabale community.">
             <div class="card-content">
                 <h3>🛍️ Marketplace</h3>
                 <p>Buy, sell, and discover amazing deals.</p>
-                <div class="card-graphic-placeholder"></div>
+                <div class="card-graphic-placeholder">
+                    <img src="https://source.unsplash.com/400x300?marketplace,flea-market" alt="Marketplace">
+                </div>
             </div>
             <span class="card-button">Learn More</span>
         </div>
@@ -400,7 +403,9 @@
             <div class="card-content">
                 <h3>🏘️ Housing</h3>
                 <p>Find hostels, rentals, and rooms.</p>
-                <div class="card-graphic-placeholder"></div>
+                <div class="card-graphic-placeholder">
+                    <img src="https://source.unsplash.com/400x300?apartment,hostel" alt="Housing">
+                </div>
             </div>
             <span class="card-button">Find a Room</span>
         </div>
@@ -409,7 +414,9 @@
             <div class="card-content">
                 <h3>💻 Technology</h3>
                 <p>Connect with coders and designers.</p>
-                <div class="card-graphic-placeholder"></div>
+                <div class="card-graphic-placeholder">
+                    <img src="https://source.unsplash.com/400x300?code,laptop" alt="Technology">
+                </div>
             </div>
             <span class="card-button">Join Tech</span>
         </div>
@@ -418,7 +425,9 @@
             <div class="card-content">
                 <h3>🎉 Events</h3>
                 <p>Discover parties, workshops, and more.</p>
-                <div class="card-graphic-placeholder"></div>
+                <div class="card-graphic-placeholder">
+                    <img src="https://source.unsplash.com/400x300?concert,party" alt="Events">
+                </div>
             </div>
             <span class="card-button">See Events</span>
         </div>
@@ -427,7 +436,9 @@
             <div class="card-content">
                 <h3>❤️ Social</h3>
                 <p>Find your community and make friends.</p>
-                <div class="card-graphic-placeholder"></div>
+                <div class="card-graphic-placeholder">
+                    <img src="https://source.unsplash.com/400x300?friends,cafe" alt="Social">
+                </div>
             </div>
             <span class="card-button">Find Groups</span>
         </div>
@@ -847,6 +858,8 @@
 <script type="module" src="index.js"></script>
 <script type="module" src="/js/amara-banner.js"></script>
 <script>
+    
+
     document.addEventListener("DOMContentLoaded", () => {
 
     const scroller = document.querySelector(".features-scroller");
@@ -862,20 +875,22 @@
     const modalTitle = document.getElementById("modal-title");
     const modalDesc = document.getElementById("modal-description");
     const modalCloseBtn = document.getElementById("modal-close-btn");
+    const modalCtaBtn = document.getElementById("modal-cta-button"); // Get CTA button
 
     let currentCardIndex = 0;
     let scrollInterval;
+    let isUserInteracting = false; // Flag to check user interaction
 
     // --- 1. Auto-Scroll Logic ---
     function startAutoScroll() {
         // Clear any existing interval to prevent speeding up
         clearInterval(scrollInterval);
+        isUserInteracting = false;
         
         scrollInterval = setInterval(() => {
-            currentCardIndex++;
-            if (currentCardIndex >= cards.length) {
-                currentCardIndex = 0; // Loop back to start
-            }
+            if (isUserInteracting) return; // Don't scroll if user is busy
+
+            currentCardIndex = (currentCardIndex + 1) % cards.length; // Loop
             
             // Scroll to the next card
             cards[currentCardIndex].scrollIntoView({
@@ -889,18 +904,8 @@
 
     function stopAutoScroll() {
         clearInterval(scrollInterval);
+        isUserInteracting = true; // Mark that user is interacting
     }
-
-    // Start scrolling
-    startAutoScroll();
-
-    // Pause on user interaction
-    scroller.addEventListener("mouseenter", stopAutoScroll);
-    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true });
-    
-    // Resume on mouse leave
-    scroller.addEventListener("mouseleave", startAutoScroll);
-    
 
     // --- 2. Modal Pop-up Logic ---
     function openModal(card) {
@@ -912,7 +917,25 @@
         // 2. Populate the modal
         modalTitle.textContent = title;
         modalDesc.textContent = desc;
-        modal.style.background = color; // Set modal color to match card
+        modal.style.backgroundColor = color; // Set modal color
+        
+        // Set modal button color to contrast with the background
+        // This is a simple brightness check
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        
+        if (brightness > 125) {
+            // Light background
+            modalCtaBtn.style.background = "#333";
+            modalCtaBtn.style.color = "#fff";
+        } else {
+            // Dark background
+            modalCtaBtn.style.background = "#fff";
+            modalCtaBtn.style.color = "#333";
+        }
         
         // 3. Show the modal
         modalOverlay.style.display = "block";
@@ -924,9 +947,11 @@
         modal.classList.remove("active");
     }
 
-    // Add click listener to every card
+    // --- 3. Initialization ---
+
+    // Set card colors and add click listeners
     cards.forEach(card => {
-        // We use 'style' to set the unique color for each card
+        // SETS THE UNIQUE COLOR FOR EACH CARD
         card.style.backgroundColor = card.dataset.color;
         
         card.addEventListener("click", () => {
@@ -937,9 +962,25 @@
     // Listeners to close the modal
     modalCloseBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", closeModal);
+    
+    // --- Event Listeners for Scrolling ---
+
+    // Pause on user interaction
+    scroller.addEventListener("mouseenter", stopAutoScroll);
+    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true });
+    
+    // Resume after a set time
+    scroller.addEventListener("mouseleave", () => {
+        setTimeout(startAutoScroll, 2000); // Resume after 2s
+    });
+    scroller.addEventListener("touchend", () => {
+        setTimeout(startAutoScroll, 5000); // Resume after 5s on mobile
+    });
+
+    // Start the auto-scroll
+    startAutoScroll();
 });
 
-    });
 /* === JavaScript for 'Feature Showcase' Tabs === */
 document.addEventListener('DOMContentLoaded', () => {
     // Find all showcase components on the page
