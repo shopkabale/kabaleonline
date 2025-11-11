@@ -383,7 +383,8 @@
                 </div>
             </section>
             
-<div class="group-features-section">
+
+        <div class="group-features-section">
     <h2>Explore What's Happening</h2>
     
     <div class="features-scroller">
@@ -393,7 +394,7 @@
                 <h3>🛍️ Marketplace</h3>
                 <p>Buy, sell, and discover amazing deals.</p>
                 <div class="card-graphic-placeholder">
-                    <img src="https://source.unsplash.com/400x300?marketplace,flea-market" alt="Marketplace">
+                    <img src="https://images.unsplash.com/photo-1580913428023-02c695666d61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Marketplace">
                 </div>
             </div>
             <span class="card-button">Learn More</span>
@@ -404,7 +405,7 @@
                 <h3>🏘️ Housing</h3>
                 <p>Find hostels, rentals, and rooms.</p>
                 <div class="card-graphic-placeholder">
-                    <img src="https://source.unsplash.com/400x300?apartment,hostel" alt="Housing">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Housing">
                 </div>
             </div>
             <span class="card-button">Find a Room</span>
@@ -415,7 +416,7 @@
                 <h3>💻 Technology</h3>
                 <p>Connect with coders and designers.</p>
                 <div class="card-graphic-placeholder">
-                    <img src="https://source.unsplash.com/400x300?code,laptop" alt="Technology">
+                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Technology">
                 </div>
             </div>
             <span class="card-button">Join Tech</span>
@@ -426,7 +427,7 @@
                 <h3>🎉 Events</h3>
                 <p>Discover parties, workshops, and more.</p>
                 <div class="card-graphic-placeholder">
-                    <img src="https://source.unsplash.com/400x300?concert,party" alt="Events">
+                    <img src="https://images.unsplash.com/photo-1511795409837-09bb7c600170?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Events">
                 </div>
             </div>
             <span class="card-button">See Events</span>
@@ -437,7 +438,7 @@
                 <h3>❤️ Social</h3>
                 <p>Find your community and make friends.</p>
                 <div class="card-graphic-placeholder">
-                    <img src="https://source.unsplash.com/400x300?friends,cafe" alt="Social">
+                    <img src="https://images.unsplash.com/photo-1534080564872-750a734392b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Social">
                 </div>
             </div>
             <span class="card-button">Find Groups</span>
@@ -445,15 +446,7 @@
     </div>
 </div>
 
-<div id="feature-modal-overlay"></div>
-<div id="feature-modal">
-    <button id="modal-close-btn">&times;</button>
-    <div id="modal-content">
-        <h2 id="modal-title"></h2>
-        <p id="modal-description"></p>
-        <a href="/group/" id="modal-cta-button">Start Exploring</a>
-    </div>
-</div>
+
 
             <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
@@ -977,8 +970,8 @@
         setTimeout(startAutoScroll, 5000); // Resume after 5s on mobile
     });
 
-    // Start the auto-scroll
-    startAutoScroll();
+    // Start the auto-scroll *after* a 3-second delay
+    setTimeout(startAutoScroll, 3000);
 });
 
 /* === JavaScript for 'Feature Showcase' Tabs === */
