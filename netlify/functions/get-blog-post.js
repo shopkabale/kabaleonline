@@ -35,15 +35,15 @@ exports.handler = async (event, context) => {
       };
     }
 
-    let query;
+    let queryRef; // Renamed to avoid confusion with the query variable
     if (id) {
-      query = db.collection('blog_posts').doc(id);
+      queryRef = db.collection('blog_posts').doc(id);
     } else {
       const slugQuery = await db.collection('blog_posts')
         .where('slug', '==', slug)
         .limit(1)
         .get();
-      
+
       if (slugQuery.empty) {
         return {
           statusCode: 404,
@@ -51,12 +51,11 @@ exports.handler = async (event, context) => {
           body: JSON.stringify({ error: 'Post not found' })
         };
       }
-      
-      query = slugQuery.docs[0].ref;
+      queryRef = slugQuery.docs[0].ref;
     }
 
-    const doc = await query.get();
-    
+    const doc = await queryRef.get();
+
     if (!doc.exists) {
       return {
         statusCode: 404,
@@ -67,29 +66,35 @@ exports.handler = async (event, context) => {
 
     const post = doc.data();
 
-    // Increment views
-    await query.update({
+    // Increment views (don't wait for it if not critical, but await is safer)
+    await queryRef.update({
       views: FieldValue.increment(1)
     });
 
-    // Get related posts
+    // **FIX: Corrected Related Posts Query**
     const relatedQuery = await db.collection('blog_posts')
       .where('category', '==', post.category)
       .where('status', '==', 'published')
-      .where('__name__', '!=', doc.id)
       .orderBy('publishedAt', 'desc')
-      .limit(3)
+      .limit(4) // Get 4, in case the current post is one of them
       .get();
 
     const relatedPosts = [];
     relatedQuery.forEach(relatedDoc => {
-      const relatedPost = relatedDoc.data();
-      relatedPosts.push({
-        _id: relatedDoc.id,
-        ...relatedPost,
-        author: relatedPost.author || 'KabaleOnline Team'
-      });
+      // **FIX: Filter out the current post in-memory**
+      if (relatedDoc.id !== doc.id) {
+        const relatedPost = relatedDoc.data();
+        relatedPosts.push({
+          _id: relatedDoc.id,
+          ...relatedPost,
+          author: relatedPost.author || 'KabaleOnline Team'
+        });
+      }
     });
+
+    // We only want 3
+    const finalRelatedPosts = relatedPosts.slice(0, 3);
+    // **END FIX**
 
     // Convert Firestore timestamps
     const sanitizedPost = {
@@ -101,7 +106,7 @@ exports.handler = async (event, context) => {
       publishedAt: post.publishedAt?.toDate?.()?.toISOString() || null
     };
 
-    const sanitizedRelated = relatedPosts.map(p => ({
+    const sanitizedRelated = finalRelatedPosts.map(p => ({
       ...p,
       createdAt: p.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       updatedAt: p.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
@@ -122,7 +127,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ error: 'Internal server error', details: error.message })
     };
   }
 };
