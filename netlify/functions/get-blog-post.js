@@ -35,7 +35,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    let queryRef; // Renamed to avoid confusion with the query variable
+    let queryRef;
     if (id) {
       queryRef = db.collection('blog_posts').doc(id);
     } else {
@@ -66,22 +66,25 @@ exports.handler = async (event, context) => {
 
     const post = doc.data();
 
-    // Increment views (don't wait for it if not critical, but await is safer)
+    // Increment views
     await queryRef.update({
       views: FieldValue.increment(1)
     });
 
-    // **FIX: Corrected Related Posts Query**
+    // **THIS IS THE FIX**
+    // 1. We remove the buggy 'where(__name__, '!=', doc.id)'
+    // 2. We ask for 4 posts, in case the current post is included
     const relatedQuery = await db.collection('blog_posts')
       .where('category', '==', post.category)
       .where('status', '==', 'published')
       .orderBy('publishedAt', 'desc')
-      .limit(4) // Get 4, in case the current post is one of them
+      .limit(4) 
       .get();
 
     const relatedPosts = [];
     relatedQuery.forEach(relatedDoc => {
-      // **FIX: Filter out the current post in-memory**
+      // **THIS IS THE REST OF THE FIX**
+      // 3. We filter out the current post here, in the code.
       if (relatedDoc.id !== doc.id) {
         const relatedPost = relatedDoc.data();
         relatedPosts.push({
@@ -92,9 +95,9 @@ exports.handler = async (event, context) => {
       }
     });
 
-    // We only want 3
+    // 4. We keep only the first 3
     const finalRelatedPosts = relatedPosts.slice(0, 3);
-    // **END FIX**
+    // **END OF FIX**
 
     // Convert Firestore timestamps
     const sanitizedPost = {
