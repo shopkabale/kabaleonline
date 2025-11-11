@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Management - KabaleOnline Admin</title>
+    
+    <link rel="stylesheet" href="blog-admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>KabaleOnline</h2>
+                <p>Blog Management</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="/admin/blog-admin.html" class="nav-item active">
+                    <i class="fas fa-blog"></i>
+                    Blog Posts
+                </a>
+                <a href="/admin/blog-stats.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    Blog Analytics
+                </a>
+                <a href="/admin/blog-categories.html" class="nav-item">
+                    <i class="fas fa-tags"></i>
+                    Categories
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <img src="/images/avatar-placeholder.png" alt="Admin" class="admin-avatar">
+                    <div>
+                        <strong id="adminName">Loading...</strong>
+                        <span>Administrator</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <h1>Blog Posts Management</h1>
+                    <p>Create, edit, and manage your blog content</p>
+                </div>
+                <div class="header-actions">
+                    <button id="createPostBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        New Post
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total-posts">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalPosts">0</h3>
+                        <p>Total Posts</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-card">
+                        <div class="stat-icon published-posts">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="publishedPosts">0</h3>
+                            <p>Published</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon draft-posts">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="draftPosts">0</h3>
+                        <p>Drafts</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon total-views">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalViews">0</h3>
+                        <p>Total Views</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search posts...">
+                    <i class="fas fa-search"></i>
+                </div>
+                
+                <div class="filter-controls">
+                    <select id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Drafts</option>
+                    </select>
+                    
+                    <select id="categoryFilter">
+                        <option value="all">All Categories</option>
+                        <option value="Business">Business</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Campus Life">Campus Life</option>
+                        <option value="Study Tips">Study Tips</option>
+                        <option value="Career">Career</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    
+                    <select id="sortFilter">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Posts Table -->
+            <div class="posts-table-container">
+                <table class="posts-table">
+                    <thead>
+                        <tr>
+                            <th>Post</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Likes</th>
+                            <th>Published</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postsTableBody">
+                        <tr>
+                            <td colspan="7" class="loading-cell">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading posts...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Post Modal -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Post</h2>
+                <span class="close-btn" id="closeModal">&times;</span>
+            </div>
+            
+            <form id="postForm" class="modal-form">
+                <input type="hidden" id="postId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="postTitle">Post Title *</label>
+                        <input type="text" id="postTitle" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postCategory">Category *</label>
+                        <select id="postCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="Business">Business</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Campus Life">Campus Life</option>
+                            <option value="Study Tips">Study Tips</option>
+                            <option value="Career">Career</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="postExcerpt">Excerpt</label>
+                    <textarea id="postExcerpt" rows="3" placeholder="Brief description of the post..."></textarea>
+                    <small>This will be shown in post previews. If empty, first 200 characters of content will be used.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="postContent">Content *</label>
+                    <textarea id="postContent" rows="12" required placeholder="Write your post content here..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="postTags">Tags</label>
+                        <input type="text" id="postTags" placeholder="tag1, tag2, tag3">
+                        <small>Separate tags with commas</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postStatus">Status</label>
+                        <select id="postStatus">
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="featuredImage">Featured Image URL</label>
+                    <input type="url" id="featuredImage" placeholder="https://example.com/image.jpg">
+                    <small>Optional: URL of the featured image</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                        <i class="fas fa-spinner fa-spin" id="submitSpinner" style="display: none;"></i>
+                        <span id="submitText">Create Post</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-icon danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Delete Post</h3>
+            <p>Are you sure you want to delete "<span id="deletePostTitle"></span>"? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="cancelDelete" class="btn btn-secondary">Cancel</button>
+                <button id="confirmDelete" class="btn btn-danger">Delete Post</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/firebase.js"></script>
+    <script src="blog-admin.js"></script>
+</body>
+</html>
