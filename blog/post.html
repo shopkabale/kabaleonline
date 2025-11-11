@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Article - KabaleOnline Blog</title>
+    
+    <link rel="stylesheet" href="/blog/blog.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Same Header as index.html -->
+    <header class="sticky-header">
+        <div class="header-content">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="/home/" class="nav-link service-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+                <a href="/blog/" class="nav-link">Blog</a>
+            </nav>
+            <div class="header-icons">
+                <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell"><i class="fa-regular fa-bell"></i></a>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav-overlay"></div>
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+            <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips & Blog</a>
+        </div>
+    </nav>
+
+    <main class="blog-post-container">
+        <div class="post-loading" id="postLoading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading article...</p>
+        </div>
+
+        <article class="blog-post" id="blogPost" style="display: none;">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="/blog/">Blog</a>
+                <i class="fas fa-chevron-right"></i>
+                <span id="postCategory">Loading...</span>
+            </nav>
+
+            <!-- Article Header -->
+            <header class="post-header">
+                <h1 id="postTitle">Loading Title...</h1>
+                <div class="post-meta-large">
+                    <div class="author-info">
+                        <img src="/images/avatar-placeholder.png" alt="Author" class="author-avatar">
+                        <div>
+                            <strong id="postAuthor">Loading Author</strong>
+                            <div class="meta-details">
+                                <time id="postDate">Loading date...</time>
+                                <span>•</span>
+                                <span id="postReadTime">Loading read time</span>
+                                <span>•</span>
+                                <span id="postViews">Loading views</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <button class="action-btn" onclick="sharePost()" title="Share">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <button class="action-btn" onclick="toggleLike()" title="Like">
+                            <i class="far fa-heart" id="likeIcon"></i>
+                            <span id="likeCount">0</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Featured Image -->
+            <div class="featured-image-container" id="featuredImageContainer" style="display: none;">
+                <img id="postFeaturedImage" alt="Featured image" class="post-featured-image">
+            </div>
+
+            <!-- Article Content -->
+            <div class="post-content" id="postContent">
+                <p>Loading content...</p>
+            </div>
+
+            <!-- Tags -->
+            <div class="post-tags" id="postTagsContainer" style="display: none;">
+                <strong>Tags:</strong>
+                <div class="tags-list" id="postTags"></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+                <h3>Share this article</h3>
+                <div class="share-buttons">
+                    <button class="share-btn facebook" onclick="shareOnFacebook()">
+                        <i class="fab fa-facebook-f"></i>
+                        Facebook
+                    </button>
+                    <button class="share-btn twitter" onclick="shareOnTwitter()">
+                        <i class="fab fa-twitter"></i>
+                        Twitter
+                    </button>
+                    <button class="share-btn whatsapp" onclick="shareOnWhatsApp()">
+                        <i class="fab fa-whatsapp"></i>
+                        WhatsApp
+                    </button>
+                    <button class="share-btn linkedin" onclick="shareOnLinkedIn()">
+                        <i class="fab fa-linkedin-in"></i>
+                        LinkedIn
+                    </button>
+                </div>
+            </div>
+        </article>
+
+        <!-- Related Posts -->
+        <section class="related-posts" id="relatedPosts" style="display: none;">
+            <h2>Related Articles</h2>
+            <div class="related-grid" id="relatedGrid">
+                <!-- Related posts will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Error State -->
+        <div class="error-state" id="errorState" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>Article Not Found</h2>
+            <p>The article you're looking for doesn't exist or may have been moved.</p>
+            <a href="/blog/" class="load-more-btn">Back to Blog</a>
+        </div>
+    </main>
+
+    <!-- Same Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="/firebase.js"></script>
+    <script src="/blog/post.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile nav toggle
+            const hamburger = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            if (hamburger && mobileNav && overlay) {
+                hamburger.addEventListener('click', () => {
+                    mobileNav.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+                overlay.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            // Load post
+            loadBlogPost();
+        });
+    </script>
+</body>
+</html>
