@@ -30,35 +30,29 @@ exports.handler = async (event, context) => {
       limit = 10, 
       category, 
       tag, 
-      status = 'published',
+      status, // Removed default 'published' to handle 'all'
       author,
       search,
       sort = 'newest'
     } = event.queryStringParameters || {};
 
-    let query = db.collection('blog_posts').where('status', '==', status);
+    let query = db.collection('blog_posts');
 
-    // Apply filters
-    if (category && category !== 'all') {
+    // **FIX 1: Smarter Filtering**
+    // Only apply filters if they are provided and not 'all'
+    if (status && status !== 'all' && status !== '') {
+      query = query.where('status', '==', status);
+    }
+    if (category && category !== 'all' && category !== '') {
       query = query.where('category', '==', category);
     }
     if (author) {
       query = query.where('author', '==', author);
     }
 
-    // Apply sorting
-    let sortField = 'publishedAt';
-    let sortDirection = 'desc';
-    
-    if (sort === 'popular') {
-      sortField = 'views';
-      sortDirection = 'desc';
-    } else if (sort === 'oldest') {
-      sortField = 'publishedAt';
-      sortDirection = 'asc';
-    }
-
-    query = query.orderBy(sortField, sortDirection);
+    // **FIX 2: Remove Sorting from Query (to prevent crash)**
+    // We will sort in-memory later
+    // REMOVED: query = query.orderBy(sortField, sortDirection);
 
     const snapshot = await query.get();
     let posts = [];
@@ -73,7 +67,7 @@ exports.handler = async (event, context) => {
           post.excerpt?.toLowerCase().includes(searchLower) ||
           post.content?.toLowerCase().includes(searchLower) ||
           post.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-        
+
         if (!matchesSearch) return;
       }
 
@@ -82,12 +76,51 @@ exports.handler = async (event, context) => {
 
       posts.push({
         _id: doc.id,
-        ...post,
-        author: post.author || 'KabaleOnline Team'
+        ...post
       });
     });
 
-    // Manual pagination
+    // **FIX 2 (CONTINUED): Sort in-memory**
+    let sortField = 'publishedAt';
+    let sortDirection = 'desc';
+
+    if (sort === 'popular') {
+      sortField = 'views';
+      sortDirection = 'desc';
+    } else if (sort === 'oldest') {
+      sortField = 'publishedAt';
+      sortDirection = 'asc';
+    }
+
+    posts.sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+      
+      // Handle Firestore Timestamps
+      if (valA && typeof valA.toDate === 'function') valA = valA.toDate();
+      if (valB && typeof valB.toDate === 'function') valB = valB.toDate();
+
+      // Handle nulls (e.g., drafts have null publishedAt)
+      if (sortField === 'publishedAt') {
+        if (valA === null && valB === null) return 0;
+        if (valA === null) return sortDirection === 'desc' ? 1 : -1;
+        if (valB === null) return sortDirection === 'desc' ? -1 : 1;
+      }
+
+      // Handle numbers or dates that are not null
+      valA = valA || 0;
+      valB = valB || 0;
+
+      if (valA instanceof Date) {
+        if (sortDirection === 'desc') return valB.getTime() - valA.getTime();
+        return valA.getTime() - valB.getTime();
+      } else {
+        if (sortDirection === 'desc') return valB - valA;
+        return valA - valB;
+      }
+    });
+
+    // Manual pagination (on the sorted results)
     const startIndex = (parseInt(page) - 1) * parseInt(limit);
     const endIndex = startIndex + parseInt(limit);
     const paginatedPosts = posts.slice(startIndex, endIndex);
@@ -95,6 +128,7 @@ exports.handler = async (event, context) => {
     // Convert Firestore timestamps to ISO strings
     const sanitizedPosts = paginatedPosts.map(post => ({
       ...post,
+      author: post.author || 'KabaleOnline Team', // Ensure author exists
       createdAt: post.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       updatedAt: post.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       publishedAt: post.publishedAt?.toDate?.()?.toISOString() || null
