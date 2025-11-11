@@ -434,7 +434,7 @@
         </div>
         
         <div class="feature-card" data-color="#9b59b6" data-title="Social Groups" data-desc="Find your community. Join social groups for hobbies, clubs, and meetups.">
-            <div class="card-content">
+            <div class.card-content">
                 <h3>❤️ Social</h3>
                 <p>Find your community and make friends.</p>
                 <div class="card-graphic-placeholder">
@@ -443,6 +443,16 @@
             </div>
             <span class="card-button">Find Groups</span>
         </div>
+    </div>
+</div>
+
+<div id="feature-modal-overlay"></div>
+<div id="feature-modal">
+    <button id="modal-close-btn">&times;</button>
+    <div id="modal-content">
+        <h2 id="modal-title"></h2>
+        <p id="modal-description"></p>
+        <a href="/group/" id="modal-cta-button">Start Exploring</a>
     </div>
 </div>
 
@@ -851,24 +861,23 @@
 <script type="module" src="index.js"></script>
 <script type="module" src="/js/amara-banner.js"></script>
 <script>
-    
-
-    document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
 
     const scroller = document.querySelector(".features-scroller");
     const cards = document.querySelectorAll(".feature-card");
     const modalOverlay = document.getElementById("feature-modal-overlay");
     const modal = document.getElementById("feature-modal");
     
+    // Safety check
     if (!scroller || !modal || !cards.length) {
-        console.log("Feature scroller components not found.");
+        console.warn("Feature scroller components not found on this page.");
         return;
     }
 
     const modalTitle = document.getElementById("modal-title");
     const modalDesc = document.getElementById("modal-description");
     const modalCloseBtn = document.getElementById("modal-close-btn");
-    const modalCtaBtn = document.getElementById("modal-cta-button"); // Get CTA button
+    const modalCtaBtn = document.getElementById("modal-cta-button"); 
 
     let currentCardIndex = 0;
     let scrollInterval;
@@ -913,7 +922,6 @@
         modal.style.backgroundColor = color; // Set modal color
         
         // Set modal button color to contrast with the background
-        // This is a simple brightness check
         const hex = color.replace('#', '');
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
@@ -921,11 +929,9 @@
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
         
         if (brightness > 125) {
-            // Light background
             modalCtaBtn.style.background = "#333";
             modalCtaBtn.style.color = "#fff";
         } else {
-            // Dark background
             modalCtaBtn.style.background = "#fff";
             modalCtaBtn.style.color = "#333";
         }
@@ -942,7 +948,7 @@
 
     // --- 3. Initialization ---
 
-    // Set card colors and add click listeners
+    // **THIS IS THE PART THAT SETS THE COLORS**
     cards.forEach(card => {
         // SETS THE UNIQUE COLOR FOR EACH CARD
         card.style.backgroundColor = card.dataset.color;
@@ -970,10 +976,13 @@
         setTimeout(startAutoScroll, 5000); // Resume after 5s on mobile
     });
 
+    // **THIS IS THE FIX FOR THE PAGE-JUMP**
     // Start the auto-scroll *after* a 3-second delay
     setTimeout(startAutoScroll, 3000);
 });
-
+</script>
+<script>
+    
 /* === JavaScript for 'Feature Showcase' Tabs === */
 document.addEventListener('DOMContentLoaded', () => {
     // Find all showcase components on the page
