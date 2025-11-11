@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog & Tips - KabaleOnline</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Expert tips, guides, and insights for students and community members in Kabale. Learn about business, technology, campus life, and more.">
+    <meta property="og:title" content="Blog & Tips - KabaleOnline">
+    <meta property="og:description" content="Expert tips, guides, and insights for students and community members in Kabale.">
+    <meta property="og:image" content="https://kabaleonline.com/icons/512.png">
+    <meta property="og:url" content="https://kabaleonline.com/blog/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="stylesheet" href="/blog/blog.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Same Header as your existing site -->
+    <header class="sticky-header">
+        <div class="header-content">
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            <nav class="desktop-nav">
+                <a href="/shop/" class="nav-link">Shop</a>
+                <a href="/rentals/" class="nav-link">Hostels</a>
+                <a href="/home/" class="nav-link service-link">Services</a>
+                <a href="/events/" class="nav-link">Events</a>
+                <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
+                <a href="/blog/" class="nav-link active">Blog</a>
+            </nav>
+            <div class="header-icons">
+                <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="/inbox.html" aria-label="Notifications" class="notification-bell"><i class="fa-regular fa-bell"></i></a>
+                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
+                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav-overlay"></div>
+    <nav class="mobile-nav">
+        <div class="mobile-nav-header">Kabale Online</div>
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
+            <a href="/?type=service" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
+            <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
+            <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
+            <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
+            <a href="/blog/" class="nav-link active"><i class="fa-solid fa-book"></i> Tips & Blog</a>
+        </div>
+    </nav>
+
+    <main class="blog-container">
+        <!-- Hero Section -->
+        <section class="blog-hero">
+            <div class="hero-content">
+                <h1>KabaleOnline Blog</h1>
+                <p>Expert tips, guides, and insights for students and community members</p>
+                <div class="hero-search">
+                    <input type="text" id="blog-search" placeholder="Search articles...">
+                    <button onclick="searchPosts()"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Posts -->
+        <section class="featured-posts" id="featuredPosts">
+            <div class="section-header">
+                <h2>Featured Articles</h2>
+                <a href="/blog/featured/" class="view-all">View All</a>
+            </div>
+            <div class="featured-grid" id="featuredGrid">
+                <!-- Featured posts will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="blog-layout">
+            <div class="posts-section">
+                <div class="section-header">
+                    <h2>Latest Articles</h2>
+                    <div class="filter-controls">
+                        <select id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            <option value="Business">Business</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Campus Life">Campus Life</option>
+                            <option value="Study Tips">Study Tips</option>
+                            <option value="Career">Career</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <select id="sortFilter">
+                            <option value="newest">Newest First</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="posts-grid" id="postsGrid">
+                    <div class="loading-posts">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading articles...</p>
+                    </div>
+                </div>
+
+                <div class="load-more-container">
+                    <button id="loadMoreBtn" class="load-more-btn" onclick="loadMorePosts()">
+                        Load More Articles
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="blog-sidebar">
+                <!-- Categories Widget -->
+                <div class="sidebar-widget">
+                    <h3>Categories</h3>
+                    <div class="categories-list" id="categoriesList">
+                        <!-- Categories will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Popular Posts Widget -->
+                <div class="sidebar-widget">
+                    <h3>Popular Posts</h3>
+                    <div class="popular-posts" id="popularPosts">
+                        <!-- Popular posts will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Newsletter Widget -->
+                <div class="sidebar-widget newsletter-widget">
+                    <h3>Stay Updated</h3>
+                    <p>Get the latest tips and insights delivered to your inbox.</p>
+                    <form id="newsletterForm" class="newsletter-form">
+                        <input type="email" placeholder="Your email address" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+
+                <!-- Tags Widget -->
+                <div class="sidebar-widget">
+                    <h3>Popular Tags</h3>
+                    <div class="tags-cloud" id="tagsCloud">
+                        <!-- Tags will be loaded here -->
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Same Footer as your existing site -->
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Kabale <span>Online</span></div>
+            <p class="footer-tagline">Your Community Marketplace</p>
+            <div class="footer-links">
+                <a href="/about.html">About</a>
+                <a href="/blog/">Blog</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="/firebase.js"></script>
+    <script src="/blog/blog.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile nav toggle
+            const hamburger = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            if (hamburger && mobileNav && overlay) {
+                hamburger.addEventListener('click', () => {
+                    mobileNav.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+                overlay.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            // Initialize blog
+            if (typeof initBlog === 'function') {
+                initBlog();
+            }
+        });
+    </script>
+</body>
+</html>
