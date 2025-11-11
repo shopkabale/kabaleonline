@@ -386,67 +386,75 @@
 
         <div class="group-features-section">
     <h2>Explore What's Happening</h2>
-    
-    <div class="features-scroller">
-        
-        <div class="feature-card" data-color="#ff6b6b" data-title="Marketplace" data-desc="Buy and sell items, find deals, and list your products for the Kabale community.">
-            <div class="card-content">
-                <h3>🛍️ Marketplace</h3>
-                <p>Buy, sell, and discover amazing deals.</p>
-                <div class="card-graphic-placeholder">
-                    <img src="https://images.unsplash.com/photo-1580913428023-02c695666d61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Marketplace">
-                </div>
-            </div>
-            <span class="card-button">Learn More</span>
-        </div>
-        
-        <div class="feature-card" data-color="#4ecdc4" data-title="Housing & Rentals" data-desc="Find hostels, rentals, and rooms for rent near campus and around town.">
-            <div class="card-content">
-                <h3>🏘️ Housing</h3>
-                <p>Find hostels, rentals, and rooms.</p>
-                <div class="card-graphic-placeholder">
-                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Housing">
-                </div>
-            </div>
-            <span class="card-button">Find a Room</span>
-        </div>
-        
-        <div class="feature-card" data-color="#45b7d1" data-title="Technology" data-desc="Join groups for coders, designers, and tech enthusiasts. Share ideas and projects.">
-            <div class="card-content">
-                <h3>💻 Technology</h3>
-                <p>Connect with coders and designers.</p>
-                <div class="card-graphic-placeholder">
-                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Technology">
-                </div>
-            </div>
-            <span class="card-button">Join Tech</span>
-        </div>
-        
-        <div class="feature-card" data-color="#f7b731" data-title="Events" data-desc="Never miss out! See all upcoming campus events, parties, and workshops.">
-            <div class="card-content">
-                <h3>🎉 Events</h3>
-                <p>Discover parties, workshops, and more.</p>
-                <div class="card-graphic-placeholder">
-                    <img src="https://images.unsplash.com/photo-1511795409837-09bb7c600170?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Events">
-                </div>
-            </div>
-            <span class="card-button">See Events</span>
-        </div>
-        
-        <div class="feature-card" data-color="#9b59b6" data-title="Social Groups" data-desc="Find your community. Join social groups for hobbies, clubs, and meetups.">
-            <div class.card-content">
-                <h3>❤️ Social</h3>
-                <p>Find your community and make friends.</p>
-                <div class="card-graphic-placeholder">
-                    <img src="https://images.unsplash.com/photo-1534080564872-750a734392b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Social">
-                </div>
-            </div>
-            <span class="card-button">Find Groups</span>
-        </div>
-    </div>
-</div>
 
-<div id="feature-modal-overlay"></div>
+    <div class="scroller-wrapper">
+
+        <button class="scroller-arrow" id="scroll-left" aria-label="Scroll left">
+            &lt;
+        </button>
+
+        <div class="features-scroller" id="features-scroller">
+            
+            <div class="feature-card" data-color="#ff6b6b" data-title="Marketplace" data-desc="Buy and sell items, find deals, and list your products for the Kabale community.">
+                <div class="card-content">
+                    <h3>🛍️ Marketplace</h3>
+                    <p>Buy, sell, and discover amazing deals.</p>
+                    <div class="card-graphic-placeholder">
+                        <img src="https://images.unsplash.com/photo-1580913428023-02c695666d61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Marketplace">
+                    </div>
+                </div>
+                <span class="card-button">Learn More</span>
+            </div>
+            
+            <div class="feature-card" data-color="#4ecdc4" data-title="Housing & Rentals" data-desc="Find hostels, rentals, and rooms for rent near campus and around town.">
+                <div class="card-content">
+                    <h3>🏘️ Housing</h3>
+                    <p>Find hostels, rentals, and rooms.</p>
+                    <div class="card-graphic-placeholder">
+                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Housing">
+                    </div>
+                </div>
+                <span class="card-button">Find a Room</span>
+            </div>
+            
+            <div class="feature-card" data-color="#45b7d1" data-title="Technology" data-desc="Join groups for coders, designers, and tech enthusiasts. Share ideas and projects.">
+                <div class="card-content">
+                    <h3>💻 Technology</h3>
+                    <p>Connect with coders and designers.</p>
+                    <div class="card-graphic-placeholder">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Technology">
+                    </div>
+                </div>
+                <span class="card-button">Join Tech</span>
+            </div>
+            
+            <div class="feature-card" data-color="#f7b731" data-title="Events" data-desc="Never miss out! See all upcoming campus events, parties, and workshops.">
+                <div class="card-content">
+                    <h3>🎉 Events</h3>
+                    <p>Discover parties, workshops, and more.</p>
+                    <div class="card-graphic-placeholder">
+                        <img src="https://images.unsplash.com/photo-1511795409837-09bb7c600170?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Events">
+                    </div>
+                </div>
+                <span class="card-button">See Events</span>
+            </div>
+            
+            <div class="feature-card" data-color="#9b59b6" data-title="Social Groups" data-desc="Find your community. Join social groups for hobbies, clubs, and meetups.">
+                <div class="card-content">
+                    <h3>❤️ Social</h3>
+                    <p>Find your community and make friends.</p>
+                    <div class="card-graphic-placeholder">
+                        <img src="https://images.unsplash.com/photo-1534080564872-750a734392b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Social">
+                    </div>
+                </div>
+                <span class="card-button">Find Groups</span>
+            </div>
+
+        </div> <button class="scroller-arrow" id="scroll-right" aria-label="Scroll right">
+            &gt;
+        </button>
+
+    </div> </div> <div id="feature-modal-overlay"></div>
 <div id="feature-modal">
     <button id="modal-close-btn">&times;</button>
     <div id="modal-content">
@@ -864,13 +872,17 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    const scroller = document.querySelector(".features-scroller");
+    // --- 1. Get All Elements ---
+    const scroller = document.getElementById("features-scroller");
     const cards = document.querySelectorAll(".feature-card");
+    const scrollLeftBtn = document.getElementById("scroll-left");
+    const scrollRightBtn = document.getElementById("scroll-right");
+    
     const modalOverlay = document.getElementById("feature-modal-overlay");
     const modal = document.getElementById("feature-modal");
-    
+
     // Safety check
-    if (!scroller || !modal || !cards.length) {
+    if (!scroller || !modal || !cards.length || !scrollLeftBtn) {
         console.warn("Feature scroller components not found on this page.");
         return;
     }
@@ -882,9 +894,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentCardIndex = 0;
     let scrollInterval;
-    let isUserInteracting = false; // Flag to check user interaction
+    let isUserInteracting = false; 
 
-    // --- 1. Auto-Scroll Logic ---
+    // --- 2. Auto-Scroll Logic ---
     function startAutoScroll() {
         clearInterval(scrollInterval);
         isUserInteracting = false;
@@ -894,27 +906,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
             currentCardIndex = (currentCardIndex + 1) % cards.length; 
             
-            // --- THIS IS THE FIX ---
-            // We are now scrolling the *container* (scroller), not the whole window.
+            // This is the fixed scroll logic
             const cardToScrollTo = cards[currentCardIndex];
-            
-            // Calculate the position to center the card
             const containerWidth = scroller.offsetWidth;
             const cardWidth = cardToScrollTo.offsetWidth;
             const cardLeft = cardToScrollTo.offsetLeft;
             
-            // Calculate the new scrollLeft position
-            // (card's left edge) - (half container width) + (half card width) - (container padding)
-            // We subtract the container's left padding (which you set to 20px)
-            const scrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2) - 20;
+            // This calculation centers the card
+            const newScrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2);
 
             scroller.scrollTo({
-                left: scrollLeft,
+                left: newScrollLeft,
                 behavior: "smooth"
             });
-            // --- END FIX ---
             
-        }, 3000); // Change card every 3 seconds
+        }, 3000); 
     }
 
     function stopAutoScroll() {
@@ -922,7 +928,39 @@ document.addEventListener("DOMContentLoaded", () => {
         isUserInteracting = true; 
     }
 
-    // --- 2. Modal Pop-up Logic ---
+    // --- 3. Arrow & Wheel Control Logic ---
+    
+    // Function to check if arrows should be disabled
+    function checkArrowVisibility() {
+        const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+        scrollLeftBtn.disabled = scroller.scrollLeft < 10;
+        scrollRightBtn.disabled = scroller.scrollLeft > maxScrollLeft - 10;
+    }
+    
+    // Arrow click events
+    scrollLeftBtn.addEventListener("click", () => {
+        stopAutoScroll();
+        // Scroll by 1 card width + 15px gap
+        scroller.scrollBy({ left: -(300 + 15), behavior: 'smooth' });
+    });
+
+    scrollRightBtn.addEventListener("click", () => {
+        stopAutoScroll();
+        scroller.scrollBy({ left: 300 + 15, behavior: 'smooth' });
+    });
+
+    // Your requested wheel-to-horizontal-scroll
+    scroller.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            scroller.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+    
+    // Update arrows on manual scroll
+    scroller.addEventListener('scroll', checkArrowVisibility);
+
+    // --- 4. Modal Pop-up Logic ---
     function openModal(card) {
         const title = card.dataset.title;
         const desc = card.dataset.desc;
@@ -955,7 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.classList.remove("active");
     }
 
-    // --- 3. Initialization ---
+    // --- 5. Initialization ---
     cards.forEach(card => {
         // Sets the unique color for each card
         card.style.backgroundColor = card.dataset.color;
@@ -969,21 +1007,19 @@ document.addEventListener("DOMContentLoaded", () => {
     modalCloseBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", closeModal);
     
-    // --- Scroll Event Listeners ---
-    scroller.addEventListener("mouseenter", stopAutoScroll); // Pause on hover
-    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true }); // Pause on touch
-    
-    // Resume after a set time
+    // --- Scroll Event Listeners for auto-scroll ---
+    scroller.addEventListener("mouseenter", stopAutoScroll); 
+    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true }); 
     scroller.addEventListener("mouseleave", () => {
-        setTimeout(startAutoScroll, 2000); // Resume after 2s
+        setTimeout(startAutoScroll, 2000); 
     });
     scroller.addEventListener("touchend", () => {
-        setTimeout(startAutoScroll, 5000); // Resume after 5s on mobile
+        setTimeout(startAutoScroll, 5000); 
     });
 
-    // **NO MORE PAGE JUMP**
-    // Start the auto-scroll right away. It won't jump the page.
-    startAutoScroll();
+    // --- Run on load ---
+    checkArrowVisibility(); // Check arrow state on page load
+    setTimeout(startAutoScroll, 3000); // Start auto-scroll after 3s
 });
 </script>
 
