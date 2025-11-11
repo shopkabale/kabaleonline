@@ -2346,3 +2346,160 @@ body.dark-mode .feature-showcase__nav-item--active {
         font-size: 2.2rem;
     }
 }
+
+/* === GROUP FEATURES SECTION === */
+.group-features-section {
+    padding: 20px 0;
+    overflow: hidden; /* Hides any content that breaks out */
+}
+
+.group-features-section h2 {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 15px;
+    padding-left: 20px; /* Aligns with the card's starting edge */
+}
+
+.features-scroller {
+    display: flex;
+    gap: 15px;
+    /* Allows manual touch/mouse scrolling */
+    overflow-x: auto; 
+    /* Smoothly snaps cards into place when scrolling */
+    scroll-snap-type: x mandatory; 
+    /* Hides the ugly scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    padding: 10px 20px; /* Ensures cards don't touch the edge */
+}
+.features-scroller::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.feature-card {
+    /* Each card takes up 80% of the screen, with a 300px min-width */
+    flex: 0 0 80%;
+    min-width: 300px;
+    max-width: 350px;
+    padding: 25px;
+    border-radius: 16px;
+    background-color: var(--bg-card-dark, #1E1E1E); /* Default dark color */
+    color: #fff;
+    scroll-snap-align: center; /* Snaps the card to the center */
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 450px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-content h3 {
+    font-size: 1.8em;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.card-content p {
+    font-size: 1em;
+    opacity: 0.8;
+}
+
+.card-graphic-placeholder {
+    width: 100%;
+    height: 200px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    opacity: 0.5;
+    margin-top: 20px;
+}
+
+.card-button {
+    display: block;
+    text-align: center;
+    background: #fff;
+    color: #333;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+/* === POP-UP MODAL STYLES === */
+#feature-modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+}
+
+#feature-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 90%;
+    max-width: 500px;
+    background: var(--bg-card-dark, #1E1E1E);
+    color: #fff;
+    border-radius: 16px;
+    z-index: 2001;
+    padding: 30px;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#feature-modal.active {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#modal-close-btn {
+    position: absolute;
+    top: 10px; right: 15px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2em;
+    cursor: pointer;
+    opacity: 0.7;
+}
+#modal-close-btn:hover {
+    opacity: 1;
+}
+
+#modal-title {
+    font-size: 1.8em;
+    margin-top: 0;
+}
+
+#modal-description {
+    font-size: 1.1em;
+    line-height: 1.6;
+    opacity: 0.8;
+}
+
+#modal-cta-button {
+    display: block;
+    text-align: center;
+    background: var(--ko-primary, #007aff);
+    color: #fff;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 25px;
+}
