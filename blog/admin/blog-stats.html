@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Analytics - KabaleOnline Admin</title>
+    
+    <link rel="stylesheet" href="blog/admin/blog-admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Same sidebar as blog-admin.html -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>KabaleOnline</h2>
+                <p>Blog Management</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="/admin/blog-admin.html" class="nav-item">
+                    <i class="fas fa-blog"></i>
+                    Blog Posts
+                </a>
+                <a href="/admin/blog-stats.html" class="nav-item active">
+                    <i class="fas fa-chart-bar"></i>
+                    Blog Analytics
+                </a>
+                <a href="/admin/blog-categories.html" class="nav-item">
+                    <i class="fas fa-tags"></i>
+                    Categories
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <img src="/images/avatar-placeholder.png" alt="Admin" class="admin-avatar">
+                    <div>
+                        <strong id="adminName">Loading...</strong>
+                        <span>Administrator</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <h1>Blog Analytics</h1>
+                    <p>Track your blog performance and reader engagement</p>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshStats" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </header>
+
+            <!-- Overview Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total-posts">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalPosts">0</h3>
+                        <p>Total Posts</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon total-views">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalViews">0</h3>
+                        <p>Total Views</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #8b5cf6;">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalLikes">0</h3>
+                        <p>Total Likes</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #06b6d4;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="avgReadTime">0</h3>
+                        <p>Avg. Read Time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Views by Category</h3>
+                        </div>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Posts by Category</h3>
+                        </div>
+                        <canvas id="postsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container full-width">
+                    <div class="chart-header">
+                        <h3>Top Performing Posts</h3>
+                    </div>
+                    <div id="topPostsList" class="top-posts-list">
+                        <!-- Top posts will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="/firebase.js"></script>
+    <script src="blog/admin/blog-stats.js"></script>
+</body>
+</html>
