@@ -383,39 +383,66 @@
                 </div>
             </section>
             
-<div class="shop-by-image-cards">
-            
-            <a href="/shop/" class="cta-card-animated cta-card-buyer">
-                
-                <img src="icons/buy.webp" alt="Buy items on Kabale Online" class="cta-card-bg-image">
-                
-                <div class="cta-card-content">
-                    <h2>Looking for...</h2>
-                    <div class="cta-card-text-container">
-                        <span id="cta-animated-text-buyer">a Hostel?</span>
-                    </div>
-                    <div class="cta-card-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </div>
-            </a>
-
-            <a href="/upload/" class="cta-card-animated cta-card-seller">
-                
-                <img src="icons/sale.webp" alt="Sell items on Kabale Online" class="cta-card-bg-image">
-                
-                <div class="cta-card-content">
-                    <h2>Got Extra...</h2>
-                    <div class="cta-card-text-container">
-                        <span id="cta-animated-text-seller">Textbooks?</span>
-                    </div>
-                    <div class="cta-card-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </div>
-            </a>
-
+<div class="group-features-section">
+    <h2>Explore What's Happening</h2>
+    
+    <div class="features-scroller">
+        <div class="feature-card" data-color="#ff6b6b" data-title="Marketplace" data-desc="Buy and sell items, find deals, and list your products for the Kabale community.">
+            <div class="card-content">
+                <h3>🛍️ Marketplace</h3>
+                <p>Buy, sell, and discover amazing deals.</p>
+                <div class="card-graphic-placeholder"></div>
+            </div>
+            <span class="card-button">Learn More</span>
         </div>
+        
+        <div class="feature-card" data-color="#4ecdc4" data-title="Housing & Rentals" data-desc="Find hostels, rentals, and rooms for rent near campus and around town.">
+            <div class="card-content">
+                <h3>🏘️ Housing</h3>
+                <p>Find hostels, rentals, and rooms.</p>
+                <div class="card-graphic-placeholder"></div>
+            </div>
+            <span class="card-button">Find a Room</span>
+        </div>
+        
+        <div class="feature-card" data-color="#45b7d1" data-title="Technology" data-desc="Join groups for coders, designers, and tech enthusiasts. Share ideas and projects.">
+            <div class="card-content">
+                <h3>💻 Technology</h3>
+                <p>Connect with coders and designers.</p>
+                <div class="card-graphic-placeholder"></div>
+            </div>
+            <span class="card-button">Join Tech</span>
+        </div>
+        
+        <div class="feature-card" data-color="#f7b731" data-title="Events" data-desc="Never miss out! See all upcoming campus events, parties, and workshops.">
+            <div class="card-content">
+                <h3>🎉 Events</h3>
+                <p>Discover parties, workshops, and more.</p>
+                <div class="card-graphic-placeholder"></div>
+            </div>
+            <span class="card-button">See Events</span>
+        </div>
+        
+        <div class="feature-card" data-color="#9b59b6" data-title="Social Groups" data-desc="Find your community. Join social groups for hobbies, clubs, and meetups.">
+            <div class="card-content">
+                <h3>❤️ Social</h3>
+                <p>Find your community and make friends.</p>
+                <div class="card-graphic-placeholder"></div>
+            </div>
+            <span class="card-button">Find Groups</span>
+        </div>
+    </div>
+</div>
+
+<div id="feature-modal-overlay"></div>
+<div id="feature-modal">
+    <button id="modal-close-btn">&times;</button>
+    <div id="modal-content">
+        <h2 id="modal-title"></h2>
+        <p id="modal-description"></p>
+        <a href="/group/" id="modal-cta-button">Start Exploring</a>
+    </div>
+</div>
 
             <section id="sponsored-section" class="product-carousel-section" style="display: none;">
                  <div class="section-header">
@@ -820,30 +847,97 @@
 <script type="module" src="index.js"></script>
 <script type="module" src="/js/amara-banner.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
-        // --- Animated CTA Card Text ---
-        const buyerText = document.getElementById('cta-animated-text-buyer');
-        const sellerText = document.getElementById('cta-animated-text-seller');
+    document.addEventListener("DOMContentLoaded", () => {
 
-        if (buyerText && sellerText) {
-            const buyerItems = ["a Hostel?", "a good Deal?", "Electronics?", "a Service?"];
-            const sellerItems = ["Textbooks?", "that Old Phone?", "Your Skills?", "Furniture?"];
-            let buyerIndex = 0;
-            let sellerIndex = 0;
+    const scroller = document.querySelector(".features-scroller");
+    const cards = document.querySelectorAll(".feature-card");
+    const modalOverlay = document.getElementById("feature-modal-overlay");
+    const modal = document.getElementById("feature-modal");
+    
+    if (!scroller || !modal || !cards.length) {
+        console.log("Feature scroller components not found.");
+        return;
+    }
+
+    const modalTitle = document.getElementById("modal-title");
+    const modalDesc = document.getElementById("modal-description");
+    const modalCloseBtn = document.getElementById("modal-close-btn");
+
+    let currentCardIndex = 0;
+    let scrollInterval;
+
+    // --- 1. Auto-Scroll Logic ---
+    function startAutoScroll() {
+        // Clear any existing interval to prevent speeding up
+        clearInterval(scrollInterval);
+        
+        scrollInterval = setInterval(() => {
+            currentCardIndex++;
+            if (currentCardIndex >= cards.length) {
+                currentCardIndex = 0; // Loop back to start
+            }
             
-            // This timer must match the CSS animation duration (4s = 4000ms)
-            setInterval(() => {
-                // Update Buyer Text
-                buyerIndex = (buyerIndex + 1) % buyerItems.length;
-                buyerText.textContent = buyerItems[buyerIndex];
-                
-                // Update Seller Text
-                sellerIndex = (sellerIndex + 1) % sellerItems.length;
-                sellerText.textContent = sellerItems[sellerIndex];
-                
-            }, 4000); 
-        }
+            // Scroll to the next card
+            cards[currentCardIndex].scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+                block: "nearest"
+            });
+            
+        }, 3000); // Change card every 3 seconds
+    }
+
+    function stopAutoScroll() {
+        clearInterval(scrollInterval);
+    }
+
+    // Start scrolling
+    startAutoScroll();
+
+    // Pause on user interaction
+    scroller.addEventListener("mouseenter", stopAutoScroll);
+    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true });
+    
+    // Resume on mouse leave
+    scroller.addEventListener("mouseleave", startAutoScroll);
+    
+
+    // --- 2. Modal Pop-up Logic ---
+    function openModal(card) {
+        // 1. Get data from the card
+        const title = card.dataset.title;
+        const desc = card.dataset.desc;
+        const color = card.dataset.color;
+        
+        // 2. Populate the modal
+        modalTitle.textContent = title;
+        modalDesc.textContent = desc;
+        modal.style.background = color; // Set modal color to match card
+        
+        // 3. Show the modal
+        modalOverlay.style.display = "block";
+        modal.classList.add("active");
+    }
+
+    function closeModal() {
+        modalOverlay.style.display = "none";
+        modal.classList.remove("active");
+    }
+
+    // Add click listener to every card
+    cards.forEach(card => {
+        // We use 'style' to set the unique color for each card
+        card.style.backgroundColor = card.dataset.color;
+        
+        card.addEventListener("click", () => {
+            openModal(card);
+        });
+    });
+
+    // Listeners to close the modal
+    modalCloseBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", closeModal);
+});
 
     });
 /* === JavaScript for 'Feature Showcase' Tabs === */
