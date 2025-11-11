@@ -1,18 +1,17 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-let cachedDb = null;
+const serviceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  privateKey: Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+};
 
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
-  cachedDb = client.db();
-  return cachedDb;
+if (!global._firebaseApp) {
+  global._firebaseApp = initializeApp({ credential: cert(serviceAccount) });
 }
+
+const db = getFirestore();
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -26,9 +25,6 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const db = await connectToDatabase();
-    const postsCollection = db.collection('blog_posts');
-    
     const { id, slug } = event.queryStringParameters || {};
 
     if (!id && !slug) {
@@ -41,21 +37,27 @@ exports.handler = async (event, context) => {
 
     let query;
     if (id) {
-      if (!ObjectId.isValid(id)) {
+      query = db.collection('blog_posts').doc(id);
+    } else {
+      const slugQuery = await db.collection('blog_posts')
+        .where('slug', '==', slug)
+        .limit(1)
+        .get();
+      
+      if (slugQuery.empty) {
         return {
-          statusCode: 400,
+          statusCode: 404,
           headers,
-          body: JSON.stringify({ error: 'Invalid post ID' })
+          body: JSON.stringify({ error: 'Post not found' })
         };
       }
-      query = { _id: new ObjectId(id) };
-    } else {
-      query = { slug };
+      
+      query = slugQuery.docs[0].ref;
     }
 
-    const post = await postsCollection.findOne(query);
-
-    if (!post) {
+    const doc = await query.get();
+    
+    if (!doc.exists) {
       return {
         statusCode: 404,
         headers,
@@ -63,33 +65,47 @@ exports.handler = async (event, context) => {
       };
     }
 
+    const post = doc.data();
+
     // Increment views
-    await postsCollection.updateOne(
-      query,
-      { $inc: { views: 1 } }
-    );
+    await query.update({
+      views: FieldValue.increment(1)
+    });
 
-    // Get related posts (same category, excluding current post)
-    const relatedPosts = await postsCollection
-      .find({ 
-        category: post.category,
-        status: 'published',
-        _id: { $ne: post._id }
-      })
-      .sort({ publishedAt: -1 })
+    // Get related posts
+    const relatedQuery = await db.collection('blog_posts')
+      .where('category', '==', post.category)
+      .where('status', '==', 'published')
+      .where('__name__', '!=', doc.id)
+      .orderBy('publishedAt', 'desc')
       .limit(3)
-      .toArray();
+      .get();
 
+    const relatedPosts = [];
+    relatedQuery.forEach(relatedDoc => {
+      const relatedPost = relatedDoc.data();
+      relatedPosts.push({
+        _id: relatedDoc.id,
+        ...relatedPost,
+        author: relatedPost.author || 'KabaleOnline Team'
+      });
+    });
+
+    // Convert Firestore timestamps
     const sanitizedPost = {
+      _id: doc.id,
       ...post,
-      _id: post._id.toString(),
-      author: post.author || 'KabaleOnline Team'
+      author: post.author || 'KabaleOnline Team',
+      createdAt: post.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      updatedAt: post.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      publishedAt: post.publishedAt?.toDate?.()?.toISOString() || null
     };
 
     const sanitizedRelated = relatedPosts.map(p => ({
       ...p,
-      _id: p._id.toString(),
-      author: p.author || 'KabaleOnline Team'
+      createdAt: p.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      updatedAt: p.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      publishedAt: p.publishedAt?.toDate?.()?.toISOString() || null
     }));
 
     return {
