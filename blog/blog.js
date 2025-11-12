@@ -1,4 +1,3 @@
-// Blog State Management
 let blogState = {
     currentPage: 1,
     currentCategory: 'all',
@@ -12,7 +11,6 @@ let blogState = {
     popularPosts: []
 };
 
-// DOM Elements
 const elements = {
     postsGrid: document.getElementById('postsGrid'),
     featuredGrid: document.getElementById('featuredGrid'),
@@ -25,14 +23,12 @@ const elements = {
     blogSearch: document.getElementById('blogSearch')
 };
 
-// Initialize Blog
 function initBlog() {
     loadFeaturedPosts();
     loadPosts();
     setupEventListeners();
 }
 
-// Event Listeners
 function setupEventListeners() {
     if (elements.categoryFilter) {
         elements.categoryFilter.addEventListener('change', (e) => {
@@ -61,26 +57,53 @@ function setupEventListeners() {
             }, 500);
         });
     }
+    
+    if (elements.loadMoreBtn) {
+        elements.loadMoreBtn.addEventListener('click', loadMorePosts);
+    }
 
-    // Infinite scroll
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-            if (scrollTop + clientHeight >= scrollHeight - 500 && !blogState.isLoading && blogState.hasMore) {
-                loadMorePosts();
+    function handlePostClick(e) {
+        const card = e.target.closest('[data-post-id]');
+        if (card && card.dataset.postId) {
+            openPost(card.dataset.postId);
+        }
+    }
+
+    if (elements.featuredGrid) {
+        elements.featuredGrid.addEventListener('click', handlePostClick);
+    }
+    if (elements.postsGrid) {
+        elements.postsGrid.addEventListener('click', handlePostClick);
+    }
+    if (elements.popularPosts) {
+        elements.popularPosts.addEventListener('click', handlePostClick);
+    }
+
+    if (elements.categoriesList) {
+        elements.categoriesList.addEventListener('click', (e) => {
+            const categoryItem = e.target.closest('[data-category]');
+            if (categoryItem && categoryItem.dataset.category) {
+                filterByCategory(categoryItem.dataset.category);
             }
-        }, 100);
-    });
+        });
+    }
+
+    if (elements.tagsCloud) {
+        elements.tagsCloud.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tagItem = e.target.closest('[data-tag]');
+            if (tagItem && tagItem.dataset.tag) {
+                filterByTag(tagItem.dataset.tag);
+            }
+        });
+    }
 }
 
-// Load Featured Posts
 async function loadFeaturedPosts() {
     try {
         const response = await fetch('/.netlify/functions/get-blog-posts?limit=3&featured=true');
         const data = await response.json();
-        
+
         if (data.posts && data.posts.length > 0) {
             blogState.featuredPosts = data.posts;
             renderFeaturedPosts();
@@ -90,16 +113,17 @@ async function loadFeaturedPosts() {
     }
 }
 
-// Load Posts
 async function loadPosts(reset = false) {
     if (blogState.isLoading) return;
-    
+
     blogState.isLoading = true;
-    
+
     if (reset) {
         blogState.allPosts = [];
         showLoadingState();
     }
+    
+    updateLoadMoreButton();
 
     try {
         const params = new URLSearchParams({
@@ -118,6 +142,8 @@ async function loadPosts(reset = false) {
 
         if (blogState.currentSort === 'popular') {
             params.append('sort', 'views');
+        } else if (blogState.currentSort === 'oldest') {
+             params.append('sort', 'oldest');
         }
 
         const response = await fetch(`/.netlify/functions/get-blog-posts?${params}`);
@@ -127,18 +153,18 @@ async function loadPosts(reset = false) {
             throw new Error(data.error || 'Failed to load posts');
         }
 
+        const newPosts = data.posts || [];
+
         if (reset) {
-            blogState.allPosts = data.posts || [];
+            blogState.allPosts = newPosts;
         } else {
-            blogState.allPosts = [...blogState.allPosts, ...(data.posts || [])];
+            blogState.allPosts = [...blogState.allPosts, ...newPosts];
         }
 
         blogState.hasMore = data.pagination?.hasNext || false;
-        
+
         renderPosts();
-        updateLoadMoreButton();
-        
-        // Load sidebar data on first load
+
         if (blogState.currentPage === 1) {
             loadSidebarData();
         }
@@ -148,33 +174,30 @@ async function loadPosts(reset = false) {
         showErrorState('Failed to load articles. Please try again.');
     } finally {
         blogState.isLoading = false;
+        updateLoadMoreButton();
     }
 }
 
-// Load More Posts
 async function loadMorePosts() {
     if (blogState.isLoading || !blogState.hasMore) return;
-    
+
     blogState.currentPage++;
     await loadPosts(false);
 }
 
-// Load Sidebar Data
 async function loadSidebarData() {
     try {
-        // Load categories
-        const categoriesResponse = await fetch('/.netlify/functions/get-blog-posts?limit=100');
-        const categoriesData = await categoriesResponse.json();
-        
-        if (categoriesData.posts) {
-            updateCategories(categoriesData.posts);
-            updateTagsCloud(categoriesData.posts);
+        const allPostsResponse = await fetch('/.netlify/functions/get-blog-posts?limit=500&status=published');
+        const allPostsData = await allPostsResponse.json();
+
+        if (allPostsData.posts) {
+            updateCategories(allPostsData.posts);
+            updateTagsCloud(allPostsData.posts);
         }
 
-        // Load popular posts
-        const popularResponse = await fetch('/.netlify/functions/get-blog-posts?sort=views&limit=5');
+        const popularResponse = await fetch('/.netlify/functions/get-blog-posts?sort=popular&limit=5&status=published');
         const popularData = await popularResponse.json();
-        
+
         if (popularData.posts) {
             blogState.popularPosts = popularData.posts;
             renderPopularPosts();
@@ -185,19 +208,18 @@ async function loadSidebarData() {
     }
 }
 
-// Render Featured Posts
 function renderFeaturedPosts() {
     if (!elements.featuredGrid) return;
 
     elements.featuredGrid.innerHTML = blogState.featuredPosts.map(post => `
-        <article class="featured-card" onclick="openPost('${post._id}')">
+        <article class="featured-card" data-post-id="${post._id}">
             ${post.featuredImage ? `
                 <img src="${post.featuredImage}" alt="${post.title}" class="featured-image">
             ` : ''}
             <div class="featured-content">
                 <span class="featured-category">${post.category}</span>
                 <h3>${post.title}</h3>
-                <p class="featured-excerpt">${post.excerpt}</p>
+                <p class="featured-excerpt">${formatExcerpt(post.excerpt)}</p>
                 <div class="featured-meta">
                     <span>By ${post.author}</span>
                     <span>${formatDate(post.publishedAt)}</span>
@@ -207,7 +229,6 @@ function renderFeaturedPosts() {
     `).join('');
 }
 
-// Render Posts
 function renderPosts() {
     if (!elements.postsGrid) return;
 
@@ -221,16 +242,16 @@ function renderPosts() {
         `;
         return;
     }
-
-    elements.postsGrid.innerHTML = blogState.allPosts.map(post => `
-        <article class="post-card" onclick="openPost('${post._id}')">
+    
+    const postsHTML = blogState.allPosts.map(post => `
+        <article class="post-card" data-post-id="${post._id}">
             ${post.featuredImage ? `
                 <img src="${post.featuredImage}" alt="${post.title}" class="post-image">
             ` : ''}
             <div class="post-content">
                 <span class="post-category">${post.category}</span>
                 <h3>${post.title}</h3>
-                <p class="post-excerpt">${post.excerpt}</p>
+                <p class="post-excerpt">${formatExcerpt(post.excerpt)}</p>
                 <div class="post-meta">
                     <div class="author-info">
                         <span>By ${post.author}</span>
@@ -245,19 +266,20 @@ function renderPosts() {
             </div>
         </article>
     `).join('');
+    
+    elements.postsGrid.innerHTML = postsHTML;
 }
 
-// Render Popular Posts
 function renderPopularPosts() {
     if (!elements.popularPosts) return;
 
     elements.popularPosts.innerHTML = blogState.popularPosts.map(post => `
-        <div class="popular-post-item" onclick="openPost('${post._id}')">
+        <div class="popular-post-item" data-post-id="${post._id}">
             ${post.featuredImage ? `
                 <img src="${post.featuredImage}" alt="${post.title}" class="popular-post-image">
             ` : '<div class="popular-post-image" style="background: var(--bg-gray);"></div>'}
             <div class="popular-post-content">
-                <h4>${post.title}</h4>
+                <h4>${truncateText(post.title, 60)}</h4>
                 <div class="popular-post-meta">
                     <span>${formatDate(post.publishedAt)}</span>
                     <span>•</span>
@@ -268,7 +290,6 @@ function renderPopularPosts() {
     `).join('');
 }
 
-// Update Categories
 function updateCategories(posts) {
     if (!elements.categoriesList) return;
 
@@ -280,14 +301,13 @@ function updateCategories(posts) {
     elements.categoriesList.innerHTML = Object.entries(categories)
         .sort(([,a], [,b]) => b - a)
         .map(([category, count]) => `
-            <div class="category-item" onclick="filterByCategory('${category}')">
+            <div class="category-item" data-category="${category}">
                 <span>${category}</span>
                 <span class="category-count">${count}</span>
             </div>
         `).join('');
 }
 
-// Update Tags Cloud
 function updateTagsCloud(posts) {
     if (!elements.tagsCloud) return;
 
@@ -304,13 +324,12 @@ function updateTagsCloud(posts) {
 
     elements.tagsCloud.innerHTML = sortedTags
         .map(([tag, count]) => `
-            <a href="javascript:void(0)" class="tag" onclick="filterByTag('${tag}')">
+            <a href="#" class="tag" data-tag="${tag}">
                 ${tag} (${count})
             </a>
         `).join('');
 }
 
-// Filter by Category
 function filterByCategory(category) {
     if (elements.categoryFilter) {
         elements.categoryFilter.value = category;
@@ -320,7 +339,6 @@ function filterByCategory(category) {
     }
 }
 
-// Filter by Tag
 function filterByTag(tag) {
     blogState.currentSearch = tag;
     blogState.currentPage = 1;
@@ -330,21 +348,10 @@ function filterByTag(tag) {
     loadPosts(true);
 }
 
-// Search Posts
-function searchPosts() {
-    if (elements.blogSearch) {
-        blogState.currentSearch = elements.blogSearch.value;
-        blogState.currentPage = 1;
-        loadPosts(true);
-    }
-}
-
-// Open Post
 function openPost(postId) {
     window.location.href = `/blog/post.html?id=${postId}`;
 }
 
-// Show Loading State
 function showLoadingState() {
     if (elements.postsGrid) {
         elements.postsGrid.innerHTML = `
@@ -356,23 +363,22 @@ function showLoadingState() {
     }
 }
 
-// Show Error State
 function showErrorState(message) {
     if (elements.postsGrid) {
         elements.postsGrid.innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--ko-danger); margin-bottom: 1rem;"></i>
+            <div class="error-state" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
                 <h3>Something went wrong</h3>
                 <p>${message}</p>
-                <button onclick="loadPosts(true)" class="load-more-btn" style="margin-top: 1rem;">
+                <button id="tryAgainBtn" class="load-more-btn" style="margin-top: 1rem;">
                     Try Again
                 </button>
             </div>
         `;
+        document.getElementById('tryAgainBtn')?.addEventListener('click', () => loadPosts(true));
     }
 }
 
-// Update Load More Button
 function updateLoadMoreButton() {
     if (elements.loadMoreBtn) {
         elements.loadMoreBtn.style.display = blogState.hasMore ? 'block' : 'none';
@@ -381,19 +387,41 @@ function updateLoadMoreButton() {
     }
 }
 
-// Format Date
+function formatExcerpt(text, length = 150) {
+  if (!text) return '';
+  
+  let plainText = text
+    .replace(/^[#]{1,3}\s/gm, '')
+    .replace(/[\*_]{1,2}(.*?)[*_]{1,2}/g, '$1')
+    .replace(/\n/g, ' ');
+
+  if (plainText.length > length) {
+    plainText = plainText.substring(0, length).trim() + '...';
+  }
+  
+  return plainText;
+}
+
+function truncateText(text, length = 50) {
+    if (!text) return '';
+    if (text.length > length) {
+        return text.substring(0, length).trim() + '...';
+    }
+    return text;
+}
+
 function formatDate(dateString) {
     if (!dateString) return 'Recently';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays <= 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    
+
     return date.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'short', 
@@ -401,7 +429,6 @@ function formatDate(dateString) {
     });
 }
 
-// Newsletter Form Handler
 if (document.getElementById('newsletterForm')) {
     document.getElementById('newsletterForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -409,7 +436,6 @@ if (document.getElementById('newsletterForm')) {
         const email = form.querySelector('input[type="email"]').value;
         const button = form.querySelector('button');
 
-        // Simple validation
         if (!email || !email.includes('@')) {
             alert('Please enter a valid email address.');
             return;
@@ -420,10 +446,8 @@ if (document.getElementById('newsletterForm')) {
         button.disabled = true;
 
         try {
-            // Here you would typically send to your email service
-            // For now, we'll just show a success message
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             alert('Thank you for subscribing to our newsletter!');
             form.reset();
         } catch (error) {
@@ -435,10 +459,4 @@ if (document.getElementById('newsletterForm')) {
     });
 }
 
-// Export functions for global access
 window.initBlog = initBlog;
-window.loadMorePosts = loadMorePosts;
-window.searchPosts = searchPosts;
-window.openPost = openPost;
-window.filterByCategory = filterByCategory;
-window.filterByTag = filterByTag;
