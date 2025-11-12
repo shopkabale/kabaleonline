@@ -1,109 +1,184 @@
-import { db } from '../firebase.js';
+import { db, auth } from '../firebase.js'; // Import auth
 import { checkAdminAuth, setupHeader } from './admin-common.js';
-import { collection, getDocs, query } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, getDocs, query, where, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 // --- DOM ELEMENTS ---
 const adminContent = document.getElementById('admin-content');
 const loader = document.getElementById('loader');
-const totalReferralsDisplay = document.getElementById('total-referrals-display');
-const referralList = document.getElementById('referral-list');
+const pendingCountDisplay = document.getElementById('pending-referrals-count');
+const pendingList = document.getElementById('pending-referrals-list');
 
 /**
  * Main initialization function.
  */
 function initializeReferrals() {
+    // 1. Check if the user is an admin (from your admin-common.js)
     checkAdminAuth((adminData) => {
         setupHeader(adminData.name); 
-        adminContent.style.display = 'block';
-        loader.style.display = 'none';
 
-        fetchReferralData();
+        // 2. We also need the Auth User object to get a security token
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in and is an admin.
+                adminContent.style.display = 'block';
+                loader.style.display = 'none';
+                loadPendingReferrals(user); // Pass the auth user object
+            }
+        });
     });
 }
 
 /**
- * Fetches all users, builds a referral tree, and displays the full list.
+ * Fetches all "pending" referrals from the referral_log.
  */
-async function fetchReferralData() {
-    referralList.innerHTML = '<li>Loading and processing all user data...</li>';
+async function loadPendingReferrals(user) {
+    pendingList.innerHTML = '<li>Loading pending referrals...</li>';
     try {
-        const usersSnapshot = await getDocs(query(collection(db, 'users')));
-        if (usersSnapshot.empty) {
-            referralList.innerHTML = '<li>No users found in the system.</li>';
+        const q = query(
+            collection(db, 'referral_log'), 
+            where("status", "==", "pending"),
+            orderBy("createdAt", "desc")
+        );
+        
+        const logSnapshot = await getDocs(q);
+        
+        if (logSnapshot.empty) {
+            pendingList.innerHTML = '<li>No pending referrals found.</li>';
+            pendingCountDisplay.textContent = '0';
             return;
         }
 
-        const usersById = new Map();
-        const referrers = new Map();
+        pendingCountDisplay.textContent = logSnapshot.size;
 
-        // Step 1: Map all users by their ID and initialize referrer data
-        usersSnapshot.forEach(doc => {
-            const userData = doc.data();
-            const userId = doc.id;
-            const userName = userData.name || userData.email || 'Unknown User';
-            
-            usersById.set(userId, { ...userData, id: userId, displayName: userName });
-            
-            // Initialize every user as a potential referrer
-            referrers.set(userId, {
-                id: userId,
-                displayName: userName,
-                referred: [] // A list to hold users they referred
-            });
-        });
-
-        // Step 2: Connect referred users to their referrer
-        // This assumes a user doc has a field like 'referredBy' or 'referrerId'
-        usersById.forEach(user => {
-            const referrerId = user.referredBy || user.referrerId;
-            if (referrerId && referrers.has(referrerId)) {
-                referrers.get(referrerId).referred.push(user);
-            }
-        });
-
-        // Step 3: Filter down to only users who *actually* referred someone
-        const actualReferrers = [...referrers.values()]
-            .filter(r => r.referred.length > 0)
-            .sort((a, b) => b.referred.length - a.referred.length); // Sort by count
-
-        if (actualReferrers.length === 0) {
-            referralList.innerHTML = '<li>No users have referred anyone yet.</li>';
-            totalReferralsDisplay.textContent = '0';
-            return;
-        }
-
-        // Step 4: Build the final HTML
-        let totalReferralCount = 0;
+        // 3. Build the final HTML
         let html = '';
-
-        actualReferrers.forEach(referrer => {
-            totalReferralCount += referrer.referred.length;
+        logSnapshot.forEach(doc => {
+            const log = doc.data();
+            const logId = doc.id;
+            const date = log.createdAt?.toDate().toLocaleDateString() || 'N/A';
             
-            // Create the header for the referrer
             html += `
-                <li class="user-list-item" style="background-color: var(--bg-card); flex-direction: column; align-items: flex-start; gap: 5px;">
-                    <strong style="font-size: 1.2em;">${referrer.displayName}</strong>
-                    <span>Total Referrals: ${referrer.referred.length}</span>
+                <li class="referral-queue-item" id="item-${logId}">
+                    <div class="referral-info">
+                        <strong>${log.referredUserName}</strong>
+                        <small>Referred by: ${log.referrerEmail || 'N/A'}</small>
+                        <small>Date: ${date}</small>
+                    </div>
+                    <div class="referral-actions">
+                        <button class="btn-approve" data-log-id="${logId}">
+                            <i class="fa-solid fa-check"></i> Approve
+                        </button>
+                        <button class="btn-reject" data-log-id="${logId}">
+                            <i class="fa-solid fa-times"></i> Reject
+                        </button>
+                    </div>
                 </li>
             `;
-            
-            // Create the list of users they referred
-            referrer.referred.forEach(referredUser => {
-                html += `
-                    <li class="user-list-item" style="padding-left: 40px;">
-                        <span>- ${referredUser.displayName}</span>
-                        <span style="color: var(--text-secondary);">${referredUser.email || ''}</span>
-                    </li>
-                `;
-            });
         });
 
-        referralList.innerHTML = html;
-        totalReferralsDisplay.textContent = totalReferralCount;
+        pendingList.innerHTML = html;
+
+        // 4. Add event listeners to the new buttons
+        pendingList.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', (e) => handleApproval(e, user));
+        });
         
+        pendingList.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', (e) => handleRejection(e, user));
+        });
+
     } catch (e) { 
-        console.error("Error fetching referral data:", e); 
-        referralList.innerHTML = '<li>Could not load referral data.</li>'; 
+        console.error("Error fetching pending referrals:", e); 
+        pendingList.innerHTML = '<li>Could not load referral data.</li>'; 
+    }
+}
+
+/**
+ * Handles the "Approve" button click.
+ * This securely calls your 'approve-referral' Netlify function.
+ */
+async function handleApproval(e, user) {
+    const btn = e.currentTarget;
+    const logId = btn.dataset.logId;
+    if (!logId) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving...';
+
+    try {
+        const idToken = await user.getIdToken();
+
+        const response = await fetch('/.netlify/functions/approve-referral', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}` // Send Firebase token for security
+            },
+            body: JSON.stringify({ logId: logId })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to approve');
+        }
+
+        // Success! Remove item from the UI.
+        document.getElementById(`item-${logId}`).remove();
+        pendingCountDisplay.textContent = parseInt(pendingCountDisplay.textContent) - 1;
+
+    } catch (err) {
+        console.error('Approval failed:', err);
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Approve';
+    }
+}
+
+/**
+ * Handles the "Reject" button click.
+ * This calls a NEW Netlify function 'reject-referral'.
+ */
+async function handleRejection(e, user) {
+    const btn = e.currentTarget;
+    const logId = btn.dataset.logId;
+    if (!logId) return;
+
+    if (!confirm('Are you sure you want to reject this referral? This cannot be undone.')) {
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Rejecting...';
+
+    try {
+        const idToken = await user.getIdToken();
+
+        const response = await fetch('/.netlify/functions/reject-referral', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ logId: logId })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to reject');
+        }
+
+        // Success! Remove item from the UI.
+        document.getElementById(`item-${logId}`).remove();
+        pendingCountDisplay.textContent = parseInt(pendingCountDisplay.textContent) - 1;
+
+    } catch (err) {
+        console.error('Rejection failed:', err);
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-times"></i> Reject';
     }
 }
 
