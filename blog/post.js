@@ -74,9 +74,16 @@ function renderPost() {
     postElements.postTitle.textContent = post.title;
 
     // ** THIS IS THE FIX **
+    // The backend now sends an 'author' object, not an email string.
+    // We must use 'post.author.name' and 'post.author.avatar'
+    
+    // 1. Set the author's name
     postElements.postAuthor.textContent = post.author.name; 
+    
+    // 2. Find the avatar <img> tag
     const authorAvatar = document.querySelector('.author-avatar');
     if (authorAvatar) {
+        // 3. Set its 'src' to the new avatar URL
         authorAvatar.src = post.author.avatar; 
     }
     // ** END FIX **
@@ -106,11 +113,26 @@ function renderPost() {
     postElements.blogPost.style.display = 'block';
 }
 
+// NOTE: This renderRelatedPosts function also needs to be updated
+// to show the author NAME instead of the author OBJECT.
 function renderRelatedPosts(relatedPosts) {
     if (!relatedPosts || relatedPosts.length === 0) return;
 
-    elements.relatedGrid.innerHTML = relatedPosts.map(relatedPost => `
-        <article class="post-card" onclick="openPost('${relatedPost._id}')">
+    // First, let's make sure the related posts also have a simple name
+    // (This is a safety check; the backend should handle this)
+    const fixedRelated = relatedPosts.map(post => {
+        if (typeof post.author === 'object' && post.author !== null) {
+            post.authorName = post.author.name;
+        } else if (typeof post.author === 'string') {
+            post.authorName = post.author.split('@')[0]; // Fallback
+        } else {
+            post.authorName = 'KabaleOnline Team';
+        }
+        return post;
+    });
+
+    elements.relatedGrid.innerHTML = fixedRelated.map(relatedPost => `
+        <article class="post-card" data-post-id="${relatedPost._id}">
             ${relatedPost.featuredImage ? `
                 <img src="${relatedPost.featuredImage}" alt="${relatedPost.title}" class="post-image">
             ` : ''}
@@ -120,7 +142,7 @@ function renderRelatedPosts(relatedPosts) {
                 <p class="post-excerpt">${relatedPost.excerpt}</p>
                 <div class="post-meta">
                     <div class="author-info">
-                        <span>By ${relatedPost.author}</span>
+                        <span>By ${relatedPost.authorName}</span>
                         <span>•</span>
                         <time>${formatDate(relatedPost.publishedAt)}</time>
                     </div>
@@ -129,6 +151,7 @@ function renderRelatedPosts(relatedPosts) {
         </article>
     `).join('');
 }
+
 
 async function toggleLike() {
     if (postState.isUpdatingLike || !postState.post) return;
@@ -193,13 +216,16 @@ function formatContent(content) {
     return content.trim().split('\n\n').map(block => {
         block = block.trim();
 
+        // Apply bold/italic first
         block = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         block = block.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
+        // Handle Headers
         if (block.startsWith('### ')) return `<h3>${block.substring(4)}</h3>`;
         if (block.startsWith('## ')) return `<h2>${block.substring(3)}</h2>`;
         if (block.startsWith('# ')) return `<h1>${block.substring(2)}</h1>`;
 
+        // Handle Bullet Lists
         if (block.startsWith('* ')) {
             const items = block.split('\n').map(line => 
                 `<li>${line.substring(2).trim()}</li>`
@@ -207,7 +233,9 @@ function formatContent(content) {
             return `<ul>${items}</ul>`;
         }
         
+        // Handle single line breaks
         block = block.replace(/\n/g, '<br>');
+        
         return `<p>${block}</p>`;
         
     }).join('');
@@ -311,6 +339,7 @@ function formatDate(dateString) {
     });
 }
 
+// NOTE: This must use data-post-id now
 function openPost(postId) {
     window.location.href = `/blog/post.html?id=${postId}`;
 }
@@ -328,3 +357,9 @@ window.toggleLike = toggleLike;
 window.openPost = openPost;
 window.filterByTag = filterByTag;
 window.loadBlogPost = loadBlogPost;
+
+// Make sure the main function is called
+document.addEventListener('DOMContentLoaded', () => {
+    // This assumes your HTML already has the loadBlogPost() call
+    // in the DOMContentLoaded listener. If not, add it.
+});
