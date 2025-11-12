@@ -1,5 +1,5 @@
 import { db } from '/firebase.js';
-// **FIX: Use your common admin functions**
+// Use your common admin functions
 import { checkAdminAuth, setupHeader } from './admin-common.js';
 import { collection, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -26,7 +26,7 @@ const elements = {
 document.addEventListener('DOMContentLoaded', initializeProductAnalytics);
 
 function initializeProductAnalytics() {
-    // **FIX: Use checkAdminAuth for security and header setup**
+    // Use checkAdminAuth for security and header setup
     checkAdminAuth((adminData) => {
         setupHeader(adminData.name, adminData.photoURL); // Pass photoURL too
         
@@ -95,6 +95,9 @@ function renderTopProducts(products) {
     `).join('');
 }
 
+/**
+ * Renders "Views by Category" as a HORIZONTAL bar chart.
+ */
 function renderCategoryChart(categories) {
     if (productCharts.categoryChart) {
         productCharts.categoryChart.destroy();
@@ -120,6 +123,9 @@ function renderCategoryChart(categories) {
             }]
         },
         options: {
+            // ** THIS IS THE FIX **
+            indexAxis: 'y', // Makes the bar chart horizontal
+            // ** END FIX **
             scales: { 
                 y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
                 x: { ticks: { color: labelColor }, grid: { color: gridColor } }
@@ -133,6 +139,9 @@ function renderCategoryChart(categories) {
     });
 }
 
+/**
+ * Renders "Products by Category" as a doughnut chart with NO LEGEND.
+ */
 function renderProductsChart(categories) {
     if (productCharts.productsChart) {
         productCharts.productsChart.destroy();
@@ -152,7 +161,8 @@ function renderProductsChart(categories) {
                 label: 'Product Count',
                 data: data,
                 backgroundColor: [
-                    '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#d946ef'
+                    '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#d946ef',
+                    '#3b82f6', '#22c55e', '#f97316', '#dc2626', '#a855f7', '#0891b2', '#c026d3'
                 ],
                 hoverOffset: 4
             }]
@@ -162,8 +172,22 @@ function renderProductsChart(categories) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { 
-                    labels: { color: labelColor },
-                    position: 'top'
+                    // ** THIS IS THE FIX **
+                    display: false // Hides the broken legend
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += context.parsed;
+                            }
+                            return label;
+                        }
+                    }
                 }
             }
         }
