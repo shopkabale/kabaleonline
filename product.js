@@ -58,13 +58,9 @@ if (!productId) {
     });
 }
 
-// --- THIS IS THE UPDATED FUNCTION ---
 function saveToLocalStorage(product) {
     try {
-        // --- 1. Update 'lastViewed' (Your existing logic is good) ---
         let lastViewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
-        
-        // Remove this item if it already exists (to avoid duplicates)
         lastViewed = lastViewed.filter(item => item.id !== product.id);
         
         const simplifiedProduct = {
@@ -82,26 +78,15 @@ function saveToLocalStorage(product) {
             sellerIsVerified: product.sellerIsVerified || false, 
             sellerBadges: product.sellerBadges || []
         };
-        // Add the current item to the front of the list
         lastViewed.unshift(simplifiedProduct);
-
-        // Keep the list limited
-        lastViewed = lastViewed.slice(0, 8); // Increased to 8 to match carousel size
+        lastViewed = lastViewed.slice(0, 8);
         localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
 
-        // --- 2. Update 'userInterests' (NEW LOGIC) ---
         if (product.category) {
             let userInterests = JSON.parse(localStorage.getItem('userInterests')) || [];
-            
-            // Remove the category if it already exists
             userInterests = userInterests.filter(cat => cat !== product.category);
-            
-            // Add the new category to the VERY FRONT (most recent)
             userInterests.unshift(product.category);
-            
-            // Keep only the 20 most recent unique categories
             userInterests = userInterests.slice(0, 20); 
-            
             localStorage.setItem('userInterests', JSON.stringify(userInterests));
         }
 
@@ -109,13 +94,25 @@ function saveToLocalStorage(product) {
         console.error("Error saving to localStorage:", e);
     }
 }
-// --- END OF UPDATED FUNCTION ---
 
 
 async function loadProductAndSeller() {
     try {
+        // --- THIS FUNCTION IS UPGRADED ---
+        
+        // 1. Set up references
         const productRef = doc(db, 'products', productId);
-        const productSnap = await getDoc(productRef);
+        
+        // 2. Fetch product data AND view count at the same time for speed
+        const [productSnap, viewResponse] = await Promise.all([
+            getDoc(productRef),
+            fetch(`/.netlify/functions/increment-product-view?id=${productId}`, { 
+                method: 'POST' 
+            }).then(res => res.json()).catch(err => {
+                 console.error('View count fetch failed', err);
+                 return null; // Don't block page load if view count fails
+            })
+        ]);
 
         if (!productSnap.exists()) {
             productDetailContent.innerHTML = '<h1>Product Not Found</h1><p>This listing may have been removed.</p>';
@@ -124,8 +121,13 @@ async function loadProductAndSeller() {
 
         const productData = { id: productSnap.id, ...productSnap.data() };
         
+        // 3. Get the new view count from the function's response
+        //    Fallback to the (slightly old) count from productData if fetch fails
+        const newViewCount = viewResponse ? viewResponse.newViewCount : (productData.views || 0) + 1;
+        
         document.title = `${productData.name || 'Product'} | Kabale Online`;
 
+        // 4. Fetch seller data (same as before)
         const sellerRef = doc(db, 'users', productData.sellerId);
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
@@ -135,10 +137,11 @@ async function loadProductAndSeller() {
         productData.sellerBadges = sellerData.badges || [];
         productData.profilePhotoUrl = sellerData.profilePhotoUrl || null;
 
-        renderProductDetails(productData, sellerData);
+        // 5. Pass the newViewCount to the renderer
+        renderProductDetails(productData, sellerData, newViewCount);
+        
         loadQandA(productData.sellerId);
-
-        saveToLocalStorage(productData); // This now calls the new function
+        saveToLocalStorage(productData);
 
     } catch (error) {
         console.error("Critical error loading product:", error);
@@ -146,7 +149,8 @@ async function loadProductAndSeller() {
     }
 }
 
-function renderProductDetails(product, seller) {
+// --- THIS FUNCTION IS UPGRADED ---
+function renderProductDetails(product, seller, newViewCount) {
     productDetailContent.innerHTML = '';
     const productElement = document.createElement('div');
     productElement.className = 'product-detail-container';
@@ -171,10 +175,6 @@ function renderProductDetails(product, seller) {
         if (product.service_availability) {
             specsHTML += `<div class="product-spec"><i class="fa-solid fa-clock"></i><span><strong>Availability:</strong> ${product.service_availability}</span></div>`;
         }
-        
-        stockStatusHTML = '';
-        addToCartHTML = '';
-
     } else {
         priceHTML = `<h2 id="product-price">UGX ${product.price ? product.price.toLocaleString() : 'N/A'}</h2>`;
         
@@ -210,6 +210,14 @@ function renderProductDetails(product, seller) {
     const prominentVerifiedBadgeHTML = isVerified 
         ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
         : '';
+    
+    // ** NEW HTML for View Count **
+    const viewCountHTML = `
+        <div class="product-stats">
+            <i class="fa-solid fa-eye"></i>
+            <span id="product-view-count">${newViewCount.toLocaleString()} views</span>
+        </div>
+    `;
 
     const primaryColor = '#007aff';
     const hoverColor = '#0056b3';
@@ -230,6 +238,7 @@ function renderProductDetails(product, seller) {
             
             ${priceHTML}
             ${prominentVerifiedBadgeHTML}
+            ${viewCountHTML} 
             ${stockStatusHTML}
             ${specsGridHTML}
             
