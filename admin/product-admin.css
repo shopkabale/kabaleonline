@@ -872,3 +872,34 @@ body {
         flex-direction: column;
     }
 }
+/*
+ * =========================================
+ * RESPONSIVENESS (for charts on mobile)
+ * =========================================
+ */
+
+@media (max-width: 768px) {
+  
+  /* Make charts shorter on mobile */
+  .chart-container {
+    height: 350px;
+    padding: 1.5rem; /* A little less padding on mobile */
+  }
+
+  /* Make top post list more compact */
+  .top-post-item {
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .top-post-title {
+    font-size: 1rem;
+  }
+  
+  .top-post-stats {
+    margin-left: 0;
+    font-size: 0.9rem;
+  }
+}
