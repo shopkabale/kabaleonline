@@ -1,6 +1,6 @@
 import { auth, db } from '/js/auth.js';
 import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Added getDoc
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
 // --- DOM ELEMENTS ---
@@ -30,6 +30,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// --- NEW: Helper to check for active promos ---
+async function getCurrentBaseReward() {
+  const DEFAULT_REWARD = 200; // Your default base reward in UGX
+  try {
+    const promoRef = doc(db, "siteConfig", "promotions");
+    const promoSnap = await getDoc(promoRef);
+
+    if (promoSnap.exists()) {
+      const promo = promoSnap.data();
+      const expires = promo.expires?.toDate();
+      
+      // Check if promo is active and not expired
+      if (promo.active && expires && expires > new Date()) {
+        console.log(`Promo '${promo.activeCampaign}' is active! Applying multiplier.`);
+        return DEFAULT_REWARD * (promo.baseRewardMultiplier || 1);
+      }
+    }
+  } catch (err) {
+    console.warn("Could not check for promotions", err);
+  }
+  return DEFAULT_REWARD;
+}
+
 
 // Main signup form submission logic
 signupForm.addEventListener('submit', async (e) => {
@@ -68,30 +92,39 @@ signupForm.addEventListener('submit', async (e) => {
         }
         
         // Step 2: Create the new user's document in the 'users' collection
+        // *** UPDATED to match your screenshot/referral logic ***
         await setDoc(doc(db, "users", user.uid), {
             name,
+            fullName: name, // From your screenshot
             email,
             whatsapp: normalizeWhatsAppNumber(whatsapp),
             location,
             institution,
+            phone: whatsapp, // From your screenshot
             role: 'seller',
+            isSeller: true, // From your screenshot
             isVerified: false,
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
             referrerId: referrerId,
-            referralValidationRequested: false, // For the Admin-Approval system
-            badges: [],
-            referralBalanceUGX: 0
+            badges: [], // NEW: Added for rewards
+            referralBalance: 0, // NEW: Changed from referralBalanceUGX
+            referralCount: 0  // NEW: Added for rewards
         });
 
         // Step 3: Create a validation request for the admin if there was a referrer
+        // *** UPDATED to use 'referral_log' and add 'baseReward' ***
         if (referrerId) {
-            await addDoc(collection(db, "referralValidationRequests"), {
+            // Get the current reward (checks for promos)
+            const currentReward = await getCurrentBaseReward();
+
+            await addDoc(collection(db, "referral_log"), { // UPDATED collection name
                 referrerId: referrerId,
                 referrerEmail: referrerEmail,
                 referredUserId: user.uid,
                 referredUserName: name,
                 status: "pending",
+                baseReward: currentReward, // NEW: Locks in the reward amount
                 createdAt: serverTimestamp()
             });
         }
