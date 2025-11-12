@@ -873,3 +873,25 @@ body {
     grid-template-columns: 1fr;
   }
 }
+/*
+ * =========================================
+ * CHART CONTAINER FIX
+ * =========================================
+ */
+
+.chart-container {
+  background: var(--bg-white);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+
+  /* --- ADD THESE TWO LINES --- */
+  position: relative; /* 1. This is required by Chart.js */
+  height: 400px;      /* 2. This defines the boundary and stops the expanding */
+}
+
+/* Make sure the canvas element itself doesn't overflow */
+.chart-container canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
