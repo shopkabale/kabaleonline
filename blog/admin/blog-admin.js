@@ -22,33 +22,34 @@ let adminState = {
 const elements = {
     // Admin Info
     adminName: document.getElementById('adminName'),
+    adminAvatar: document.querySelector('.admin-avatar'), // <-- Avatar fix
     logoutBtn: document.getElementById('logoutBtn'),
-    
+
     // Stats
     totalPosts: document.getElementById('totalPosts'),
     publishedPosts: document.getElementById('publishedPosts'),
     draftPosts: document.getElementById('draftPosts'),
     totalViews: document.getElementById('totalViews'),
-    
+
     // Filters
     searchInput: document.getElementById('searchInput'),
     statusFilter: document.getElementById('statusFilter'),
     categoryFilter: document.getElementById('categoryFilter'),
     sortFilter: document.getElementById('sortFilter'),
-    
+
     // Table
     postsTableBody: document.getElementById('postsTableBody'),
     pagination: document.getElementById('pagination'),
-    
+
     // Buttons
     createPostBtn: document.getElementById('createPostBtn'),
-    
+
     // Modals
     postModal: document.getElementById('postModal'),
     deleteModal: document.getElementById('deleteModal'),
     closeModal: document.getElementById('closeModal'),
     cancelBtn: document.getElementById('cancelBtn'),
-    
+
     // Forms
     postForm: document.getElementById('postForm'),
     modalTitle: document.getElementById('modalTitle'),
@@ -63,7 +64,7 @@ const elements = {
     submitBtn: document.getElementById('submitBtn'),
     submitText: document.getElementById('submitText'),
     submitSpinner: document.getElementById('submitSpinner'),
-    
+
     // Delete Modal
     deletePostTitle: document.getElementById('deletePostTitle'),
     cancelDelete: document.getElementById('cancelDelete'),
@@ -78,12 +79,19 @@ function initializeAdminPanel() {
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (userDoc.exists() && userDoc.data().role === 'admin') {
                     adminState.currentUser = user;
-                    elements.adminName.textContent = userDoc.data().name || user.email;
+                    const userData = userDoc.data();
                     
+                    // ** FIX 1: SET AVATAR AND NAME **
+                    elements.adminName.textContent = userData.name || user.email;
+                    if (userData.profileImageUrl) {
+                        elements.adminAvatar.src = userData.profileImageUrl;
+                    }
+                    // ** END FIX **
+
                     setupEventListeners();
                     loadStats();
                     loadPosts();
-                    
+
                 } else {
                     window.location.href = '/admin/access-denied.html';
                 }
@@ -99,53 +107,46 @@ function initializeAdminPanel() {
 
 // Event Listeners
 function setupEventListeners() {
-    // Logout
     elements.logoutBtn.addEventListener('click', () => {
         signOut(auth).catch(error => console.error("Logout Error:", error));
     });
-    
-    // Create Post Button
+
     elements.createPostBtn.addEventListener('click', () => {
         openCreateModal();
     });
-    
-    // Filter Changes
+
     elements.searchInput.addEventListener('input', debounce(() => {
         adminState.filters.search = elements.searchInput.value;
         adminState.currentPage = 1;
         loadPosts();
     }, 500));
-    
+
     elements.statusFilter.addEventListener('change', () => {
         adminState.filters.status = elements.statusFilter.value;
         adminState.currentPage = 1;
         loadPosts();
     });
-    
+
     elements.categoryFilter.addEventListener('change', () => {
         adminState.filters.category = elements.categoryFilter.value;
         adminState.currentPage = 1;
         loadPosts();
     });
-    
+
     elements.sortFilter.addEventListener('change', () => {
         adminState.filters.sort = elements.sortFilter.value;
         adminState.currentPage = 1;
         loadPosts();
     });
-    
-    // Modal Controls
+
     elements.closeModal.addEventListener('click', closeModals);
     elements.cancelBtn.addEventListener('click', closeModals);
     elements.cancelDelete.addEventListener('click', closeModals);
-    
-    // Form Submission
+
     elements.postForm.addEventListener('submit', handlePostSubmit);
-    
-    // Delete Confirmation
+
     elements.confirmDelete.addEventListener('click', handleDeletePost);
-    
-    // Close modals on outside click
+
     window.addEventListener('click', (e) => {
         if (e.target === elements.postModal) closeModals();
         if (e.target === elements.deleteModal) closeModals();
@@ -157,19 +158,18 @@ async function loadStats() {
     try {
         const response = await fetch('/.netlify/functions/get-blog-stats');
         const data = await response.json();
-        
+
         if (response.ok) {
             elements.totalPosts.textContent = data.totalPosts.toLocaleString();
             elements.totalViews.textContent = data.totalViews.toLocaleString();
-            
-            // Calculate published vs draft counts from posts
+
             const postsResponse = await fetch('/.netlify/functions/get-blog-posts?limit=1000&status=all');
             const postsData = await postsResponse.json();
-            
+
             if (postsResponse.ok) {
                 const published = postsData.posts.filter(post => post.status === 'published').length;
                 const drafts = postsData.posts.filter(post => post.status === 'draft').length;
-                
+
                 elements.publishedPosts.textContent = published.toLocaleString();
                 elements.draftPosts.textContent = drafts.toLocaleString();
             }
@@ -182,7 +182,7 @@ async function loadStats() {
 // Load Posts
 async function loadPosts() {
     if (adminState.isLoading) return;
-    
+
     adminState.isLoading = true;
     elements.postsTableBody.innerHTML = `
         <tr>
@@ -192,7 +192,7 @@ async function loadPosts() {
             </td>
         </tr>
     `;
-    
+
     try {
         const params = new URLSearchParams({
             page: adminState.currentPage,
@@ -202,10 +202,10 @@ async function loadPosts() {
             search: adminState.filters.search,
             sort: adminState.filters.sort
         });
-        
+
         const response = await fetch(`/.netlify/functions/get-blog-posts?${params}`);
         const data = await response.json();
-        
+
         if (response.ok) {
             adminState.posts = data.posts;
             adminState.totalPosts = data.pagination.totalPosts;
@@ -243,7 +243,7 @@ function renderPosts() {
         `;
         return;
     }
-    
+
     elements.postsTableBody.innerHTML = adminState.posts.map(post => `
         <tr>
             <td>
@@ -257,7 +257,7 @@ function renderPosts() {
                     `}
                     <div class="post-details">
                         <h4>${post.title}</h4>
-                        <p>${post.excerpt}</p>
+                        <p>${truncateText(post.excerpt, 100)}</p>
                     </div>
                 </div>
             </td>
@@ -292,9 +292,9 @@ function renderPagination(pagination) {
         elements.pagination.innerHTML = '';
         return;
     }
-    
+
     const { currentPage, totalPages, hasNext, hasPrev } = pagination;
-    
+
     elements.pagination.innerHTML = `
         <button class="pagination-btn" ${!hasPrev ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
             <i class="fas fa-chevron-left"></i>
@@ -331,13 +331,13 @@ function openCreateModal() {
 window.editPost = async function(postId) {
     try {
         showLoadingState(true);
-        
+
         const response = await fetch(`/.netlify/functions/get-blog-post?id=${postId}`);
         const data = await response.json();
-        
+
         if (response.ok) {
             const post = data.post;
-            
+
             elements.modalTitle.textContent = 'Edit Post';
             elements.postId.value = postId;
             elements.postTitle.value = post.title;
@@ -348,7 +348,7 @@ window.editPost = async function(postId) {
             elements.postStatus.value = post.status;
             elements.featuredImage.value = post.featuredImage || '';
             elements.submitText.textContent = 'Update Post';
-            
+
             elements.postModal.classList.add('show');
         } else {
             throw new Error(data.error || 'Failed to load post');
@@ -377,17 +377,17 @@ window.confirmDelete = function(postId, postTitle) {
 
 async function handleDeletePost() {
     if (!postToDelete) return;
-    
+
     try {
         showLoadingState(true, elements.confirmDelete);
         elements.confirmDelete.disabled = true;
-        
+
         const response = await fetch(`/.netlify/functions/delete-blog-post?id=${postToDelete}`, {
             method: 'DELETE'
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             closeModals();
             loadPosts();
@@ -409,12 +409,12 @@ async function handleDeletePost() {
 // Form Submission
 async function handlePostSubmit(e) {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     try {
         showLoadingState(true, elements.submitBtn);
-        
+
         const postData = {
             title: elements.postTitle.value.trim(),
             content: elements.postContent.value.trim(),
@@ -425,12 +425,11 @@ async function handlePostSubmit(e) {
             featuredImage: elements.featuredImage.value.trim() || null,
             status: elements.postStatus.value
         };
-        
+
         let response;
         const postId = elements.postId.value;
-        
+
         if (postId) {
-            // Update existing post
             response = await fetch(`/.netlify/functions/update-blog-post?id=${postId}`, {
                 method: 'PUT',
                 headers: {
@@ -439,7 +438,6 @@ async function handlePostSubmit(e) {
                 body: JSON.stringify(postData)
             });
         } else {
-            // Create new post
             response = await fetch('/.netlify/functions/create-blog-post', {
                 method: 'POST',
                 headers: {
@@ -448,9 +446,9 @@ async function handlePostSubmit(e) {
                 body: JSON.stringify(postData)
             });
         }
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             closeModals();
             loadPosts();
@@ -475,29 +473,36 @@ function validateForm() {
     const title = elements.postTitle.value.trim();
     const content = elements.postContent.value.trim();
     const category = elements.postCategory.value;
-    
+
     if (!title) {
         showNotification('Please enter a post title', 'error');
         elements.postTitle.focus();
         return false;
     }
-    
+
     if (!content) {
         showNotification('Please enter post content', 'error');
         elements.postContent.focus();
         return false;
     }
-    
+
     if (!category) {
         showNotification('Please select a category', 'error');
         elements.postCategory.focus();
         return false;
     }
-    
+
     return true;
 }
 
 // Utility Functions
+
+function truncateText(text, length = 100) {
+    if (!text) return '';
+    if (text.length <= length) return text;
+    return text.substring(0, length) + '...';
+}
+
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -512,7 +517,7 @@ function debounce(func, wait) {
 
 function formatDate(dateString) {
     if (!dateString) return null;
-    
+
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
         year: 'numeric',
@@ -531,18 +536,16 @@ function showLoadingState(isLoading, element = null) {
             element.querySelector('.fa-spinner').style.display = isLoading ? 'inline-block' : 'none';
         }
     } else {
-        // Global loading state
         document.body.classList.toggle('loading', isLoading);
     }
 }
 
 function showNotification(message, type = 'info') {
-    // Remove existing notifications
     const existingNotification = document.querySelector('.notification');
     if (existingNotification) {
         existingNotification.remove();
     }
-    
+
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
@@ -551,8 +554,7 @@ function showNotification(message, type = 'info') {
             <span>${message}</span>
         </div>
     `;
-    
-    // Add notification styles if not already present
+
     if (!document.querySelector('#notification-styles')) {
         const styles = document.createElement('style');
         styles.id = 'notification-styles';
@@ -605,10 +607,9 @@ function showNotification(message, type = 'info') {
         `;
         document.head.appendChild(styles);
     }
-    
+
     document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
+
     setTimeout(() => {
         if (notification.parentNode) {
             notification.style.animation = 'slideOutRight 0.3s ease';
@@ -625,7 +626,6 @@ function getNotificationIcon(type) {
     }
 }
 
-// Add slideOutRight animation
 if (!document.querySelector('#notification-animations')) {
     const animations = document.createElement('style');
     animations.id = 'notification-animations';
@@ -644,5 +644,4 @@ if (!document.querySelector('#notification-animations')) {
     document.head.appendChild(animations);
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeAdminPanel);
