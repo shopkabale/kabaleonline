@@ -12,19 +12,19 @@
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            
+
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-            
+
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
+
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
@@ -45,7 +45,7 @@
             --text-secondary: var(--text-secondary-dark);
             --border-color: var(--border-color-dark);
         }
-        
+
         /* --- GENERAL & HEADER STYLES --- */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -134,7 +134,65 @@
         body.light-mode .admin-notification a { color: #0056b3; }
         body.dark-mode .admin-notification a { color: #a8caff; }
         @keyframes fadeIn { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
-        
+
+        /* --- NEW GAMIFICATION STYLES --- */
+        .promo-banner {
+            background: var(--ko-primary);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .gamification-module {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease-out;
+        }
+        .wallet-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--text-main);
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .wallet-display span {
+            font-weight: 700;
+            color: #28a745;
+        }
+        .badges-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+        .badge-item {
+            background-color: var(--bg-main);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+        }
+        .card-stat {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #4caf50; /* Matches card icon color */
+            margin-top: 5px;
+        }
+        /* --- END NEW STYLES --- */
+
         /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
         footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
@@ -151,7 +209,7 @@
     <header class="sticky-header">
         <div class="header-content">
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            
+
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
@@ -183,6 +241,10 @@
     </nav>
 
     <div class="container page-content">
+        
+        <!-- NEW PROMO BANNER -->
+        <div id="promo-banner" style="display:none; margin-bottom: 20px;"></div>
+
         <div id="dashboard-loader">
             <div class="loader-pulse"></div>
         </div>
@@ -195,6 +257,18 @@
             <div class="dashboard-header">
                 <img id="user-profile-photo" src="https://placehold.co/100x100/e0e0e0/777?text=U" alt="Seller Profile Photo">
                 <h1 id="user-display-name">Loading...</h1>
+                
+                <!-- NEW GAMIFICATION MODULE -->
+                <div class="gamification-module">
+                    <div class="wallet-display">
+                        <strong>Your Wallet:</strong>
+                        <span id="user-wallet-balance">UGX 0</span>
+                    </div>
+                    <div id="user-badges-display" class="badges-display">
+                        <span style="color:var(--text-secondary); font-style:italic; font-size: 0.9em;">Loading badges...</span>
+                    </div>
+                </div>
+
                 <p>Welcome to your seller dashboard!</p>
             </div>
 
@@ -218,6 +292,8 @@
                 <a href="/referrals/" class="dashboard-card card-referrals">
                     <div class="icon"><i class="fa-solid fa-share-nodes"></i></div>
                     <h3>Referrals</h3>
+                    <!-- NEW COUNT DISPLAY -->
+                    <span class="card-stat" id="referral-count-stat">0 Approved</span>
                 </a>
                 <a href="/myprofile/" class="dashboard-card card-profile">
                     <div class="icon"><i class="fa-solid fa-user-gear"></i></div>
@@ -228,6 +304,7 @@
             <hr>
             <h2 style="text-align:center; color:var(--text-main);">Quick Links</h2>
             <div class="quick-links-grid">
+                <!-- ... Your existing quick links ... -->
                 <a href="/rentals/" class="quick-link-card"><i class="fa-solid fa-building"></i><span>Rentals</span></a>
                 <a href="/events/" class="quick-link-card"><i class="fa-solid fa-calendar-star"></i><span>Events</span></a>
                 <a href="/calendar/" class="quick-link-card"><i class="fa-solid fa-calendar-days"></i><span>Calendar</span></a>
@@ -249,7 +326,7 @@
             <button id="logout-btn" class="auth-button dashboard-logout">Logout</button>
         </div>
     </div>
-    
+
     <div id="new-user-notification" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1100;">
         <div style="
             background-color: var(--bg-card);
@@ -282,7 +359,7 @@
             <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
     </footer>
-    
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Logic for the mobile nav toggle
@@ -301,7 +378,7 @@
       }
     });
     </script>
-    
+
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="script.js"></script>
 </body>
