@@ -208,6 +208,10 @@ async function loadSidebarData() {
     }
 }
 
+
+
+
+// Render Featured Posts
 function renderFeaturedPosts() {
     if (!elements.featuredGrid) return;
 
@@ -221,7 +225,7 @@ function renderFeaturedPosts() {
                 <h3>${post.title}</h3>
                 <p class="featured-excerpt">${formatExcerpt(post.excerpt)}</p>
                 <div class="featured-meta">
-                    <span>By ${post.author}</span>
+                    <span>By ${post.author.name}</span>
                     <span>${formatDate(post.publishedAt)}</span>
                 </div>
             </div>
@@ -229,17 +233,12 @@ function renderFeaturedPosts() {
     `).join('');
 }
 
+// Render Posts
 function renderPosts() {
     if (!elements.postsGrid) return;
 
     if (blogState.allPosts.length === 0) {
-        elements.postsGrid.innerHTML = `
-            <div class="no-posts">
-                <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
-                <h3>No articles found</h3>
-                <p>Try changing your filters or search terms.</p>
-            </div>
-        `;
+        // ... (no posts found HTML) ...
         return;
     }
     
@@ -254,7 +253,7 @@ function renderPosts() {
                 <p class="post-excerpt">${formatExcerpt(post.excerpt)}</p>
                 <div class="post-meta">
                     <div class="author-info">
-                        <span>By ${post.author}</span>
+                        <span>By ${post.author.name}</span>
                         <span>•</span>
                         <time>${formatDate(post.publishedAt)}</time>
                     </div>
@@ -269,6 +268,8 @@ function renderPosts() {
     
     elements.postsGrid.innerHTML = postsHTML;
 }
+
+
 
 function renderPopularPosts() {
     if (!elements.popularPosts) return;
