@@ -22,7 +22,7 @@ let adminState = {
 const elements = {
     // Admin Info
     adminName: document.getElementById('adminName'),
-    adminAvatar: document.querySelector('.admin-avatar'), // <-- Avatar fix
+    adminAvatar: document.querySelector('.admin-avatar'),
     logoutBtn: document.getElementById('logoutBtn'),
 
     // Stats
@@ -81,10 +81,10 @@ function initializeAdminPanel() {
                     adminState.currentUser = user;
                     const userData = userDoc.data();
                     
-                    // ** FIX 1: SET AVATAR AND NAME **
+                    // ** FIX: Use userData.name and userData.photoURL **
                     elements.adminName.textContent = userData.name || user.email;
-                    if (userData.profileImageUrl) {
-                        elements.adminAvatar.src = userData.profileImageUrl;
+                    if (userData.photoURL) { // Changed to photoURL
+                        elements.adminAvatar.src = userData.photoURL;
                     }
                     // ** END FIX **
 
