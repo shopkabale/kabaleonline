@@ -769,41 +769,39 @@
         font-size: 1rem;
     }
 }
-/* Add to: blog.css */
-
 /* Add this to your blog.css file */
 
 .blog-hero .hero-search {
     position: relative;
-    
-    /* 1. Make it "small" and "centered" */
-    max-width: 450px; /* You can make this smaller if you want */
+    max-width: 450px; 
     margin: 0 auto;
 }
 
 .blog-hero .hero-search input#blog-search {
     width: 100%;
-    border-radius: 50px; /* Rounded pill shape */
+    border-radius: 50px;
     border: none;
-    padding: 0.9rem 4rem 0.9rem 1.5rem; /* Added right-padding for the button */
+    padding: 0.9rem 4rem 0.9rem 1.5rem;
     font-size: 1rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    
+    /* THIS IS THE FIX: */
+    box-sizing: border-box; 
 }
 
 .blog-hero .hero-search button {
     position: absolute;
-    right: 8px; /* Place 8px from the right */
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     
-    /* Your site's colors */
     background: var(--ko-accent, #f59e0b); 
     color: white;
     
     border: none;
-    border-radius: 50%; /* Make it round */
-    width: 38px;  /* Small button */
-    height: 38px; /* Small button */
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
     cursor: pointer;
     font-size: 1rem;
 }
