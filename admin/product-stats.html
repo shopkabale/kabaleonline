@@ -6,6 +6,7 @@
     <title>Product Analytics - KabaleOnline Admin</title>
     
     <link rel="stylesheet" href="blog-admin.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -14,7 +15,7 @@
         <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <h2>KabaleOnline</h2>
-                <p>Blog Management</p>
+                <p>Admin Panel</p>
             </div>
             
             <nav class="sidebar-nav">
@@ -30,7 +31,11 @@
                     <i class="fas fa-chart-bar"></i>
                     Blog Analytics
                 </a>
-                </nav>
+                <a href="/admin/product-stats.html" class="nav-item active">
+                    <i class="fas fa-boxes-stacked"></i>
+                    Product Analytics
+                </a>
+            </nav>
             
             <div class="sidebar-footer">
                 <div class="admin-info">
@@ -132,6 +137,7 @@
     </div>
 
     <script type="module" src="/firebase.js"></script>
+    <script type="module" src="admin-common.js"></script>
     <script type="module" src="product-stats.js"></script>
 </body>
 </html>
