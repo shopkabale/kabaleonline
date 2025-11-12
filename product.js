@@ -98,8 +98,6 @@ function saveToLocalStorage(product) {
 
 async function loadProductAndSeller() {
     try {
-        // --- THIS FUNCTION IS UPGRADED ---
-        
         // 1. Set up references
         const productRef = doc(db, 'products', productId);
         
@@ -122,12 +120,11 @@ async function loadProductAndSeller() {
         const productData = { id: productSnap.id, ...productSnap.data() };
         
         // 3. Get the new view count from the function's response
-        //    Fallback to the (slightly old) count from productData if fetch fails
         const newViewCount = viewResponse ? viewResponse.newViewCount : (productData.views || 0) + 1;
         
         document.title = `${productData.name || 'Product'} | Kabale Online`;
 
-        // 4. Fetch seller data (same as before)
+        // 4. Fetch seller data
         const sellerRef = doc(db, 'users', productData.sellerId);
         const sellerSnap = await getDoc(sellerRef);
         const sellerData = sellerSnap.exists() ? sellerSnap.data() : {};
@@ -137,11 +134,13 @@ async function loadProductAndSeller() {
         productData.sellerBadges = sellerData.badges || [];
         productData.profilePhotoUrl = sellerData.profilePhotoUrl || null;
 
-        // 5. Pass the newViewCount to the renderer
+        // 5. Pass data to renderers
         renderProductDetails(productData, sellerData, newViewCount);
-        
         loadQandA(productData.sellerId);
         saveToLocalStorage(productData);
+        
+        // 6. Load recommendations
+        loadRecommendations(productData.category, productData.id);
 
     } catch (error) {
         console.error("Critical error loading product:", error);
@@ -149,7 +148,6 @@ async function loadProductAndSeller() {
     }
 }
 
-// --- THIS FUNCTION IS UPGRADED ---
 function renderProductDetails(product, seller, newViewCount) {
     productDetailContent.innerHTML = '';
     const productElement = document.createElement('div');
@@ -211,7 +209,6 @@ function renderProductDetails(product, seller, newViewCount) {
         ? `<div class="prominent-verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Seller</div>` 
         : '';
     
-    // ** NEW HTML for View Count **
     const viewCountHTML = `
         <div class="product-stats">
             <i class="fa-solid fa-eye"></i>
@@ -582,4 +579,53 @@ async function submitQuestion(e, sellerId) {
         button.textContent = 'Submit Question';
         setTimeout(() => messageEl.textContent = '', 3000);
     }
+}
+
+/**
+ * Loads recommendations from the new Netlify function.
+ */
+async function loadRecommendations(category, currentProductId) {
+    if (!category) return; // Don't run if there's no category
+
+    try {
+        const response = await fetch(`/.netlify/functions/get-recommendations?category=${encodeURIComponent(category)}&currentID=${currentProductId}`);
+        const data = await response.json();
+        
+        if (data.products && data.products.length > 0) {
+            renderRecommendations(data.products);
+        }
+    } catch (error) {
+        console.error("Error fetching recommendations:", error);
+    }
+}
+
+/**
+ * Renders the product cards for the "You Might Also Like" section.
+ */
+function renderRecommendations(products) {
+    const container = document.getElementById('recommend-section');
+    const grid = document.getElementById('recommend-grid');
+    
+    if (!container || !grid) return;
+    
+    grid.innerHTML = products.map(product => {
+        const price = product.price ? `UGX ${product.price.toLocaleString()}` : 'Price N/A';
+        const imageUrl = (product.imageUrls && product.imageUrls.length > 0) 
+            ? product.imageUrls[0] 
+            : 'https://placehold.co/300x300/e0e0e0/777?text=No+Image';
+        
+        return `
+        <a href="/product.html?id=${product.id}" class="product-card-simple">
+            <div class="card-image-container">
+                <img src="${imageUrl}" alt="${product.name}">
+            </div>
+            <div class="card-content">
+                <h3>${product.name}</h3>
+                <p class="card-price">${price}</p>
+            </div>
+        </a>
+        `;
+    }).join('');
+    
+    container.style.display = 'block'; // Show the section
 }
