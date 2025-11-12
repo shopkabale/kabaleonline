@@ -33,11 +33,11 @@ async function loadBlogPost() {
 
     let fetchUrl = '';
 
-    // **UPGRADE:** Appends '&format=json' to get data from the smart function
+    // This is the simple, static URL
     if (postId) {
-        fetchUrl = `/.netlify/functions/get-blog-post?id=${postId}&format=json`;
+        fetchUrl = `/.netlify/functions/get-blog-post?id=${postId}`;
     } else if (postSlug) {
-        fetchUrl = `/.netlify/functions/get-blog-post?slug=${postSlug}&format=json`;
+        fetchUrl = `/.netlify/functions/get-blog-post?slug=${postSlug}`;
     } else {
         showErrorState();
         return;
@@ -55,12 +55,9 @@ async function loadBlogPost() {
         postState.likeCount = data.post.likes || 0;
         
         checkLikeStatus();
-        
         renderPost();
         renderRelatedPosts(data.relatedPosts);
-        
-        // This is no longer needed, as the server sets the title
-        // updatePageMetadata(); 
+        updatePageMetadata(); // We add this back in
 
     } catch (error) {
         console.error('Error loading blog post:', error);
@@ -76,7 +73,7 @@ function renderPost() {
     postElements.postCategory.textContent = post.category;
     postElements.postTitle.textContent = post.title;
 
-    // **UPGRADE:** Correctly reads the author object
+    // Correctly reads the author object
     postElements.postAuthor.textContent = post.author.name; 
     const authorAvatar = document.querySelector('.author-avatar');
     if (authorAvatar) {
@@ -93,7 +90,6 @@ function renderPost() {
         postElements.featuredImageContainer.style.display = 'block';
     }
 
-    // **UPGRADE:** Uses the correct content formatter
     postElements.postContent.innerHTML = formatContent(post.content);
 
     if (post.tags && post.tags.length > 0) {
@@ -113,13 +109,6 @@ function renderRelatedPosts(relatedPosts) {
     if (!relatedPosts || relatedPosts.length === 0) return;
 
     const postsHTML = relatedPosts.map(relatedPost => {
-        let authorName = 'KabaleOnline Team';
-        if (typeof relatedPost.author === 'object' && relatedPost.author !== null) {
-            authorName = relatedPost.author.name;
-        } else if (typeof relatedPost.author === 'string') {
-            authorName = relatedPost.author.split('@')[0];
-        }
-
         return `
         <article class="post-card" onclick="openPost('${relatedPost._id}')">
             ${relatedPost.featuredImage ? `
@@ -131,7 +120,7 @@ function renderRelatedPosts(relatedPosts) {
                 <p class="post-excerpt">${relatedPost.excerpt}</p>
                 <div class="post-meta">
                     <div class="author-info">
-                        <span>By ${authorName}</span>
+                        <span>By ${relatedPost.author}</span>
                         <span>•</span>
                         <time>${formatDate(relatedPost.publishedAt)}</time>
                     </div>
@@ -206,7 +195,6 @@ function updateLikeButton() {
     }
 }
 
-// **UPGRADE:** This is the corrected formatting function
 function formatContent(content) {
     if (!content) return '<p>No content available.</p>';
     
@@ -226,30 +214,24 @@ function formatContent(content) {
         if (block.startsWith('* ')) {
             const items = block.split('\n').map(line => {
                 let itemContent = line.substring(2).trim(); // remove '* '
-                
-                // Re-apply bold/italic INSIDE the list item
                 itemContent = itemContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 itemContent = itemContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                
                 return `<li>${itemContent}</li>`;
             }).join('');
             return `<ul>${items}</ul>`;
         }
         
-        // Handle single line breaks
         block = block.replace(/\n/g, '<br>');
-        
         return `<p>${block}</p>`;
         
     }).join('');
 }
 
+// This function now runs to update the <title> tag after loading
 function updatePageMetadata() {
-    // This function is no longer needed because the server injects
-    // the metadata. But we leave it here in case you revert.
     if (!postState.post) return;
-
     document.title = `${postState.post.title} - KabaleOnline Blog`;
+
     updateMetaTag('description', postState.post.excerpt || postState.post.content.substring(0, 160));
     updateMetaTag('og:title', postState.post.title);
     updateMetaTag('og:description', postState.post.excerpt || postState.post.content.substring(0, 160));
