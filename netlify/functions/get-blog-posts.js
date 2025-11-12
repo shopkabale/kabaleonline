@@ -13,6 +13,45 @@ if (!global._firebaseApp) {
 
 const db = getFirestore();
 
+// --- NEW HELPER FUNCTION ---
+// This efficiently fetches all author details with one query
+async function getAuthorDetails(posts) {
+    // 1. Get all unique author emails
+    const authorEmails = [...new Set(posts.map(post => post.author))];
+    
+    // 2. Create a fallback map
+    const authorMap = new Map();
+    authorEmails.forEach(email => {
+        authorMap.set(email, {
+            name: email.split('@')[0] || 'KabaleOnline Team', // Default to part of email
+            avatar: '/images/avatar-placeholder.png' // Default avatar
+        });
+    });
+
+    if (authorEmails.length === 0) {
+        return authorMap;
+    }
+
+    // 3. Fetch all matching users in one query
+    try {
+        const usersSnapshot = await db.collection('users').where('email', 'in', authorEmails).get();
+        
+        usersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            authorMap.set(userData.email, {
+                name: userData.name || userData.email, // Use real name
+                avatar: userData.photoURL || '/images/avatar-placeholder.png' // Use real photoURL
+            });
+        });
+    } catch (error) {
+        console.warn("Error fetching author details:", error);
+    }
+    
+    return authorMap;
+}
+// --- END NEW HELPER ---
+
+
 exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -30,7 +69,7 @@ exports.handler = async (event, context) => {
       limit = 10, 
       category, 
       tag, 
-      status, // Removed default 'published' to handle 'all'
+      status = 'published', // Default to published for public blog
       author,
       search,
       sort = 'newest'
@@ -38,40 +77,32 @@ exports.handler = async (event, context) => {
 
     let query = db.collection('blog_posts');
 
-    // **FIX 1: Smarter Filtering**
-    // Only apply filters if they are provided and not 'all'
-    if (status && status !== 'all' && status !== '') {
+    // Apply filters
+    if (status && status !== 'all') {
       query = query.where('status', '==', status);
     }
-    if (category && category !== 'all' && category !== '') {
+    if (category && category !== 'all') {
       query = query.where('category', '==', category);
     }
     if (author) {
       query = query.where('author', '==', author);
     }
 
-    // **FIX 2: Remove Sorting from Query (to prevent crash)**
-    // We will sort in-memory later
-    // REMOVED: query = query.orderBy(sortField, sortDirection);
-
     const snapshot = await query.get();
     let posts = [];
 
     snapshot.forEach(doc => {
       const post = doc.data();
-      // Handle search filtering in memory
+      
       if (search) {
         const searchLower = search.toLowerCase();
         const matchesSearch = 
           post.title?.toLowerCase().includes(searchLower) ||
           post.excerpt?.toLowerCase().includes(searchLower) ||
-          post.content?.toLowerCase().includes(searchLower) ||
           post.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-
         if (!matchesSearch) return;
       }
 
-      // Handle tag filtering
       if (tag && !post.tags?.includes(tag)) return;
 
       posts.push({
@@ -80,55 +111,60 @@ exports.handler = async (event, context) => {
       });
     });
 
-    // **FIX 2 (CONTINUED): Sort in-memory**
+    // Sort in-memory
     let sortField = 'publishedAt';
     let sortDirection = 'desc';
 
     if (sort === 'popular') {
-      sortField = 'views';
-      sortDirection = 'desc';
+        sortField = 'views';
     } else if (sort === 'oldest') {
-      sortField = 'publishedAt';
-      sortDirection = 'asc';
+        sortField = 'publishedAt';
+        sortDirection = 'asc';
     }
 
     posts.sort((a, b) => {
-      let valA = a[sortField];
-      let valB = b[sortField];
-      
-      // Handle Firestore Timestamps
-      if (valA && typeof valA.toDate === 'function') valA = valA.toDate();
-      if (valB && typeof valB.toDate === 'function') valB = valB.toDate();
+        let valA = a[sortField];
+        let valB = b[sortField];
+        
+        if (valA && typeof valA.toDate === 'function') valA = valA.toDate();
+        if (valB && typeof valB.toDate === 'function') valB = valB.toDate();
 
-      // Handle nulls (e.g., drafts have null publishedAt)
-      if (sortField === 'publishedAt') {
-        if (valA === null && valB === null) return 0;
-        if (valA === null) return sortDirection === 'desc' ? 1 : -1;
-        if (valB === null) return sortDirection === 'desc' ? -1 : 1;
-      }
+        if (sortField === 'publishedAt') {
+            if (valA === null && valB === null) return 0;
+            if (valA === null) return sortDirection === 'desc' ? 1 : -1;
+            if (valB === null) return sortDirection === 'desc' ? -1 : 1;
+        }
 
-      // Handle numbers or dates that are not null
-      valA = valA || 0;
-      valB = valB || 0;
+        valA = valA || 0;
+        valB = valB || 0;
 
-      if (valA instanceof Date) {
-        if (sortDirection === 'desc') return valB.getTime() - valA.getTime();
-        return valA.getTime() - valB.getTime();
-      } else {
-        if (sortDirection === 'desc') return valB - valA;
-        return valA - valB;
-      }
+        if (valA instanceof Date) {
+            return (sortDirection === 'desc') ? valB.getTime() - valA.getTime() : valA.getTime() - valB.getTime();
+        } else {
+            return (sortDirection === 'desc') ? valB - valA : valA - valB;
+        }
     });
 
-    // Manual pagination (on the sorted results)
-    const startIndex = (parseInt(page) - 1) * parseInt(limit);
-    const endIndex = startIndex + parseInt(limit);
-    const paginatedPosts = posts.slice(startIndex, endIndex);
+    // --- **NEW: REPLACE AUTHOR EMAIL WITH OBJECT** ---
+    const authorMap = await getAuthorDetails(posts);
 
-    // Convert Firestore timestamps to ISO strings
+    const postsWithAuthors = posts.map(post => {
+        return {
+            ...post,
+            author: authorMap.get(post.author) || { name: 'KabaleOnline Team', avatar: '/images/avatar-placeholder.png' }
+        };
+    });
+    // --- **END NEW** ---
+
+    // Manual pagination
+    const intPage = parseInt(page);
+    const intLimit = parseInt(limit);
+    const startIndex = (intPage - 1) * intLimit;
+    const endIndex = startIndex + intLimit;
+    const paginatedPosts = postsWithAuthors.slice(startIndex, endIndex);
+
     const sanitizedPosts = paginatedPosts.map(post => ({
       ...post,
-      author: post.author || 'KabaleOnline Team', // Ensure author exists
       createdAt: post.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       updatedAt: post.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       publishedAt: post.publishedAt?.toDate?.()?.toISOString() || null
@@ -140,11 +176,11 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         posts: sanitizedPosts,
         pagination: {
-          currentPage: parseInt(page),
-          totalPages: Math.ceil(posts.length / parseInt(limit)),
+          currentPage: intPage,
+          totalPages: Math.ceil(posts.length / intLimit),
           totalPosts: posts.length,
           hasNext: endIndex < posts.length,
-          hasPrev: parseInt(page) > 1
+          hasPrev: intPage > 1
         }
       })
     };
