@@ -1,7 +1,9 @@
-// script.js
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { 
+    doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot, 
+    query, collection, where, getDocs, limit 
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // DOM elements
 const newUserNotification = document.getElementById('new-user-notification');
@@ -12,13 +14,72 @@ const userProfilePhoto = document.getElementById('user-profile-photo');
 const userDisplayName = document.getElementById('user-display-name');
 const logoutBtn = document.getElementById('logout-btn');
 
+// --- NEW GAMIFICATION DOM ELEMENTS ---
+const adminNotificationBanner = document.getElementById('admin-notification-banner');
+const promoBannerEl = document.getElementById('promo-banner');
+const userWalletBalance = document.getElementById('user-wallet-balance');
+const userBadgesDisplay = document.getElementById('user-badges-display');
+const referralCountStat = document.getElementById('referral-count-stat');
+
 let userDocRef = null;
+
+// --- NEW: Function to check for promos ---
+// Runs once for every user
+async function displayActivePromo() {
+  try {
+    const promoRef = doc(db, "siteConfig", "promotions");
+    const promoSnap = await getDoc(promoRef);
+
+    if (promoSnap.exists()) {
+      const promo = promoSnap.data();
+      const expires = promo.expires?.toDate();
+      
+      if (promo.active && expires && expires > new Date()) {
+        if (promoBannerEl) {
+          promoBannerEl.innerHTML = `<div class="promo-banner">${promo.message || 'Special promotion active!'}</div>`;
+          promoBannerEl.style.display = 'block';
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Could not display promo", err);
+  }
+}
+
+// --- NEW: Function to check for admin tasks ---
+// Runs only if the user is an admin
+async function checkAdminStatus(userData) {
+    if (userData.role === 'admin') {
+        try {
+            // Query for just ONE pending referral to see if the queue is empty
+            const q = query(
+                collection(db, 'referral_log'), 
+                where('status', '==', 'pending'), 
+                limit(1)
+            );
+            const pendingSnap = await getDocs(q);
+            
+            if (!pendingSnap.empty) {
+                // If there are pending items, show the banner
+                if (adminNotificationBanner) {
+                    adminNotificationBanner.style.display = 'block';
+                }
+            }
+        } catch (err) {
+            console.warn("Admin check for pending referrals failed:", err);
+        }
+    }
+}
+
 
 // Monitor auth state
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         userDocRef = doc(db, 'users', user.uid);
         await initializeDashboard(user);
+        
+        // --- NEW: Check for promos on page load ---
+        displayActivePromo(); 
     } else {
         window.location.href = "/login/";
     }
@@ -36,10 +97,12 @@ async function initializeDashboard(user) {
             const newUserProfile = {
                 email: user.email,
                 fullName: 'New User',
-                role: 'seller',
+                role: 'seller', // Your default role
+                isSeller: true, // From your DB screenshot
                 createdAt: serverTimestamp(),
                 referralCode: user.uid.substring(0, 6).toUpperCase(),
                 referralCount: 0,
+                referralBalance: 0, // Use 'referralBalance' from your DB
                 badges: [],
                 hasSeenWelcomeModal: false,
                 photoURL: null
@@ -57,10 +120,43 @@ async function initializeDashboard(user) {
         onSnapshot(userDocRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                userProfilePhoto.src = data.photoURL || 'https://placehold.co/100x100/e0e0e0/777?text=U';
-                userDisplayName.textContent = data.fullName || 'Valued Seller';
+                
+                // Update basic profile info
+                userProfilePhoto.src = data.photoURL || data.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
+                userDisplayName.textContent = data.fullName || data.name || 'Valued Seller';
 
-                // Show welcome modal if needed
+                // --- NEW: Update Gamification Module ---
+                
+                // 1. Update Wallet
+                if (userWalletBalance) {
+                    const balance = data.referralBalance || 0;
+                    userWalletBalance.textContent = `UGX ${balance.toLocaleString()}`;
+                }
+
+                // 2. Update Badges
+                if (userBadgesDisplay) {
+                    const badges = data.badges || [];
+                    if (badges.length > 0) {
+                        userBadgesDisplay.innerHTML = badges.map(badge => 
+                            `<span class="badge-item">${badge}</span>`
+                        ).join('');
+                    } else {
+                        userBadgesDisplay.innerHTML = `<span style="color:var(--text-secondary); font-style:italic; font-size: 0.9em;">Refer friends to earn badges!</span>`;
+                    }
+                }
+
+                // 3. Update Referral Card Stat
+                if (referralCountStat) {
+                    const count = data.referralCount || 0;
+                    referralCountStat.textContent = `${count} Approved`;
+                }
+
+                // 4. Check for Admin role & Pending Referrals
+                checkAdminStatus(data);
+
+                // --- End of New Logic ---
+
+                // Show welcome modal if needed (Your original logic)
                 if (isNewUser && !data.hasSeenWelcomeModal) {
                     newUserNotification.style.display = 'flex';
                     content.style.pointerEvents = 'none';
