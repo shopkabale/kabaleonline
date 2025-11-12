@@ -47,27 +47,26 @@ async function displayActivePromo() {
 }
 
 // --- NEW: Function to check for admin tasks ---
-// Runs only if the user is an admin
-async function checkAdminStatus(userData) {
-    if (userData.role === 'admin') {
-        try {
-            // Query for just ONE pending referral to see if the queue is empty
-            const q = query(
-                collection(db, 'referral_log'), 
-                where('status', '==', 'pending'), 
-                limit(1)
-            );
-            const pendingSnap = await getDocs(q);
-            
-            if (!pendingSnap.empty) {
-                // If there are pending items, show the banner
-                if (adminNotificationBanner) {
-                    adminNotificationBanner.style.display = 'block';
-                }
+// This function will NOW only be called if the user is an admin.
+async function checkAdminStatus() {
+    try {
+        // Query for just ONE pending referral to see if the queue is empty
+        const q = query(
+            collection(db, 'referral_log'), 
+            where('status', '==', 'pending'), 
+            limit(1)
+        );
+        const pendingSnap = await getDocs(q);
+        
+        if (!pendingSnap.empty) {
+            // If there are pending items, show the banner
+            if (adminNotificationBanner) {
+                adminNotificationBanner.style.display = 'block';
             }
-        } catch (err) {
-            console.warn("Admin check for pending referrals failed:", err);
         }
+    } catch (err) {
+        // This will now only show for admins if their query fails
+        console.warn("Admin check for pending referrals failed:", err);
     }
 }
 
@@ -92,6 +91,7 @@ async function initializeDashboard(user) {
         let userDoc = await getDoc(userDocRef);
         let isNewUser = false;
 
+        // This is your original, correct logic
         if (!userDoc.exists()) {
             // Create new user document
             const newUserProfile = {
@@ -151,17 +151,28 @@ async function initializeDashboard(user) {
                     referralCountStat.textContent = `${count} Approved`;
                 }
 
-                // 4. Check for Admin role & Pending Referrals
-                checkAdminStatus(data);
-
-                // --- End of New Logic ---
+                // --- *** THIS IS THE FIX *** ---
+                // Only run the admin check if the user's role is 'admin'
+                // This prevents the permission error for new 'seller' accounts.
+                if (data.role === 'admin') {
+                    checkAdminStatus();
+                }
+                // --- *** END OF FIX *** ---
 
                 // Show welcome modal if needed (Your original logic)
                 if (isNewUser && !data.hasSeenWelcomeModal) {
                     newUserNotification.style.display = 'flex';
                     content.style.pointerEvents = 'none';
                 }
+            } else {
+                // This might happen if the doc is deleted while they are logged in
+                console.error("User document does not exist.");
+                auth.signOut();
             }
+        }, (error) => {
+            // --- NEW: Added an error handler for the onSnapshot listener ---
+            console.error("Error in dashboard snapshot listener:", error);
+            loader.innerHTML = "<p style='text-align:center;color:red;'>A database error occurred. Please refresh.</p>";
         });
 
         // Hide loader and show dashboard content
@@ -180,6 +191,7 @@ async function initializeDashboard(user) {
         });
 
     } catch (error) {
+        // This is the error message you are seeing
         console.error("Error initializing dashboard:", error);
         loader.innerHTML = "<p style='text-align:center;color:red;'>Failed to load dashboard. Please refresh.</p>";
     }
