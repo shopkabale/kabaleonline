@@ -181,33 +181,35 @@ function updateLikeButton() {
     }
 }
 
+// REPLACE your old formatContent function with this one
 function formatContent(content) {
     if (!content) return '<p>No content available.</p>';
     
-    // Split by two newlines (a blank line) to create paragraphs
-    return content
-        .split('\n\n') 
-        .map(paragraph => {
-            
-            paragraph = paragraph.trim();
+    // Split by blank lines (paragraphs)
+    return content.trim().split('\n\n').map(block => {
+        block = block.trim();
 
-            // Handle headers
-            if (paragraph.startsWith('### ')) return `<h3>${paragraph.substring(4)}</h3>`;
-            if (paragraph.startsWith('## ')) return `<h2>${paragraph.substring(3)}</h2>`;
-            if (paragraph.startsWith('# ')) return `<h1>${paragraph.substring(2)}</h1>`;
+        // **Apply bold/italic first**
+        block = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        block = block.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-            // Handle bold and italic
-            paragraph = paragraph
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
-            
-            // Handle single line breaks (like for addresses or poetry)
-            paragraph = paragraph.replace(/\n/g, '<br>');
+        // Handle Headers
+        if (block.startsWith('### ')) return `<h3>${block.substring(4)}</h3>`;
+        if (block.startsWith('## ')) return `<h2>${block.substring(3)}</h2>`;
+        if (block.startsWith('# ')) return `<h1>${block.substring(2)}</h1>`;
 
-            // Wrap in a paragraph tag
-            return `<p>${paragraph}</p>`;
-        })
-        .join('');
+        // Handle Bullet Points
+        if (block.startsWith('* ')) {
+            const items = block.split('\n').map(line => 
+                `<li>${line.substring(2).trim()}</li>` // remove the '* '
+            ).join('');
+            return `<ul>${items}</ul>`;
+        }
+
+        // Handle simple paragraphs
+        return `<p>${block.replace(/\n/g, '<br>')}</p>`; // Handle single line breaks
+
+    }).join('');
 }
 
 function updatePageMetadata() {
