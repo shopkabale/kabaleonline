@@ -12,3 +12,7 @@
 # This schedules your cleanup function
 [functions.cleanup-messages]
   schedule = "0 8 * * *"
+
+#referals
+[functions.monthly-leaderboard]
+  schedule = "0 5 1 * *"
