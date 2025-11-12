@@ -72,7 +72,15 @@ function renderPost() {
 
     postElements.postCategory.textContent = post.category;
     postElements.postTitle.textContent = post.title;
-    postElements.postAuthor.textContent = post.author;
+
+    // ** THIS IS THE FIX **
+    postElements.postAuthor.textContent = post.author.name; 
+    const authorAvatar = document.querySelector('.author-avatar');
+    if (authorAvatar) {
+        authorAvatar.src = post.author.avatar; 
+    }
+    // ** END FIX **
+
     postElements.postDate.textContent = formatDate(post.publishedAt);
     postElements.postReadTime.textContent = `${post.readTime} min read`;
     postElements.postViews.textContent = `${post.views + 1} views`;
@@ -101,7 +109,7 @@ function renderPost() {
 function renderRelatedPosts(relatedPosts) {
     if (!relatedPosts || relatedPosts.length === 0) return;
 
-    postElements.relatedGrid.innerHTML = relatedPosts.map(relatedPost => `
+    elements.relatedGrid.innerHTML = relatedPosts.map(relatedPost => `
         <article class="post-card" onclick="openPost('${relatedPost._id}')">
             ${relatedPost.featuredImage ? `
                 <img src="${relatedPost.featuredImage}" alt="${relatedPost.title}" class="post-image">
@@ -120,8 +128,6 @@ function renderRelatedPosts(relatedPosts) {
             </div>
         </article>
     `).join('');
-
-    postElements.relatedPosts.style.display = 'block';
 }
 
 async function toggleLike() {
@@ -184,39 +190,24 @@ function updateLikeButton() {
 function formatContent(content) {
     if (!content) return '<p>No content available.</p>';
     
-    // Split by blank lines (paragraphs)
     return content.trim().split('\n\n').map(block => {
         block = block.trim();
 
-        // 1. Handle Headers (most specific)
+        block = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        block = block.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
         if (block.startsWith('### ')) return `<h3>${block.substring(4)}</h3>`;
         if (block.startsWith('## ')) return `<h2>${block.substring(3)}</h2>`;
         if (block.startsWith('# ')) return `<h1>${block.substring(2)}</h1>`;
 
-        // 2. Handle Bullet Lists
-        // This checks if a block STARTS with '* '
         if (block.startsWith('* ')) {
-            // It's a list, so split by each line
-            const items = block.split('\n').map(line => {
-                let itemContent = line.substring(2).trim(); // remove '* '
-                
-                // Apply bold/italic INSIDE the list item
-                itemContent = itemContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                itemContent = itemContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                
-                return `<li>${itemContent}</li>`;
-            }).join('');
+            const items = block.split('\n').map(line => 
+                `<li>${line.substring(2).trim()}</li>`
+            ).join('');
             return `<ul>${items}</ul>`;
         }
-
-        // 3. Handle Normal Paragraphs
-        // Apply bold/italic to the whole paragraph
-        block = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        block = block.replace(/\*(.*?)\*/g, '<em>$1</em>');
         
-        // Handle single line breaks (like for poetry or addresses)
         block = block.replace(/\n/g, '<br>');
-        
         return `<p>${block}</p>`;
         
     }).join('');
