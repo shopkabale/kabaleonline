@@ -10,13 +10,14 @@ const loader = document.getElementById('loader');
 // Stat Card Elements
 const totalUsersStat = document.getElementById('total-users-stat');
 const totalProductsStat = document.getElementById('total-products-stat');
+const totalViewsStat = document.getElementById('total-views-stat'); // <-- ADDED
 const totalOrdersStat = document.getElementById('total-orders-stat');
 const totalSalesStat = document.getElementById('total-sales-stat');
 const totalWishlistStat = document.getElementById('total-wishlist-stat');
 const totalReferralsStat = document.getElementById('total-referrals-stat');
 const totalRentalsStat = document.getElementById('total-rentals-stat');
 const totalEventsStat = document.getElementById('total-events-stat');
-const totalServicesStat = document.getElementById('total-services-stat'); // <-- Updated
+const totalServicesStat = document.getElementById('total-services-stat');
 
 // Action Card Elements
 const pendingProductsCount = document.getElementById('pending-products-count');
@@ -34,8 +35,8 @@ function initializeDashboard() {
     // Use the common auth checker
     checkAdminAuth((adminData) => {
         // On success, setup the header
-        setupHeader(adminData.name); 
-        
+        setupHeader(adminData.name, adminData.photoURL); // Pass photoURL
+
         // Show the page
         adminContent.style.display = 'block';
         loader.style.display = 'none';
@@ -53,10 +54,30 @@ function initializeDashboard() {
  */
 async function fetchAllStats() {
     try {
+        // --- UPGRADED LOGIC ---
+        // 1. Fetch all products in one go.
+        const productsSnapshot = await getDocs(collection(db, 'products'));
+        
+        // 2. Fetch all users in one go.
         const usersSnapshot = await getDocs(collection(db, 'users'));
+        
+        // 3. Fetch all other counts concurrently
+        const [
+            orderCount, rentalCount, eventCount,
+            testimonialCount, serviceCount, 
+            pendingTestimonials
+        ] = await Promise.all([
+            getCountFromServer(collection(db, 'orders')),
+            getCountFromServer(collection(db, 'rentals')),
+            getCountFromServer(collection(db, 'events')),
+            getCountFromServer(collection(db, 'testimonials')),
+            getCountFromServer(collection(db, 'services')),
+            getCountFromServer(query(collection(db, 'testimonials'), where('status', '==', 'pending')))
+        ]);
+
+        // 4. Calculate User Stats (from usersSnapshot)
         let totalWishlistedItems = 0;
         let totalReferralCount = 0;
-
         for (const userDoc of usersSnapshot.docs) {
             totalReferralCount += userDoc.data().referralCount || 0;
             const wishlistCol = collection(db, 'users', userDoc.id, 'wishlist');
@@ -64,35 +85,36 @@ async function fetchAllStats() {
             totalWishlistedItems += wishlistSnapshot.data().count;
         }
 
-        const [
-            productCount, orderCount, rentalCount, eventCount,
-            testimonialCount, serviceCount, // <-- Updated
-            pendingProducts, pendingTestimonials,
-            salesData
-        ] = await Promise.all([
-            getCountFromServer(collection(db, 'products')),
-            getCountFromServer(collection(db, 'orders')),
-            getCountFromServer(collection(db, 'rentals')),
-            getCountFromServer(collection(db, 'events')),
-            getCountFromServer(collection(db, 'testimonials')),
-            getCountFromServer(collection(db, 'services')), // <-- Updated
-            getCountFromServer(query(collection(db, 'products'), where('status', '==', 'pending'))),
-            getCountFromServer(query(collection(db, 'testimonials'), where('status', '==', 'pending'))),
-            getDocs(query(collection(db, 'products'), where('isSold', '==', true))),
-        ]);
+        // 5. Calculate Product Stats (from productsSnapshot)
+        let totalSalesValue = 0;
+        let totalViews = 0;
+        let pendingProducts = 0;
+        productsSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.views || 0; // <-- Calculate Total Views
+            
+            if (data.isSold) {
+                totalSalesValue += data.price || 0;
+            }
+            if (data.status === 'pending') {
+                pendingProducts++;
+            }
+        });
+        // --- END UPGRADED LOGIC ---
 
-        const totalSalesValue = salesData.docs.reduce((sum, doc) => sum + (doc.data().price || 0), 0);
-
-        totalUsersStat.textContent = usersSnapshot.size;
-        totalProductsStat.textContent = productCount.data().count;
-        totalOrdersStat.textContent = orderCount.data().count;
+        // 6. Render all stats
+        totalUsersStat.textContent = usersSnapshot.size.toLocaleString();
+        totalProductsStat.textContent = productsSnapshot.size.toLocaleString();
+        totalViewsStat.textContent = totalViews.toLocaleString(); // <-- RENDERED
+        totalOrdersStat.textContent = orderCount.data().count.toLocaleString();
         totalSalesStat.textContent = `UGX ${totalSalesValue.toLocaleString()}`;
-        totalWishlistStat.textContent = totalWishlistedItems;
-        totalReferralsStat.textContent = totalReferralCount;
-        totalRentalsStat.textContent = rentalCount.data().count;
-        totalEventsStat.textContent = eventCount.data().count;
-        totalServicesStat.textContent = serviceCount.data().count; // <-- Updated
-        pendingProductsCount.textContent = pendingProducts.data().count;
+        totalWishlistStat.textContent = totalWishlistedItems.toLocaleString();
+        totalReferralsStat.textContent = totalReferralCount.toLocaleString();
+        totalRentalsStat.textContent = rentalCount.data().count.toLocaleString();
+        totalEventsStat.textContent = eventCount.data().count.toLocaleString();
+        totalServicesStat.textContent = serviceCount.data().count.toLocaleString(); 
+        
+        pendingProductsCount.textContent = pendingProducts; // <-- RENDERED
         pendingTestimonialsCount.textContent = pendingTestimonials.data().count;
 
         fetchAndRenderChart(7); // Load chart after stats
