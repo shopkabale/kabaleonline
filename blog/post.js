@@ -109,7 +109,6 @@ function renderPost() {
 function renderRelatedPosts(relatedPosts) {
     if (!relatedPosts || relatedPosts.length === 0) return;
 
-    // Use a safety check for the author name in related posts
     const postsHTML = relatedPosts.map(relatedPost => {
         let authorName = 'KabaleOnline Team';
         if (typeof relatedPost.author === 'object' && relatedPost.author !== null) {
@@ -252,7 +251,7 @@ function updatePageMetadata() {
     }
 
     updateMetaTag('twitter:title', post.title);
-    updateMetaTag('twitter:description',.excerpt || post.content.substring(0, 160));
+    updateMetaTag('twitter:description', post.excerpt || post.content.substring(0, 160));
     if (post.featuredImage) {
         updateMetaTag('twitter:image', post.featuredImage);
     }
