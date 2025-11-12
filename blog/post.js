@@ -74,16 +74,9 @@ function renderPost() {
     postElements.postTitle.textContent = post.title;
 
     // ** THIS IS THE FIX **
-    // The backend now sends an 'author' object, not an email string.
-    // We must use 'post.author.name' and 'post.author.avatar'
-    
-    // 1. Set the author's name
     postElements.postAuthor.textContent = post.author.name; 
-    
-    // 2. Find the avatar <img> tag
     const authorAvatar = document.querySelector('.author-avatar');
     if (authorAvatar) {
-        // 3. Set its 'src' to the new avatar URL
         authorAvatar.src = post.author.avatar; 
     }
     // ** END FIX **
@@ -113,25 +106,19 @@ function renderPost() {
     postElements.blogPost.style.display = 'block';
 }
 
-// NOTE: This renderRelatedPosts function also needs to be updated
-// to show the author NAME instead of the author OBJECT.
 function renderRelatedPosts(relatedPosts) {
     if (!relatedPosts || relatedPosts.length === 0) return;
 
-    // First, let's make sure the related posts also have a simple name
-    // (This is a safety check; the backend should handle this)
-    const fixedRelated = relatedPosts.map(post => {
-        if (typeof post.author === 'object' && post.author !== null) {
-            post.authorName = post.author.name;
-        } else if (typeof post.author === 'string') {
-            post.authorName = post.author.split('@')[0]; // Fallback
-        } else {
-            post.authorName = 'KabaleOnline Team';
+    // Use a safety check for the author name in related posts
+    const postsHTML = relatedPosts.map(relatedPost => {
+        let authorName = 'KabaleOnline Team';
+        if (typeof relatedPost.author === 'object' && relatedPost.author !== null) {
+            authorName = relatedPost.author.name;
+        } else if (typeof relatedPost.author === 'string') {
+            authorName = relatedPost.author.split('@')[0];
         }
-        return post;
-    });
 
-    elements.relatedGrid.innerHTML = fixedRelated.map(relatedPost => `
+        return `
         <article class="post-card" data-post-id="${relatedPost._id}">
             ${relatedPost.featuredImage ? `
                 <img src="${relatedPost.featuredImage}" alt="${relatedPost.title}" class="post-image">
@@ -142,14 +129,17 @@ function renderRelatedPosts(relatedPosts) {
                 <p class="post-excerpt">${relatedPost.excerpt}</p>
                 <div class="post-meta">
                     <div class="author-info">
-                        <span>By ${relatedPost.authorName}</span>
+                        <span>By ${authorName}</span>
                         <span>•</span>
                         <time>${formatDate(relatedPost.publishedAt)}</time>
                     </div>
                 </div>
             </div>
         </article>
-    `).join('');
+        `;
+    }).join('');
+
+    elements.relatedGrid.innerHTML = postsHTML;
 }
 
 
@@ -262,7 +252,7 @@ function updatePageMetadata() {
     }
 
     updateMetaTag('twitter:title', post.title);
-    updateMetaTag('twitter:description', post.excerpt || post.content.substring(0, 160));
+    updateMetaTag('twitter:description',.excerpt || post.content.substring(0, 160));
     if (post.featuredImage) {
         updateMetaTag('twitter:image', post.featuredImage);
     }
@@ -339,7 +329,6 @@ function formatDate(dateString) {
     });
 }
 
-// NOTE: This must use data-post-id now
 function openPost(postId) {
     window.location.href = `/blog/post.html?id=${postId}`;
 }
@@ -357,9 +346,3 @@ window.toggleLike = toggleLike;
 window.openPost = openPost;
 window.filterByTag = filterByTag;
 window.loadBlogPost = loadBlogPost;
-
-// Make sure the main function is called
-document.addEventListener('DOMContentLoaded', () => {
-    // This assumes your HTML already has the loadBlogPost() call
-    // in the DOMContentLoaded listener. If not, add it.
-});
