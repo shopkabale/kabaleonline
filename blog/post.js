@@ -33,10 +33,11 @@ async function loadBlogPost() {
 
     let fetchUrl = '';
 
+    // **UPGRADE:** Appends '&format=json' to get data from the smart function
     if (postId) {
-        fetchUrl = `/.netlify/functions/get-blog-post?id=${postId}`;
+        fetchUrl = `/.netlify/functions/get-blog-post?id=${postId}&format=json`;
     } else if (postSlug) {
-        fetchUrl = `/.netlify/functions/get-blog-post?slug=${postSlug}`;
+        fetchUrl = `/.netlify/functions/get-blog-post?slug=${postSlug}&format=json`;
     } else {
         showErrorState();
         return;
@@ -57,7 +58,9 @@ async function loadBlogPost() {
         
         renderPost();
         renderRelatedPosts(data.relatedPosts);
-        updatePageMetadata();
+        
+        // This is no longer needed, as the server sets the title
+        // updatePageMetadata(); 
 
     } catch (error) {
         console.error('Error loading blog post:', error);
@@ -73,14 +76,13 @@ function renderPost() {
     postElements.postCategory.textContent = post.category;
     postElements.postTitle.textContent = post.title;
 
-    // ** THIS IS THE FIX **
+    // **UPGRADE:** Correctly reads the author object
     postElements.postAuthor.textContent = post.author.name; 
     const authorAvatar = document.querySelector('.author-avatar');
     if (authorAvatar) {
         authorAvatar.src = post.author.avatar; 
     }
-    // ** END FIX **
-
+    
     postElements.postDate.textContent = formatDate(post.publishedAt);
     postElements.postReadTime.textContent = `${post.readTime} min read`;
     postElements.postViews.textContent = `${post.views + 1} views`;
@@ -91,6 +93,7 @@ function renderPost() {
         postElements.featuredImageContainer.style.display = 'block';
     }
 
+    // **UPGRADE:** Uses the correct content formatter
     postElements.postContent.innerHTML = formatContent(post.content);
 
     if (post.tags && post.tags.length > 0) {
@@ -118,7 +121,7 @@ function renderRelatedPosts(relatedPosts) {
         }
 
         return `
-        <article class="post-card" data-post-id="${relatedPost._id}">
+        <article class="post-card" onclick="openPost('${relatedPost._id}')">
             ${relatedPost.featuredImage ? `
                 <img src="${relatedPost.featuredImage}" alt="${relatedPost.title}" class="post-image">
             ` : ''}
@@ -138,7 +141,9 @@ function renderRelatedPosts(relatedPosts) {
         `;
     }).join('');
 
-    elements.relatedGrid.innerHTML = postsHTML;
+    if(elements.relatedGrid) {
+        elements.relatedGrid.innerHTML = postsHTML;
+    }
 }
 
 
@@ -177,7 +182,9 @@ async function toggleLike() {
 
 function checkLikeStatus() {
     const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
-    postState.isLiked = !!likedPosts[postState.post._id];
+    if (postState.post && postState.post._id) {
+        postState.isLiked = !!likedPosts[postState.post._id];
+    }
     updateLikeButton();
 }
 
@@ -199,6 +206,7 @@ function updateLikeButton() {
     }
 }
 
+// **UPGRADE:** This is the corrected formatting function
 function formatContent(content) {
     if (!content) return '<p>No content available.</p>';
     
@@ -216,9 +224,15 @@ function formatContent(content) {
 
         // Handle Bullet Lists
         if (block.startsWith('* ')) {
-            const items = block.split('\n').map(line => 
-                `<li>${line.substring(2).trim()}</li>`
-            ).join('');
+            const items = block.split('\n').map(line => {
+                let itemContent = line.substring(2).trim(); // remove '* '
+                
+                // Re-apply bold/italic INSIDE the list item
+                itemContent = itemContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                itemContent = itemContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                return `<li>${itemContent}</li>`;
+            }).join('');
             return `<ul>${items}</ul>`;
         }
         
@@ -231,47 +245,25 @@ function formatContent(content) {
 }
 
 function updatePageMetadata() {
+    // This function is no longer needed because the server injects
+    // the metadata. But we leave it here in case you revert.
     if (!postState.post) return;
 
-    const { post } = postState;
-
-    document.title = `${post.title} - KabaleOnline Blog`;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-        metaDescription.content = post.excerpt || post.content.substring(0, 160);
-    }
-
-    updateMetaTag('og:title', post.title);
-    updateMetaTag('og:description', post.excerpt || post.content.substring(0, 160));
-    updateMetaTag('og:url', window.location.href);
-
-    if (post.featuredImage) {
-        updateMetaTag('og:image', post.featuredImage);
-    }
-
-    updateMetaTag('twitter:title', post.title);
-    updateMetaTag('twitter:description', post.excerpt || post.content.substring(0, 160));
-    if (post.featuredImage) {
-        updateMetaTag('twitter:image', post.featuredImage);
+    document.title = `${postState.post.title} - KabaleOnline Blog`;
+    updateMetaTag('description', postState.post.excerpt || postState.post.content.substring(0, 160));
+    updateMetaTag('og:title', postState.post.title);
+    updateMetaTag('og:description', postState.post.excerpt || postState.post.content.substring(0, 160));
+    if (postState.post.featuredImage) {
+        updateMetaTag('og:image', postState.post.featuredImage);
     }
 }
 
 function updateMetaTag(property, content) {
-    let metaTag = document.querySelector(`meta[property="${property}"]`) || 
+    let metaTag = document.querySelector(`meta[property="og:${property}"]`) || 
                   document.querySelector(`meta[name="${property}"]`);
-
-    if (!metaTag) {
-        metaTag = document.createElement('meta');
-        if (property.startsWith('og:')) {
-            metaTag.setAttribute('property', property);
-        } else {
-            metaTag.setAttribute('name', property);
-        }
-        document.head.appendChild(metaTag);
+    if (metaTag) {
+        metaTag.setAttribute('content', content);
     }
-
-    metaTag.setAttribute('content', content);
 }
 
 function sharePost() {
