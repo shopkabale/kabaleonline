@@ -769,3 +769,95 @@
         font-size: 1rem;
     }
 }
+/* Add to: blog.css */
+
+.hero-search {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hero-search input#blog-search {
+    width: 100%;
+    height: 60px; /* Taller search bar */
+    padding: 1rem 4.5rem 1rem 1.5rem; /* Add padding on the right for the button */
+    border-radius: 50px;
+    border: none;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.hero-search input#blog-search:focus {
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hero-search button {
+    position: absolute;
+    right: 8px; /* 8px from the right edge */
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--ko-accent, #f59e0b); /* Your site's accent color */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it perfectly round */
+    width: 44px;  /* Fixed width */
+    height: 44px; /* Fixed height */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    line-height: 44px; /* Helps center the icon */
+}
+
+.hero-search button:hover {
+    background: #d97706; /* A darker shade of your accent */
+}
+/* Add to: index.css */
+
+footer {
+    background: #1f2937; /* Dark background (adjust if needed) */
+    color: #d1d5db;     /* Light gray text */
+    padding: 3rem 1.5rem;
+    text-align: center;
+    margin-top: 3rem;
+}
+
+footer .footer-logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+}
+
+footer .footer-logo span {
+    color: var(--ko-accent, #f59e0b);
+}
+
+footer .footer-tagline {
+    font-size: 1rem;
+    color: #9ca3af;
+    margin-bottom: 1.5rem;
+}
+
+footer .footer-links {
+    margin-bottom: 1.5rem;
+}
+
+footer .footer-links a {
+    color: #e5e7eb; /* Light text for links */
+    text-decoration: none;
+    margin: 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+footer .footer-links a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+footer .footer-copyright {
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
