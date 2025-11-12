@@ -183,16 +183,29 @@ function updateLikeButton() {
 
 function formatContent(content) {
     if (!content) return '<p>No content available.</p>';
+    
+    // Split by two newlines (a blank line) to create paragraphs
     return content
-        .split('\n')
-        .filter(line => line.trim() !== '')
-        .map(line => {
-            if (line.startsWith('### ')) return `<h3>${line.substring(4)}</h3>`;
-            if (line.startsWith('## ')) return `<h2>${line.substring(3)}</h2>`;
-            if (line.startsWith('# ')) return `<h1>${line.substring(2)}</h1>`;
-            line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            line = line.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            return `<p>${line}</p>`;
+        .split('\n\n') 
+        .map(paragraph => {
+            
+            paragraph = paragraph.trim();
+
+            // Handle headers
+            if (paragraph.startsWith('### ')) return `<h3>${paragraph.substring(4)}</h3>`;
+            if (paragraph.startsWith('## ')) return `<h2>${paragraph.substring(3)}</h2>`;
+            if (paragraph.startsWith('# ')) return `<h1>${paragraph.substring(2)}</h1>`;
+
+            // Handle bold and italic
+            paragraph = paragraph
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Handle single line breaks (like for addresses or poetry)
+            paragraph = paragraph.replace(/\n/g, '<br>');
+
+            // Wrap in a paragraph tag
+            return `<p>${paragraph}</p>`;
         })
         .join('');
 }
