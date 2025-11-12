@@ -1,4 +1,5 @@
 const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 
 // Your existing service account logic
@@ -13,10 +14,10 @@ if (!global._firebaseApp) {
 }
 
 const db = getFirestore();
+const auth = getAuth();
 
-// --- THIS IS YOUR REWARD RULES ---
+// --- YOUR REWARD RULES ---
 const REWARDS_CONFIG = {
-  // Milestones are based on the NEW referral count
   MILESTONES: {
     3: { badge: "Kabale Builder" },
     5: { bonus: 2000 }, // UGX 2,000 shop credit
@@ -26,6 +27,20 @@ const REWARDS_CONFIG = {
   }
 };
 // --- END OF RULES ---
+
+// Helper function to verify admin
+async function verifyAdmin(token) {
+    if (!token) {
+        throw new Error('No auth token provided.');
+    }
+    const decodedToken = await auth.verifyIdToken(token.split('Bearer ')[1]);
+    const adminUid = decodedToken.uid;
+    const adminUser = await db.collection('users').doc(adminUid).get();
+    if (!adminUser.exists || adminUser.data().role !== 'admin') {
+        throw new Error('User is not an admin.');
+    }
+    return adminUid;
+}
 
 exports.handler = async (event, context) => {
   const headers = {
@@ -43,30 +58,13 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // 1. --- Security Check ---
-    // Your admin panel JS MUST send this secret key.
-    const providedSecret = event.headers['authorization']?.split('Bearer ')[1];
-    if (providedSecret !== process.env.ADMIN_SECRET_KEY) {
-      console.warn('Unauthorized attempt to approve referral.');
-      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
-    }
-    
-    // Add this to Netlify env vars
-    // You MUST be an admin to call this
-    const { adminUid } = JSON.parse(event.body);
-    if (!adminUid) {
-        return { statusCode: 401, headers, body: JSON.stringify({ error: 'Admin UID required' }) };
-    }
-    const adminUser = await db.collection('users').doc(adminUid).get();
-    if (!adminUser.exists || adminUser.data().role !== 'admin') {
-        return { statusCode: 403, headers, body: JSON.stringify({ error: 'You do not have permission' }) };
-    }
+    // 1. --- NEW Security Check ---
+    await verifyAdmin(event.headers.authorization);
 
     // 2. --- Get Input ---
-    // Your admin panel must send: { "logId": "...", "adminUid": "..." }
     const { logId } = JSON.parse(event.body);
     if (!logId) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'referral_log ID (logId) is required' }) };
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'logId is required' }) };
     }
 
     const logRef = db.collection('referral_log').doc(logId);
@@ -79,44 +77,31 @@ exports.handler = async (event, context) => {
     const referralData = logDoc.data();
     const { referrerId, baseReward } = referralData;
 
-    // 3. --- Check if Already Processed ---
     if (referralData.status === 'approved') {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'This referral has already been approved' }) };
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Already approved' }) };
     }
 
     const userRef = db.collection('users').doc(referrerId);
     const fulfillmentRef = db.collection('fulfillmentQueue');
 
-    // 4. --- Run as a Transaction (All or Nothing) ---
+    // 3. --- Run as a Transaction ---
     const newCount = await db.runTransaction(async (t) => {
       const userDoc = await t.get(userRef);
-      if (!userDoc.exists) {
-        throw new Error(`User ${referrerId} not found`);
-      }
+      if (!userDoc.exists) throw new Error(`User ${referrerId} not found`);
 
       const userData = userDoc.data();
-
-      // --- Calculate New Stats (using your field names) ---
       const currentCount = userData.referralCount || 0;
       const newCount = currentCount + 1;
-      
-      let rewardToApply = baseReward || 0; // Default to base reward from log
+      let rewardToApply = baseReward || 0;
+      const currentBadges = new Set(userData.badges || []);
 
-      const currentBadges = new Set(userData.badges || []); // Use a Set to avoid duplicates
-
-      // --- Check for Milestone Rewards ---
       const milestone = REWARDS_CONFIG.MILESTONES[newCount];
       let fulfillmentTask = null;
 
       if (milestone) {
-        if (milestone.badge) {
-          currentBadges.add(milestone.badge);
-        }
-        if (milestone.bonus) {
-          rewardToApply += milestone.bonus; // Add milestone bonus
-        }
+        if (milestone.badge) currentBadges.add(milestone.badge);
+        if (milestone.bonus) rewardToApply += milestone.bonus;
         if (milestone.fulfillment) {
-          // Create a new fulfillment task (for the T-Shirt)
           fulfillmentTask = {
             userId: referrerId,
             userName: userData.fullName || userData.name || 'N/A',
@@ -128,36 +113,23 @@ exports.handler = async (event, context) => {
         }
       }
 
-      // --- Apply Updates to User ---
       t.update(userRef, {
         referralCount: newCount,
         referralBalance: FieldValue.increment(rewardToApply),
-        badges: Array.from(currentBadges) // Convert Set back to Array
+        badges: Array.from(currentBadges)
       });
-
-      // --- Mark the Log as Approved ---
-      t.update(logRef, {
-        status: 'approved',
-        processedAt: Timestamp.now()
-      });
-
-      // --- Create Fulfillment Task (if any) ---
+      t.update(logRef, { status: 'approved', processedAt: Timestamp.now() });
       if (fulfillmentTask) {
-        const newFulfillmentRef = fulfillmentRef.doc(); // Create a new doc
-        t.set(newFulfillmentRef, fulfillmentTask);
+        t.set(fulfillmentRef.doc(), fulfillmentTask);
       }
-      
-      return newCount; // Return the new count
+      return newCount;
     });
 
-    // 5. --- Return Success ---
+    // 4. --- Return Success ---
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ 
-        success: true, 
-        message: `Referral approved. User now has ${newCount} referrals.` 
-      })
+      body: JSON.stringify({ success: true, message: `Referral approved. User now has ${newCount} referrals.` })
     };
 
   } catch (error) {
@@ -165,7 +137,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error', details: error.message })
+      body: JSON.stringify({ error: error.message || 'Internal server error' })
     };
   }
 };
