@@ -71,7 +71,7 @@ exports.handler = async (event, context) => {
       views: FieldValue.increment(1)
     });
 
-    // ** THIS IS THE FIX **
+    // --- Author Details Fix ---
     // 1. Set a default author object
     let authorDetails = {
         name: 'KabaleOnline Team',
@@ -93,9 +93,9 @@ exports.handler = async (event, context) => {
             console.warn("Could not fetch author details by email:", userError);
         }
     }
-    // ** END FIX **
+    // --- End Author Fix ---
     
-    // --- Related Posts (This query is correct and needs the index you made) ---
+    // --- Related Posts (This query needs the 3-field index) ---
     const relatedQuery = await db.collection('blog_posts')
       .where('category', '==', post.category)
       .where('status', '==', 'published')
@@ -107,18 +107,22 @@ exports.handler = async (event, context) => {
     relatedQuery.forEach(relatedDoc => {
       if (relatedDoc.id !== doc.id) {
         const relatedPost = relatedDoc.data();
+        let authorName = 'KabaleOnline Team';
+        if (typeof relatedPost.author === 'string') {
+            authorName = relatedPost.author.split('@')[0];
+        }
+
         relatedPosts.push({
           _id: relatedDoc.id,
           ...relatedPost,
-          // We can do a simple fallback for related posts
-          author: relatedPost.author.split('@')[0] || 'KabaleOnline'
+          author: authorName // Send a simple name for related posts
         });
       }
     });
     const finalRelatedPosts = relatedPosts.slice(0, 3);
     // --- End Related Posts ---
 
-    // 4. Sanitize the post, now with the correct author object
+    // Sanitize the post, now with the correct author object
     const sanitizedPost = {
       _id: doc.id,
       ...post,
