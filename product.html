@@ -329,6 +329,71 @@
     text-align: center;
 }
         /* --- END MODAL CSS --- */
+/* --- "You Might Also Like" Section --- */
+.recommend-section {
+    margin-top: 40px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 30px;
+}
+.recommend-section h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+.product-card-simple {
+    text-decoration: none;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card-simple:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+.card-image-container {
+    width: 100%;
+    height: 160px;
+}
+.card-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card-content {
+    padding: 15px;
+}
+.card-content h3 {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0 0 5px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.card-content .card-price {
+    font-size: 0.95em;
+    font-weight: bold;
+    color: var(--ko-primary);
+    margin: 0;
+}
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+    .card-image-container {
+        height: 120px;
+    }
+}
     </style>
 </head>
 <body>
@@ -387,7 +452,11 @@
             <div id="qa-form-container"></div>
         </div>
     </main>
-
+<section class="recommend-section" id="recommend-section" style="display: none;">
+    <h2>You Might Also Like</h2>
+    <div class="product-grid" id="recommend-grid">
+        </div>
+</section>
     <footer>
         <div class="container">
             <div class="footer-logo">Kabale <span>Online</span></div>
