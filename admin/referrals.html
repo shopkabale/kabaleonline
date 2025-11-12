@@ -7,6 +7,57 @@
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
+    <style>
+        /* Add some styles for the new list */
+        .referral-queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .referral-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .referral-info strong {
+            font-size: 1.1em;
+            color: var(--text-main);
+        }
+        .referral-info small {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+        .referral-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .referral-actions button {
+            padding: 8px 12px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-reject {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-approve:disabled, .btn-reject:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
     <script src="/theme.js"></script>
@@ -24,17 +75,20 @@
         <div id="access-denied" style="display: none;">
             <h1>Access Denied</h1><p>You do not have permission to view this page. Redirecting...</p>
         </div>
+        
         <main id="admin-content" style="display: none;">
-            <h1>User Referrals</h1>
+            <h1>Manage Referrals</h1>
             <p>Welcome, <strong id="admin-name">Admin</strong>!</p>
-            
+
             <div class="stat-card" style="max-width: 400px; margin-bottom: 30px;">
-                <h3>Total Referrals Made</h3>
-                <p id="total-referrals-display" class="stat-number">0</p>
+                <h3>Pending Approvals</h3>
+                <p id="pending-referrals-count" class="stat-number">0</p>
             </div>
 
-            <h2>Users by Referral Count</h2>
-            <ul id="referral-list" class="user-list"></ul>
+            <h2>Pending Referral Queue</h2>
+            <ul id="pending-referrals-list" class="user-list" style="list-style-type: none; padding: 0;">
+                <!-- Pending referrals will be loaded here by JS -->
+            </ul>
         </main>
     </div>
     <script type="module" src="referrals.js"></script>
