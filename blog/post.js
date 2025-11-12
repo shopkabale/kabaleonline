@@ -181,7 +181,6 @@ function updateLikeButton() {
     }
 }
 
-// REPLACE your old formatContent function with this one
 function formatContent(content) {
     if (!content) return '<p>No content available.</p>';
     
@@ -189,26 +188,37 @@ function formatContent(content) {
     return content.trim().split('\n\n').map(block => {
         block = block.trim();
 
-        // **Apply bold/italic first**
-        block = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        block = block.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-        // Handle Headers
+        // 1. Handle Headers (most specific)
         if (block.startsWith('### ')) return `<h3>${block.substring(4)}</h3>`;
         if (block.startsWith('## ')) return `<h2>${block.substring(3)}</h2>`;
         if (block.startsWith('# ')) return `<h1>${block.substring(2)}</h1>`;
 
-        // Handle Bullet Points
+        // 2. Handle Bullet Lists
+        // This checks if a block STARTS with '* '
         if (block.startsWith('* ')) {
-            const items = block.split('\n').map(line => 
-                `<li>${line.substring(2).trim()}</li>` // remove the '* '
-            ).join('');
+            // It's a list, so split by each line
+            const items = block.split('\n').map(line => {
+                let itemContent = line.substring(2).trim(); // remove '* '
+                
+                // Apply bold/italic INSIDE the list item
+                itemContent = itemContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                itemContent = itemContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                return `<li>${itemContent}</li>`;
+            }).join('');
             return `<ul>${items}</ul>`;
         }
 
-        // Handle simple paragraphs
-        return `<p>${block.replace(/\n/g, '<br>')}</p>`; // Handle single line breaks
-
+        // 3. Handle Normal Paragraphs
+        // Apply bold/italic to the whole paragraph
+        block = block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        block = block.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // Handle single line breaks (like for poetry or addresses)
+        block = block.replace(/\n/g, '<br>');
+        
+        return `<p>${block}</p>`;
+        
     }).join('');
 }
 
