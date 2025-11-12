@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Analytics - KabaleOnline Admin</title>
+    
+    <link rel="stylesheet" href="blog-admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>KabaleOnline</h2>
+                <p>Blog Management</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="/admin/blog-admin.html" class="nav-item">
+                    <i class="fas fa-blog"></i>
+                    Blog Posts
+                </a>
+                <a href="/admin/blog-stats.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    Blog Analytics
+                </a>
+                </nav>
+            
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <img src="/images/avatar-placeholder.png" alt="Admin" class="admin-avatar">
+                    <div>
+                        <strong id="adminName">Loading...</strong>
+                        <span>Administrator</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <h1>Product Analytics</h1>
+                    <p>Track your e-commerce performance</p>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshStats" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total-posts" style="background: #2563eb;">
+                        <i class="fas fa-boxes-stacked"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalProducts">0</h3>
+                        <p>Total Products</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon total-views" style="background: #10b981;">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalProductViews">0</h3>
+                        <p>Total Product Views</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #ef4444;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalSold">0</h3>
+                        <p>Total Units Sold</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f59e0b;">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalStockValue">0</h3>
+                        <p>Total Stock Value</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Views by Category</h3>
+                        </div>
+                        <canvas id="productViewsByCategoryChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Products by Category</h3>
+                        </div>
+                        <canvas id="productsByCategoryChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container full-width">
+                    <div class="chart-header">
+                        <h3>Top Performing Products</h3>
+                    </div>
+                    <div id="topProductsList" class="top-posts-list">
+                        </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="/firebase.js"></script>
+    <script type="module" src="product-stats.js"></script>
+</body>
+</html>
