@@ -114,6 +114,22 @@ async function initializeDashboard(user) {
             if (!userDataCheck.fullName || userDataCheck.fullName === 'New User') {
                 isNewUser = true;
             }
+
+            // --- *** THIS IS THE NEW AUTOMATIC FIX *** ---
+            // If the user exists but is missing a referralCode, create one.
+            // This "patches" all your old users automatically.
+            if (!userDataCheck.referralCode) {
+                console.log(`Patching user ${user.uid}: adding referralCode.`);
+                const newCode = user.uid.substring(0, 6).toUpperCase();
+                // We run this update but don't wait for it,
+                // so the dashboard can load faster.
+                updateDoc(userDocRef, { 
+                    referralCode: newCode 
+                }).catch(err => {
+                    console.error("Failed to auto-patch referral code:", err);
+                });
+            }
+            // --- *** END OF AUTOMATIC FIX *** ---
         }
 
         // Listen to changes in user document in real-time
@@ -151,13 +167,12 @@ async function initializeDashboard(user) {
                     referralCountStat.textContent = `${count} Approved`;
                 }
 
-                // --- *** THIS IS THE FIX *** ---
+                // --- THIS IS THE FIX FROM BEFORE (STILL NEEDED) ---
                 // Only run the admin check if the user's role is 'admin'
-                // This prevents the permission error for new 'seller' accounts.
                 if (data.role === 'admin') {
                     checkAdminStatus();
                 }
-                // --- *** END OF FIX *** ---
+                // --- END OF FIX ---
 
                 // Show welcome modal if needed (Your original logic)
                 if (isNewUser && !data.hasSeenWelcomeModal) {
