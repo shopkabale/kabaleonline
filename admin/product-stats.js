@@ -1,6 +1,7 @@
-import { auth, db } from '/firebase.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { db } from '/firebase.js';
+// **FIX: Use your common admin functions**
+import { checkAdminAuth, setupHeader } from './admin-common.js';
+import { collection, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // --- STATE ---
 let productCharts = {
@@ -10,9 +11,7 @@ let productCharts = {
 
 // --- DOM ELEMENTS ---
 const elements = {
-    adminName: document.getElementById('adminName'),
-    adminAvatar: document.querySelector('.admin-avatar'),
-    logoutBtn: document.getElementById('logoutBtn'),
+    // adminName, adminAvatar, logoutBtn are handled by admin-common.js
     refreshStats: document.getElementById('refreshStats'),
     totalProducts: document.getElementById('totalProducts'),
     totalProductViews: document.getElementById('totalProductViews'),
@@ -27,36 +26,18 @@ const elements = {
 document.addEventListener('DOMContentLoaded', initializeProductAnalytics);
 
 function initializeProductAnalytics() {
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists() && userDoc.data().role === 'admin') {
-                    const userData = userDoc.data();
-                    elements.adminName.textContent = userData.name || user.email;
-                    if (userData.photoURL) {
-                        elements.adminAvatar.src = userData.photoURL;
-                    }
-                    setupEventListeners();
-                    loadAllStats();
-                } else {
-                    window.location.href = '/admin/access-denied.html';
-                }
-            } catch (error) {
-                console.error("Error verifying admin role:", error);
-                window.location.href = '/admin/access-denied.html';
-            }
-        } else {
-            window.location.href = '/login/';
-        }
+    // **FIX: Use checkAdminAuth for security and header setup**
+    checkAdminAuth((adminData) => {
+        setupHeader(adminData.name, adminData.photoURL); // Pass photoURL too
+        
+        setupEventListeners();
+        loadAllStats();
     });
 }
 
 // --- EVENT LISTENERS ---
 function setupEventListeners() {
-    elements.logoutBtn.addEventListener('click', () => {
-        signOut(auth).catch(error => console.error("Logout Error:", error));
-    });
+    // logoutBtn listener is in admin-common.js
     elements.refreshStats.addEventListener('click', loadAllStats);
 }
 
@@ -122,6 +103,9 @@ function renderCategoryChart(categories) {
 
     const labels = categories.map(c => c._id);
     const data = categories.map(c => c.totalViews);
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const labelColor = isDarkMode ? '#e2e8f0' : '#34495e';
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
     productCharts.categoryChart = new Chart(elements.categoryChart, {
         type: 'bar',
@@ -136,9 +120,15 @@ function renderCategoryChart(categories) {
             }]
         },
         options: {
-            scales: { y: { beginAtZero: true } },
+            scales: { 
+                y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
+                x: { ticks: { color: labelColor }, grid: { color: gridColor } }
+            },
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: labelColor } }
+            }
         }
     });
 }
@@ -151,6 +141,8 @@ function renderProductsChart(categories) {
 
     const labels = categories.map(c => c._id);
     const data = categories.map(c => c.count);
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const labelColor = isDarkMode ? '#e2e8f0' : '#34495e';
 
     productCharts.productsChart = new Chart(elements.productsChart, {
         type: 'doughnut',
@@ -167,7 +159,13 @@ function renderProductsChart(categories) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    labels: { color: labelColor },
+                    position: 'top'
+                }
+            }
         }
     });
 }
