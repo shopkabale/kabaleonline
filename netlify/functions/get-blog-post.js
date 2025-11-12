@@ -71,9 +71,31 @@ exports.handler = async (event, context) => {
       views: FieldValue.increment(1)
     });
 
-    // **THIS IS THE FIX**
-    // 1. We remove the buggy 'where(__name__, '!=', doc.id)'
-    // 2. We ask for 4 posts, in case the current post is included
+    // ** THIS IS THE FIX **
+    // 1. Set a default author object
+    let authorDetails = {
+        name: 'KabaleOnline Team',
+        avatar: '/images/avatar-placeholder.png' 
+    };
+
+    // 2. Check if the post has an author email
+    if (post.author) {
+        try {
+            // 3. Find the user in the 'users' collection by their email
+            const userQuery = await db.collection('users').where('email', '==', post.author).limit(1).get();
+            
+            if (!userQuery.empty) {
+                const userData = userQuery.docs[0].data();
+                authorDetails.name = userData.name || post.author.split('@')[0]; // Use real name
+                authorDetails.avatar = userData.photoURL || '/images/avatar-placeholder.png'; // Use real photoURL
+            }
+        } catch (userError) {
+            console.warn("Could not fetch author details by email:", userError);
+        }
+    }
+    // ** END FIX **
+    
+    // --- Related Posts (This query is correct and needs the index you made) ---
     const relatedQuery = await db.collection('blog_posts')
       .where('category', '==', post.category)
       .where('status', '==', 'published')
@@ -83,27 +105,24 @@ exports.handler = async (event, context) => {
 
     const relatedPosts = [];
     relatedQuery.forEach(relatedDoc => {
-      // **THIS IS THE REST OF THE FIX**
-      // 3. We filter out the current post here, in the code.
       if (relatedDoc.id !== doc.id) {
         const relatedPost = relatedDoc.data();
         relatedPosts.push({
           _id: relatedDoc.id,
           ...relatedPost,
-          author: relatedPost.author || 'KabaleOnline Team'
+          // We can do a simple fallback for related posts
+          author: relatedPost.author.split('@')[0] || 'KabaleOnline'
         });
       }
     });
-
-    // 4. We keep only the first 3
     const finalRelatedPosts = relatedPosts.slice(0, 3);
-    // **END OF FIX**
+    // --- End Related Posts ---
 
-    // Convert Firestore timestamps
+    // 4. Sanitize the post, now with the correct author object
     const sanitizedPost = {
       _id: doc.id,
       ...post,
-      author: post.author || 'KabaleOnline Team',
+      author: authorDetails, // Send the full object
       createdAt: post.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       updatedAt: post.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
       publishedAt: post.publishedAt?.toDate?.()?.toISOString() || null
