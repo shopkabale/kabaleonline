@@ -10,8 +10,15 @@
   # This new line tells the bundler to NOT bundle the Dialogflow library.
   external_node_modules = ["@google-cloud/dialogflow"]
 
-# --- THIS IS THE NEW PART YOU NEED TO ADD ---
 # This schedules your new cleanup function
 [functions.cleanup-messages]
   # This means "at 8:00 AM UTC every day"
   schedule = "0 8 * * *"
+
+# --- THIS IS THE FIX FOR YOUR BLOG PREVIEWS ---
+# This tells Netlify to run your function when a post is requested
+[[redirects]]
+  from = "/blog/post.html"
+  to = "/.netlify/functions/get-blog-post"
+  status = 200
+  force = true
