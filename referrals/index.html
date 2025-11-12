@@ -1,256 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Your Referrals | Kabale Online</title>
   <meta name="robots" content="noindex">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Font Awesome + Chart.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     /* --- THEME-AWARE CSS VARIABLES --- */
     :root {
-        --ko-primary: #007aff;
-        --ko-primary-rgb: 0, 122, 255;
-        --ko-accent: #ffc107;
-        
-        --bg-light: #f8f9fa;
-        --bg-card-light: #ffffff;
-        --text-main-light: #212529;
-        --text-secondary-light: #6c757d;
-        --border-color-light: #e9ecef;
-        
-        --bg-dark: #0f172a;
-        --bg-card-dark: #1e2b3b;
-        --text-main-dark: #e2e8f0;
-        --text-secondary-dark: #94a3b8;
-        --border-color-dark: #334155;
-        
-        --shadow: 0 10px 30px rgba(0,0,0,0.07);
-        --border-radius: 12px;
+      --ko-primary: #007aff;
+      --ko-primary-rgb: 0, 122, 255;
+      --ko-accent: #ffc107;
+      --bg-light: #f8f9fa;
+      --bg-card-light: #ffffff;
+      --text-main-light: #212529;
+      --text-secondary-light: #6c757d;
+      --border-color-light: #e9ecef;
+      --bg-dark: #0f172a;
+      --bg-card-dark: #1e2b3b;
+      --text-main-dark: #e2e8f0;
+      --text-secondary-dark: #94a3b8;
+      --border-color-dark: #334155;
+      --shadow: 0 10px 30px rgba(0,0,0,0.07);
+      --border-radius: 12px;
     }
-
-    /* --- THEME-SWITCHING LOGIC --- */
     body.light-mode {
-        --bg-main: var(--bg-light);
-        --bg-card: var(--bg-card-light);
-        --text-main: var(--text-main-light);
-        --text-secondary: var(--text-secondary-light);
-        --border-color: var(--border-color-light);
+      --bg-main: var(--bg-light);
+      --bg-card: var(--bg-card-light);
+      --text-main: var(--text-main-light);
+      --text-secondary: var(--text-secondary-light);
+      --border-color: var(--border-color-light);
+    }
+    body.dark-mode {
+      --bg-main: var(--bg-dark);
+      --bg-card: var(--bg-card-dark);
+      --text-main: var(--text-main-dark);
+      --text-secondary: var(--text-secondary-dark);
+      --border-color: var(--border-color-dark);
     }
 
-    body.dark-mode {
-        --bg-main: var(--bg-dark);
-        --bg-card: var(--bg-card-dark);
-        --text-main: var(--text-main-dark);
-        --text-secondary: var(--text-secondary-dark);
-        --border-color: var(--border-color-dark);
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
     }
-    
-    /* --- GENERAL & HEADER STYLES --- */
-    body { 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-        margin: 0; 
-        background-color: var(--bg-main); 
-        color: var(--text-main); 
-        line-height: 1.6; 
-    }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+    .container { max-width: 980px; margin: 0 auto; padding: 0 15px; }
     .page-content { padding-top: 90px; padding-bottom: 30px; }
 
     .sticky-header {
-        position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-        background-color: rgba(var(--bg-card-rgb, 30, 41, 59), 0.8);
-        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--border-color);
-        transition: background-color 0.3s, border-color 0.3s;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background-color: rgba(255,255,255,0.9);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border-color);
     }
-    body.light-mode .sticky-header { --bg-card-rgb: 255, 255, 255; }
-    body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
-
-    .header-content { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-    .site-title { text-decoration: none; color: var(--text-main); font-size: 1.5em; font-weight: 700; }
+    .header-content { display:flex; align-items:center; justify-content:space-between; height:70px; max-width:1200px; margin:0 auto; padding:0 15px; }
+    .site-title { text-decoration: none; color: var(--text-main); font-size: 1.35em; font-weight:700; }
     .site-title span { color: var(--ko-accent); }
     .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
-    .header-icons { display: flex; align-items: center; gap: 20px; }
-    .header-icons a { color: var(--text-secondary); font-size: 22px; text-decoration: none; transition: color 0.2s; }
-    .header-icons a:hover { color: var(--ko-primary); }
 
-    .desktop-nav { display: none; } 
-    @media (min-width: 1024px) {
-        .hamburger-menu { display: none; }
-        .desktop-nav { display: flex; align-items: center; gap: 25px; margin: 0; padding: 0; list-style: none; }
-        .desktop-nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 1em; padding: 8px 0; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
-        .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); border-bottom-color: var(--ko-primary); }
+    .info-card {
+      background-color: var(--bg-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+    }
+    .referral-link-container { display:flex; gap:10px; margin-top:16px; }
+    #user-referral-link { flex:1; padding:10px 14px; border-radius:8px; border:1px solid var(--border-color); font-size:0.95em; background-color:transparent; color:var(--text-main); }
+    #copy-referral-link-btn { background-color: var(--ko-primary); color:#fff; border: none; padding: 10px 14px; border-radius:8px; cursor:pointer; font-weight:700; display:flex; gap:8px; align-items:center; }
+
+    .share-buttons { display:flex; gap:8px; margin-top:12px; }
+    .share-btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:inline-flex; gap:8px; align-items:center; }
+    .share-whatsapp { background:#25D366; color:#fff; }
+    .share-fb { background:#1877F2; color:#fff; }
+    .share-sms { background:#6c757d; color:#fff; }
+
+    .progress-row { display:flex; align-items:center; gap:18px; margin-top:16px; }
+    .progress-bar { flex:1; height:14px; background:linear-gradient(90deg,#e9ecef,#f1f5f9); border-radius:12px; overflow:hidden; border:1px solid var(--border-color); }
+    .progress-fill { height:100%; width:0%; background: linear-gradient(90deg,var(--ko-primary), #28a745); border-radius:12px; transition: width 600ms ease; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85em; }
+
+    #referral-list { list-style:none; padding:0; margin-top:12px; max-height:220px; overflow:auto; }
+    #referral-list li { background:transparent; border:1px solid var(--border-color); padding:10px 12px; border-radius:8px; margin-bottom:8px; color:var(--text-main); font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+
+    .stat-grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    .stat-item { text-align:center; padding:18px; border-radius:12px; background:var(--bg-card); border:1px solid var(--border-color); }
+    .stat-item .count { font-size:2.6rem; font-weight:800; color:#28a745; }
+    .leaderboard { margin-top:10px; }
+    .leaderboard-item { display:flex; justify-content:space-between; gap:8px; padding:8px 10px; border-radius:8px; border:1px dashed var(--border-color); margin-bottom:8px; }
+
+    footer { margin-top:24px; padding:30px 0; text-align:center; color:var(--text-secondary); }
+
+    /* small responsive tweaks */
+    @media (max-width:600px) {
+      .stat-grid { grid-template-columns: 1fr; }
+      .referral-link-container { flex-direction:column; }
+      #copy-referral-link-btn { width:100%; }
+      .share-buttons { flex-wrap:wrap; }
     }
 
-    /* --- MOBILE NAV STYLES --- */
-    .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1090; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
-    .mobile-nav-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-    .mobile-nav { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background-color: var(--bg-card); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1100; transition: transform 0.3s ease; display: flex; flex-direction: column; transform: translateX(0); }
-    .mobile-nav.active { transform: translateX(280px); }
-    .mobile-nav-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 1.2em; font-weight: bold; }
-    .mobile-nav a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-color); }
-    .mobile-nav a i { margin-right: 15px; font-size: 18px; color: var(--ko-primary); }
-    .mobile-nav .post-button { font-weight: bold; color: var(--ko-primary); }
-
-    /* --- PAGE-SPECIFIC STYLES (THEMED) --- */
-    .home-link { color: var(--ko-primary); text-decoration: none; font-weight: 600; margin-bottom: 15px; display: inline-block; }
-    .info-card { background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; border: 1px solid var(--border-color); }
-    .info-card h2 { margin-top: 0; }
-    .info-card p { color: var(--text-secondary); }
-    .stat-item { text-align: center; }
-    .stat-item .count { font-size: 3em; font-weight: bold; color: #28a745; }
-    .stat-item .label { font-size: 1.1em; color: var(--text-secondary); }
-    .loader-pulse { width: 50px; height: 50px; margin: 40px auto; background-color: var(--ko-primary); border-radius: 50%; box-shadow: 0 0 0 0 rgba(var(--ko-primary-rgb), 1); animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--ko-primary-rgb), 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(var(--ko-primary-rgb), 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--ko-primary-rgb), 0); } }
-    .referral-link-container { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
-    #user-referral-link { flex-grow: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9em; background-color: var(--bg-main); color: var(--text-main); }
-    #copy-referral-link-btn { background-color: var(--ko-primary); color: white; border: none; border-radius: 8px; padding: 10px 15px; cursor: pointer; font-weight: bold; }
-    
-    #referral-list { list-style: none; padding: 0; margin-top: 15px; }
-    #referral-list li { background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 15px; margin-bottom: 10px; transition: transform 0.2s, box-shadow 0.2s; font-weight: 500; color: var(--text-main); }
-    #referral-list li:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    
-    /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
-    footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; margin-top: 30px; }
-    .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
-    .footer-logo span { color: var(--ko-accent); }
-    .footer-links { margin: 25px 0; }
-    .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
-    .footer-copyright { font-size: 0.9em; color: #64748b; }
   </style>
 </head>
-<body>
-  <script src="/theme.js"></script>
+<body class="light-mode">
 
   <header class="sticky-header">
     <div class="header-content">
       <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <nav class="desktop-nav">
-          <a href="/shop/" class="nav-link">Shop</a>
-          <a href="/rentals/" class="nav-link">Hostels</a>
-          <a href="https://gigs.kabaleonline.com" class="nav-link service-link">Services</a>
-          <a href="/events/" class="nav-link">Events</a>
-          <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
-      </nav>
-      <div class="header-icons">
-        <a href="/cart.html"><i class="fa-solid fa-cart-shopping"></i></a>
-        <a href="/inbox.html"><i class="fa-regular fa-bell"></i></a>
-        <a href="/dashboard/"><i class="fa-regular fa-user"></i></a>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <a href="/dashboard/" style="text-decoration:none; color:var(--text-secondary); font-weight:600;">Back to Dashboard</a>
         <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
       </div>
     </div>
   </header>
-  
-  <div class="mobile-nav-overlay"></div>
-  <nav class="mobile-nav">
-      <div class="mobile-nav-header">Kabale Online</div>
-      <a href="/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-      <a href="/?type=service" class="nav-link service-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
-      <a href="/rentals/" class="nav-link"><i class="fa-solid fa-building"></i> Hostels & Rentals</a>
-      <a href="/requests/view.html" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> User Requests</a>
-      <a href="/lost-and-found/" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> Lost & Found</a>
-      <a href="/blog/" class="nav-link"><i class="fa-solid fa-book"></i> Tips</a>
-      <hr>
-      <a href="/upload/" class="nav-link post-button"><i class="fa-solid fa-circle-plus"></i> Post Something</a>
-  </nav>
 
   <div class="container page-content">
-    <a href="/dashboard/" class="home-link">&larr; Back to Dashboard</a>
     <h1>Your Referrals</h1>
-    <div id="referral-loader"><div class="loader-pulse"></div></div>
+
+    <div id="referral-loader" style="text-align:center; padding:40px 0;">
+      <div style="width:48px; height:48px; margin:0 auto; background:var(--ko-primary); border-radius:50%; animation: pulse 1.8s infinite;"></div>
+      <style>@keyframes pulse { 0% { transform:scale(.95); opacity:0.9 } 50% { transform:scale(1); opacity:1 } 100% { transform:scale(.95); opacity:0.9 } }</style>
+    </div>
+
     <div id="referral-content" style="display:none;">
-      <p id="global-message" style="display: none;"></p>
       <div class="info-card">
         <h2>Grow the Community!</h2>
-        <p>🚀 Grow the Kabale Online community! Share your personal referral link with friends and earn recognition and rewards for every new member you bring on board. Together, we make our network stronger!</p>
-        <div class="referral-link-container">
-          <input type="text" id="user-referral-link" readonly value="Loading your link...">
+        <p style="color:var(--text-secondary); margin-top:8px;">Share your personal referral link with friends and earn recognition and rewards for every new member you bring on board.</p>
+
+        <div class="referral-link-container" style="margin-top:12px;">
+          <input id="user-referral-link" readonly value="Loading your link..." />
           <button id="copy-referral-link-btn"><i class="fa-solid fa-copy"></i> Copy</button>
         </div>
-        <div>
-          <h3>My Referrals</h3>
-          <p>Total referred: <span id="referral-count">0</span></p>
-          <ul id="referral-list"></ul>
+
+        <div class="share-buttons">
+          <button class="share-btn share-whatsapp" id="share-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+          <button class="share-btn share-fb" id="share-fb"><i class="fa-brands fa-facebook"></i> Facebook</button>
+          <button class="share-btn share-sms" id="share-sms"><i class="fa-solid fa-comment"></i> SMS</button>
         </div>
+
+        <div style="display:flex; align-items:center; gap:18px; margin-top:14px;">
+          <div style="flex:1;">
+            <div style="font-weight:700; margin-bottom:6px;">Progress to next reward</div>
+            <div class="progress-bar" aria-hidden="true">
+              <div id="progressFill" class="progress-fill">0/5</div>
+            </div>
+          </div>
+          <div style="min-width:120px; text-align:center;">
+            <div style="font-weight:700; font-size:1.05em;" id="your-rank">#--</div>
+            <div style="color:var(--text-secondary); font-size:0.9em;">Your Rank</div>
+          </div>
+        </div>
+
+        <hr style="margin:14px 0; border-color:var(--border-color);" />
+
+        <h3 style="margin:0 0 8px 0;">My Referrals (<span id="referral-count">0</span>)</h3>
+        <ul id="referral-list"><li style="opacity:.8; font-weight:600; color:var(--text-secondary)">Loading referrals…</li></ul>
       </div>
-      <div class="info-card">
-          <h2>Referral Growth</h2>
-          <canvas id="referralChart" height="200"></canvas>
-      </div>
-      <div class="info-card">
+
+      <div class="stat-grid" style="margin-top:12px;">
         <div class="stat-item">
-          <div id="user-referral-count" class="count">0</div>
-          <div class="label">Members Referred</div>
+          <div style="color:var(--text-secondary); font-weight:700">Members Referred</div>
+          <div class="count" id="user-referral-count">0</div>
+        </div>
+
+        <div class="stat-item">
+          <div style="color:var(--text-secondary); font-weight:700">This Month</div>
+          <div id="month-referrals" class="count">0</div>
         </div>
       </div>
+
+      <div class="info-card" style="margin-top:16px;">
+        <h2>Referral Growth</h2>
+        <canvas id="referralChart" height="140"></canvas>
+      </div>
+
+      <div class="info-card">
+        <h2>Leaderboard (This Week)</h2>
+        <div id="leaderboard" class="leaderboard">
+          <!-- Leaderboard entries will be loaded here -->
+          <div style="color:var(--text-secondary)">Loading leaderboard…</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <footer>
-      <div class="container">
-          <div class="footer-logo">Kabale <span>Online</span></div>
-          <div class="footer-links">
-              <a href="/about.html">About</a>
-              <a href="/blog/">Blog</a>
-              <a href="/terms.html">Terms</a>
-              <a href="/contact.html">Contact</a>
-          </div>
-          <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
-      </div>
-  </footer>
-  
-  <div id="service-notice" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-      background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1201;">
-    <div style="background:var(--bg-card); padding:30px 40px; border-radius:12px; text-align:center; max-width:400px; 
-      box-shadow:0 5px 20px rgba(0,0,0,0.3); font-family:Arial,sans-serif;">
-      <h3 style="margin-bottom:15px; color:var(--text-main);">Notice</h3>
-      <p style="margin-bottom:20px; color:var(--text-secondary);">You are being redirected to <strong>Gigs.kabaleonline.com</strong> for Services.</p>
-      <button id="continue-btn" style="padding:10px 20px; background:var(--ko-primary); border:none; border-radius:8px; 
-        color:#fff; font-weight:bold; cursor:pointer;">Continue</button>
+    <div class="container">
+      <div style="font-weight:700;">Kabale Online</div>
+      <div style="margin-top:6px; font-size:0.9em; color:var(--text-secondary)">© 2025 Kabale Online</div>
     </div>
-  </div>
-    
-  <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Logic for the mobile nav toggle and service modal
-    const hamburger = document.querySelector('.hamburger-menu');
-    const mobileNav = document.querySelector('.mobile-nav');
-    const overlay = document.querySelector('.mobile-nav-overlay');
-    if (hamburger && mobileNav && overlay) {
-        hamburger.addEventListener('click', () => {
-            mobileNav.classList.toggle('active');
-            overlay.classList.toggle('active');
-        });
-        overlay.addEventListener('click', () => {
-            mobileNav.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-    }
-    
-    const serviceLinks = document.querySelectorAll('a.service-link');
-    const modal = document.getElementById('service-notice');
-    const continueBtn = document.getElementById('continue-btn');
-    if(modal && continueBtn && serviceLinks.length > 0) {
-      serviceLinks.forEach(link => {
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            modal.style.display = 'flex';
-          });
-      });
-      continueBtn.addEventListener('click', function() {
-          window.location.href = 'https://gigs.kabaleonline.com';
-      });
-      modal.addEventListener('click', function(e) {
-          if(e.target === modal) modal.style.display = 'none';
-      });
-    }
-  });
-  </script>
+  </footer>
 
+  <!-- Keep your existing shared and auth scripts -->
   <script type="module" src="../js/shared.js"></script>
+  <script type="module" src="../js/auth.js"></script>
+
+  <!-- Main referral script -->
   <script type="module" src="script.js"></script>
-  <script type="module" src="../js/ui.js"></script>
 </body>
 </html>
