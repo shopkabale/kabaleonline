@@ -33,31 +33,44 @@ exports.handler = async (event, context) => {
     let totalViews = 0;
     let totalLikes = 0;
     let totalReadTime = 0;
+    
+    // This object will hold all category stats
     const categories = {};
 
     snapshot.forEach(doc => {
       const post = doc.data();
+      
+      // Increment global stats
       totalPosts++;
       totalViews += post.views || 0;
       totalLikes += post.likes || 0;
       totalReadTime += post.readTime || 0;
 
-      // Count by category
+      // --- UPGRADE: Calculate category stats in one loop ---
       const category = post.category || 'Uncategorized';
-      categories[category] = (categories[category] || 0) + 1;
+      
+      // Initialize category if it's new
+      if (!categories[category]) {
+        categories[category] = { count: 0, totalViews: 0 };
+      }
+      
+      // Add stats for this post's category
+      categories[category].count++;
+      categories[category].totalViews += post.views || 0;
+      // --- END UPGRADE ---
     });
 
     const avgReadTime = totalPosts > 0 ? Math.round(totalReadTime / totalPosts) : 0;
 
+    // --- UPGRADE: Reformat the categories object ---
     const categoryStats = Object.entries(categories)
-      .map(([category, count]) => ({
+      .map(([category, stats]) => ({
         _id: category,
-        count,
-        totalViews: snapshot.docs
-          .filter(doc => doc.data().category === category)
-          .reduce((sum, doc) => sum + (doc.data().views || 0), 0)
+        count: stats.count,
+        totalViews: stats.totalViews
       }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => b.count - a.count); // Sort by most popular category
+    // --- END UPGRADE ---
 
     return {
       statusCode: 200,
