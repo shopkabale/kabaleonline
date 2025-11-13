@@ -103,6 +103,17 @@
       #copy-referral-link-btn { width:100%; }
       .share-buttons { flex-wrap:wrap; }
     }
+.terms-link-container {
+    font-size: 0.9em;
+    color: var(--text-secondary, #6c757d); /* Uses your theme's color */
+    margin-top: 16px;
+    text-align: center;
+  }
+  .terms-link-container a {
+    color: var(--ko-primary, #007aff); /* Your brand's blue color */
+    text-decoration: underline;
+    font-weight: 600;
+  }
   </style>
 </head>
 <body class="light-mode">
@@ -143,7 +154,10 @@
           <input id="user-referral-link" readonly value="Loading your link..." />
           <button id="copy-referral-link-btn"><i class="fa-solid fa-copy"></i> Copy</button>
         </div>
-
+<p class="terms-link-container">
+  By sharing your link, you agree to our 
+  <a href="referral-terms.html" target="_blank">Referral Program T&Cs</a>.
+</p>
         <div class="share-buttons">
           <button class="share-btn share-whatsapp" id="share-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
           <button class="share-btn share-fb" id="share-fb"><i class="fa-brands fa-facebook"></i> Facebook</button>
