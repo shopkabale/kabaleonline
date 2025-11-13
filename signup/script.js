@@ -1,5 +1,5 @@
 import { auth, db } from '/js/auth.js';
-import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
@@ -8,15 +8,9 @@ const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
 
-// This is a failsafe. The main redirect logic is in shared.js.
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        const currentPage = window.location.pathname;
-        if (currentPage.startsWith('/signup/')) {
-             window.location.replace('/dashboard/');
-        }
-    }
-});
+// --- BROKEN LISTENER REMOVED ---
+// The onAuthStateChanged listener that was here has been removed.
+// It was causing the redirect to /dashboard/ and then /login/.
 
 // Check for referral code in URL on page load and pre-fill the input
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,7 +67,7 @@ signupForm.addEventListener('submit', async (e) => {
 
     try {
         // --- *** START DEBUG BLOCK *** ---
-        // This is the new "Redirect-on-Error" logic.
+        // This is the "Redirect-on-Error" logic.
         let referrerId = null;
         let referrerEmail = null;
 
@@ -147,21 +141,12 @@ signupForm.addEventListener('submit', async (e) => {
         await sendEmailVerification(user);
 
         // Step 5: Redirect to the new verification page
+        // This is the correct, final redirect.
         window.location.href = '/verify-email/';
 
     } catch (error) {
         // This block catches errors from createUserWithEmailAndPassword
         
-        // --- *** START DEBUG BLOCK *** ---
-        // If the query worked but auth failed (e.g. email-in-use), 
-        // we must delete the "test" user we just created.
-        if (userCredential && userCredential.user) {
-            // A user was created in Auth but Firestore failed
-            // This is complex, we will just log it for now.
-            console.error("Firestore 'setDoc' likely failed after auth creation.");
-        }
-        // --- *** END DEBUG BLOCK ---
-
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             msg = 'This email is already registered. Please <a href="/login/">log in</a>.';
