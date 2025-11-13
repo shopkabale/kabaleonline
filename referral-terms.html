@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Referral Terms & Conditions | Kabale Online</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    /* --- CSS IS EMBEDDED HERE --- */
+    :root {
+      --ko-primary: #007aff;
+      --ko-accent: #ffc107;
+      --bg-light: #f8f9fa;
+      --bg-card-light: #ffffff;
+      --text-main-light: #212529;
+      --text-secondary-light: #6c757d;
+      --border-color-light: #e9ecef;
+      --bg-dark: #0f172a;
+      --bg-card-dark: #1e2b3b;
+      --text-main-dark: #e2e8f0;
+      --text-secondary-dark: #94a3b8;
+      --border-color-dark: #334155;
+      --border-radius: 12px;
+    }
+    body.light-mode {
+      --bg-main: var(--bg-light);
+      --bg-card: var(--bg-card-light);
+      --text-main: var(--text-main-light);
+      --text-secondary: var(--text-secondary-light);
+      --border-color: var(--border-color-light);
+    }
+    body.dark-mode {
+      --bg-main: var(--bg-dark);
+      --bg-card: var(--bg-card-dark);
+      --text-main: var(--text-main-dark);
+      --text-secondary: var(--text-secondary-dark);
+      --border-color: var(--border-color-dark);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+    .container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px 15px; 
+    }
+    .page-content { 
+      padding-top: 90px; 
+      padding-bottom: 30px; 
+    }
+
+    .sticky-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background-color: rgba(255,255,255,0.9);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .header-content { 
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between; 
+      height:70px; 
+      max-width:1200px; 
+      margin:0 auto; 
+      padding:0 15px; 
+    }
+    .site-title { 
+      text-decoration: none; 
+      color: var(--text-main); 
+      font-size: 1.35em; 
+      font-weight:700; 
+    }
+    .site-title span { color: var(--ko-accent); }
+
+    .terms-card {
+      background-color: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 24px 30px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .terms-card h1 {
+      font-size: 2rem;
+      color: var(--text-main);
+      margin-top: 0;
+    }
+    
+    .terms-card h2 {
+      font-size: 1.5rem;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-top: 30px;
+    }
+    
+    .terms-card p, .terms-card li {
+      color: var(--text-secondary);
+      font-size: 1.05em;
+    }
+    
+    .terms-card strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .terms-card ul {
+      padding-left: 20px;
+    }
+    
+    .terms-card .last-updated {
+      font-size: 0.9em;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: -10px;
+      margin-bottom: 20px;
+    }
+
+    /* --- Reward Tiers Styling --- */
+    .reward-tiers {
+      list-style: none;
+      padding: 0;
+    }
+    .reward-tiers li {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: var(--bg-main);
+    }
+    .reward-tiers .tier-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      text-align: center;
+      color: var(--ko-primary);
+    }
+    .reward-tiers .tier-icon.bonus {
+      color: #28a745; /* Green for cash */
+    }
+    .reward-tiers .tier-icon.merch {
+      color: #6f42c1; /* Purple for merch */
+    }
+    .reward-tiers .tier-details strong {
+      font-size: 1.1em;
+    }
+    .reward-tiers .tier-details p {
+      margin: 0;
+      font-size: 1em;
+    }
+
+    footer { 
+      margin-top: 24px; 
+      padding: 30px 0; 
+      text-align: center; 
+      color: var(--text-secondary); 
+    }
+    /* --- End of Embedded CSS --- */
+  </style>
+</head>
+<body class="light-mode">
+  
+  <script src="/theme.js"></script>
+
+  <header class="sticky-header">
+    <div class="header-content">
+      <a href="/" class="site-title">Kabale <span>Online</span></a>
+      <a href="/referrals/" style="text-decoration:none; color:var(--text-secondary); font-weight:600;">Back to Referrals</a>
+    </div>
+  </header>
+
+  <div class="container page-content">
+    <div class="terms-card">
+      <h1>Referral Program Terms & Conditions</h1>
+      <p class="last-updated">Last Updated: November 13, 2025</p>
+
+      <p>Welcome to the Kabale Online Referral Program (the "Program"). These Terms & Conditions ("Terms") apply to your participation in the Program. By sharing your referral link or otherwise participating, you agree to be bound by these Terms.</p>
+
+      <h2>1. Eligibility</h2>
+      <p>To be eligible to participate in the Program, you must have a registered and active Kabale Online account in good standing.</p>
+
+      <h2>2. Qualified Referrals</h2>
+      <p>A "Qualified Referral" is a new user (a "Referred User") who meets all of the following criteria:</p>
+      <ul>
+        <li>They have <strong>never</strong> previously created an account with Kabale Online.</li>
+        <li>They sign up for a new account using your unique referral link.</li>
+        <li>They are a real person (not a bot or a fake account).</li>
+        <li>Their account is successfully created and verified (if required).</li>
+      </ul>
+      <p>You may not refer yourself, and you may not create multiple accounts for yourself to gain referral rewards.</p>
+
+      <h2>3. Rewards</h2>
+      <p>For each Qualified Referral you generate, you (the "Referrer") will receive a base reward as specified on your referral dashboard. This reward is credited to your Kabale Online Wallet.</p>
+      
+      <p>In addition to the base reward, you can earn milestone rewards. Rewards are processed automatically. Kabale Online reserves the right to review and validate all referrals and to reverse or withhold rewards for any referrals that are found to be fraudulent or in violation of these Terms.</p>
+
+      <h3>Milestone Reward Tiers</h3>
+      <ul class="reward-tiers">
+        <li>
+          <div class="tier-icon"><i class="fa-solid fa-trophy"></i></div>
+          <div class="tier-details">
+            <strong>5 Referrals: "Kabale Builder" Badge</strong>
+            <p>Earn the "Kabale Builder" badge on your profile.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tier-icon bonus"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="tier-details">
+            <strong>10 Referrals: UGX 2,000 Bonus</strong>
+            <p>Receive a UGX 2,000 bonus credited to your wallet.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tier-icon merch"><i class="fa-solid fa-shirt"></i></div>
+          <div class="tier-details">
+            <strong>25 Referrals: "T-Shirt Winner" Badge</strong>
+            <p>Earn a badge and a free Kabale Online T-shirt.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tier-icon bonus"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="tier-details">
+            <strong>50 Referrals: "Community Leader" Badge + UGX 5,000</strong>
+            <p>Earn the "Community Leader" badge and a UGX 5,000 bonus.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tier-icon"><i class="fa-solid fa-handshake"></i></div>
+          <div class="tier-details">
+            <strong>100 Referrals: "Partner" Badge</strong>
+            <p>Achieve "Partner" status and badge on your profile.</p>
+          </div>
+        </li>
+      </ul>
+
+
+      <h2>4. Prohibited Conduct</h2>
+      <p>You agree that you will not engage in any of the following activities. Any violation of these terms will result in the immediate voiding of all your earned rewards, forfeiture of your wallet balance, and potential suspension or termination of your account.</p>
+      <p>You <strong>must not</strong>:</p>
+      <ul>
+        <li><strong>Refer yourself</strong> or create multiple, fake, or "dummy" accounts.</li>
+        <li><strong>Use spam,</strong> bulk email, or unsolicited messages (SMS, WhatsApp, etc.) to share your link.</li>
+        <li><strong>Post your link on "coupon" or "deal" websites,</strong> or any site that is not your own personal blog or social media.</li>
+        <li><strong>Use paid advertising</strong> (such as Google Ads, Facebook Ads, etc.) to promote your referral link.</li>
+        <li><strong>Mislead or deceive</strong> anyone about the Program or Kabale Online. You cannot represent yourself as an employee or official partner of Kabale Online.</li>
+        <li><strong>Engage in any activity</strong> that is illegal, fraudulent, or harms the Kabale Online brand or reputation.</li>
+      </ul>
+
+      <h2>5. Program Changes & Termination</h2>
+      <p>Kabale Online reserves the right to modify, suspend, or terminate the Referral Program at any time, for any reason, with or without notice.</p>
+      <p>We also reserve the right to change these Terms at any time. If we make changes, we will post the new terms on this page. Your continued participation in the Program after such changes constitutes your acceptance of the new Terms.</p>
+
+      <h2>6. Contact</h2>
+      <p>If you have any questions about the Program or these Terms, please contact us at <strong>support@kabaleonline.com</strong>.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div style="font-weight:700;">Kabale Online</div>
+      <div style="margin-top:6px; font-size:0.9em; color:var(--text-secondary)">© 2025 Kabale Online</div>
+    </div>
+  </footer>
+
+</body>
+</html>
