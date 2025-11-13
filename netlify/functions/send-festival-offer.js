@@ -2,11 +2,11 @@ const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const Brevo = require('@getbrevo/brevo');
 
-// Brevo API setup (from your file)
+// Brevo API setup
 const apiInstance = new Brevo.TransactionalEmailsApi();
 apiInstance.apiClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
 
-// Firebase Admin SDK configuration (from your file)
+// Firebase Admin SDK configuration
 const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -37,9 +37,7 @@ exports.handler = async (event, context) => {
     const headers = { 'Content-Type': 'application/json' };
 
     // --- !! SECURITY !! ---
-    // To make this a "trigger once" function, we protect it with a secret key.
-    // !! CHANGE THIS key to a long, random password.
-    const SECRET_KEY = "your_long_random_secret_key_12345"; 
+    const SECRET_KEY = "your_long_random_secret_key_12345"; // !! CHANGE THIS
     
     if (event.queryStringParameters.secret !== SECRET_KEY) {
         return {
@@ -48,6 +46,12 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ error: "Unauthorized. You must provide the secret key." })
         };
     }
+
+    // --- *** FIX *** ---
+    // Declare variables outside the try block so they are in scope for the catch block
+    let recipients = [];
+    let emailObject = new Brevo.SendSmtpEmail(); // Initialize here
+    // --- *** END OF FIX *** ---
 
     try {
         // 1. Fetch all users from your 'users' collection
@@ -59,13 +63,12 @@ exports.handler = async (event, context) => {
         }
 
         // 2. Build the recipient list for the batch send
-        const recipients = [];
         snapshot.forEach(doc => {
             const user = doc.data();
             if (user.email) {
                 recipients.push({
                     email: user.email,
-                    name: user.name || 'KabaleOnline Member' // Use their name, or a fallback
+                    name: user.name || 'KabaleOnline Member' 
                 });
             }
         });
@@ -75,10 +78,10 @@ exports.handler = async (event, context) => {
         }
         
         // 3. Create the email object
-        const emailObject = new Brevo.SendSmtpEmail();
         const LOGO_URL = "https://www.kabaleonline.com/icons/512.png"; // Your logo
+        const emailSubject = `🎉 Festival Season Offer — Earn, Buy & Sell FREE on Kabale Online!`;
 
-        emailObject.subject = `🎉 Festival Season Offer — Earn, Buy & Sell FREE on Kabale Online!`;
+        emailObject.subject = emailSubject;
         emailObject.htmlContent = `
         <div style="margin: 0; padding: 0; width: 100%; font-family: Arial, sans-serif; background-color: #f4f4f4;">
             <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4;">
@@ -143,10 +146,10 @@ exports.handler = async (event, context) => {
         </div>
         `;
         
-        emailObject.sender = { name: "Kabale Online", email: "support@kabaleonline.com" }; // Must be a verified sender in Brevo
-        emailObject.to = recipients; // Send to all users at once
+        emailObject.sender = { name: "Kabale Online", email: "support@kabaleonline.com" }; 
+        emailObject.to = recipients; 
         emailObject.replyTo = { email: "support@kabaleonline.com" };
-        emailObject.tags = ["marketing", "festival-offer"]; // For tracking in Brevo
+        emailObject.tags = ["marketing", "festival-offer"]; 
 
         // 4. Send the email blast
         console.log(`Sending email to ${recipients.length} users...`);
@@ -165,12 +168,16 @@ exports.handler = async (event, context) => {
 
     } catch (error) {
         console.error('Error sending marketing blast:', error.response?.body || error);
-        // Log the single failure to Firestore
+        
+        // --- *** FIX *** ---
+        // This log will now work because 'emailObject' and 'recipients' are in scope.
         await logFailedNotification(db, error, {
             type: "marketing-blast-FAILURE",
-            subject: emailObject.subject,
-            recipientCount: recipients.length
+            subject: emailObject.subject || "Subject not set", // Safer check
+            recipientCount: recipients.length || 0 // Safer check
         });
+        // --- *** END OF FIX *** ---
+        
         return {
             statusCode: 500,
             headers,
