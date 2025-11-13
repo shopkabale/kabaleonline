@@ -23,7 +23,6 @@ const shareWaBtn = document.getElementById('share-wa');
 const shareFbBtn = document.getElementById('share-fb');
 const shareSmsBtn = document.getElementById('share-sms');
 
-// --- NEW DOM Refs (You must add these to your referrals.html) ---
 const promoBannerEl = document.getElementById('promo-banner'); 
 const userBalanceEl = document.getElementById('user-balance'); 
 const userBadgesEl = document.getElementById('user-badges'); 
@@ -43,9 +42,8 @@ function formatDate(d) {
 copyReferralLinkBtn.addEventListener('click', async () => {
   if (!userReferralLinkEl.value || userReferralLinkEl.value.includes('Loading')) return;
   try {
-    // Use the execCommand fallback for iframe compatibility
     userReferralLinkEl.select();
-    document.execCommand('copy');
+    document.execCommand('copy'); // Fallback for iframe
 
     const original = copyReferralLinkBtn.innerHTML;
     copyReferralLinkBtn.innerHTML = 'Copied!';
@@ -74,7 +72,7 @@ shareWaBtn && shareWaBtn.addEventListener('click', () => shareWhatsApp(userRefer
 shareFbBtn && shareFbBtn.addEventListener('click', () => shareFacebook(userReferralLinkEl.value));
 shareSmsBtn && shareSmsBtn.addEventListener('click', () => shareSMS(userReferralLinkEl.value));
 
-// --- NEW: Function to check for promos ---
+// --- Function to check for promos ---
 async function displayActivePromo() {
   try {
     const promoRef = doc(db, "siteConfig", "promotions");
@@ -83,8 +81,7 @@ async function displayActivePromo() {
     if (promoSnap.exists()) {
       const promo = promoSnap.data();
       const expires = promo.expires?.toDate();
-      
-      // Check if promo is active and not expired
+
       if (promo.active && expires && expires > new Date()) {
         if (promoBannerEl) {
           promoBannerEl.innerHTML = `
@@ -104,15 +101,11 @@ async function displayActivePromo() {
 // --- Main auth + data load ---
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // not signed in
     loader.style.display = 'none';
     showMessage(null, 'Please sign in to view your referrals.', true);
-    // Optionally redirect to login
-    // window.location.href = '/login/';
     return;
   }
 
-  // Display promo banner immediately
   displayActivePromo();
 
   try {
@@ -127,8 +120,7 @@ onAuthStateChanged(auth, async (user) => {
     const referralCode = userData.referralCode || (user.uid.slice(0,6).toUpperCase());
     userReferralLinkEl.value = `${window.location.origin}/signup/?ref=${encodeURIComponent(referralCode)}`;
 
-    // 3. --- NEW: Populate Wallet & Badges ---
-    // (You need to add the HTML elements for these IDs in referrals.html)
+    // 3. --- Populate Wallet & Badges ---
     if (userBalanceEl) {
       const balance = userData.referralBalance || 0;
       userBalanceEl.textContent = `UGX ${balance.toLocaleString()}`;
@@ -144,13 +136,15 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
 
-    // 4. --- NEW: Query 'referral_log' to build status list ---
+    // 4. --- Query 'referral_log' to build status list ---
+    // THIS QUERY REQUIRES A FIRESTORE INDEX.
+    // The error will appear in your console with a link to create it.
     const logQuery = query(collection(db, 'referral_log'), where('referrerId', '==', user.uid), orderBy('createdAt', 'desc'));
     const logSnap = await getDocs(logQuery);
 
     const totalSignups = logSnap.size; // Total people who signed up
     const approvedCount = userData.referralCount || 0; // Total approved
-    
+
     referralCountEl.textContent = totalSignups; // "My Referrals (X)"
     userReferralCountEl.textContent = approvedCount; // "Members Referred" stat
 
@@ -164,8 +158,7 @@ onAuthStateChanged(auth, async (user) => {
         const d = docSnap.data();
         const li = document.createElement('li');
         const name = d.referredUserName || 'New User';
-        
-        // --- Show status ---
+
         let statusBadge = '';
         if (d.status === 'pending') {
           statusBadge = '<span style="color:#ffc107; font-weight:700;">Pending</span>';
@@ -204,7 +197,7 @@ onAuthStateChanged(auth, async (user) => {
     progressFillEl.textContent = `${approvedCount}/${REWARD_TARGET}`;
     if (progress > 0.6) progressFillEl.style.background = 'linear-gradient(90deg,#28a745,#0ea5a0)';
 
-    // 8. --- Leaderboard (uses 'referralCount' field, which is perfect) ---
+    // 8. --- Leaderboard (uses 'referralCount' field) ---
     try {
       const lbQuery = query(collection(db, 'users'), orderBy('referralCount', 'desc'), limit(5));
       const lbSnap = await getDocs(lbQuery);
@@ -217,7 +210,6 @@ onAuthStateChanged(auth, async (user) => {
           const u = uSnap.data();
           const item = document.createElement('div');
           item.className = 'leaderboard-item';
-          // Use 'fullName' or 'name' from your DB
           const name = u.fullName || u.name || u.email || uSnap.id;
           item.innerHTML = `<div style="font-weight:700">#${rank} ${name}</div><div style="font-weight:800">${u.referralCount || 0}</div>`;
           leaderboardEl.appendChild(item);
@@ -233,7 +225,6 @@ onAuthStateChanged(auth, async (user) => {
 
     // 9. --- Build chart data (from APPROVED referrals) ---
     if (referralDates.length) {
-      // convert dates to labels by day
       const counts = {};
       referralDates.forEach(d => {
         const key = d.toISOString().slice(0,10);
@@ -260,10 +251,7 @@ onAuthStateChanged(auth, async (user) => {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', intersect: false }
-          },
+          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
           scales: {
             x: { title: { display: false, text: 'Date' } },
             y: { title: { display: false, text: 'Referrals' }, beginAtZero: true, ticks: { precision: 0 } }
@@ -271,7 +259,6 @@ onAuthStateChanged(auth, async (user) => {
         }
       });
     } else {
-      // no data
       if (chartCanvas) {
         const ctx = chartCanvas.getContext('2d');
         if (referralChartInstance) referralChartInstance.destroy();
@@ -285,6 +272,7 @@ onAuthStateChanged(auth, async (user) => {
 
   } catch (err) {
     console.error("Error loading referral data:", err);
+    // This is where you will see the "Missing Index" error
     showMessage(null, 'Failed to load referral data. Check console for details.', true);
     referralListEl.innerHTML = '<li style="color:var(--text-secondary)">Could not load referrals.</li>';
   } finally {
