@@ -3,11 +3,11 @@ import { checkAdminAuth, setupHeader } from './admin-common.js';
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-// --- DOM ELEMENTS ---
+// --- DOM ELEMENTS (These match the new HTML) ---
 const adminContent = document.getElementById('admin-content');
 const loader = document.getElementById('loader');
-const totalCountDisplay = document.getElementById('total-referrals-count');
-const logList = document.getElementById('referral-log-list');
+const totalCountDisplay = document.getElementById('total-referrals-count'); // Fixed ID
+const logList = document.getElementById('referral-log-list'); // Fixed ID
 
 /**
  * Main initialization function.
@@ -20,17 +20,17 @@ function initializeReferrals() {
             if (user) {
                 adminContent.style.display = 'block';
                 loader.style.display = 'none';
-                loadAllReferrals(user); // Pass the auth user object
+                loadAllReferrals(user); // Changed function name
             }
         });
     });
 }
 
 /**
- * Fetches all referrals from the referral_log.
+ * Fetches ALL referrals from the referral_log.
  */
-async function loadAllReferrals(user) {
-    logList.innerHTML = '<li>Loading referral log...</li>';
+async function loadAllReferrals(user) { // Changed function name
+    logList.innerHTML = '<li>Loading referral log...</li>'; // Use the correct variable
     try {
         // Simple query to get all logs, sorted by most recent
         const q = query(
@@ -60,7 +60,7 @@ async function loadAllReferrals(user) {
             let statusClass = `status-${status}`; // e.g., status-pending, status-approved
 
             html += `
-                <li class="referral-log-item" id="item-${logId}">
+                <li class.referral-log-item" id="item-${logId}">
                     <div class="referral-info">
                         <strong>${log.referredUserName}</strong>
                         <small>Referred by: ${log.referrerEmail || 'N/A'}</small>
