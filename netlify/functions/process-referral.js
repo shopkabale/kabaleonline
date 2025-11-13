@@ -16,16 +16,17 @@ if (!global._firebaseApp) {
 const db = getFirestore();
 const auth = getAuth();
 
-// --- REWARD RULES (Same as before) ---
+// --- RECOMMENDED REWARD RULES (5, 10, 25, 50, 100) ---
 const REWARDS_CONFIG = {
   MILESTONES: {
-    3: { badge: "Kabale Builder" },
-    5: { bonus: 2000 },
-    10: { badge: "T-Shirt Winner", fulfillment: { type: "KabaleOnline T-shirt" } },
-    25: { badge: "Community Leader", bonus: 5000 },
-    50: { badge: "Partner" },
+    5: { badge: "Kabale Builder" },
+    10: { bonus: 2000 }, // UGX 2,000 bonus
+    25: { badge: "T-Shirt Winner", fulfillment: { type: "KabaleOnline T-shirt" } },
+    50: { badge: "Community Leader", bonus: 5000 }, // UGX 5,000 bonus
+    100: { badge: "Partner" }
   }
 };
+// --- END OF RULES ---
 
 // --- Helper to verify the *new user* who is calling this function ---
 async function verifyNewUser(token, logId) {
