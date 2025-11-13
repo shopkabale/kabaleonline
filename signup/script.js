@@ -70,7 +70,7 @@ signupForm.addEventListener('submit', async (e) => {
     let referrerId = null;
     let referrerEmail = null;
 
-    // --- *** THIS IS THE CRITICAL FIX *** ---
+    // --- *** THIS IS THE CRITICAL LOGIC *** ---
     // Step 1: Check referral code *before* trying to create a user.
     if (referralCode) {
         try {
@@ -83,8 +83,8 @@ signupForm.addEventListener('submit', async (e) => {
                 toggleLoading(signupButton, false, 'Create Account');
                 signupPatienceMessage.style.display = 'none';
                 
-                // --- THIS 'return' IS THE FIX ---
-                // It stops the function here so the user is NOT created.
+                // --- THIS 'return;' IS THE FIX ---
+                // It stops the function here.
                 return; 
             } else {
                 // Success! Store the referrer's info
@@ -166,7 +166,7 @@ signupForm.addEventListener('submit', async (e) => {
     }
 });
 
-// ... (Password Toggle code is correct) ...
+// Password Toggle Visibility
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
         const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
