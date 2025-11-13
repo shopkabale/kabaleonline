@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Referrals | Admin Panel</title>
+    <title>Referral Log | Admin Panel</title>
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
     <style>
-        /* Add some styles for the new list */
-        .referral-queue-item {
+        /* Styles for the new log view */
+        .referral-log-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -34,28 +34,25 @@
             color: var(--text-secondary);
             font-size: 0.9em;
         }
-        .referral-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .referral-actions button {
-            padding: 8px 12px;
+        .status-badge {
             font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            text-transform: capitalize;
         }
-        .btn-approve {
-            background-color: #28a745;
-            color: white;
+        /* Status colors */
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
         }
-        .btn-reject {
-            background-color: #dc3545;
-            color: white;
+        .status-approved {
+            background-color: #d1e7dd;
+            color: #0f5132;
         }
-        .btn-approve:disabled, .btn-reject:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #58151c;
         }
     </style>
 </head>
@@ -75,20 +72,19 @@
         <div id="access-denied" style="display: none;">
             <h1>Access Denied</h1><p>You do not have permission to view this page. Redirecting...</p>
         </div>
-        
+
         <main id="admin-content" style="display: none;">
-            <h1>Manage Referrals</h1>
+            <h1>Referral Log</h1>
             <p>Welcome, <strong id="admin-name">Admin</strong>!</p>
 
             <div class="stat-card" style="max-width: 400px; margin-bottom: 30px;">
-                <h3>Pending Approvals</h3>
-                <p id="pending-referrals-count" class="stat-number">0</p>
+                <h3>Total Referrals</h3>
+                <p id="total-referrals-count" class="stat-number">0</p>
             </div>
 
-            <h2>Pending Referral Queue</h2>
-            <ul id="pending-referrals-list" class="user-list" style="list-style-type: none; padding: 0;">
-                <!-- Pending referrals will be loaded here by JS -->
-            </ul>
+            <h2>All Referrals</h2>
+            <ul id="referral-log-list" class="user-list" style="list-style-type: none; padding: 0;">
+                </ul>
         </main>
     </div>
     <script type="module" src="referrals.js"></script>
