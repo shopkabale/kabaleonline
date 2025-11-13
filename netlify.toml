@@ -16,3 +16,6 @@
 #referals
 [functions.monthly-leaderboard]
   schedule = "0 5 1 * *"
+
+# --- ADD THIS FOR THE NEW AUTO-APPROVAL FUNCTION ---
+[functions.process-referral]
