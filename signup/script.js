@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- NEW: Helper to check for active promos ---
+// --- Helper to check for active promos ---
 async function getCurrentBaseReward() {
   const DEFAULT_REWARD = 200; // Your default base reward in UGX
   try {
@@ -69,50 +69,45 @@ signupForm.addEventListener('submit', async (e) => {
     toggleLoading(signupButton, true, 'Creating Account...');
     signupPatienceMessage.style.display = 'block';
 
+    let userCredential; // Define userCredential outside the try block
+
     try {
-        // Step 1: Create user in Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        // --- *** START DEBUG BLOCK *** ---
+        // This is the new "Redirect-on-Error" logic.
         let referrerId = null;
         let referrerEmail = null;
 
-        // --- *** START DEBUG BLOCK *** ---
-        // This is the new "Logger" logic.
         if (referralCode) {
             try {
                 const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
                 const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    // This is the "soft" error. The query ran but found 0 results.
-                    // We will log this to the database to prove it.
-                    await addDoc(collection(db, "debug_log"), {
-                        error: "Referral code not found.",
-                        codeUsed: referralCode,
-                        timestamp: serverTimestamp()
-                    });
-                    // We do not stop. We let the signup continue.
-                    // referrerId will remain 'null'.
+                    // THE QUERY RAN BUT FOUND 0 RESULTS
+                    // This is the most likely error.
+                    // We will redirect to an error page with this message.
+                    window.location.href = `/verify-email/?error=debug_code_not_found&code=${referralCode}`;
+                    return; // Stop the function
                 } else {
                     // Success!
                     referrerId = querySnapshot.docs[0].id;
                     referrerEmail = querySnapshot.docs[0].data().email;
                 }
             } catch (queryError) {
-                // This is a "hard" error - the query itself failed (e.g., permissions, index)
+                // THE QUERY ITSELF FAILED (e.g., permissions, index)
                 console.error("Referral query failed:", queryError);
-                // We will log this to the database.
-                await addDoc(collection(db, "debug_log"), {
-                    error: "Referral query FAILED.",
-                    codeUsed: referralCode,
-                    errorMessage: queryError.message,
-                    timestamp: serverTimestamp()
-                });
-                // We let the signup continue, as referrerId is still null.
+                // We will redirect to an error page with the error code.
+                window.location.href = `/verify-email/?error=debug_query_failed&code=${queryError.code}`;
+                return; // Stop the function
             }
         }
         // --- *** END DEBUG BLOCK *** ---
+        
+        // --- If the debug block passed, we continue with signup ---
 
+        // Step 1: Create user in Firebase Auth
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
         
         // Step 2: Create the new user's document in the 'users' collection
         await setDoc(doc(db, "users", user.uid), {
@@ -128,7 +123,7 @@ signupForm.addEventListener('submit', async (e) => {
             isVerified: false,
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
-            referrerId: referrerId, // This will be null if code not found
+            referrerId: referrerId, // This will be correct now
             badges: [], 
             referralBalance: 0, 
             referralCount: 0  
@@ -155,6 +150,18 @@ signupForm.addEventListener('submit', async (e) => {
         window.location.href = '/verify-email/';
 
     } catch (error) {
+        // This block catches errors from createUserWithEmailAndPassword
+        
+        // --- *** START DEBUG BLOCK *** ---
+        // If the query worked but auth failed (e.g. email-in-use), 
+        // we must delete the "test" user we just created.
+        if (userCredential && userCredential.user) {
+            // A user was created in Auth but Firestore failed
+            // This is complex, we will just log it for now.
+            console.error("Firestore 'setDoc' likely failed after auth creation.");
+        }
+        // --- *** END DEBUG BLOCK ---
+
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             msg = 'This email is already registered. Please <a href="/login/">log in</a>.';
@@ -163,6 +170,7 @@ signupForm.addEventListener('submit', async (e) => {
         }
         showMessage(signupErrorElement, msg);
         console.error("Signup Error:", error);
+
     } finally {
         toggleLoading(signupButton, false, 'Create Account');
         signupPatienceMessage.style.display = 'none';
