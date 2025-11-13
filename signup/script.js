@@ -1,5 +1,6 @@
 import { auth, db } from '/js/auth.js';
 import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+// Make sure to import 'getDoc' and 'writeBatch'
 import { doc, setDoc, serverTimestamp, addDoc, getDoc, writeBatch, collection } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
@@ -7,11 +8,6 @@ import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.
 const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
-
-// --- *** THIS IS THE FIX *** ---
-// We REMOVE the onAuthStateChanged listener that was here.
-// It was causing the redirect before the script could finish.
-// --- *** END OF FIX *** ---
 
 // --- Pre-fill referral code from URL ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const referralInput = document.getElementById('referral-code');
         if (referralInput) {
             referralInput.value = refCode.toUpperCase();
+            console.log(`[DEBUG] Pre-filled referral code from URL: ${refCode.toUpperCase()}`);
         }
     }
 });
@@ -28,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- Helper to check for active promos ---
 async function getCurrentBaseReward() {
   const DEFAULT_REWARD = 200; 
+  console.log("[DEBUG] Checking for promo...");
   try {
     const promoRef = doc(db, "siteConfig", "promotions");
     const promoSnap = await getDoc(promoRef);
@@ -35,12 +33,15 @@ async function getCurrentBaseReward() {
       const promo = promoSnap.data();
       const expires = promo.expires?.toDate();
       if (promo.active && expires && expires > new Date()) {
-        return DEFAULT_REWARD * (promo.baseRewardMultiplier || 1);
+        const newReward = DEFAULT_REWARD * (promo.baseRewardMultiplier || 1);
+        console.log(`[DEBUG] Active promo found. Base reward set to: ${newReward}`);
+        return newReward;
       }
     }
   } catch (err) {
-    console.warn("Could not check for promotions", err);
+    console.warn("[DEBUG] Could not check for promotions", err);
   }
+  console.log(`[DEBUG] No active promo. Base reward is default: ${DEFAULT_REWARD}`);
   return DEFAULT_REWARD;
 }
 
@@ -50,10 +51,12 @@ async function getCurrentBaseReward() {
 // =======================================================
 signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.clear(); 
-    console.log("--- 1. SIGNUP PROCESS STARTED (FINAL VERSION) ---");
+    console.clear(); // Clear console for a clean test
+    console.log("===================================");
+    console.log("--- 1. SIGNUP PROCESS STARTED (AUTO-APPROVAL) ---");
+    console.log("===================================");
 
-    // --- 1. Get All Form Values ---
+    // --- 1a. Get All Form Values ---
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const whatsapp = document.getElementById('signup-whatsapp').value;
@@ -63,7 +66,14 @@ signupForm.addEventListener('submit', async (e) => {
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
     const signupButton = signupForm.querySelector('button[type="submit"]');
 
+    console.log(`[DEBUG] Form Data:
+      Name: ${name}
+      Email: ${email}
+      Referral Code: "${referralCode}"`);
+
+    // --- 1b. Client-side Validation ---
     if (!name || !email || !password || !location || !whatsapp) {
+        console.error("[DEBUG] Form validation failed: Missing required fields.");
         return showMessage(signupErrorElement, "Please fill out all required fields.");
     }
 
@@ -144,36 +154,61 @@ signupForm.addEventListener('submit', async (e) => {
             userEmail: email 
         });
 
-        // Commit batch
         await batch.commit();
         console.log("--- 7. BATCH WRITE SUCCESS: User and referral code created. ---");
 
-        // --- 5. Referral Log Creation ---
+        // --- 5. Referral Log Creation & Auto-Process ---
         if (referrerId) {
             console.log("--- 8. ReferrerID is VALID. Trying to create referral_log... ---");
             const currentReward = await getCurrentBaseReward();
-            const logData = { 
+            // Create the log entry
+            const logDocRef = await addDoc(collection(db, "referral_log"), { 
                 referrerId: referrerId,
                 referrerEmail: referrerEmail,
                 referredUserId: user.uid,
                 referredUserName: name,
-                status: "pending",
+                status: "pending", // Will be set to 'approved' by the function
                 baseReward: currentReward, 
                 createdAt: serverTimestamp()
-            };
+            });
+            console.log(`--- 9. FIRESTORE SUCCESS: referral_log created with ID: ${logDocRef.id} ---`);
+
+
+            // --- THIS IS THE NEW PART ---
+            console.log("--- 10. Getting auth token for auto-approval... ---");
+            const idToken = await user.getIdToken();
             
-            await addDoc(collection(db, "referral_log"), logData);
-            
-            console.log("--- 9. FIRESTORE SUCCESS: referral_log document created. ---");
+            console.log("--- 11. Calling '/.netlify/functions/process-referral' in background... ---");
+            fetch('/.netlify/functions/process-referral', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify({ logId: logDocRef.id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("[DEBUG] Auto-approval function FAILED:", data.error);
+                } else {
+                    console.log("[DEBUG] Auto-approval function SUCCEEDED:", data.message);
+                }
+            })
+            .catch(err => {
+                // Log if the call itself fails, but don't stop the redirect
+                console.error("[DEBUG] Failed to trigger auto-process:", err);
+            });
+            // --- END OF NEW PART ---
+
         } else {
             console.log("--- 8. ReferrerID is NULL. Skipping referral_log creation. ---");
         }
-
+        
         // --- 6. Final Steps ---
-        // This is the ONLY redirect that should happen.
-        console.log("--- 10. Sending verification email... ---");
+        console.log("--- 12. Sending verification email... ---");
         await sendEmailVerification(user);
-        console.log("--- 11. Email sent. Redirecting to /verify-email/ ---");
+        console.log("--- 13. Email sent. Redirecting to /verify-email/ ---");
         window.location.href = '/verify-email/';
 
     } catch (error) {
@@ -181,6 +216,8 @@ signupForm.addEventListener('submit', async (e) => {
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') { msg = 'This email is already registered.'; } 
         else if (error.code === 'permission-denied') { msg = 'A database rule error occurred.'; }
+        
+        console.error("Fatal signup error:", error);
         showMessage(signupErrorElement, msg);
         toggleLoading(signupButton, false, 'Create Account');
         signupPatienceMessage.style.display = 'none';
