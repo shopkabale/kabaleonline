@@ -77,32 +77,38 @@ signupForm.addEventListener('submit', async (e) => {
         let referrerEmail = null;
 
         // --- *** START DEBUG BLOCK *** ---
-        // This is the new code to find the error.
+        // This is the new "Logger" logic.
         if (referralCode) {
             try {
                 const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
                 const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    // This is a "soft" error - the query worked but found no one
-                    showMessage(signupErrorElement, `DEBUG: Code "${referralCode}" NOT FOUND. Query ran but returned 0 users.`);
-                    // We will stop the signup so you can see this message
-                    toggleLoading(signupButton, false, 'Create Account');
-                    return; 
+                    // This is the "soft" error. The query ran but found 0 results.
+                    // We will log this to the database to prove it.
+                    await addDoc(collection(db, "debug_log"), {
+                        error: "Referral code not found.",
+                        codeUsed: referralCode,
+                        timestamp: serverTimestamp()
+                    });
+                    // We do not stop. We let the signup continue.
+                    // referrerId will remain 'null'.
                 } else {
                     // Success!
                     referrerId = querySnapshot.docs[0].id;
                     referrerEmail = querySnapshot.docs[0].data().email;
-                    // We will show a success message so we know it worked
-                    showMessage(signupErrorElement, `DEBUG: Code "${referralCode}" FOUND! Referrer is ${referrerEmail}. Continuing...`);
                 }
             } catch (queryError) {
                 // This is a "hard" error - the query itself failed (e.g., permissions, index)
                 console.error("Referral query failed:", queryError);
-                showMessage(signupErrorElement, `DEBUG: QUERY FAILED. Error: ${queryError.message}`);
-                // We must stop the signup
-                toggleLoading(signupButton, false, 'Create Account');
-                return; // Stop the function
+                // We will log this to the database.
+                await addDoc(collection(db, "debug_log"), {
+                    error: "Referral query FAILED.",
+                    codeUsed: referralCode,
+                    errorMessage: queryError.message,
+                    timestamp: serverTimestamp()
+                });
+                // We let the signup continue, as referrerId is still null.
             }
         }
         // --- *** END DEBUG BLOCK *** ---
@@ -155,17 +161,11 @@ signupForm.addEventListener('submit', async (e) => {
         } else if (error.code === 'auth/weak-password') {
             msg = 'Password must be at least 6 characters long.';
         }
-        // Keep the debug message if it was already set
-        if (!signupErrorElement.textContent.includes('DEBUG:')) {
-            showMessage(signupErrorElement, msg);
-        }
+        showMessage(signupErrorElement, msg);
         console.error("Signup Error:", error);
     } finally {
-        // We will NOT stop loading if a debug message is shown
-        if (!signupErrorElement.textContent.includes('DEBUG:')) {
-            toggleLoading(signupButton, false, 'Create Account');
-            signupPatienceMessage.style.display = 'none';
-        }
+        toggleLoading(signupButton, false, 'Create Account');
+        signupPatienceMessage.style.display = 'none';
     }
 });
 
