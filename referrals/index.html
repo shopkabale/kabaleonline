@@ -6,7 +6,6 @@
   <title>Your Referrals | Kabale Online</title>
   <meta name="robots" content="noindex">
 
-  <!-- Font Awesome + Chart.js -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -63,7 +62,6 @@
     .header-content { display:flex; align-items:center; justify-content:space-between; height:70px; max-width:1200px; margin:0 auto; padding:0 15px; }
     .site-title { text-decoration: none; color: var(--text-main); font-size: 1.35em; font-weight:700; }
     .site-title span { color: var(--ko-accent); }
-    .hamburger-menu { font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-main); display: block; }
 
     .info-card {
       background-color: var(--bg-card);
@@ -105,7 +103,6 @@
       #copy-referral-link-btn { width:100%; }
       .share-buttons { flex-wrap:wrap; }
     }
-
   </style>
 </head>
 <body class="light-mode">
@@ -113,22 +110,20 @@
   <header class="sticky-header">
     <div class="header-content">
       <a href="/" class="site-title">Kabale <span>Online</span></a>
-      <div style="display:flex; align-items:center; gap:16px;">
-        <a href="/dashboard/" style="text-decoration:none; color:var(--text-secondary); font-weight:600;">Back to Dashboard</a>
-        <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-      </div>
+      <a href="/dashboard/" style="text-decoration:none; color:var(--text-secondary); font-weight:600;">Back to Dashboard</a>
     </div>
   </header>
 
   <div class="container page-content">
-<div class="info-card">
-  <h2>Your Wallet</h2>
-  <div style="font-size: 2.5rem; font-weight: 800; color: #28a745;" id="user-balance">UGX 0</div>
-  <div style="margin-top: 12px; font-weight: 700;">Your Badges</div>
-  <div id="user-badges" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
-    <span style="color:var(--text-secondary); font-style:italic;">Loading badges...</span>
-  </div>
-</div>
+    <div class="info-card">
+      <h2>Your Wallet</h2>
+      <div style="font-size: 2.5rem; font-weight: 800; color: #28a745;" id="user-balance">UGX 0</div>
+      <div style="margin-top: 12px; font-weight: 700;">Your Badges</div>
+      <div id="user-badges" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+        <span style="color:var(--text-secondary); font-style:italic;">Loading badges...</span>
+      </div>
+    </div>
+    
     <h1>Your Referrals</h1>
 
     <div id="referral-loader" style="text-align:center; padding:40px 0;">
@@ -137,6 +132,9 @@
     </div>
 
     <div id="referral-content" style="display:none;">
+      
+      <div id="promo-banner"></div>
+
       <div class="info-card">
         <h2>Grow the Community!</h2>
         <p style="color:var(--text-secondary); margin-top:8px;">Share your personal referral link with friends and earn recognition and rewards for every new member you bring on board.</p>
@@ -191,7 +189,6 @@
       <div class="info-card">
         <h2>Leaderboard (This Week)</h2>
         <div id="leaderboard" class="leaderboard">
-          <!-- Leaderboard entries will be loaded here -->
           <div style="color:var(--text-secondary)">Loading leaderboard…</div>
         </div>
       </div>
@@ -206,11 +203,9 @@
     </div>
   </footer>
 
-  <!-- Keep your existing shared and auth scripts -->
   <script type="module" src="../js/shared.js"></script>
   <script type="module" src="../js/auth.js"></script>
 
-  <!-- Main referral script -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
