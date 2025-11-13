@@ -37,7 +37,8 @@ exports.handler = async (event, context) => {
     const headers = { 'Content-Type': 'application/json' };
 
     // --- !! SECURITY !! ---
-    const SECRET_KEY = "your_long_random_secret_key_12345"; // !! CHANGE THIS
+    // Make sure this is a long, random password that only you know
+    const SECRET_KEY = "your_long_random_secret_key_12345"; 
     
     if (event.queryStringParameters.secret !== SECRET_KEY) {
         return {
@@ -47,8 +48,8 @@ exports.handler = async (event, context) => {
         };
     }
 
-    let recipients = [];
-    let emailObject = new Brevo.SendSmtpEmail(); 
+    let allRecipients = [];
+    let subject = `🎉 Festival Season Offer — Earn, Buy & Sell FREE on Kabale Online!`;
 
     try {
         // 1. Fetch all users from your 'users' collection
@@ -59,27 +60,24 @@ exports.handler = async (event, context) => {
             return { statusCode: 200, headers, body: JSON.stringify({ message: "No users found to email." }) };
         }
 
-        // 2. Build the recipient list for the batch send
+        // 2. Build the recipient list
         snapshot.forEach(doc => {
             const user = doc.data();
             if (user.email) {
-                recipients.push({
+                allRecipients.push({
                     email: user.email,
                     name: user.name || 'KabaleOnline Member' 
                 });
             }
         });
 
-        if (recipients.length === 0) {
+        if (allRecipients.length === 0) {
             return { statusCode: 200, headers, body: JSON.stringify({ message: "No users had email addresses." }) };
         }
         
-        // 3. Create the email object
-        const LOGO_URL = "https://www.kabaleonline.com/icons/512.png"; // Your logo
-        const emailSubject = `🎉 Festival Season Offer — Earn, Buy & Sell FREE on Kabale Online!`;
-
-        emailObject.subject = emailSubject;
-        emailObject.htmlContent = `
+        // 3. Define the Email Template (This is the full HTML)
+        const LOGO_URL = "https://www.kabaleonline.com/icons/512.png";
+        const HTML_CONTENT = `
         <div style="margin: 0; padding: 0; width: 100%; font-family: Arial, sans-serif; background-color: #f4f4f4;">
             <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4;">
                 <tr>
@@ -105,7 +103,7 @@ exports.handler = async (event, context) => {
                                     
                                     <p style="font-size: 16px; color: #555; line-height: 1.6; text-align: center;">
                                         It’s the perfect time to buy, sell, and earn on Kabale Online.
-                                    </D>
+                                    </p>
 
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
@@ -121,7 +119,7 @@ exports.handler = async (event, context) => {
 
                                     <p style="font-size: 14px; color: #777; text-align: center;">
                                         You’re receiving this message because you’re a registered member of Kabale Online.
-                                        </p>
+                                    </p>
                                 </td>
                             </tr>
                             <tr style="background-color: #fafafa; border-top: 1px solid #eeeeee;">
@@ -140,23 +138,59 @@ exports.handler = async (event, context) => {
             </table>
         </div>
         `;
+
+        // --- THIS IS THE FIX ---
+        // 4. Set chunk size and create promise array
+        const CHUNK_SIZE = 50; // A safe batch size (well below 99)
+        const emailPromises = [];
+
+        console.log(`Total recipients: ${allRecipients.length}. Splitting into chunks of ${CHUNK_SIZE}...`);
+
+        // 5. Loop through the recipients and create a new API call for each chunk
+        for (let i = 0; i < allRecipients.length; i += CHUNK_SIZE) {
+            const chunk = allRecipients.slice(i, i + CHUNK_SIZE);
+            
+            console.log(`Preparing chunk ${Math.floor(i / CHUNK_SIZE) + 1} with ${chunk.length} recipients...`);
+            
+            // Create a new email object for this specific chunk
+            const emailObject = new Brevo.SendSmtpEmail();
+            emailObject.subject = subject;
+            emailObject.htmlContent = HTML_CONTENT;
+            emailObject.sender = { name: "Kabale Online", email: "support@kabaleonline.com" }; 
+            emailObject.to = chunk; // Send to this chunk (e.g., 50 recipients)
+            emailObject.replyTo = { email: "support@kabaleonline.com" };
+            emailObject.tags = ["marketing", "festival-offer"]; 
+
+            // Add the API call to the list of promises
+            emailPromises.push(apiInstance.sendTransacEmail(emailObject));
+        }
+
+        // 6. Send all chunks in parallel
+        console.log(`Sending ${emailPromises.length} email batches...`);
+        const results = await Promise.allSettled(emailPromises);
+
+        // 7. Check results
+        let failedChunks = 0;
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                console.error(`Email chunk ${index + 1} FAILED:`, result.reason.response?.body || result.reason);
+                failedChunks++;
+            }
+        });
+
+        if (failedChunks > 0) {
+            throw new Error(`${failedChunks} out of ${emailPromises.length} email batches failed.`);
+        }
         
-        emailObject.sender = { name: "Kabale Online", email: "support@kabaleonline.com" }; 
-        emailObject.to = recipients; 
-        emailObject.replyTo = { email: "support@kabaleonline.com" };
-        emailObject.tags = ["marketing", "festival-offer"]; 
+        console.log("All email batches sent successfully!");
+        // --- END OF FIX ---
 
-        // 4. Send the email blast
-        console.log(`Sending email to ${recipients.length} users...`);
-        const data = await apiInstance.sendTransacEmail(emailObject);
-        console.log("Email batch sent successfully.", data);
-
-        // 5. Report success
+        // 8. Report success
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({ 
-                message: `Successfully sent email to ${recipients.length} users.`,
+                message: `Successfully sent email to ${allRecipients.length} users in ${emailPromises.length} batches.`,
                 success: true 
             })
         };
@@ -166,8 +200,8 @@ exports.handler = async (event, context) => {
         
         await logFailedNotification(db, error, {
             type: "marketing-blast-FAILURE",
-            subject: emailObject.subject || "Subject not set",
-            recipientCount: recipients.length || 0 
+            subject: subject,
+            recipientCount: allRecipients.length 
         });
         
         return {
