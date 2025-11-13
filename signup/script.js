@@ -1,5 +1,5 @@
 import { auth, db } from '/js/auth.js';
-import { createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
@@ -8,9 +8,15 @@ const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
 
-// --- BROKEN LISTENER REMOVED ---
-// The onAuthStateChanged listener that was here has been removed.
-// It was causing the redirect to /dashboard/ and then /login/.
+// This is a failsafe. The main redirect logic is in shared.js.
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const currentPage = window.location.pathname;
+        if (currentPage.startsWith('/signup/')) {
+             window.location.replace('/dashboard/');
+        }
+    }
+});
 
 // Check for referral code in URL on page load and pre-fill the input
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Helper to check for active promos ---
+// --- NEW: Helper to check for active promos ---
 async function getCurrentBaseReward() {
   const DEFAULT_REWARD = 200; // Your default base reward in UGX
   try {
@@ -63,45 +69,44 @@ signupForm.addEventListener('submit', async (e) => {
     toggleLoading(signupButton, true, 'Creating Account...');
     signupPatienceMessage.style.display = 'block';
 
-    let userCredential; // Define userCredential outside the try block
-
     try {
-        // --- *** START DEBUG BLOCK *** ---
-        // This is the "Redirect-on-Error" logic.
+        // Step 1: Create user in Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
         let referrerId = null;
         let referrerEmail = null;
 
+        // --- *** START DEBUG BLOCK *** ---
+        // This is the new code to find the error.
         if (referralCode) {
             try {
                 const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
                 const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    // THE QUERY RAN BUT FOUND 0 RESULTS
-                    // This is the most likely error.
-                    // We will redirect to an error page with this message.
-                    window.location.href = `/verify-email/?error=debug_code_not_found&code=${referralCode}`;
-                    return; // Stop the function
+                    // This is a "soft" error - the query worked but found no one
+                    showMessage(signupErrorElement, `DEBUG: Code "${referralCode}" NOT FOUND. Query ran but returned 0 users.`);
+                    // We will stop the signup so you can see this message
+                    toggleLoading(signupButton, false, 'Create Account');
+                    return; 
                 } else {
                     // Success!
                     referrerId = querySnapshot.docs[0].id;
                     referrerEmail = querySnapshot.docs[0].data().email;
+                    // We will show a success message so we know it worked
+                    showMessage(signupErrorElement, `DEBUG: Code "${referralCode}" FOUND! Referrer is ${referrerEmail}. Continuing...`);
                 }
             } catch (queryError) {
-                // THE QUERY ITSELF FAILED (e.g., permissions, index)
+                // This is a "hard" error - the query itself failed (e.g., permissions, index)
                 console.error("Referral query failed:", queryError);
-                // We will redirect to an error page with the error code.
-                window.location.href = `/verify-email/?error=debug_query_failed&code=${queryError.code}`;
+                showMessage(signupErrorElement, `DEBUG: QUERY FAILED. Error: ${queryError.message}`);
+                // We must stop the signup
+                toggleLoading(signupButton, false, 'Create Account');
                 return; // Stop the function
             }
         }
         // --- *** END DEBUG BLOCK *** ---
-        
-        // --- If the debug block passed, we continue with signup ---
 
-        // Step 1: Create user in Firebase Auth
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
         
         // Step 2: Create the new user's document in the 'users' collection
         await setDoc(doc(db, "users", user.uid), {
@@ -117,7 +122,7 @@ signupForm.addEventListener('submit', async (e) => {
             isVerified: false,
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
-            referrerId: referrerId, // This will be correct now
+            referrerId: referrerId, // This will be null if code not found
             badges: [], 
             referralBalance: 0, 
             referralCount: 0  
@@ -141,24 +146,26 @@ signupForm.addEventListener('submit', async (e) => {
         await sendEmailVerification(user);
 
         // Step 5: Redirect to the new verification page
-        // This is the correct, final redirect.
         window.location.href = '/verify-email/';
 
     } catch (error) {
-        // This block catches errors from createUserWithEmailAndPassword
-        
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             msg = 'This email is already registered. Please <a href="/login/">log in</a>.';
         } else if (error.code === 'auth/weak-password') {
             msg = 'Password must be at least 6 characters long.';
         }
-        showMessage(signupErrorElement, msg);
+        // Keep the debug message if it was already set
+        if (!signupErrorElement.textContent.includes('DEBUG:')) {
+            showMessage(signupErrorElement, msg);
+        }
         console.error("Signup Error:", error);
-
     } finally {
-        toggleLoading(signupButton, false, 'Create Account');
-        signupPatienceMessage.style.display = 'none';
+        // We will NOT stop loading if a debug message is shown
+        if (!signupErrorElement.textContent.includes('DEBUG:')) {
+            toggleLoading(signupButton, false, 'Create Account');
+            signupPatienceMessage.style.display = 'none';
+        }
     }
 });
 
