@@ -47,11 +47,8 @@ exports.handler = async (event, context) => {
         };
     }
 
-    // --- *** FIX *** ---
-    // Declare variables outside the try block so they are in scope for the catch block
     let recipients = [];
-    let emailObject = new Brevo.SendSmtpEmail(); // Initialize here
-    // --- *** END OF FIX *** ---
+    let emailObject = new Brevo.SendSmtpEmail(); 
 
     try {
         // 1. Fetch all users from your 'users' collection
@@ -108,7 +105,7 @@ exports.handler = async (event, context) => {
                                     
                                     <p style="font-size: 16px; color: #555; line-height: 1.6; text-align: center;">
                                         It’s the perfect time to buy, sell, and earn on Kabale Online.
-                                    </p>
+                                    </D>
 
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
@@ -124,9 +121,7 @@ exports.handler = async (event, context) => {
 
                                     <p style="font-size: 14px; color: #777; text-align: center;">
                                         You’re receiving this message because you’re a registered member of Kabale Online.
-                                        <br>
-                                        <a href="{{ unsubscribe }}" style="color: #777; text-decoration: underline;">Unsubscribe</a>
-                                    </p>
+                                        </p>
                                 </td>
                             </tr>
                             <tr style="background-color: #fafafa; border-top: 1px solid #eeeeee;">
@@ -169,14 +164,11 @@ exports.handler = async (event, context) => {
     } catch (error) {
         console.error('Error sending marketing blast:', error.response?.body || error);
         
-        // --- *** FIX *** ---
-        // This log will now work because 'emailObject' and 'recipients' are in scope.
         await logFailedNotification(db, error, {
             type: "marketing-blast-FAILURE",
-            subject: emailObject.subject || "Subject not set", // Safer check
-            recipientCount: recipients.length || 0 // Safer check
+            subject: emailObject.subject || "Subject not set",
+            recipientCount: recipients.length || 0 
         });
-        // --- *** END OF FIX *** ---
         
         return {
             statusCode: 500,
