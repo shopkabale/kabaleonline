@@ -18,6 +18,20 @@ if (!global._firebaseApp) {
 }
 const db = getFirestore();
 
+// --- Helper: Log failed emails to Firestore ---
+async function logFailedNotification(db, error, emailDetails) {
+    try {
+        await db.collection('failed_notifications').add({
+            ...emailDetails,
+            error: error.message || "Unknown error",
+            errorBody: error.response?.body || "No response body",
+            timestamp: FieldValue.serverTimestamp()
+        });
+    } catch (logError) {
+        console.error("CRITICAL: Failed to log notification failure:", logError);
+    }
+}
+
 // --- Main Function Handler ---
 exports.handler = async (event, context) => {
     const headers = { 'Content-Type': 'application/json' };
@@ -34,7 +48,6 @@ exports.handler = async (event, context) => {
     }
 
     let allRecipients = [];
-    let emailObject = new Brevo.SendSmtpEmail(); 
     let subject = `An Important Security Update and Apology from Kabale Online`;
 
     try {
@@ -55,7 +68,7 @@ exports.handler = async (event, context) => {
             return { statusCode: 200, headers, body: JSON.stringify({ message: "No users had email addresses." }) };
         }
         
-        // 3. Create the email object
+        // 3. Define the Email Template
         const LOGO_URL = "https://www.kabaleonline.com/icons/512.png";
         const HTML_CONTENT = `
         <div style="margin: 0; padding: 0; width: 100%; font-family: Arial, sans-serif; background-color: #f4f4f4;">
@@ -76,17 +89,21 @@ exports.handler = async (event, context) => {
                                     <p style="font-size: 16px; color: #555; line-height: 1.6;">In doing so, we made a critical technical error. The email was sent in a way that accidentally made the recipient list (including your email address) visible to all other recipients. This is a data breach, and it is a complete failure on our part.</p>
                                     <p style="font-size: 16px; color: #555; line-height: 1.6;">One of the recipients on that list has already abused this by sending their own spam advertising. We are so sorry.</p>
                                     <p style="font-size: 16px; color: #555; line-height: 1.6;">We have permanently deleted the faulty code, fixed the vulnerability, and banned the user who sent the spam.</p>
-                                    <p style="font-size: 16px; color: #555; line-height: 1.6;">Your trust is the most important thing to us, and we have failed you. We are taking this extremely seriously and have put new, secure systems in place to ensure this never, ever happens again.</p>
-                                    <p style="font-size: 16px; color: #555; line-height: 1.6;">We are deeply sorry for this mistake.</p>
-                                    <p style="font-size: 16px; color: #555; line-height: 1.6;">— The Kabale Online Team</p>
+                                    <p style="font-size: 16px; color: #555; line-height: 1.6;">Your trust is the most important thing to us, and we have failed you. We are deeply sorry for this mistake.</p>
 
                                     <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 30px 0;">
-
-                                    <p style="font-size: 14px; color: #777; text-align: center;">
+                                    <h2 style="font-size: 20px; color: #333; text-align: center;">Important Security Advice</h2>
+                                    <p style="font-size: 16px; color: #555; line-height: 1.6; text-align: center;">
+                                        To protect yourself, please **report the spam email** you received from "Campus Mart" as spam or junk in your email app.
+                                    </p>
+                                    <p style="font-size: 16px; color: #555; line-height: 1.6; text-align: center; font-weight: bold; padding: 10px; background-color: #fffbeb;">
+                                        Always check the sender. Our *only* official email address is <strong>support@kabaleonline.com</strong>. If you receive an email from any other address, please do not trust it.
+                                    </p>
+                                    <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 30px 0;">
+                                    <p style="font-size: 16px; color: #555; line-height: 1.6;">— The Kabale Online Team</p>
+                                    
+                                    <p style="font-size: 14px; color: #777; text-align: center; margin-top: 20px;">
                                         You are receiving this security update because you are a registered member.
-                                        <br><br>
-                                        If you no longer wish to receive marketing emails (like the one from earlier), please
-                                        <a href="mailto:support@kabaleonline.com?subject=Unsubscribe%20Me" style="color: #777; text-decoration: underline;">click here to unsubscribe</a>.
                                     </p>
                                 </td>
                             </tr>
@@ -96,39 +113,70 @@ exports.handler = async (event, context) => {
             </table>
         </div>
         `;
+
+        // --- *** COMBINED FIX: BATCHING + BCC *** ---
+        // 4. Set chunk size and create promise array
+        const CHUNK_SIZE = 50; // A safe batch size (well below 99)
+        const emailPromises = [];
+
+        console.log(`Total recipients: ${allRecipients.length}. Splitting into chunks of ${CHUNK_SIZE}...`);
+
+        // 5. Loop through the recipients and create a new API call for each chunk
+        for (let i = 0; i < allRecipients.length; i += CHUNK_SIZE) {
+            const chunk = allRecipients.slice(i, i + CHUNK_SIZE);
+            
+            console.log(`Preparing chunk ${Math.floor(i / CHUNK_SIZE) + 1} with ${chunk.length} recipients...`);
+            
+            // Create a new email object for this specific chunk
+            const emailObject = new Brevo.SendSmtpEmail();
+            emailObject.subject = subject;
+            emailObject.htmlContent = HTML_CONTENT;
+            emailObject.sender = { name: "Kabale Online", email: "support@kabaleonline.com" }; 
+            emailObject.replyTo = { email: "support@kabaleonline.com" };
+            emailObject.tags = ["security-apology", "v3"]; 
+
+            // THIS IS THE SECURE PART:
+            emailObject.to = [{ email: "support@kabaleonline.com", name: "Kabale Online Admin" }];
+            emailObject.bcc = chunk; // Put this chunk (e.g., 50 recipients) in BCC
+
+            // Add the API call to the list of promises
+            emailPromises.push(apiInstance.sendTransacEmail(emailObject));
+        }
+
+        // 6. Send all chunks in parallel
+        console.log(`Sending ${emailPromises.length} email batches (privately via BCC)...`);
+        const results = await Promise.allSettled(emailPromises);
+
+        // 7. Check results
+        let failedChunks = 0;
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                console.error(`Email chunk ${index + 1} FAILED:`, result.reason.response?.body || result.reason);
+                failedChunks++;
+            }
+        });
+
+        if (failedChunks > 0) {
+            throw new Error(`${failedChunks} out of ${emailPromises.length} email batches failed.`);
+        }
         
-        emailObject.sender = { name: "Kabale Online", email: "support@kabaleonline.com" }; 
-        emailObject.replyTo = { email: "support@kabaleonline.com" };
-        emailObject.tags = ["security-apology", "v2"]; 
-        emailObject.subject = subject;
-        emailObject.htmlContent = HTML_CONTENT;
-
-        // --- THIS IS THE SECURE FIX ---
-        // Send the email TO ourselves
-        emailObject.to = [{ email: "support@kabaleonline.com", name: "Kabale Online Admin" }];
+        console.log("All email batches sent successfully!");
+        // --- *** END OF COMBINED FIX *** ---
         
-        // Put ALL users in the 'BCC' (Blind Carbon Copy) field
-        // This HIDES the list and prevents a data leak.
-        emailObject.bcc = allRecipients;
-        // --- END OF FIX ---
 
-        // 4. Send the one, private email blast
-        console.log(`Sending ONE private apology email to ${allRecipients.length} BCC recipients...`);
-        const data = await apiInstance.sendTransacEmail(emailObject);
-        console.log("Email batch sent successfully.", data);
-
-        // 5. Report success
+        // 8. Report success
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({ 
-                message: `Successfully sent apology email to ${allRecipients.length} users (via BCC).`,
+                message: `Successfully sent apology email to ${allRecipients.length} users in ${emailPromises.length} batches (via BCC).`,
                 success: true 
             })
         };
 
     } catch (error) {
         console.error('Error sending apology email:', error.response?.body || error);
+        
         await logFailedNotification(db, error, {
             type: "apology-email-FAILURE",
             subject: subject,
