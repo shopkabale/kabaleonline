@@ -8,7 +8,7 @@ const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
 
-// This is a failsafe. The main redirect logic is in shared.js.
+// ... (onAuthStateChanged and DOMContentLoaded code is correct) ...
 onAuthStateChanged(auth, (user) => {
     if (user) {
         const currentPage = window.location.pathname;
@@ -17,8 +17,6 @@ onAuthStateChanged(auth, (user) => {
         }
     }
 });
-
-// Check for referral code in URL on page load and pre-fill the input
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');
@@ -30,9 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Helper to check for active promos ---
+// ... (getCurrentBaseReward helper is correct) ...
 async function getCurrentBaseReward() {
-  const DEFAULT_REWARD = 200; // Your default base reward in UGX
+  const DEFAULT_REWARD = 200; 
   try {
     const promoRef = doc(db, "siteConfig", "promotions");
     const promoSnap = await getDoc(promoRef);
@@ -72,9 +70,8 @@ signupForm.addEventListener('submit', async (e) => {
     let referrerId = null;
     let referrerEmail = null;
 
-    // --- *** START OF FIX *** ---
+    // --- *** THIS IS THE CRITICAL FIX *** ---
     // Step 1: Check referral code *before* trying to create a user.
-    // Your new rules will allow this query to work.
     if (referralCode) {
         try {
             const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
@@ -85,14 +82,17 @@ signupForm.addEventListener('submit', async (e) => {
                 showMessage(signupErrorElement, `Referral code "${referralCode}" was not found.`);
                 toggleLoading(signupButton, false, 'Create Account');
                 signupPatienceMessage.style.display = 'none';
-                return; // Stop the signup
+                
+                // --- THIS 'return' IS THE FIX ---
+                // It stops the function here so the user is NOT created.
+                return; 
             } else {
                 // Success! Store the referrer's info
                 referrerId = querySnapshot.docs[0].id;
                 referrerEmail = querySnapshot.docs[0].data().email;
             }
         } catch (queryError) {
-            // This is a "hard" error (e.g., permissions, index, network)
+            // This is a "hard" error (e.g., permissions, network)
             console.error("Referral query failed:", queryError);
             showMessage(signupErrorElement, `A database error occurred checking the code. Please try again.`);
             toggleLoading(signupButton, false, 'Create Account');
@@ -104,14 +104,13 @@ signupForm.addEventListener('submit', async (e) => {
 
     
     // Step 2: Try to create the user (Auth, setDoc, addDoc)
-    // This block only runs if the referral check passed or was skipped.
+    // This block now ONLY runs if the referral code was valid OR blank.
     try {
         // Step 2a: Create user in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Step 2b: Create the new user's document in the 'users' collection
-        // This 'setDoc' will now work because of your new, simpler 'create' rule.
+        // Step 2b: Create the new user's document
         await setDoc(doc(db, "users", user.uid), {
             name,
             fullName: name, 
@@ -120,18 +119,19 @@ signupForm.addEventListener('submit', async (e) => {
             location,
             institution,
             phone: whatsapp,
-            role: 'seller', // Default role
+            role: 'seller',
             isSeller: true,
             isVerified: false,
             createdAt: serverTimestamp(),
-            referralCode: user.uid.substring(0, 6).toUpperCase(), // New user's own code
-            referrerId: referrerId, // ID of the person who referred them
+            referralCode: user.uid.substring(0, 6).toUpperCase(),
+            referrerId: referrerId, // Will be null or a valid ID
             badges: [], 
             referralBalance: 0, 
             referralCount: 0  
         });
 
-        // Step 2c: Create a validation request for the admin if there was a referrer
+        // Step 2c: Create a validation request for the admin
+        // This 'if' statement will now work correctly.
         if (referrerId) {
             const currentReward = await getCurrentBaseReward();
             await addDoc(collection(db, "referral_log"), { 
@@ -152,8 +152,6 @@ signupForm.addEventListener('submit', async (e) => {
         window.location.href = '/verify-email/';
 
     } catch (error) {
-        // This 'catch' block will now only handle errors from
-        // createUserWithEmailAndPassword, setDoc, or addDoc.
         let msg = 'An error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             msg = 'This email is already registered. Please <a href="/login/">log in</a>.';
@@ -163,13 +161,12 @@ signupForm.addEventListener('submit', async (e) => {
         showMessage(signupErrorElement, msg);
         console.error("Signup Error:", error);
 
-        // Reset button ONLY if the creation fails
         toggleLoading(signupButton, false, 'Create Account');
         signupPatienceMessage.style.display = 'none';
     }
 });
 
-// Password Toggle Visibility
+// ... (Password Toggle code is correct) ...
 document.querySelectorAll('.toggle-password').forEach(toggle => {
     toggle.addEventListener('click', (e) => {
         const passwordInput = e.target.closest('.password-wrapper').querySelector('input');
