@@ -1,6 +1,6 @@
 import { auth, db } from '/js/auth.js';
 import { createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Added getDoc
+import { doc, setDoc, query, collection, where, getDocs, serverTimestamp, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { showMessage, toggleLoading, normalizeWhatsAppNumber } from '/js/shared.js';
 
 // --- DOM ELEMENTS ---
@@ -11,7 +11,6 @@ const signupPatienceMessage = document.getElementById('signup-patience-message')
 // This is a failsafe. The main redirect logic is in shared.js.
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // If a logged-in user somehow lands here, send them away.
         const currentPage = window.location.pathname;
         if (currentPage.startsWith('/signup/')) {
              window.location.replace('/dashboard/');
@@ -37,14 +36,10 @@ async function getCurrentBaseReward() {
   try {
     const promoRef = doc(db, "siteConfig", "promotions");
     const promoSnap = await getDoc(promoRef);
-
     if (promoSnap.exists()) {
       const promo = promoSnap.data();
       const expires = promo.expires?.toDate();
-      
-      // Check if promo is active and not expired
       if (promo.active && expires && expires > new Date()) {
-        console.log(`Promo '${promo.activeCampaign}' is active! Applying multiplier.`);
         return DEFAULT_REWARD * (promo.baseRewardMultiplier || 1);
       }
     }
@@ -81,50 +76,68 @@ signupForm.addEventListener('submit', async (e) => {
         let referrerId = null;
         let referrerEmail = null;
 
-        // Check if a valid referral code was used
+        // --- *** START DEBUG BLOCK *** ---
+        // This is the new code to find the error.
         if (referralCode) {
-            const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-                referrerId = querySnapshot.docs[0].id;
-                referrerEmail = querySnapshot.docs[0].data().email;
+            try {
+                const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    // This is a "soft" error - the query worked but found no one
+                    showMessage(signupErrorElement, `DEBUG: Code "${referralCode}" NOT FOUND. Query ran but returned 0 users.`);
+                    // We will stop the signup so you can see this message
+                    toggleLoading(signupButton, false, 'Create Account');
+                    return; 
+                } else {
+                    // Success!
+                    referrerId = querySnapshot.docs[0].id;
+                    referrerEmail = querySnapshot.docs[0].data().email;
+                    // We will show a success message so we know it worked
+                    showMessage(signupErrorElement, `DEBUG: Code "${referralCode}" FOUND! Referrer is ${referrerEmail}. Continuing...`);
+                }
+            } catch (queryError) {
+                // This is a "hard" error - the query itself failed (e.g., permissions, index)
+                console.error("Referral query failed:", queryError);
+                showMessage(signupErrorElement, `DEBUG: QUERY FAILED. Error: ${queryError.message}`);
+                // We must stop the signup
+                toggleLoading(signupButton, false, 'Create Account');
+                return; // Stop the function
             }
         }
+        // --- *** END DEBUG BLOCK *** ---
+
         
         // Step 2: Create the new user's document in the 'users' collection
-        // *** UPDATED to match your screenshot/referral logic ***
         await setDoc(doc(db, "users", user.uid), {
             name,
-            fullName: name, // From your screenshot
+            fullName: name, 
             email,
             whatsapp: normalizeWhatsAppNumber(whatsapp),
             location,
             institution,
-            phone: whatsapp, // From your screenshot
+            phone: whatsapp,
             role: 'seller',
-            isSeller: true, // From your screenshot
+            isSeller: true,
             isVerified: false,
             createdAt: serverTimestamp(),
             referralCode: user.uid.substring(0, 6).toUpperCase(),
-            referrerId: referrerId,
-            badges: [], // NEW: Added for rewards
-            referralBalance: 0, // NEW: Changed from referralBalanceUGX
-            referralCount: 0  // NEW: Added for rewards
+            referrerId: referrerId, // This will be null if code not found
+            badges: [], 
+            referralBalance: 0, 
+            referralCount: 0  
         });
 
         // Step 3: Create a validation request for the admin if there was a referrer
-        // *** UPDATED to use 'referral_log' and add 'baseReward' ***
         if (referrerId) {
-            // Get the current reward (checks for promos)
             const currentReward = await getCurrentBaseReward();
-
-            await addDoc(collection(db, "referral_log"), { // UPDATED collection name
+            await addDoc(collection(db, "referral_log"), { 
                 referrerId: referrerId,
                 referrerEmail: referrerEmail,
                 referredUserId: user.uid,
                 referredUserName: name,
                 status: "pending",
-                baseReward: currentReward, // NEW: Locks in the reward amount
+                baseReward: currentReward, 
                 createdAt: serverTimestamp()
             });
         }
@@ -142,11 +155,17 @@ signupForm.addEventListener('submit', async (e) => {
         } else if (error.code === 'auth/weak-password') {
             msg = 'Password must be at least 6 characters long.';
         }
-        showMessage(signupErrorElement, msg);
+        // Keep the debug message if it was already set
+        if (!signupErrorElement.textContent.includes('DEBUG:')) {
+            showMessage(signupErrorElement, msg);
+        }
         console.error("Signup Error:", error);
     } finally {
-        toggleLoading(signupButton, false, 'Create Account');
-        signupPatienceMessage.style.display = 'none';
+        // We will NOT stop loading if a debug message is shown
+        if (!signupErrorElement.textContent.includes('DEBUG:')) {
+            toggleLoading(signupButton, false, 'Create Account');
+            signupPatienceMessage.style.display = 'none';
+        }
     }
 });
 
