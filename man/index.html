@@ -76,6 +76,7 @@
     });
   </script>
 
+  <!-- This links to the CSS file *inside* the /man/ folder -->
   <link rel="stylesheet" href="index.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -89,7 +90,8 @@
 
     <div id="scroll-progress-bar"></div>
 
-    <script src="theme.js"></script>
+    <!-- FIXED PATH: Goes up one folder to find theme.js -->
+    <script src="../theme.js"></script>
 
     <header class="sticky-header">
         <!-- === MODIFIED HEADER LAYOUT === -->
@@ -860,9 +862,12 @@
 <!-- === NEW SCRIPT FOR MASONRY === -->
 <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
 
-<!-- === MODIFIED: Removed ui.js, logic is now in index.js === -->
-<!-- <script type="module" src="../ui.js"></script> -->
+<!-- === MODIFIED SCRIPT LINKS === -->
+<!-- This links to your *existing* ui.js file (for hamburger/theme) -->
+<script type="module" src="../ui.js"></script>
+<!-- This links to your *existing* data script (which I'm updating) -->
 <script type="module" src="index.js"></script>
+<!-- This links to your *existing* banner script -->
 <script type="module" src="/js/amara-banner.js"></script>
 
 <!-- === This inline script is for the Group/Feature scroller. Leave it. === -->
