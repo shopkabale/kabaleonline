@@ -282,47 +282,60 @@
         </a>
     </nav>
 
-    <footer>
-    <div class="container footer-grid">
-        <div class="footer-column about-column">
-            <a href="/" class="footer-logo">Kabale <span>Online</span></a>
-            <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.</p>
-            <div class="footer-socials">
-                <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+    <!-- === NEW COLLAPSIBLE FOOTER === -->
+<footer>
+    <!-- This is the part that is always visible -->
+    <div class="container footer-toggle-header">
+        <a href="/" class="footer-logo">Kabale <span>Online</span></a>
+        <button id="footer-toggle-btn" aria-label="Toggle footer menu" aria-expanded="false">
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+    </div>
+
+    <!-- This is the part that will hide/show -->
+    <div id="footer-collapsible-content">
+        <div class="container footer-grid">
+            <!-- Note: The logo is removed from here since it's in the header -->
+            <div class="footer-column about-column">
+                <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale to buy, sell, rent, and discover everything local.</p>
+                <div class="footer-socials">
+                    <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp">Group Chat</i></a>
+                    <a href="https://twitter.com/kabaleonline" target="_blank" aria-label="Twitter">KabaleOnline<i class="fab fa-twitter"></i></a>
+                    <a href="https://facebook.com/kabaleonline" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"> KabaleOnline</i></a>
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <h3>Explore</h3>
+                <a href="/shop/">Shop Items</a>
+                <a href="/rentals/">Hostels & Rentals</a>
+                <a href="/shop/?type=service">Find Services</a>
+                <a href="/events/">Local Events</a>
+                <a href="/lost-and-found/">Lost & Found</a>
+            </div>
+
+            <div class="footer-column">
+                <h3>For Sellers</h3>
+                <a href="/upload/">Sell an Item</a>
+                <a href="/dashboard/">My Dashboard</a>
+                <a href="/upload/">Offer a Service</a>
+                <a href="/blog/">Seller Tips</a>
+            </div>
+
+            <div class="footer-column">
+                <h3>Company</h3>
+                <a href="/about.html">About Us</a>
+                <a href="/contact.html">Contact</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/blog/">Blog & News</a>
             </div>
         </div>
-
-        <div class="footer-column">
-            <h3>Explore</h3>
-            <a href="/shop/">Shop Items</a>
-            <a href="/rentals/">Hostels & Rentals</a>
-            <a href="/shop/?type=service">Find Services</a>
-            <a href="/events/">Local Events</a>
-            <a href="/lost-and-found/">Lost & Found</a>
+        <div class="container footer-bottom">
+            <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
         </div>
-
-        <div class="footer-column">
-            <h3>For Sellers</h3>
-            <a href="/upload/">Sell an Item</a>
-            <a href="/dashboard/">My Dashboard</a>
-            <a href="/upload/">Offer a Service</a>
-            <a href="/blog/">Seller Tips</a>
-        </div>
-
-        <div class="footer-column">
-            <h3>Company</h3>
-            <a href="/about.html">About Us</a>
-            <a href="/contact.html">Contact</a>
-            <a href="/terms.html">Terms of Service</a>
-            <a href="/blog/">Blog & News</a>
-        </div>
-    </div>
-    <div class="container footer-bottom">
-        <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </div>
 </footer>
+<!-- === END COLLAPSIBLE FOOTER === -->
     <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     
     <script type="module" src="../ui.js"></script>
@@ -365,5 +378,32 @@
             // --- End New Logic ---
         });
     </script>
+<!-- === FOOTER TOGGLE SCRIPT === -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const footer = document.querySelector('footer');
+        const toggleBtn = document.getElementById('footer-toggle-btn');
+        const toggleHeader = document.querySelector('.footer-toggle-header');
+
+        function toggleFooter() {
+            if (footer) {
+                footer.classList.toggle('is-open');
+                const isExpanded = footer.classList.contains('is-open');
+                if (toggleBtn) {
+                    toggleBtn.setAttribute('aria-expanded', isExpanded);
+                }
+            }
+        }
+
+        // You can click the button OR the header
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleFooter);
+        } else if (toggleHeader) {
+            // Fallback if button fails
+            toggleHeader.addEventListener('click', toggleFooter);
+        }
+    });
+</script>
+
 </body>
 </html>
