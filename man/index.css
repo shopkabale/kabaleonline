@@ -32,8 +32,7 @@ body {
     background-color: var(--bg-main); 
     color: var(--text-main); 
     line-height: 1.6; 
-    /* === NEW: Space for bottom nav === */
-    padding-bottom: 80px; 
+    padding-bottom: 80px; /* Space for bottom nav */
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 .sticky-header {
@@ -138,9 +137,9 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 }
 /* === END HEADER MODIFICATIONS === */
 
-.page-container { padding-top: 80px; padding-bottom: 20px; }
 
-/* === MODIFIED: Hero Margin === */
+.page-container { padding-top: 80px; padding-bottom: 20px; } /* 60px header + 20px space */
+
 .hero { 
     padding: 25px 0; 
     background-color: var(--bg-card); 
@@ -208,19 +207,14 @@ input:checked + .slider:before { transform: translateX(24px); }
 }
 .see-more-btn:hover, .see-all-btn:hover { background-color: var(--border-color); }
 
-/* === MODIFIED: Masonry Grid Styles === */
 .product-grid { 
     margin: 0 auto;
-    /* display: grid; */ /* <-- REMOVED */
-    /* gap: 15px; */ /* <-- REMOVED */
-    /* grid-template-columns: repeat(2, 1fr); */ /* <-- REMOVED */
 }
-/* This is the Masonry item */
+/* === MASONRY STYLES === */
 #recent-products-grid > .product-card-link {
     width: 48%;
     margin-bottom: 15px; /* Vertical gap */
 }
-/* This is the Masonry spacer */
 .gutter-sizer {
     width: 4%;
 }
@@ -364,20 +358,23 @@ body.dark-mode .skeleton-text {
 .product-carousel-wrapper.expanded {
     overflow-x: hidden; padding-right: 20px; 
 }
-.product-carousel-wrapper.expanded .product-carousel {
+/* === "SEE MORE" FIX === */
+/* This targets the grid *after* the JS has run */
+.product-carousel-wrapper.expanded .product-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     flex-wrap: wrap; 
-    gap: 15px; /* === NEW: Added gap === */
+    gap: 15px;
 }
+/* === END "SEE MORE" FIX === */
+
 @media (min-width: 768px) {
-    .product-carousel-wrapper.expanded .product-carousel {
+    .product-carousel-wrapper.expanded .product-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 }
 
 @media (min-width: 768px) { 
-    /* .product-grid { grid-template-columns: repeat(3, 1fr); } <-- Removed */
     #recent-products-grid > .product-card-link {
         width: 32%; /* Three columns on tablet */
     }
@@ -415,7 +412,6 @@ body.dark-mode .out-of-stock, body.dark-mode .sold-out { color: #f5c6cb; backgro
 
 @media (min-width: 1400px) {
     .container { max-width: 95%; }
-    /* .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } <-- Removed */
     #recent-products-grid > .product-card-link {
         width: 280px; /* Fixed width for large screens */
     }
@@ -609,8 +605,7 @@ footer {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
-/* This is for the "Explore Our Marketplace" cards */
-.shop-by-image-section .image-category-card {
+.image-category-card {
     position: relative; 
     text-decoration: none;
     border-radius: var(--border-radius);
@@ -619,11 +614,11 @@ footer {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: block;
 }
-.shop-by-image-section .image-category-card:hover {
+.image-category-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow);
 }
-.shop-by-image-section .image-category-card::after {
+.image-category-card::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -634,20 +629,20 @@ footer {
     z-index: 1;
     transition: opacity 0.3s ease;
 }
-.shop-by-image-section .image-category-card:hover::after {
+.image-category-card:hover::after {
     opacity: 0.8; 
 }
-.shop-by-image-section .image-category-card img {
+.image-category-card img {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
     display: block;
     transition: transform 0.3s ease;
 }
-.shop-by-image-section .image-category-card:hover img {
+.image-category-card:hover img {
     transform: scale(1.05); 
 }
-.shop-by-image-section .image-category-card h3 {
+.image-category-card h3 {
     position: absolute; 
     bottom: 0;
     left: 0;
@@ -732,10 +727,9 @@ footer {
     letter-spacing: 0.5px;
 }
 
-/* === MODIFIED: Scroll Progress Bar Top === */
 #scroll-progress-bar {
     position: fixed;
-    top: 60px; /* REDUCED from 70px */
+    top: 60px; /* MODIFIED to match new header height */
     left: 0;
     width: 0%;
     height: 4px;
@@ -878,16 +872,13 @@ footer {
     display: block;
     object-fit: cover;
     transition: transform 0.4s ease;
+    /* === IMAGE SIZE FIX === */
+    aspect-ratio: 16 / 9; /* Uniform aspect ratio */
 }
 .shop-by-image-card:hover img {
     transform: scale(1.05);
 }
-.shop-by-image-card[href*="sales"] img {
-    aspect-ratio: 16 / 6;
-}
-.shop-by-image-card[href*="new"] img {
-    aspect-ratio: 16 / 9;
-}
+/* === REMOVED href-based rules === */
 .shop-by-image-card-overlay {
     position: absolute;
     top: 50%;
@@ -906,10 +897,6 @@ footer {
 @media (min-width: 768px) {
     .shop-by-image-cards {
         grid-template-columns: 1fr 1fr;
-    }
-    .shop-by-image-card[href*="sales"] img,
-    .shop-by-image-card[href*="new"] img {
-        aspect-ratio: 16 / 9; 
     }
      .shop-by-image-card h3 {
         font-size: 3.5em;
@@ -1836,6 +1823,8 @@ body.dark-mode .feature-showcase__nav-item--active {
         font-size: 2.2rem;
     }
 }
+
+/* === MODIFIED: Clean Category Rail === */
 .category-rail {
     margin: 40px 0 20px 0;
 }
@@ -1862,17 +1851,15 @@ body.dark-mode .feature-showcase__nav-item--active {
     gap: 15px;
     padding-bottom: 15px;
 }
-/* === MODIFIED: Clean Category Rail Card === */
 .category-rail__card {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    flex: 0 0 100px; /* Make them a bit smaller */
+    flex: 0 0 100px;
     width: 100px;
-    
-    background-color: transparent; /* No background */
+    background-color: transparent; /* No bg */
     border: none; /* No border */
     box-shadow: none; /* No shadow */
     border-radius: var(--border-radius);
@@ -1896,12 +1883,13 @@ body.dark-mode .feature-showcase__nav-item--active {
     color: #ffffff;
 }
 .category-rail__card-title {
-    font-size: 0.9em; /* Make text a bit smaller */
+    font-size: 0.9em;
     font-weight: 600;
     color: var(--text-main);
     text-align: center;
 }
-/* === END MODIFICATION === */
+/* --- END MODIFIED Category Rail --- */
+
 .category-rail__icon-wrapper--blue {
     background-color: #007aff;
 }
@@ -2108,10 +2096,90 @@ body.dark-mode .feature-showcase__nav-item--active {
     text-decoration: none;
     margin-top: 25px;
 }
+/* === HOW-TO-SLIDER STYLES === */
+.how-to-slider-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+.how-to-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.how-to-slider-header .section-title {
+    border-bottom: 2px solid var(--ko-primary);
+    padding-bottom: 10px;
+    font-size: 1.4em;
+    margin: 0; /* Fix margin */
+}
+.how-to-slider-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.how-to-arrow {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2em;
+    box-shadow: var(--shadow);
+}
+.how-to-arrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.how-to-slider-wrapper {
+    overflow: hidden;
+    width: 100%;
+}
+.how-to-slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+.how-to-slide {
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 5px; /* Padding for shadow visibility */
+}
+.how-to-slide-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--text-secondary);
+}
+.how-to-dots {
+    text-align: center;
+    margin-top: 20px;
+}
+.how-to-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.how-to-dot.active {
+    background-color: var(--ko-primary);
+}
 
-/* ======================================= */
-/* === NEW STYLES FOR UNIFORMITY === */
-/* ======================================= */
+/* === "EXPLORE" SECTION IMAGE FIX === */
+.shop-by-image-section .shop-by-image-card img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    aspect-ratio: 16 / 9; /* Uniform 16:9 ratio */
+}
+/* REMOVED the [href*="..."] rules */
 
 /* === SMART BOTTOM NAVIGATION BAR === */
 .bottom-nav {
@@ -2229,7 +2297,6 @@ footer.is-open #footer-toggle-btn {
         display: flex;
         flex-direction: column;
     }
-    /* Re-add logo for desktop view */
     #footer-collapsible-content .about-column::before {
         content: "Kabale Online";
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -2240,7 +2307,7 @@ footer.is-open #footer-toggle-btn {
         color: #ffffff;
         display: inline-block;
     }
-    #footer-collapsible-content .about-column::before span {
+    #footer-collapsible-content .about-column span {
         color: var(--ko-accent);
     }
 }
