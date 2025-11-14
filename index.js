@@ -7,6 +7,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 //               GLOBAL STATE & HELPERS                 //
 // ==================================================== //
 
+// === NEW: Global Masonry Instance ===
+let msnry = null;
+
 const state = {
     currentUser: null,
     wishlist: new Set(),
@@ -45,6 +48,11 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
             img.onload = () => {
                 img.classList.add('loaded');
                 img.style.backgroundImage = ''; 
+                
+                // === MODIFIED: Tell Masonry to re-layout ===
+                if (msnry && img.closest('#recent-products-grid')) {
+                    msnry.layout();
+                }
             }
             img.onerror = () => { 
                 img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error'; 
@@ -67,7 +75,19 @@ function renderProducts(gridElement, products, append = false) {
     if (!gridElement) return;
 
     if (!append) {
+        // === MODIFIED: Destroy Masonry instance if it exists ===
+        if (gridElement.id === 'recent-products-grid' && msnry) {
+            msnry.destroy();
+            msnry = null;
+        }
         gridElement.innerHTML = ""; 
+        
+        // === NEW: Add gutter-sizer for main grid ===
+        if (gridElement.id === 'recent-products-grid') {
+            const gutter = document.createElement('div');
+            gutter.className = 'gutter-sizer';
+            gridElement.appendChild(gutter);
+        }
     }
     
     if (!products || products.length === 0) {
@@ -177,8 +197,30 @@ function renderProducts(gridElement, products, append = false) {
         fragment.appendChild(productLink);
     });
 
+    // === MODIFIED: Masonry-aware render logic ===
+    const newItems = Array.from(fragment.children); // Get items from fragment
     gridElement.appendChild(fragment);
     observeLazyImages(); 
+
+    // === NEW: Initialize Masonry ===
+    if (gridElement.id === 'recent-products-grid' && typeof Masonry !== 'undefined') {
+        if (append) { // This file doesn't use append, but good to have
+            if (msnry) {
+                msnry.appended(newItems);
+                msnry.layout();
+            }
+        } else {
+            // Fresh load
+            setTimeout(() => {
+                msnry = new Masonry(gridElement, {
+                    itemSelector: '.product-card-link',
+                    percentPosition: true,
+                    gutter: '.gutter-sizer' // Use the gutter
+                });
+            }, 100); // Delay to let images start loading
+        }
+    }
+    // === END NEW MASONRY LOGIC ===
 }
 
 
@@ -267,6 +309,9 @@ function fetchSaveOnMore() {
 async function fetchRecentProducts() {
     const grid = document.getElementById('recent-products-grid');
     if (!grid) return;
+    
+    // === MODIFIED: Show skeleton loaders for Masonry ===
+    renderSkeletonLoaders(grid, 8); // Render 8 skeletons for the main grid
     
     const q = query(
         collection(db, 'products'), 
@@ -408,20 +453,34 @@ function initializeUI() {
         });
     }
 
-    // --- ADDED: Back to Top Button Logic ---
-    const backToTopBtn = document.getElementById('back-to-top-btn');
-    if (backToTopBtn) {
+    // --- REMOVED: Back to Top Button Logic ---
+
+    // === NEW: Smart Nav Logic ===
+    const bottomNav = document.querySelector('.bottom-nav');
+    const chatBubble = document.getElementById('ai-chat-bubble'); // Get chat bubble
+
+    if (bottomNav) {
+        let lastScrollY = window.scrollY;
+
         window.addEventListener('scroll', () => {
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                backToTopBtn.classList.add('visible');
-            } else {
-                backToTopBtn.classList.remove('visible');
+            if (window.innerWidth < 1024) { // Only on mobile
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > lastScrollY && currentScrollY > 150) {
+                    // Scrolling Down
+                    bottomNav.classList.add('bottom-nav--hidden');
+                    if(chatBubble) chatBubble.classList.add('bottom-nav--hidden'); // Hide chat bubble
+                
+                } else if (currentScrollY < lastScrollY) {
+                    // Scrolling Up
+                    bottomNav.classList.remove('bottom-nav--hidden');
+                    if(chatBubble) chatBubble.classList.remove('bottom-nav--hidden'); // Show chat bubble
+                }
+                lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY; // Handle bounce
             }
         });
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
     }
+    // === END NEW NAV LOGIC ===
 
     // --- Search Placeholder Animation ---
     const searchInput = document.getElementById('hero-search-input');
@@ -482,10 +541,10 @@ function initializeUI() {
             const { products } = await fetchProductsFromFirebase(q, grid.id, null);
             
             if (products && products.length > 0) {
-                renderProducts(grid, products);
+                renderProducts(grid, products); // This will re-render, not append
                 wrapper.classList.add('expanded');
                 grid.classList.remove('product-carousel');
-                grid.classList.add('product-grid');
+                grid.classList.add('product-grid'); // This class is for grid layout in "See More"
                 seeMoreBtn.textContent = 'Showing All';
                 seeMoreBtn.dataset.expanded = 'true';
             } else {
@@ -596,6 +655,49 @@ async function initializeData() {
             console.error("A critical error occurred during data load:", error);
         }
     });
+}
+
+/**
+ * Renders skeleton loaders for the main "Recent Products" grid.
+ * This is a new function for Masonry.
+ */
+function renderSkeletonLoaders(container, count) {
+    if (!container) return; 
+    container.innerHTML = ''; // Clear existing
+    
+    // Add gutter sizer first
+    const gutter = document.createElement('div');
+    gutter.className = 'gutter-sizer';
+    container.appendChild(gutter);
+    
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+        const skeletonLink = document.createElement('a');
+        skeletonLink.className = 'product-card-link';
+        skeletonLink.innerHTML = `
+            <div class="product-card skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text small"></div>
+                <div class="skeleton-text small"></div>
+                <div class="skeleton-text price"></div>
+            </div>
+        `;
+        fragment.appendChild(skeletonLink);
+    }
+    container.appendChild(fragment);
+    
+    // Initialize Masonry on the skeletons
+    if (typeof Masonry !== 'undefined') {
+        if (msnry) msnry.destroy();
+        setTimeout(() => {
+            msnry = new Masonry(container, {
+                itemSelector: '.product-card-link',
+                percentPosition: true,
+                gutter: '.gutter-sizer'
+            });
+        }, 100);
+    }
 }
 
 
