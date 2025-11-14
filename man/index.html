@@ -863,11 +863,11 @@
 <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
 
 <!-- === MODIFIED SCRIPT LINKS === -->
-<!-- This links to your *existing* ui.js file (for hamburger/theme) -->
+<!-- FIXED PATH: Goes up one folder to find ui.js (for hamburger) -->
 <script type="module" src="../ui.js"></script>
-<!-- This links to your *existing* data script (which I'm updating) -->
+<!-- This links to the main JS file for this page -->
 <script type="module" src="index.js"></script>
-<!-- This links to your *existing* banner script -->
+<!-- This is an absolute path, so it's OK -->
 <script type="module" src="/js/amara-banner.js"></script>
 
 <!-- === This inline script is for the Group/Feature scroller. Leave it. === -->
@@ -1044,6 +1044,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 }); 
 </script>
+
+<!-- === NEW SCRIPT FOR FOOTER DROPDOWN === -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const footer = document.querySelector('footer');
+        const toggleBtn = document.getElementById('footer-toggle-btn');
+        const toggleHeader = document.querySelector('.footer-toggle-header');
+
+        function toggleFooter(e) {
+            // Stop propagation if the click was on a link inside the header
+            // This prevents it from closing when they click the logo
+            if (e.target.closest('a')) {
+                return;
+            }
+            
+            if (footer) {
+                footer.classList.toggle('is-open');
+                const isExpanded = footer.classList.contains('is-open');
+                if (toggleBtn) {
+                    toggleBtn.setAttribute('aria-expanded', isExpanded);
+                }
+            }
+        }
+
+        // Make the *entire header* clickable, not just the button
+        if (toggleHeader) {
+            toggleHeader.addEventListener('click', toggleFooter);
+        }
+    });
+</script>
+<!-- === END FOOTER SCRIPT === -->
 
 </body>
 </html>
