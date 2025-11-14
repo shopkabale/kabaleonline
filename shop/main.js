@@ -7,6 +7,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 //               GLOBAL STATE & HELPERS                 //
 // ==================================================== //
 
+let msnry = null; // Global Masonry instance
+
 /**
  * Creates an optimized and transformed Cloudinary URL.
  */
@@ -56,7 +58,6 @@ const categoryGrid = document.querySelector(".category-grid");
 const imageCategoryGrid = document.querySelector(".image-category-grid"); 
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
-const backToTopBtn = document.getElementById("back-to-top-btn");
 
 // --- NEW DOM REFERENCES ---
 const lastViewedSection = document.getElementById("last-viewed-section");
@@ -82,13 +83,37 @@ function renderSkeletonLoaders(container, count) {
     if (!container) return; 
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
+    
+    if (container.id === 'product-grid') {
+        const gutter = document.createElement('div');
+        gutter.className = 'gutter-sizer';
+        fragment.appendChild(gutter);
+    }
+    
     for (let i = 0; i < count; i++) {
-        const skeletonCard = document.createElement('div');
-        skeletonCard.className = 'skeleton-card';
-        skeletonCard.innerHTML = `<div class="skeleton-image"></div><div class="skeleton-text w-75"></div><div class="skeleton-text w-50"></div>`;
-        fragment.appendChild(skeletonCard);
+        const skeletonCardLink = document.createElement('a');
+        skeletonCardLink.className = 'product-card-link';
+        skeletonCardLink.innerHTML = `
+            <div class="product-card skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text w-75"></div>
+                <div class="skeleton-text w-50"></div>
+            </div>
+        `;
+        fragment.appendChild(skeletonCardLink);
     }
     container.appendChild(fragment);
+    
+    if (container.id === 'product-grid' && typeof Masonry !== 'undefined') {
+        if (msnry) msnry.destroy();
+        setTimeout(() => {
+            msnry = new Masonry(container, {
+                itemSelector: '.product-card-link',
+                percentPosition: true,
+                gutter: '.gutter-sizer'
+            });
+        }, 100);
+    }
 }
 
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -96,7 +121,12 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
         if (entry.isIntersecting) {
             const img = entry.target;
             img.src = img.dataset.src;
-            img.onload = () => img.classList.add('loaded');
+            img.onload = () => {
+                img.classList.add('loaded');
+                if (msnry && img.closest('#product-grid')) {
+                    msnry.layout();
+                }
+            };
             img.onerror = () => { img.src = 'https://placehold.co/250x250/e0e0e0/777?text=Error'; img.classList.add('loaded'); };
             observer.unobserve(img);
         }
@@ -112,7 +142,17 @@ function renderProducts(gridElement, products, append = false) {
     if (!gridElement) return;
     
     if (!append) {
+        if (gridElement.id === 'product-grid' && msnry) {
+            msnry.destroy();
+            msnry = null;
+        }
         gridElement.innerHTML = "";
+        
+        if (gridElement.id === 'product-grid') {
+            const gutter = document.createElement('div');
+            gutter.className = 'gutter-sizer';
+            gridElement.appendChild(gutter);
+        }
     }
     
     if (products.length === 0) {
@@ -209,9 +249,27 @@ function renderProducts(gridElement, products, append = false) {
         fragment.appendChild(productLink);
     });
 
+    const newItems = Array.from(fragment.children);
     gridElement.appendChild(fragment);
     observeLazyImages();
     initializeWishlistButtons();
+
+    if (gridElement.id === 'product-grid' && typeof Masonry !== 'undefined') {
+        if (append) {
+            if (msnry) {
+                msnry.appended(newItems);
+                msnry.layout();
+            }
+        } else {
+            setTimeout(() => {
+                msnry = new Masonry(gridElement, {
+                    itemSelector: '.product-card-link',
+                    percentPosition: true,
+                    gutter: '.gutter-sizer'
+                });
+            }, 100);
+        }
+    }
 }
 
 // --- DATA FETCHING FUNCTIONS ---
@@ -302,10 +360,6 @@ function fetchSponsoredItems() {
     return fetchCarouselProducts(q, 'sponsored-grid', 'sponsored-section');
 }
 
-// ==========================================
-// === NEW FUNCTIONS FOR NEW SECTIONS =======
-// ==========================================
-
 function displayLastViewed() {
     try {
         const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
@@ -317,18 +371,14 @@ function displayLastViewed() {
     }
 }
 
-// --- THIS IS THE FULLY CORRECTED FUNCTION ---
 async function displayMadeForYou() {
     let title = "✨ Recommended for You";
     if (madeForYouTitle) madeForYouTitle.textContent = title;
 
-    // Show skeletons while we fetch
     renderSkeletonLoaders(madeForYouGrid, 5);
     
     try {
-        // 1. Get the recency-ordered list of unique categories
         const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-        // 2. Just take the top 3 most recent unique categories
         const topCategories = interests.slice(0, 3);
 
         if (topCategories.length === 0) {
@@ -336,26 +386,21 @@ async function displayMadeForYou() {
             return;
         }
 
-        // 3. Define how many items to pull from each category for a good mix
-        // (e.g., if 3 categories, pull [3, 3, 2] items = 8 total)
         const limits = { 1: [8], 2: [4, 4], 3: [3, 3, 2] };
-        const itemsToFetch = limits[topCategories.length];
+        const itemsToFetch = limits[topCategories.length] || [8];
 
-        // 4. Create an array of query promises (one for each category)
         const queryPromises = topCategories.map((category, index) => {
             const q = query(collection(db, 'products'),
                 where('category', '==', category),
                 where('isSold', '==', false),
-                orderBy('createdAt', 'desc'), // You could also try 'random' here
+                orderBy('createdAt', 'desc'),
                 limit(itemsToFetch[index])
             );
             return getDocs(q);
         });
 
-        // 5. Run all queries in parallel
         const snapshots = await Promise.all(queryPromises);
 
-        // 6. Combine the results
         let combinedProducts = [];
         snapshots.forEach(snapshot => {
             snapshot.docs.forEach(doc => {
@@ -363,16 +408,13 @@ async function displayMadeForYou() {
             });
         });
 
-        // 7. Shuffle the combined array for a true mix
         const mixedProducts = combinedProducts.sort(() => 0.5 - Math.random());
 
-        // 8. Update title and render
         if (topCategories.length === 1) {
             title = `✨ Because you like ${topCategories[0]}`;
         }
         if (madeForYouTitle) madeForYouTitle.textContent = title;
         
-        // 9. Render directly (this function also handles showing the section)
         renderProducts(madeForYouGrid, mixedProducts);
 
     } catch (e) {
@@ -380,12 +422,6 @@ async function displayMadeForYou() {
         if (madeForYouSection) madeForYouSection.style.display = 'none';
     }
 }
-// --- END OF UPDATED FUNCTION ---
-
-
-// ==========================================
-// === END NEW FUNCTIONS ====================
-// ==========================================
 
 
 // --- UI & EVENT HANDLERS ---
@@ -421,7 +457,7 @@ async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
     if (!state.currentUser) {
-        alert('Please log in to add items to your wishlist.');
+        console.warn('User not logged in. Redirecting to login.');
         window.location.href = '/login/';
         return;
     }
@@ -599,15 +635,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if(backToTopBtn) {
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+    // === MODIFIED: Smart Nav Logic ===
+    const bottomNav = document.querySelector('.bottom-nav');
+    const chatPromptContainer = document.getElementById('chat-prompt-container'); // Get the new container
+
+    if (bottomNav) {
+        let lastScrollY = window.scrollY;
+
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 400) {
-                backToTopBtn.classList.add('visible');
-            } else {
-                backToTopBtn.classList.remove('visible');
+            if (window.innerWidth < 1024) { 
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > lastScrollY && currentScrollY > 150) {
+                    // Scrolling Down
+                    bottomNav.classList.add('bottom-nav--hidden');
+                    if(chatPromptContainer) chatPromptContainer.classList.add('bottom-nav--hidden'); // Hide new container
+                
+                } else if (currentScrollY < lastScrollY) {
+                    // Scrolling Up
+                    bottomNav.classList.remove('bottom-nav--hidden');
+                    if(chatPromptContainer) chatPromptContainer.classList.remove('bottom-nav--hidden'); // Show new container
+                }
+                lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
             }
         });
     }
@@ -625,7 +674,6 @@ document.body.addEventListener('click', async (e) => {
 
     let grid, wrapper;
 
-    // --- 1. Find the correct grid and wrapper ---
     if (sectionName === 'last-viewed') {
         grid = document.getElementById('last-viewed-grid');
     } else if (sectionName === 'made-for-you') {
@@ -644,7 +692,6 @@ document.body.addEventListener('click', async (e) => {
     wrapper = grid.closest('.deals-carousel-wrapper');
     if (!wrapper) return;
 
-    // --- 2. Start Expansion ---
     seeMoreBtn.disabled = true;
     seeMoreBtn.textContent = 'Loading...';
 
@@ -652,14 +699,11 @@ document.body.addEventListener('click', async (e) => {
         let products = [];
 
         if (sectionName === 'last-viewed') {
-            // --- 3a. Handle localStorage Expansion ---
             products = JSON.parse(localStorage.getItem('lastViewed')) || [];
         
         } else {
-            // --- 3b. Handle Firestore Expansion ---
             let q;
             
-            // --- THIS LOGIC IS NOW CORRECTED FOR 'made-for-you' ---
             if (sectionName === 'made-for-you') {
                 const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
                 const topCategories = interests.slice(0, 3); 
@@ -668,16 +712,12 @@ document.body.addEventListener('click', async (e) => {
                      throw new Error('No user interests found');
                 }
                 
-                // For "See More," we'll just use the simpler `where 'in'` query.
-                // It will show *all* items from those categories, ordered by newness,
-                // which is correct for an "expansion" view.
                 q = query(collection(db, 'products'), 
                     where('category', 'in', topCategories), 
                     where('isSold', '==', false), 
                     orderBy('createdAt', 'desc'), 
-                    limit(20)); // Expanded limit
+                    limit(20));
             
-            // --- Other sections remain the same ---
             } else if (sectionName === 'deals') {
                 q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             } else if (sectionName === 'sponsored') {
@@ -690,10 +730,13 @@ document.body.addEventListener('click', async (e) => {
             products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
-        // --- 4. Render and Finalize UI ---
         if (products && products.length > 0) {
             renderProducts(grid, products); 
             wrapper.classList.add('expanded');
+            
+            const parentSection = wrapper.closest('.carousel-section');
+            if (parentSection) parentSection.classList.add('expanded-section');
+            
             grid.classList.remove('deals-grid'); 
             grid.classList.add('product-grid');  
             
