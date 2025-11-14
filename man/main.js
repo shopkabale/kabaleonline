@@ -58,15 +58,13 @@ const categoryGrid = document.querySelector(".category-grid");
 const imageCategoryGrid = document.querySelector(".image-category-grid"); 
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
-// === REMOVED: backToTopBtn ===
-// const backToTopBtn = document.getElementById("back-to-top-btn");
 
 // --- NEW DOM REFERENCES ---
 const lastViewedSection = document.getElementById("last-viewed-section");
 const lastViewedGrid = document.getElementById("last-viewed-grid");
 const madeForYouSection = document.getElementById("made-for-you-section");
 const madeForYouGrid = document.getElementById("made-for-you-grid");
-const madeForYouTitle = document.querySelector("#made-for-you-section h2"); // Corrected selector
+const madeForYouTitle = document.querySelector("#made-for-you-section h2");
 
 // --- APPLICATION STATE ---
 const state = {
@@ -86,7 +84,6 @@ function renderSkeletonLoaders(container, count) {
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
     
-    // === MODIFIED: Add gutter-sizer for product-grid skeletons ===
     if (container.id === 'product-grid') {
         const gutter = document.createElement('div');
         gutter.className = 'gutter-sizer';
@@ -94,9 +91,8 @@ function renderSkeletonLoaders(container, count) {
     }
     
     for (let i = 0; i < count; i++) {
-        // === MODIFIED: Skeletons are now product-card-link ===
         const skeletonCardLink = document.createElement('a');
-        skeletonCardLink.className = 'product-card-link'; // Use the link wrapper
+        skeletonCardLink.className = 'product-card-link';
         skeletonCardLink.innerHTML = `
             <div class="product-card skeleton-card">
                 <div class="skeleton-image"></div>
@@ -108,7 +104,6 @@ function renderSkeletonLoaders(container, count) {
     }
     container.appendChild(fragment);
     
-    // === MODIFIED: Initialize Masonry after skeletons load ===
     if (container.id === 'product-grid' && typeof Masonry !== 'undefined') {
         if (msnry) msnry.destroy();
         setTimeout(() => {
@@ -128,7 +123,6 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
             img.src = img.dataset.src;
             img.onload = () => {
                 img.classList.add('loaded');
-                // Tell Masonry to re-layout *after* an image has loaded
                 if (msnry && img.closest('#product-grid')) {
                     msnry.layout();
                 }
@@ -152,9 +146,8 @@ function renderProducts(gridElement, products, append = false) {
             msnry.destroy();
             msnry = null;
         }
-        gridElement.innerHTML = ""; // Clear grid
+        gridElement.innerHTML = "";
         
-        // === NEW: Add gutter-sizer for main grid ===
         if (gridElement.id === 'product-grid') {
             const gutter = document.createElement('div');
             gutter.className = 'gutter-sizer';
@@ -272,7 +265,7 @@ function renderProducts(gridElement, products, append = false) {
                 msnry = new Masonry(gridElement, {
                     itemSelector: '.product-card-link',
                     percentPosition: true,
-                    gutter: '.gutter-sizer' // === MODIFIED: Added gutter ===
+                    gutter: '.gutter-sizer'
                 });
             }, 100);
         }
@@ -285,7 +278,6 @@ async function fetchAndRenderProducts(append = false) {
     state.isFetching = true;
 
     if (!append) {
-        // === MODIFIED: Use new skeleton loader ===
         renderSkeletonLoaders(productGrid, 12);
     } else {
         loadMoreBtn.disabled = true;
@@ -330,7 +322,7 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     
     if (!gridElement || !sectionElement) return;
 
-    renderSkeletonLoaders(gridElement, 5); // This will use the standard skeleton loader
+    renderSkeletonLoaders(gridElement, 5);
 
     try {
         const snapshot = await getDocs(q);
@@ -395,7 +387,7 @@ async function displayMadeForYou() {
         }
 
         const limits = { 1: [8], 2: [4, 4], 3: [3, 3, 2] };
-        const itemsToFetch = limits[topCategories.length] || [8]; // Fallback
+        const itemsToFetch = limits[topCategories.length] || [8];
 
         const queryPromises = topCategories.map((category, index) => {
             const q = query(collection(db, 'products'),
@@ -465,9 +457,7 @@ async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
     if (!state.currentUser) {
-        // === MODIFIED: No alerts ===
         console.warn('User not logged in. Redirecting to login.');
-        // alert('Please log in to add items to your wishlist.');
         window.location.href = '/login/';
         return;
     }
@@ -614,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchSaveOnMore();
         fetchSponsoredItems();
         initializeStateFromURL();
-        fetchAndRenderProducts(); // This will load skeletons
+        fetchAndRenderProducts();
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -645,11 +635,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === REMOVED: Back-to-Top Button Logic ===
-
     // === MODIFIED: Smart Nav Logic ===
     const bottomNav = document.querySelector('.bottom-nav');
-    const openChatButton = document.getElementById('open-chat-button');
+    const chatPromptContainer = document.getElementById('chat-prompt-container'); // Get the new container
 
     if (bottomNav) {
         let lastScrollY = window.scrollY;
@@ -661,12 +649,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentScrollY > lastScrollY && currentScrollY > 150) {
                     // Scrolling Down
                     bottomNav.classList.add('bottom-nav--hidden');
-                    if(openChatButton) openChatButton.classList.add('bottom-nav--hidden');
+                    if(chatPromptContainer) chatPromptContainer.classList.add('bottom-nav--hidden'); // Hide new container
                 
                 } else if (currentScrollY < lastScrollY) {
                     // Scrolling Up
                     bottomNav.classList.remove('bottom-nav--hidden');
-                    if(openChatButton) openChatButton.classList.remove('bottom-nav--hidden');
+                    if(chatPromptContainer) chatPromptContainer.classList.remove('bottom-nav--hidden'); // Show new container
                 }
                 lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
             }
@@ -746,7 +734,6 @@ document.body.addEventListener('click', async (e) => {
             renderProducts(grid, products); 
             wrapper.classList.add('expanded');
             
-            // === NEW: Add class to parent section ===
             const parentSection = wrapper.closest('.carousel-section');
             if (parentSection) parentSection.classList.add('expanded-section');
             
