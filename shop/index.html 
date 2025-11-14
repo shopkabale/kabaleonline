@@ -90,11 +90,11 @@
 
     <header class="sticky-header">
         <div class="header-content container">
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             <a href="/" class="site-title">Kabale <span>Online</span></a>
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link active">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
-                <!-- === LINK 1: CORRECTED === -->
                 <a href="/shop/?type=service" class="nav-link">Services</a>
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
@@ -102,9 +102,9 @@
             <div class="header-icons">
                  <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
                 <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
-                <a href="/dashboard/" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
-                <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+                <a href="/dashboard/" class="desktop-profile-icon" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
             </div>
+            <a href="/dashboard/" class="mobile-profile-icon" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
         </div>
     </header>
 
@@ -112,7 +112,6 @@
         <div class="mobile-nav-header">Kabale Online</div>
         <div class="mobile-nav-links">
             <a href="/shop/" class="nav-link"><i class="fa-solid fa-store"></i> All Items</a>
-            <!-- === LINK 2: CORRECTED === -->
             <a href="/shop/?type=service" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Services</a>
             <a href="/events/" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Events</a>
             <a href="stories.html" class="nav-link"><i class="fa-solid fa-book-open"></i> Campus Stories</a>
@@ -154,7 +153,6 @@
                     <span class="category-emoji">🏘️</span>
                     <h3>Rentals</h3>
                 </a>
-                <!-- === LINK 3: CORRECTED === -->
                 <a href="/shop/?type=service" class="image-category-card">
                     <span class="category-emoji">📡</span>
                     <h3>Services</h3>
@@ -166,32 +164,22 @@
             </div>
         </section>
 
-        <!-- ================================== -->
-        <!-- === ADDED "LAST VIEWED" SECTION === -->
-        <!-- ================================== -->
         <section class="carousel-section" id="last-viewed-section" style="display: none;">
-            <!-- This purple style uses the --ko-purple variable added to the <head> -->
-            <div class="section-header-jumia" style="background-color: var(--ko-purple, #6f42c1); color: white;">
+            <div class="section-header-jumia">
                 <h2>🕒 Recently Viewed</h2>
             </div>
             <div class="deals-carousel-wrapper">
-                <!-- JS will fill this grid -->
                 <div id="last-viewed-grid" class="deals-grid"></div>
             </div>
         </section>
 
-        <!-- ================================== -->
-        <!-- === ADDED "MADE FOR YOU" SECTION === -->
-        <!-- ================================== -->
         <section class="carousel-section" id="made-for-you-section" style="display: none;">
             <div class="section-header-jumia">
-                <!-- This h2 title will be set dynamically by main.js -->
-                <h2>✨ Made for You</h2> 
+                <h2 id="made-for-you-title">✨ Made for You</h2> 
                 <button class="see-more-btn" data-section="made-for-you" data-expanded="false">See More &darr;</button>
             </div>
             <div class="deals-carousel-wrapper">
                 <div id="made-for-you-grid" class="deals-grid">
-                    <!-- JS will fill this with skeletons -->
                     <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                     <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
                 </div>
@@ -213,7 +201,7 @@
         </section>
 
         <section class="carousel-section" id="save-on-more-section" style="display: none;">
-             <div class="section-header-jumia" style="background-color: #333; color: white;">
+             <div class="section-header-jumia">
                 <h2>Save on More</h2>
                 <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
             </div>
@@ -241,12 +229,7 @@
         <main style="margin-top: 40px;">
             <h2 id="listings-title" class="section-title">Recent Items</h2>
             <div id="product-grid" class="product-grid">
-                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
-                <div class="product-card skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div></div>
+                <!-- Skeletons are dynamically added by JS -->
             </div>
             
             <div id="load-more-container" class="load-more-container" style="display: none;">
@@ -258,9 +241,13 @@
         </main>
     </div>
     
-    <button id="back-to-top-btn" aria-label="Back to Top"><i class="fa-solid fa-arrow-up"></i></button>
-    <button id="open-chat-button" aria-label="Open AI Assistant"><i class="fa-solid fa-robot"></i></button>
-    
+    <div id="chat-prompt-container">
+        <button id="hide-help-button" aria-label="Close help prompt">&times;</button>
+        <button id="open-chat-button" aria-label="Open AI Assistant">
+            Need help?
+        </button>
+    </div>
+
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
         <div class="chat-modal-content">
@@ -272,6 +259,29 @@
         </div>
     </div>
     
+    <nav class="bottom-nav">
+        <a href="/shop/" class="bottom-nav-link active">
+            <i class="fa-solid fa-store"></i>
+            <span>Home</span>
+        </a>
+        <a href="/cart.html" class="bottom-nav-link">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+        </a>
+        <a href="/upload/" class="bottom-nav-link sell-button">
+            <i class="fa-solid fa-plus"></i>
+            <span>Sell</span>
+        </a>
+        <a href="/inbox.html" class="bottom-nav-link">
+            <i class="fa-solid fa-inbox"></i>
+            <span>Inbox</span>
+        </a>
+        <a href="/dashboard/" class="bottom-nav-link">
+            <i class="fa-regular fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
     <footer>
     <div class="container footer-grid">
         <div class="footer-column about-column">
@@ -288,7 +298,6 @@
             <h3>Explore</h3>
             <a href="/shop/">Shop Items</a>
             <a href="/rentals/">Hostels & Rentals</a>
-            <!-- === LINK 4: CORRECTED === -->
             <a href="/shop/?type=service">Find Services</a>
             <a href="/events/">Local Events</a>
             <a href="/lost-and-found/">Lost & Found</a>
@@ -298,7 +307,6 @@
             <h3>For Sellers</h3>
             <a href="/upload/">Sell an Item</a>
             <a href="/dashboard/">My Dashboard</a>
-            <!-- === LINK 5: CORRECTED (Upload page handles both) === -->
             <a href="/upload/">Offer a Service</a>
             <a href="/blog/">Seller Tips</a>
         </div>
@@ -315,6 +323,8 @@
         <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
     </div>
 </footer>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    
     <script type="module" src="../ui.js"></script>
     <script type="module" src="main.js"></script>
     <script type="module" src="../shared.js"></script>
@@ -325,11 +335,34 @@
             const closeChatButton = document.getElementById('close-chat-button');
             const chatModalContainer = document.getElementById('chat-modal-container');
             const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+            
+            // --- "Need Help?" Logic ---
+            const chatPromptContainer = document.getElementById('chat-prompt-container');
+            const hideHelpButton = document.getElementById('hide-help-button');
+
+            // Check if user has hidden prompt before
+            if (localStorage.getItem('chatPromptHidden') === 'true') {
+                if (chatPromptContainer) chatPromptContainer.classList.add('chat-prompt-hidden');
+            }
+            // --- End New Logic ---
+
             function openModal() { if (chatModalContainer) chatModalContainer.classList.add('active'); }
             function closeModal() { if (chatModalContainer) chatModalContainer.classList.remove('active'); }
+
             if (openChatButton) openChatButton.addEventListener('click', openModal);
             if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
             if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+
+            // --- "Need Help?" Logic ---
+            if (hideHelpButton) {
+                hideHelpButton.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Stop it from opening the chat
+                    if (chatPromptContainer) chatPromptContainer.classList.add('chat-prompt-hidden');
+                    // Remember this choice
+                    localStorage.setItem('chatPromptHidden', 'true');
+                });
+            }
+            // --- End New Logic ---
         });
     </script>
 </body>
