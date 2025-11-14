@@ -861,6 +861,7 @@
 <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
 
 <!-- === MODIFIED: Removed ui.js, logic is now in index.js === -->
+<!-- <script type="module" src="../ui.js"></script> -->
 <script type="module" src="index.js"></script>
 <script type="module" src="/js/amara-banner.js"></script>
 
@@ -876,7 +877,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalOverlay = document.getElementById("feature-modal-overlay");
     const modal = document.getElementById("feature-modal");
 
-    if (scroller && modal && cards.length && scrollLeftBtn) {
+    // Safety check: Only run if all elements exist
+    if (scroller && modal && cards.length > 0 && scrollLeftBtn && scrollRightBtn && modalOverlay) {
         const modalTitle = document.getElementById("modal-title");
         const modalDesc = document.getElementById("modal-description");
         const modalCloseBtn = document.getElementById("modal-close-btn");
