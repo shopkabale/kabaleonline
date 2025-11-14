@@ -76,6 +76,7 @@
     });
   </script>
 
+  <!-- This links to the CSS file *inside* the /man/ folder -->
   <link rel="stylesheet" href="index.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -89,10 +90,17 @@
 
     <div id="scroll-progress-bar"></div>
 
-    <script src="theme.js"></script>
+    <!-- FIXED PATH: Goes up one folder to find theme.js -->
+    <script src="../theme.js"></script>
 
     <header class="sticky-header">
-        <div class="header-content"> <a href="/" class="site-title">Kabale <span>Online</span></a>
+        <!-- === MODIFIED HEADER LAYOUT === -->
+        <div class="header-content">
+            <!-- Hamburger menu (now on left for mobile) -->
+            <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
+            
+            <a href="/" class="site-title">Kabale <span>Online</span></a>
+            
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link active">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
@@ -100,6 +108,7 @@
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
             </nav>
+            
             <div class="header-icons">
                 <div class="theme-switch-wrapper">
                     <label class="theme-switch" for="theme-toggle">
@@ -110,9 +119,14 @@
                 </div>
                 <a href="/cart.html" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
                 <a href="/dashboard/" aria-label="Dashboard"><i class="fas fa-user"></i></a>
+                <!-- Hamburger is here in original HTML, but CSS will hide it -->
                 <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
             </div>
+
+            <!-- Mobile-only Profile Icon (now on right) -->
+            <a href="/dashboard/" class="mobile-profile-icon" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
         </div>
+        <!-- === END MODIFIED HEADER === -->
     </header>
 
     <nav class="mobile-nav">
@@ -677,68 +691,11 @@
                     <h2 class="section-title">Recent Items</h2>
                     <a href="/shop/" class="see-all-btn">See All &rarr;</a>
                 </div>
+                <!-- === MODIFIED FOR MASONRY === -->
                 <div class="product-grid" id="recent-products-grid">
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text verified"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text verified"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text verified"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
-                    <div class="product-card skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text small"></div>
-                        <div class="skeleton-text verified"></div>
-                        <div class="skeleton-text price"></div>
-                    </div>
+                    <!-- Skeletons are dynamically added by JS -->
                 </div>
+                <!-- === END MODIFICATION === -->
             </section>
 
             <div class="shop-cta-container-spaced">
@@ -757,9 +714,7 @@
 
 </main>
 
-    <button id="back-to-top-btn" aria-label="Back to top" class="visible">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
+    <!-- === REMOVED BACK-TO-TOP BUTTON === -->
 
 <a href="/shop/" class="animated-photo-link">
   <div class="photo-container">
@@ -794,12 +749,24 @@
         
     </div>
 </div>
-    <footer> <div class="footer-grid-container"> <div class="footer-grid">
+
+    <!-- === NEW COLLAPSIBLE FOOTER === -->
+    <footer>
+        <!-- This is the part that is always visible -->
+        <div class="container footer-toggle-header">
+            <a href="/" class="footer-logo">Kabale <span>Online</span></a>
+            <button id="footer-toggle-btn" aria-label="Toggle footer menu" aria-expanded="false">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+
+        <!-- This is the part that will hide/show -->
+        <div id="footer-collapsible-content">
+            <div class="container footer-grid">
                 <div class="footer-column about-column">
-                    <a href="/" class="footer-logo">Kabale <span>Online</span></a>
                     <p class="footer-tagline">The #1 community marketplace for students and residents in Kabale.</p>
                     <div class="footer-socials">
-                        <a href="httpsNextKab.chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
+                        <a href="https://chat.whatsapp.com/IfxLBcDErhlCIMg8x4UG9y?mode=ems_copy_c" target="_blank" aria-label="WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                             <span>WhatsApp Group</span>
                         </a>
@@ -840,12 +807,38 @@
                     <a href="/blog/">Blog & News</a>
                 </div>
             </div>
-            <div class="footer-bottom">
+            <div class="container footer-bottom">
                 <p class="footer-copyright">&copy; 2025 Kabale Online. All Rights Reserved.</p>
             </div>
         </div>
-
     </footer>
+    <!-- === END COLLAPSIBLE FOOTER === -->
+
+
+    <!-- === NEW BOTTOM NAV BAR === -->
+    <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-link active">
+            <i class="fa-solid fa-store"></i>
+            <span>Home</span>
+        </a>
+        <a href="/cart.html" class="bottom-nav-link">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+        </a>
+        <a href="/upload/" class="bottom-nav-link sell-button">
+            <i class="fa-solid fa-plus"></i>
+            <span>Sell</span>
+        </a>
+        <a href="/inbox.html" class="bottom-nav-link">
+            <i class="fa-solid fa-inbox"></i>
+            <span>Inbox</span>
+        </a>
+        <a href="/dashboard/" class="bottom-nav-link">
+            <i class="fa-regular fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <!-- ========================= -->
 
     <div id="ai-chat-bubble" class="ai-chat-bubble">
         <div class="ai-chat-bubble-avatar">
@@ -865,14 +858,22 @@
             <div id="resize-handle"></div> 
         </div>
     </div>
-<script type="module" src="ui.js"></script>
+
+<!-- === NEW SCRIPT FOR MASONRY === -->
+<script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+
+<!-- === MODIFIED SCRIPT LINKS === -->
+<!-- FIXED PATH: Goes up one folder to find ui.js (for hamburger) -->
+<script type="module" src="../ui.js"></script>
+<!-- This links to the main JS file for this page -->
 <script type="module" src="index.js"></script>
+<!-- This is an absolute path, so it's OK -->
 <script type="module" src="/js/amara-banner.js"></script>
 
+<!-- === This inline script is for the Group/Feature scroller. Leave it. === -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    // --- 1. Get All Elements ---
     const scroller = document.getElementById("features-scroller");
     const cards = document.querySelectorAll(".feature-card");
     const scrollLeftBtn = document.getElementById("scroll-left");
@@ -881,172 +882,150 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalOverlay = document.getElementById("feature-modal-overlay");
     const modal = document.getElementById("feature-modal");
 
-    // Safety check
-    if (!scroller || !modal || !cards.length || !scrollLeftBtn) {
-        console.warn("Feature scroller components not found on this page.");
-        return;
-    }
+    // Safety check: Only run if all elements exist
+    if (scroller && modal && cards.length > 0 && scrollLeftBtn && scrollRightBtn && modalOverlay) {
+        const modalTitle = document.getElementById("modal-title");
+        const modalDesc = document.getElementById("modal-description");
+        const modalCloseBtn = document.getElementById("modal-close-btn");
+        const modalCtaBtn = document.getElementById("modal-cta-button"); 
 
-    const modalTitle = document.getElementById("modal-title");
-    const modalDesc = document.getElementById("modal-description");
-    const modalCloseBtn = document.getElementById("modal-close-btn");
-    const modalCtaBtn = document.getElementById("modal-cta-button"); 
+        let currentCardIndex = 0;
+        let scrollInterval;
+        let isUserInteracting = false; 
 
-    let currentCardIndex = 0;
-    let scrollInterval;
-    let isUserInteracting = false; 
-
-    // --- 2. Auto-Scroll Logic ---
-    function startAutoScroll() {
-        clearInterval(scrollInterval);
-        isUserInteracting = false;
-        
-        scrollInterval = setInterval(() => {
-            if (isUserInteracting) return; 
-
-            currentCardIndex = (currentCardIndex + 1) % cards.length; 
+        function startAutoScroll() {
+            clearInterval(scrollInterval);
+            isUserInteracting = false;
             
-            // This is the fixed scroll logic
-            const cardToScrollTo = cards[currentCardIndex];
-            const containerWidth = scroller.offsetWidth;
-            const cardWidth = cardToScrollTo.offsetWidth;
-            const cardLeft = cardToScrollTo.offsetLeft;
-            
-            // This calculation centers the card
-            const newScrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+            scrollInterval = setInterval(() => {
+                if (isUserInteracting) return; 
 
-            scroller.scrollTo({
-                left: newScrollLeft,
-                behavior: "smooth"
-            });
-            
-        }, 3000); 
-    }
+                currentCardIndex = (currentCardIndex + 1) % cards.length; 
+                
+                const cardToScrollTo = cards[currentCardIndex];
+                const containerWidth = scroller.offsetWidth;
+                const cardWidth = cardToScrollTo.offsetWidth;
+                const cardLeft = cardToScrollTo.offsetLeft;
+                
+                const newScrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2);
 
-    function stopAutoScroll() {
-        clearInterval(scrollInterval);
-        isUserInteracting = true; 
-    }
-
-    // --- 3. Arrow & Wheel Control Logic ---
-    
-    // Function to check if arrows should be disabled
-    function checkArrowVisibility() {
-        const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
-        scrollLeftBtn.disabled = scroller.scrollLeft < 10;
-        scrollRightBtn.disabled = scroller.scrollLeft > maxScrollLeft - 10;
-    }
-    
-    // Arrow click events
-    scrollLeftBtn.addEventListener("click", () => {
-        stopAutoScroll();
-        // Scroll by 1 card width + 15px gap
-        scroller.scrollBy({ left: -(300 + 15), behavior: 'smooth' });
-    });
-
-    scrollRightBtn.addEventListener("click", () => {
-        stopAutoScroll();
-        scroller.scrollBy({ left: 300 + 15, behavior: 'smooth' });
-    });
-
-    // Your requested wheel-to-horizontal-scroll
-    scroller.addEventListener('wheel', (e) => {
-        if (e.deltaY !== 0) {
-            e.preventDefault();
-            scroller.scrollLeft += e.deltaY;
+                scroller.scrollTo({
+                    left: newScrollLeft,
+                    behavior: "smooth"
+                });
+                
+            }, 3000); 
         }
-    }, { passive: false });
-    
-    // Update arrows on manual scroll
-    scroller.addEventListener('scroll', checkArrowVisibility);
 
-    // --- 4. Modal Pop-up Logic ---
-    function openModal(card) {
-        const title = card.dataset.title;
-        const desc = card.dataset.desc;
-        const color = card.dataset.color;
-        
-        modalTitle.textContent = title;
-        modalDesc.textContent = desc;
-        modal.style.backgroundColor = color; 
-        
-        const hex = color.replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        
-        if (brightness > 125) {
-            modalCtaBtn.style.background = "#333";
-            modalCtaBtn.style.color = "#fff";
-        } else {
-            modalCtaBtn.style.background = "#fff";
-            modalCtaBtn.style.color = "#333";
+        function stopAutoScroll() {
+            clearInterval(scrollInterval);
+            isUserInteracting = true; 
+        }
+
+        function checkArrowVisibility() {
+            const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+            scrollLeftBtn.disabled = scroller.scrollLeft < 10;
+            scrollRightBtn.disabled = scroller.scrollLeft > maxScrollLeft - 10;
         }
         
-        modalOverlay.style.display = "block";
-        modal.classList.add("active");
-    }
-
-    function closeModal() {
-        modalOverlay.style.display = "none";
-        modal.classList.remove("active");
-    }
-
-    // --- 5. Initialization ---
-    cards.forEach(card => {
-        // Sets the unique color for each card
-        card.style.backgroundColor = card.dataset.color;
-        
-        card.addEventListener("click", () => {
-            openModal(card);
+        scrollLeftBtn.addEventListener("click", () => {
+            stopAutoScroll();
+            scroller.scrollBy({ left: -(300 + 15), behavior: 'smooth' });
         });
-    });
 
-    // Modal close listeners
-    modalCloseBtn.addEventListener("click", closeModal);
-    modalOverlay.addEventListener("click", closeModal);
+        scrollRightBtn.addEventListener("click", () => {
+            stopAutoScroll();
+            scroller.scrollBy({ left: 300 + 15, behavior: 'smooth' });
+        });
+
+        scroller.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                scroller.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+        
+        scroller.addEventListener('scroll', checkArrowVisibility);
+
+        function openModal(card) {
+            const title = card.dataset.title;
+            const desc = card.dataset.desc;
+            const color = card.dataset.color;
+            
+            modalTitle.textContent = title;
+            modalDesc.textContent = desc;
+            modal.style.backgroundColor = color; 
+            
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            
+            if (brightness > 125) {
+                modalCtaBtn.style.background = "#333";
+                modalCtaBtn.style.color = "#fff";
+            } else {
+                modalCtaBtn.style.background = "#fff";
+                modalCtaBtn.style.color = "#333";
+            }
+            
+            modalOverlay.style.display = "block";
+            modal.classList.add("active");
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = "none";
+            modal.classList.remove("active");
+        }
+
+        cards.forEach(card => {
+            card.style.backgroundColor = card.dataset.color;
+            card.addEventListener("click", () => {
+                openModal(card);
+            });
+        });
+
+        modalCloseBtn.addEventListener("click", closeModal);
+        modalOverlay.addEventListener("click", closeModal);
+        
+        scroller.addEventListener("mouseenter", stopAutoScroll); 
+        scroller.addEventListener("touchstart", stopAutoScroll, { passive: true }); 
+        scroller.addEventListener("mouseleave", () => {
+            setTimeout(startAutoScroll, 2000); 
+        });
+        scroller.addEventListener("touchend", () => {
+            setTimeout(startAutoScroll, 5000); 
+        });
+
+        checkArrowVisibility();
+        setTimeout(startAutoScroll, 3000);
     
-    // --- Scroll Event Listeners for auto-scroll ---
-    scroller.addEventListener("mouseenter", stopAutoScroll); 
-    scroller.addEventListener("touchstart", stopAutoScroll, { passive: true }); 
-    scroller.addEventListener("mouseleave", () => {
-        setTimeout(startAutoScroll, 2000); 
-    });
-    scroller.addEventListener("touchend", () => {
-        setTimeout(startAutoScroll, 5000); 
-    });
-
-    // --- Run on load ---
-    checkArrowVisibility(); // Check arrow state on page load
-    setTimeout(startAutoScroll, 3000); // Start auto-scroll after 3s
+    } else {
+        console.warn("Feature scroller components not found on this page.");
+    }
 });
 </script>
 
+<!-- === This inline script is for the "Toolkit" tabs. Leave it. === -->
 <script>
     /* === JavaScript for 'Feature Showcase' Tabs === */
 document.addEventListener('DOMContentLoaded', () => {
-    // Find all showcase components on the page
     const allShowcases = document.querySelectorAll('.feature-showcase');
 
     allShowcases.forEach(showcase => {
-        // Find the nav and content panels *within this specific component*
         const navLinks = showcase.querySelectorAll('.feature-showcase__nav-item');
         const contentPanels = showcase.querySelectorAll('.feature-showcase__content-list');
-
-        // Add click listener to the nav bar
         const navList = showcase.querySelector('.feature-showcase__nav-list');
+        
         if (navList) {
             navList.addEventListener('click', (e) => {
-                // Only act if a nav item was clicked
                 const clickedLink = e.target.closest('.feature-showcase__nav-item');
                 if (!clickedLink) return;
 
-                e.preventDefault(); // Stop the link from jumping to the #anchor
-                
+                e.preventDefault();
                 const tabId = clickedLink.dataset.tab;
                 
-                // 1. Update Nav Buttons
                 navLinks.forEach(link => {
                     link.classList.remove('feature-showcase__nav-item--active');
                     if (link === clickedLink) {
@@ -1054,7 +1033,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // 2. Update Content Panels
                 contentPanels.forEach(panel => {
                     panel.classList.remove('is-active');
                     if (panel.dataset.tab === tabId) {
@@ -1065,9 +1043,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 }); 
-
-
 </script>
+
+<!-- === NEW SCRIPT FOR FOOTER DROPDOWN === -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const footer = document.querySelector('footer');
+        const toggleBtn = document.getElementById('footer-toggle-btn');
+        const toggleHeader = document.querySelector('.footer-toggle-header');
+
+        function toggleFooter(e) {
+            // Stop propagation if the click was on a link inside the header
+            // This prevents it from closing when they click the logo
+            if (e.target.closest('a')) {
+                return;
+            }
+            
+            if (footer) {
+                footer.classList.toggle('is-open');
+                const isExpanded = footer.classList.contains('is-open');
+                if (toggleBtn) {
+                    toggleBtn.setAttribute('aria-expanded', isExpanded);
+                }
+            }
+        }
+
+        // Make the *entire header* clickable, not just the button
+        if (toggleHeader) {
+            toggleHeader.addEventListener('click', toggleFooter);
+        }
+    });
+</script>
+<!-- === END FOOTER SCRIPT === -->
 
 </body>
 </html>
