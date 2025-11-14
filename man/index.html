@@ -89,15 +89,9 @@
     <script src="/theme.js"></script>
 
     <header class="sticky-header">
-        <!-- === MODIFIED HEADER LAYOUT === -->
         <div class="header-content container">
-            <!-- Hamburger menu (now on left for mobile) -->
             <button class="hamburger-menu" aria-label="Open menu">&#9776;</button>
-
-            <!-- Site Title -->
             <a href="/" class="site-title">Kabale <span>Online</span></a>
-            
-            <!-- Desktop Navigation -->
             <nav class="desktop-nav">
                 <a href="/shop/" class="nav-link active">Shop</a>
                 <a href="/rentals/" class="nav-link">Hostels</a>
@@ -105,19 +99,13 @@
                 <a href="/events/" class="nav-link">Events</a>
                 <a href="/lost-and-found/" class="nav-link">Lost & Found</a>
             </nav>
-
-            <!-- Desktop Header Icons -->
             <div class="header-icons">
                  <a href="/cart.html" aria-label="Your Cart"><i class="fa-solid fa-cart-shopping"></i></a>
                 <a href="/inbox.html" aria-label="Notifications" class="notification-bell" id="notification-bell"><i class="fa-regular fa-bell"></i></a>
-                <!-- This icon is part of the desktop set -->
                 <a href="/dashboard/" class="desktop-profile-icon" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
             </div>
-
-            <!-- Mobile-only Profile Icon (now on right) -->
             <a href="/dashboard/" class="mobile-profile-icon" aria-label="Your Dashboard"><i class="fa-regular fa-user"></i></a>
         </div>
-        <!-- === END MODIFIED HEADER === -->
     </header>
 
     <nav class="mobile-nav">
@@ -177,7 +165,6 @@
         </section>
 
         <section class="carousel-section" id="last-viewed-section" style="display: none;">
-            <!-- === MODIFIED: Removed inline style === -->
             <div class="section-header-jumia">
                 <h2>🕒 Recently Viewed</h2>
             </div>
@@ -214,7 +201,6 @@
         </section>
 
         <section class="carousel-section" id="save-on-more-section" style="display: none;">
-             <!-- === MODIFIED: Removed inline style === -->
              <div class="section-header-jumia">
                 <h2>Save on More</h2>
                 <button class="see-more-btn" data-section="save" data-expanded="false">See More &darr;</button>
@@ -255,16 +241,18 @@
         </main>
     </div>
     
-    <!-- === REMOVED: Back-to-Top Button === -->
-    
-    <button id="open-chat-button" aria-label="Open AI Assistant"><i class="fa-solid fa-robot"></i></button>
-    
+    <div id="chat-prompt-container">
+        <button id="hide-help-button" aria-label="Close help prompt">&times;</button>
+        <button id="open-chat-button" aria-label="Open AI Assistant">
+            Need help?
+        </button>
+    </div>
+
     <div id="chat-modal-container">
         <div class="chat-modal-overlay"></div>
         <div class="chat-modal-content">
             <div class="chat-modal-header">
                 <h3>KabaleOnline Assistant</h3>
-                <!-- This 'x' button was already here and functional -->
                 <button id="close-chat-button" aria-label="Close Chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <iframe id="chat-iframe" src="/ai/" title="Amara"></iframe>
@@ -347,11 +335,34 @@
             const closeChatButton = document.getElementById('close-chat-button');
             const chatModalContainer = document.getElementById('chat-modal-container');
             const chatModalOverlay = document.querySelector('.chat-modal-overlay');
+            
+            // --- "Need Help?" Logic ---
+            const chatPromptContainer = document.getElementById('chat-prompt-container');
+            const hideHelpButton = document.getElementById('hide-help-button');
+
+            // Check if user has hidden prompt before
+            if (localStorage.getItem('chatPromptHidden') === 'true') {
+                if (chatPromptContainer) chatPromptContainer.classList.add('chat-prompt-hidden');
+            }
+            // --- End New Logic ---
+
             function openModal() { if (chatModalContainer) chatModalContainer.classList.add('active'); }
             function closeModal() { if (chatModalContainer) chatModalContainer.classList.remove('active'); }
+
             if (openChatButton) openChatButton.addEventListener('click', openModal);
             if (closeChatButton) closeChatButton.addEventListener('click', closeModal);
             if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeModal);
+
+            // --- "Need Help?" Logic ---
+            if (hideHelpButton) {
+                hideHelpButton.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Stop it from opening the chat
+                    if (chatPromptContainer) chatPromptContainer.classList.add('chat-prompt-hidden');
+                    // Remember this choice
+                    localStorage.setItem('chatPromptHidden', 'true');
+                });
+            }
+            // --- End New Logic ---
         });
     </script>
 </body>
