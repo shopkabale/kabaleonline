@@ -1,6 +1,6 @@
 // --- FIREBASE IMPORTS ---
 import { db, auth } from "./firebase.js";
-import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, getCountFromServer, startAfter } from "https.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, deleteDoc, serverTimestamp, getCountFromServer, startAfter } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 // ==================================================== //
@@ -310,6 +310,9 @@ async function fetchRecentProducts() {
     const grid = document.getElementById('recent-products-grid');
     if (!grid) return;
     
+    // === MODIFIED: Show skeleton loaders for Masonry ===
+    renderSkeletonLoaders(grid, 8); // Render 8 skeletons for the main grid
+    
     const q = query(
         collection(db, 'products'), 
         orderBy('createdAt', 'desc'), 
@@ -454,7 +457,7 @@ function initializeUI() {
 
     // === NEW: Smart Nav Logic ===
     const bottomNav = document.querySelector('.bottom-nav');
-    // const aiChatBubble is already defined above
+    const chatBubble = document.getElementById('ai-chat-bubble'); // Get chat bubble
 
     if (bottomNav) {
         let lastScrollY = window.scrollY;
@@ -466,12 +469,12 @@ function initializeUI() {
                 if (currentScrollY > lastScrollY && currentScrollY > 150) {
                     // Scrolling Down
                     bottomNav.classList.add('bottom-nav--hidden');
-                    if(aiChatBubble) aiChatBubble.classList.add('bottom-nav--hidden'); // Hide chat bubble
+                    if(chatBubble) chatBubble.classList.add('bottom-nav--hidden'); // Hide chat bubble
                 
                 } else if (currentScrollY < lastScrollY) {
                     // Scrolling Up
                     bottomNav.classList.remove('bottom-nav--hidden');
-                    if(aiChatBubble) aiChatBubble.classList.remove('bottom-nav--hidden'); // Show chat bubble
+                    if(chatBubble) chatBubble.classList.remove('bottom-nav--hidden'); // Show chat bubble
                 }
                 lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY; // Handle bounce
             }
@@ -652,6 +655,49 @@ async function initializeData() {
             console.error("A critical error occurred during data load:", error);
         }
     });
+}
+
+/**
+ * Renders skeleton loaders for the main "Recent Products" grid.
+ * This is a new function for Masonry.
+ */
+function renderSkeletonLoaders(container, count) {
+    if (!container) return; 
+    container.innerHTML = ''; // Clear existing
+    
+    // Add gutter sizer first
+    const gutter = document.createElement('div');
+    gutter.className = 'gutter-sizer';
+    container.appendChild(gutter);
+    
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+        const skeletonLink = document.createElement('a');
+        skeletonLink.className = 'product-card-link';
+        skeletonLink.innerHTML = `
+            <div class="product-card skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text small"></div>
+                <div class="skeleton-text small"></div>
+                <div class="skeleton-text price"></div>
+            </div>
+        `;
+        fragment.appendChild(skeletonLink);
+    }
+    container.appendChild(fragment);
+    
+    // Initialize Masonry on the skeletons
+    if (typeof Masonry !== 'undefined') {
+        if (msnry) msnry.destroy();
+        setTimeout(() => {
+            msnry = new Masonry(container, {
+                itemSelector: '.product-card-link',
+                percentPosition: true,
+                gutter: '.gutter-sizer'
+            });
+        }, 100);
+    }
 }
 
 
