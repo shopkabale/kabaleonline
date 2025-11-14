@@ -36,8 +36,6 @@ body.dark-mode {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
-    /* NEW "Natural" Style (like .section-title) */
     border-bottom: 2px solid var(--ko-primary);
     padding-bottom: 10px;
     margin-bottom: 20px; 
@@ -47,14 +45,13 @@ body.dark-mode .section-header-jumia {
 }
 .section-header-jumia h2 {
     margin: 0;
-    font-size: 1.4em; /* Matched .section-title */
+    font-size: 1.4em;
     font-weight: 700;
     color: var(--text-main);
 }
 body.dark-mode .section-header-jumia h2 {
     color: var(--text-main-dark);
 }
-
 .section-header-jumia .see-all-link {
     text-decoration: none;
     color: var(--ko-primary);
@@ -67,12 +64,16 @@ body.dark-mode .section-header-jumia .see-all-link {
 
 /* === MODIFIED: "Natural" Carousel Section === */
 .carousel-section {
-    /* REMOVED background, border, shadow, radius */
     margin-top: 25px;
     overflow: hidden;
+    /* When expanded, it should just be a normal grid */
 }
+.carousel-section.expanded-section {
+    overflow: visible;
+}
+
 .carousel-section .deals-carousel-wrapper {
-    padding: 0; /* REMOVED padding */
+    padding: 0;
     overflow-x: auto;
     scrollbar-width: none; 
     -webkit-overflow-scrolling: touch;
@@ -88,7 +89,6 @@ body.dark-mode .section-header-jumia .see-all-link {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
-
 .image-category-card {
     display: flex;
     flex-direction: column;
@@ -160,13 +160,12 @@ body.dark-mode .see-more-btn {
 /* === MODIFIED: "See More" Grid Fix === */
 .deals-carousel-wrapper.expanded {
     overflow-x: hidden;
-    padding: 0; /* No padding on wrapper */
+    padding: 0;
 }
-/* This is the grid for expanded carousels */
 .deals-carousel-wrapper.expanded .product-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    flex-wrap: wrap; /* Keep for safety */
+    flex-wrap: wrap;
     gap: 15px; /* Added gap */
 }
 @media (min-width: 768px) {
@@ -179,7 +178,7 @@ body.dark-mode .see-more-btn {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
      }
 }
-/* === END "SEE MORE" CSS === */
+/* --- === END "SEE MORE" CSS === --- */
 
 
 /* --- ALL YOUR ORIGINAL STYLES --- */
@@ -238,7 +237,7 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
     text-decoration: none;
 }
 .desktop-nav { display: none; } 
-.header-icons { display: none; } /* Hide desktop icons by default */
+.header-icons { display: none; }
 
 @media (min-width: 1024px) {
     .hamburger-menu { display: none; }
@@ -246,8 +245,8 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 
     .site-title {
         order: 1;
-        flex-grow: 0; /* Reset flex */
-        text-align: left; /* Reset text-align */
+        flex-grow: 0;
+        text-align: left;
     }
     .desktop-nav {
         display: flex;
@@ -257,8 +256,8 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
         list-style: none;
         margin: 0;
         padding: 0;
-        flex-grow: 1; /* Pushes icons to the right */
-        justify-content: center; /* Centers the nav links */
+        flex-grow: 1;
+        justify-content: center;
     }
     .desktop-nav a {
         text-decoration: none;
@@ -281,14 +280,14 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 @media (max-width: 1023px) {
     .site-title {
         flex-grow: 1;
-        text-align: center; /* Center title on mobile */
+        text-align: center;
     }
 }
 /* === END HEADER MODIFICATIONS === */
 
 
 .page-container {
-    padding-top: 80px; /* REDUCED from 90px */
+    padding-top: 80px; /* REDUCED from 90px, +20px from header height */
     padding-bottom: 20px;
 }
 .search-container { display: flex; margin-bottom: 25px; }
@@ -316,7 +315,6 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 .gutter-sizer {
     width: 4%; /* 4% gap between columns */
 }
-/* Styles for items in the main #product-grid */
 #product-grid > .product-card-link {
     width: 48%; /* 48% + 4% + 48% = 100% */
     margin-bottom: 15px; /* Vertical gap */
@@ -334,7 +332,6 @@ body.dark-mode .sticky-header { --bg-card-rgb: 30, 41, 59; }
 .category-item i { font-size: 24px; color: var(--ko-primary); margin-bottom: 8px; }
 .category-item span { font-size: 0.8em; font-weight: 600; }
 
-/* Skeleton styles now inside .product-card */
 .product-card.skeleton-card {
     background-color: #e0e0e0;
     background-image: linear-gradient(90deg, #e0e0e0, #f0f0f0, #e0e0e0);
@@ -354,13 +351,12 @@ body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color
 .deals-grid {
     display: flex;
     gap: 15px;
-    /* No padding, container handles it */
 }
 .deals-grid .product-card { flex: 0 0 160px; width: 160px; }
 
 @media (min-width: 768px) {
     #product-grid > .product-card-link {
-        width: 32%; /* 32 + 2 + 32 + 2 + 32 = 100 */
+        width: 32%;
     }
     .gutter-sizer {
         width: 2%;
@@ -389,10 +385,10 @@ body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color
 @media (min-width: 1400px) {
     .container { max-width: 95%; }
     #product-grid > .product-card-link {
-        width: 280px; /* Fixed width for large screens */
+        width: 280px;
     }
     .gutter-sizer {
-        width: 15px; /* Fixed px gutter */
+        width: 15px;
     }
     .category-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } 
 }
@@ -401,10 +397,59 @@ body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color
 #load-more-btn .loading-icon { animation: rotate 1.5s linear infinite; }
 @keyframes rotate { to { transform: rotate(360deg); } }
 
-/* === REMOVED: Back-to-Top Button Styles === */
+/* === NEW: Chat Prompt Styles === */
+#chat-prompt-container {
+    position: fixed;
+    bottom: 80px; /* Position above bottom nav */
+    right: 25px;
+    z-index: 999;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+}
+#open-chat-button {
+    background: none;
+    border: none;
+    color: var(--ko-primary);
+    font-weight: 600;
+    font-size: 0.9em;
+    padding: 10px 18px;
+    padding-left: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+#hide-help-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5em; /* Larger 'x' */
+    line-height: 1;
+    padding: 10px 12px;
+    padding-right: 5px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+#hide-help-button:hover {
+    opacity: 1;
+}
+/* Hiding logic from scroll */
+#chat-prompt-container.bottom-nav--hidden {
+    transform: translateY(150px);
+}
+/* Hiding logic from 'x' click */
+#chat-prompt-container.chat-prompt-hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+}
+/* === END Chat Prompt Styles === */
 
-@keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
-#open-chat-button { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background-color: var(--ko-primary); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; animation: bounce 2s ease infinite 4s; }
+
 #chat-modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; }
 .chat-modal-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s ease; }
 .chat-modal-content { position: relative; z-index: 1001; width: 90%; max-width: 420px; height: 80%; max-height: 700px; background-color: var(--bg-card); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
@@ -415,6 +460,7 @@ body.dark-mode .skeleton-image, body.dark-mode .skeleton-text { background-color
 #chat-modal-container.active { display: flex; }
 #chat-modal-container.active .chat-modal-overlay { opacity: 1; }
 #chat-modal-container.active .chat-modal-content { transform: scale(1); opacity: 1; }
+
 /* FOOTER STYLES */
 footer {
     background-color: #0f172a;
@@ -531,7 +577,6 @@ footer {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-/* --- SHOP PAGE CAROUSEL FIX (DESKTOP ONLY) --- */
 @media (min-width: 768px) {
   .deals-carousel-wrapper.center-items {
     overflow-x: hidden;
@@ -552,7 +597,6 @@ footer {
   display: block;
   margin-top: -5px;
 }
-
 .product-card .location-name i {
     margin-right: 5px;
     width: 1.2em;
@@ -560,12 +604,7 @@ footer {
     color: var(--ko-primary);
 }
 
-
-/* ================================================= */
-/* === ALL NEW CSS FOR NAVIGATION & LAYOUT === */
-/* ================================================= */
-
-/* === SMART BOTTOM NAVIGATION BAR === */
+/* === BOTTOM NAV STYLES === */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -617,8 +656,6 @@ footer {
     justify-content: center;
     margin-bottom: 2px;
 }
-
-/* === PAGE ADJUSTMENTS FOR NAV === */
 body {
     padding-bottom: 80px;
 }
@@ -630,25 +667,11 @@ body {
         padding-bottom: 0;
     }
 }
-
-/* === CHAT & TOP BUTTON POSITION FIX === */
-/* REMOVED back-to-top button styles */
-#open-chat-button {
-    bottom: 80px; /* Position above bottom nav */
-    transition: transform 0.3s ease;
-}
-#open-chat-button.bottom-nav--hidden {
-    transform: translateY(150px); /* Hide it with nav */
-}
-
-
-/* === MODIFIED: Top Header Mobile === */
-/* This ensures the top header is shown, per user request */
 @media (max-width: 1023px) {
     .sticky-header {
         display: block;
     }
     .page-container {
-        padding-top: 80px; /* Matches new header height */
+        padding-top: 80px; /* 60px header + 20px space */
     }
 }
