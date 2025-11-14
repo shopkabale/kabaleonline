@@ -7,7 +7,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 //               GLOBAL STATE & HELPERS                 //
 // ==================================================== //
 
-// === NEW ===
 let msnry = null; // Global Masonry instance
 
 /**
@@ -59,14 +58,15 @@ const categoryGrid = document.querySelector(".category-grid");
 const imageCategoryGrid = document.querySelector(".image-category-grid"); 
 const loadMoreContainer = document.getElementById("load-more-container");
 const loadMoreBtn = document.getElementById("load-more-btn");
-const backToTopBtn = document.getElementById("back-to-top-btn");
+// === REMOVED: backToTopBtn ===
+// const backToTopBtn = document.getElementById("back-to-top-btn");
 
 // --- NEW DOM REFERENCES ---
 const lastViewedSection = document.getElementById("last-viewed-section");
 const lastViewedGrid = document.getElementById("last-viewed-grid");
 const madeForYouSection = document.getElementById("made-for-you-section");
 const madeForYouGrid = document.getElementById("made-for-you-grid");
-const madeForYouTitle = document.querySelector("#made-for-you-section h2");
+const madeForYouTitle = document.querySelector("#made-for-you-section h2"); // Corrected selector
 
 // --- APPLICATION STATE ---
 const state = {
@@ -85,13 +85,40 @@ function renderSkeletonLoaders(container, count) {
     if (!container) return; 
     container.innerHTML = '';
     const fragment = document.createDocumentFragment();
+    
+    // === MODIFIED: Add gutter-sizer for product-grid skeletons ===
+    if (container.id === 'product-grid') {
+        const gutter = document.createElement('div');
+        gutter.className = 'gutter-sizer';
+        fragment.appendChild(gutter);
+    }
+    
     for (let i = 0; i < count; i++) {
-        const skeletonCard = document.createElement('div');
-        skeletonCard.className = 'skeleton-card';
-        skeletonCard.innerHTML = `<div class="skeleton-image"></div><div class="skeleton-text w-75"></div><div class="skeleton-text w-50"></div>`;
-        fragment.appendChild(skeletonCard);
+        // === MODIFIED: Skeletons are now product-card-link ===
+        const skeletonCardLink = document.createElement('a');
+        skeletonCardLink.className = 'product-card-link'; // Use the link wrapper
+        skeletonCardLink.innerHTML = `
+            <div class="product-card skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text w-75"></div>
+                <div class="skeleton-text w-50"></div>
+            </div>
+        `;
+        fragment.appendChild(skeletonCardLink);
     }
     container.appendChild(fragment);
+    
+    // === MODIFIED: Initialize Masonry after skeletons load ===
+    if (container.id === 'product-grid' && typeof Masonry !== 'undefined') {
+        if (msnry) msnry.destroy();
+        setTimeout(() => {
+            msnry = new Masonry(container, {
+                itemSelector: '.product-card-link',
+                percentPosition: true,
+                gutter: '.gutter-sizer'
+            });
+        }, 100);
+    }
 }
 
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -101,9 +128,7 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
             img.src = img.dataset.src;
             img.onload = () => {
                 img.classList.add('loaded');
-                // === MODIFIED ===
                 // Tell Masonry to re-layout *after* an image has loaded
-                // This fixes items overlapping
                 if (msnry && img.closest('#product-grid')) {
                     msnry.layout();
                 }
@@ -119,19 +144,22 @@ function observeLazyImages() {
     imagesToLoad.forEach(img => lazyImageObserver.observe(img));
 }
 
-// === MODIFIED ===
-// This function is now aware of Masonry
 function renderProducts(gridElement, products, append = false) {
     if (!gridElement) return;
     
     if (!append) {
-        // === MODIFIED ===
-        // If it's the main grid and Masonry exists, destroy it first
         if (gridElement.id === 'product-grid' && msnry) {
             msnry.destroy();
             msnry = null;
         }
-        gridElement.innerHTML = "";
+        gridElement.innerHTML = ""; // Clear grid
+        
+        // === NEW: Add gutter-sizer for main grid ===
+        if (gridElement.id === 'product-grid') {
+            const gutter = document.createElement('div');
+            gutter.className = 'gutter-sizer';
+            gridElement.appendChild(gutter);
+        }
     }
     
     if (products.length === 0) {
@@ -228,37 +256,27 @@ function renderProducts(gridElement, products, append = false) {
         fragment.appendChild(productLink);
     });
 
-    // === NEW MASONRY-AWARE RENDER LOGIC ===
     const newItems = Array.from(fragment.children);
-
-    // 1. Append the new items to the grid
     gridElement.appendChild(fragment);
-    
-    // 2. Observe and initialize buttons
     observeLazyImages();
     initializeWishlistButtons();
 
-    // 3. ONLY run Masonry on the main product-grid
     if (gridElement.id === 'product-grid' && typeof Masonry !== 'undefined') {
         if (append) {
-            // If we are "Loading More"
             if (msnry) {
-                msnry.appended(newItems); // Tell Masonry about new items
-                msnry.layout();         // Re-run the layout
+                msnry.appended(newItems);
+                msnry.layout();
             }
         } else {
-            // If this is a fresh load (not appending)
-            // Use setTimeout to ensure images start loading,
-            // which helps Masonry calculate heights.
             setTimeout(() => {
                 msnry = new Masonry(gridElement, {
                     itemSelector: '.product-card-link',
-                    percentPosition: true
+                    percentPosition: true,
+                    gutter: '.gutter-sizer' // === MODIFIED: Added gutter ===
                 });
-            }, 100); // 100ms delay is usually perfect
+            }, 100);
         }
     }
-    // === END NEW MASONRY LOGIC ===
 }
 
 // --- DATA FETCHING FUNCTIONS ---
@@ -267,10 +285,8 @@ async function fetchAndRenderProducts(append = false) {
     state.isFetching = true;
 
     if (!append) {
-        // === MODIFIED ===
-        // Skeletons don't work well with Masonry, so just clear it
-        if (productGrid) productGrid.innerHTML = '';
-        // renderSkeletonLoaders(productGrid, 12);
+        // === MODIFIED: Use new skeleton loader ===
+        renderSkeletonLoaders(productGrid, 12);
     } else {
         loadMoreBtn.disabled = true;
         loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner loading-icon"></i> <span>LOADING...</span>`;
@@ -314,7 +330,7 @@ async function fetchCarouselProducts(q, gridId, sectionId) {
     
     if (!gridElement || !sectionElement) return;
 
-    renderSkeletonLoaders(gridElement, 5);
+    renderSkeletonLoaders(gridElement, 5); // This will use the standard skeleton loader
 
     try {
         const snapshot = await getDocs(q);
@@ -352,10 +368,6 @@ function fetchSponsoredItems() {
     return fetchCarouselProducts(q, 'sponsored-grid', 'sponsored-section');
 }
 
-// ==========================================
-// === NEW FUNCTIONS FOR NEW SECTIONS =======
-// ==========================================
-
 function displayLastViewed() {
     try {
         const viewed = JSON.parse(localStorage.getItem('lastViewed')) || [];
@@ -367,18 +379,14 @@ function displayLastViewed() {
     }
 }
 
-// --- THIS IS THE FULLY CORRECTED FUNCTION ---
 async function displayMadeForYou() {
     let title = "✨ Recommended for You";
     if (madeForYouTitle) madeForYouTitle.textContent = title;
 
-    // Show skeletons while we fetch
     renderSkeletonLoaders(madeForYouGrid, 5);
     
     try {
-        // 1. Get the recency-ordered list of unique categories
         const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-        // 2. Just take the top 3 most recent unique categories
         const topCategories = interests.slice(0, 3);
 
         if (topCategories.length === 0) {
@@ -386,26 +394,21 @@ async function displayMadeForYou() {
             return;
         }
 
-        // 3. Define how many items to pull from each category for a good mix
-        // (e.g., if 3 categories, pull [3, 3, 2] items = 8 total)
         const limits = { 1: [8], 2: [4, 4], 3: [3, 3, 2] };
-        const itemsToFetch = limits[topCategories.length];
+        const itemsToFetch = limits[topCategories.length] || [8]; // Fallback
 
-        // 4. Create an array of query promises (one for each category)
         const queryPromises = topCategories.map((category, index) => {
             const q = query(collection(db, 'products'),
                 where('category', '==', category),
                 where('isSold', '==', false),
-                orderBy('createdAt', 'desc'), // You could also try 'random' here
+                orderBy('createdAt', 'desc'),
                 limit(itemsToFetch[index])
             );
             return getDocs(q);
         });
 
-        // 5. Run all queries in parallel
         const snapshots = await Promise.all(queryPromises);
 
-        // 6. Combine the results
         let combinedProducts = [];
         snapshots.forEach(snapshot => {
             snapshot.docs.forEach(doc => {
@@ -413,16 +416,13 @@ async function displayMadeForYou() {
             });
         });
 
-        // 7. Shuffle the combined array for a true mix
         const mixedProducts = combinedProducts.sort(() => 0.5 - Math.random());
 
-        // 8. Update title and render
         if (topCategories.length === 1) {
             title = `✨ Because you like ${topCategories[0]}`;
         }
         if (madeForYouTitle) madeForYouTitle.textContent = title;
         
-        // 9. Render directly (this function also handles showing the section)
         renderProducts(madeForYouGrid, mixedProducts);
 
     } catch (e) {
@@ -430,12 +430,6 @@ async function displayMadeForYou() {
         if (madeForYouSection) madeForYouSection.style.display = 'none';
     }
 }
-// --- END OF UPDATED FUNCTION ---
-
-
-// ==========================================
-// === END NEW FUNCTIONS ====================
-// ==========================================
 
 
 // --- UI & EVENT HANDLERS ---
@@ -471,7 +465,9 @@ async function handleWishlistClick(event) {
     event.preventDefault();
     event.stopPropagation();
     if (!state.currentUser) {
-        alert('Please log in to add items to your wishlist.');
+        // === MODIFIED: No alerts ===
+        console.warn('User not logged in. Redirecting to login.');
+        // alert('Please log in to add items to your wishlist.');
         window.location.href = '/login/';
         return;
     }
@@ -618,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchSaveOnMore();
         fetchSponsoredItems();
         initializeStateFromURL();
-        fetchAndRenderProducts();
+        fetchAndRenderProducts(); // This will load skeletons
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -649,23 +645,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if(backToTopBtn) {
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 400 && window.innerWidth < 1024) { // === MODIFIED ===
-                backToTopBtn.classList.add('visible');
-            } else if (window.scrollY > 400 && window.innerWidth >= 1024) {
-                backToTopBtn.classList.add('visible');
-            } else {
-                backToTopBtn.classList.remove('visible');
-            }
-        });
-    }
+    // === REMOVED: Back-to-Top Button Logic ===
 
-    // === NEW ===
-    // --- SMART BOTTOM NAV HIDING LOGIC ---
+    // === MODIFIED: Smart Nav Logic ===
     const bottomNav = document.querySelector('.bottom-nav');
     const openChatButton = document.getElementById('open-chat-button');
 
@@ -673,7 +655,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastScrollY = window.scrollY;
 
         window.addEventListener('scroll', () => {
-            // Only on mobile
             if (window.innerWidth < 1024) { 
                 const currentScrollY = window.scrollY;
                 
@@ -681,23 +662,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Scrolling Down
                     bottomNav.classList.add('bottom-nav--hidden');
                     if(openChatButton) openChatButton.classList.add('bottom-nav--hidden');
-                    // Hide back-to-top button only when scrolling down
-                    if(backToTopBtn) backToTopBtn.classList.remove('visible');
                 
                 } else if (currentScrollY < lastScrollY) {
                     // Scrolling Up
                     bottomNav.classList.remove('bottom-nav--hidden');
                     if(openChatButton) openChatButton.classList.remove('bottom-nav--hidden');
-                    // Show back-to-top button if high enough
-                    if (currentScrollY > 400) {
-                        if(backToTopBtn) backToTopBtn.classList.add('visible');
-                    }
                 }
-                lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY; // Handle bounce
+                lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
             }
         });
     }
-    // === END NEW ===
 });
 
 // --- "SEE MORE" EXPAND LOGIC (UPDATED) ---
@@ -712,7 +686,6 @@ document.body.addEventListener('click', async (e) => {
 
     let grid, wrapper;
 
-    // --- 1. Find the correct grid and wrapper ---
     if (sectionName === 'last-viewed') {
         grid = document.getElementById('last-viewed-grid');
     } else if (sectionName === 'made-for-you') {
@@ -731,7 +704,6 @@ document.body.addEventListener('click', async (e) => {
     wrapper = grid.closest('.deals-carousel-wrapper');
     if (!wrapper) return;
 
-    // --- 2. Start Expansion ---
     seeMoreBtn.disabled = true;
     seeMoreBtn.textContent = 'Loading...';
 
@@ -739,14 +711,11 @@ document.body.addEventListener('click', async (e) => {
         let products = [];
 
         if (sectionName === 'last-viewed') {
-            // --- 3a. Handle localStorage Expansion ---
             products = JSON.parse(localStorage.getItem('lastViewed')) || [];
         
         } else {
-            // --- 3b. Handle Firestore Expansion ---
             let q;
             
-            // --- THIS LOGIC IS NOW CORRECTED FOR 'made-for-you' ---
             if (sectionName === 'made-for-you') {
                 const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
                 const topCategories = interests.slice(0, 3); 
@@ -755,18 +724,14 @@ document.body.addEventListener('click', async (e) => {
                      throw new Error('No user interests found');
                 }
                 
-                // For "See More," we'll just use the simpler `where 'in'` query.
-                // It will show *all* items from those categories, ordered by newness,
-                // which is correct for an "expansion" view.
                 q = query(collection(db, 'products'), 
                     where('category', 'in', topCategories), 
                     where('isSold', '==', false), 
                     orderBy('createdAt', 'desc'), 
-                    limit(20)); // Expanded limit
+                    limit(20));
             
-            // --- Other sections remain the same ---
             } else if (sectionName === 'deals') {
-                q = query(collection(db, 'products'), where('isDeal', '==',true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
+                q = query(collection(db, 'products'), where('isDeal', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             } else if (sectionName === 'sponsored') {
                 q = query(collection(db, 'products'), where('isSponsored', '==', true), where('isSold', '==', false), orderBy('createdAt', 'desc'), limit(20));
             } else if (sectionName === 'save') {
@@ -777,10 +742,14 @@ document.body.addEventListener('click', async (e) => {
             products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
-        // --- 4. Render and Finalize UI ---
         if (products && products.length > 0) {
             renderProducts(grid, products); 
             wrapper.classList.add('expanded');
+            
+            // === NEW: Add class to parent section ===
+            const parentSection = wrapper.closest('.carousel-section');
+            if (parentSection) parentSection.classList.add('expanded-section');
+            
             grid.classList.remove('deals-grid'); 
             grid.classList.add('product-grid');  
             
