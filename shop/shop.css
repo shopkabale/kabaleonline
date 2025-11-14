@@ -675,3 +675,92 @@ body {
         padding-top: 80px; /* 60px header + 20px space */
     }
 }
+/* === COLLAPSIBLE FOOTER STYLES === */
+
+/* 1. Style the new always-visible header */
+footer {
+    padding: 20px 0 0 0; /* Changed padding */
+}
+.footer-toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px; /* Space before the line */
+    border-bottom: 1px solid #334155;
+    cursor: pointer; /* Make the whole header clickable */
+}
+
+/* 2. Style the toggle button */
+#footer-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary-dark, #94a3b8);
+    font-size: 1.5rem;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+/* 3. The collapsible content container */
+#footer-collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+}
+
+/* 4. Remove padding from the grid inside */
+#footer-collapsible-content .footer-grid {
+    padding-top: 40px;
+    padding-bottom: 20px;
+}
+/* We removed the logo, so adjust the column */
+#footer-collapsible-content .about-column {
+    text-align: left;
+}
+#footer-collapsible-content .about-column .footer-tagline {
+    margin-bottom: 20px;
+}
+
+
+/* 5. The "is-open" state */
+footer.is-open #footer-collapsible-content {
+    max-height: 1500px; /* Set to a large value */
+    transition: max-height 0.5s ease-in;
+}
+
+footer.is-open #footer-toggle-btn {
+    transform: rotate(180deg);
+}
+
+/* 6. On desktop, just show it normally */
+@media (min-width: 1024px) {
+    footer {
+        padding: 60px 0 20px; /* Restore original padding */
+    }
+    .footer-toggle-header {
+        display: none; /* Hide the toggle button */
+    }
+    #footer-collapsible-content {
+        max-height: none; /* Always show */
+    }
+    /* Put the logo back in its column on desktop */
+    #footer-collapsible-content .about-column {
+        /* This is a bit of a trick: we re-add the logo here */
+        /* but it only shows up if it's not in the toggle header */
+        display: flex;
+        flex-direction: column;
+    }
+    #footer-collapsible-content .about-column::before {
+        content: "Kabale Online";
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 1.8em;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-decoration: none;
+        color: #ffffff;
+        display: inline-block;
+    }
+    #footer-collapsible-content .about-column::before span {
+        color: var(--ko-accent);
+    }
+}
