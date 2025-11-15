@@ -153,34 +153,35 @@
         #terms-error {
             margin-bottom: 15px;
         }
+
 /* Make the wrapper a positioning context */
 .password-wrapper {
   position: relative;
 }
 
 /* Give the input field space on the right for the icon.
-  This stops the password text from overlapping the eye.
+  This stops the password text from typing *under* the eye.
 */
-.password-wrapper input[type="password"] {
+.form-group input[type="password"] {
   padding-right: 45px; 
 }
 
-/* This is the fix:
-  We position the eye from the BOTTOM of the wrapper,
-  not the top.
+/*
+* THIS IS THE FIX
+* We position the eye from the BOTTOM of the wrapper,
+* not the top.
 */
 .toggle-password {
   position: absolute;
   
-  /* This 'bottom' value (e.g., 13px) should be 1-2px
-    more than your input's top/bottom padding.
+  /* Your input has 12px padding. We set 'bottom: 13px'
+    to center the eye perfectly inside the input field.
   */
   bottom: 13px; 
   right: 15px;
   
-  /* Adjust size if needed */
+  /* We remove the 'top' and 'transform' rules */
   font-size: 1.2rem; 
-  
   cursor: pointer;
   color: var(--text-secondary);
 }
