@@ -6,7 +6,35 @@ const resendBtn = document.getElementById('resend-verification-btn');
 const logoutBtn = document.getElementById('verification-logout-btn');
 const messageArea = document.getElementById('message-area');
 
+// --- Timer Elements ---
+const resendTimerText = document.getElementById('resend-timer-text');
+const countdownTimer = document.getElementById('countdown-timer');
+
 let verificationCheckInterval = null;
+let countdownInterval = null;
+
+// --- Timer Function ---
+function startTimer(durationInSeconds) {
+    // Clear any existing timer
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    let count = durationInSeconds;
+    
+    // Disable button and show timer
+    resendBtn.disabled = true;
+    resendTimerText.style.display = 'block';
+    countdownTimer.textContent = count;
+    
+    countdownInterval = setInterval(() => {
+        count--;
+        countdownTimer.textContent = count;
+        if (count <= 0) {
+            clearInterval(countdownInterval);
+            resendBtn.disabled = false;
+            resendTimerText.style.display = 'none'; // Hide the timer text
+        }
+    }, 1000);
+}
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -19,10 +47,14 @@ onAuthStateChanged(auth, (user) => {
         // Display the user's email
         userEmailEl.textContent = user.email;
 
+        // --- Start the initial 10-second countdown ---
+        startTimer(10);
+
         // Start checking for verification every 3 seconds
         verificationCheckInterval = setInterval(async () => {
             await user.reload();
-            if (user.emailVerified) {
+            // We check the user object directly from auth, not the one from the closure
+            if (auth.currentUser && auth.currentUser.emailVerified) {
                 clearInterval(verificationCheckInterval);
                 window.location.replace('/dashboard/');
             }
@@ -36,8 +68,12 @@ onAuthStateChanged(auth, (user) => {
 
 resendBtn.addEventListener('click', async () => {
     if (!auth.currentUser) return;
-    resendBtn.disabled = true;
+    
+    // Disable button immediately
+    resendBtn.disabled = true; 
     resendBtn.textContent = 'Sending...';
+    messageArea.style.display = 'none'; // Hide old messages
+
     try {
         await sendEmailVerification(auth.currentUser);
         messageArea.textContent = 'A new verification email has been sent.';
@@ -48,15 +84,14 @@ resendBtn.addEventListener('click', async () => {
         messageArea.className = 'error-message';
         messageArea.style.display = 'block';
     } finally {
-        setTimeout(() => {
-            resendBtn.disabled = false;
-            resendBtn.textContent = 'Resend Verification Email';
-            messageArea.style.display = 'none';
-        }, 5000);
+        resendBtn.textContent = 'Resend Verification Email';
+        // --- Start a new 30-second cooldown to prevent spam ---
+        startTimer(30); 
     }
 });
 
 logoutBtn.addEventListener('click', () => {
     if (verificationCheckInterval) clearInterval(verificationCheckInterval);
+    if (countdownInterval) clearInterval(countdownInterval); // Clear timers on logout
     signOut(auth);
 });
