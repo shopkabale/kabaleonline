@@ -6,9 +6,9 @@ import { showMessage, toggleLoading } from '/js/shared.js';
 // --- DOM ELEMENTS ---
 const signupForm = document.getElementById('signup-form');
 const signupErrorElement = document.getElementById('signup-error');
-const termsErrorElement = document.getElementById('terms-error'); // <-- NEW
+const termsErrorElement = document.getElementById('terms-error');
 const signupPatienceMessage = document.getElementById('signup-patience-message');
-const termsCheckbox = document.getElementById('signup-terms'); // <-- NEW
+const termsCheckbox = document.getElementById('signup-terms'); 
 
 // --- Pre-fill referral code from URL ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,12 +43,13 @@ async function getCurrentBaseReward() {
 
 
 // =======================================================
-// MAIN SIGNUP LOGIC (STREAMLINED)
+// MAIN SIGNUP LOGIC (HYBRID)
 // =======================================================
 signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // --- 1. Get All Form Values (Simplified) ---
+    // --- 1. Get All Form Values ---
+    const name = document.getElementById('signup-name').value; // <-- WE ARE GETTING NAME
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
@@ -59,18 +60,16 @@ signupForm.addEventListener('submit', async (e) => {
     showMessage(termsErrorElement, "");
 
     // --- 2. VALIDATION CHECKS ---
-    if (!email || !password) {
+    if (!name || !email || !password) { // <-- ADDED NAME CHECK
         return showMessage(signupErrorElement, "Please fill out all required fields.");
     }
     if (password.length < 6) {
         return showMessage(signupErrorElement, "Password must be at least 6 characters long.");
     }
-
-    // --- THIS IS THE NEW CHECK ---
     if (!termsCheckbox.checked) {
-        return showMessage(termsErrorElement, "You must agree to the Terms & Conditions to create an account.");
+        return showMessage(termsErrorElement, "You must agree to the Terms & Conditions.");
     }
-    // --- END OF NEW CHECK ---
+    // --- END OF CHECKS ---
 
     toggleLoading(signupButton, true, 'Creating Account...');
     signupPatienceMessage.style.display = 'block';
@@ -111,21 +110,27 @@ signupForm.addEventListener('submit', async (e) => {
         
         const batch = writeBatch(db);
         
-        // Create the "skeleton" user document
+        // --- THIS IS THE NEW USER DOCUMENT ---
         const userRef = doc(db, "users", user.uid);
         batch.set(userRef, {
             email: email,
-            fullName: null, 
-            name: "New User", 
+            name: name, // <-- SAVING THE NAME
+            fullName: name, // <-- SAVING THE FULLNAME
+            
+            // These are now null, user will add them in "Edit Profile"
             whatsapp: null,
             location: null,
             institution: null,
             phone: null,
+            
+            // Default account settings
             role: 'seller',
             isSeller: true,
             isVerified: false,
             createdAt: serverTimestamp(),
             hasSeenWelcomeModal: false, 
+            
+            // Referral system fields
             referralCode: newUserReferralCode, 
             referrerId: referrerId,
             badges: [], 
@@ -133,7 +138,7 @@ signupForm.addEventListener('submit', async (e) => {
             referralCount: 0  
         });
 
-        // Create the public lookup doc
+        // Document 2: The public lookup doc
         const codeRef = doc(db, "referralCodes", newUserReferralCode);
         batch.set(codeRef, {
             userId: user.uid,
@@ -149,7 +154,7 @@ signupForm.addEventListener('submit', async (e) => {
                 referrerId: referrerId,
                 referrerEmail: referrerEmail,
                 referredUserId: user.uid,
-                referredUserName: "New User", 
+                referredUserName: name, // <-- USING THEIR REAL NAME
                 status: "pending",
                 baseReward: currentReward, 
                 createdAt: serverTimestamp()
