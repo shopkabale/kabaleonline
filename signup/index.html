@@ -134,6 +134,32 @@
         .footer-links { margin: 25px 0; }
         .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
         .footer-copyright { font-size: 0.9em; color: #64748b; }
+/* Add this CSS to your existing styles for the signup page */
+  .form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .form-group-inline input[type="checkbox"] {
+    width: 16px; /* Make checkbox a nice size */
+    height: 16px;
+    flex-shrink: 0; /* Prevents the checkbox from shrinking */
+  }
+  .form-group-inline label {
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    margin: 0; /* Override default label margins */
+  }
+  .form-group-inline a {
+    color: var(--ko-primary); /* Your brand's blue */
+    text-decoration: underline;
+    font-weight: 600;
+  }
+  /* Style for the new terms error message */
+  #terms-error {
+    margin-bottom: 15px;
+  }
     </style>
 </head>
 <body>
@@ -187,17 +213,44 @@
                 <p class="auth-subtitle">Create an account to start selling.</p>
                 <p id="auth-success" class="success-message" style="display: none;"></p>
                 <form id="signup-form">
-                    <p id="signup-error" class="error-message"></p>
-                    <div class="form-group"><label for="signup-name">Your Full Name</label><input type="text" id="signup-name" required></div>
-                    <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
-                    <div class="form-group"><label for="signup-whatsapp">WhatsApp Number</label><input type="tel" id="signup-whatsapp" required></div>
-                    <div class="form-group"><label for="signup-location">Location</label><input type="text" id="signup-location" required></div>
-                    <div class="form-group"><label for="signup-institution">Institution (Optional)</label><input type="text" id="signup-institution"></div>
-                    <div class="form-group"><label for="signup-password">Password</label><div class="password-wrapper"><input type="password" id="signup-password" required><span class="toggle-password">👁️</span></div></div>
-                    <div class="form-group"><label for="referral-code">Referral Code (Optional)</label><input type="text" id="referral-code"></div>
-                    <button type="submit" class="auth-button">Create Account</button>
-                    <p id="signup-patience-message" class="instruction-text" style="display: none; margin-top: 15px; text-align: center;">This may take a moment...</p>
-                </form>
+  <h2>Create your Account</h2>
+  
+  <div class="form-group">
+    <label for="signup-email">Email Address</label>
+    <input type="email" id="signup-email" required>
+  </div>
+  
+  <div class="form-group password-wrapper">
+    <label for="signup-password">Password</label>
+    <input type="password" id="signup-password" required>
+    <span class="toggle-password">👁️</span>
+  </div>
+  
+  <div class="form-group">
+    <label for="referral-code">Referral Code (Optional)</label>
+    <input type="text" id="referral-code" placeholder="e.g. ABC123">
+  </div>
+
+  <div id="signup-error" class="error-message"></div>
+  
+  <div id="terms-error" class="error-message"></div>
+
+  <div class="form-group-inline">
+    <input type="checkbox" id="signup-terms">
+    <label for="signup-terms">
+      I agree to the <a href="/terms.html" target="_blank">Terms & Conditions</a>
+    </label>
+  </div>
+  <button type="submit" class="btn-submit">Create Account</button>
+  
+  <p id="signup-patience-message" style="display:none; text-align:center; color: var(--text-secondary);">
+    Please wait... creating your account...
+  </p>
+
+  <p class="auth-toggle">
+    Already have an account? <a href="/login/">Sign In</a>
+  </p>
+</form>
                 <p style="text-align: center; margin-top: 20px;">Already have an account? <a href="/login/">Log In</a></p>
             </div>
         </div>
