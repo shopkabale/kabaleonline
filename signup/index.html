@@ -109,17 +109,10 @@
         .login-card a { color: var(--ko-primary); text-decoration: none; font-weight: 600; }
         
         /* --- MESSAGE & LOADER STYLES (THEMED) --- */
-        .error-message, .success-message { border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; }
+        .error-message, .success-message { border-radius: 5px; padding: 10px; text-align: center; margin: 10px 0; font-weight: bold; font-size: 0.9em; display: none; /* Hidden by default */ }
         .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
         .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
         .instruction-text { color: var(--text-secondary); font-size: 0.9em; }
-
-        /* --- VERIFICATION PROMPT STYLES (THEMED) --- */
-        #email-verification-prompt { text-align: center; padding: 30px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; margin-top: 40px; }
-        #email-verification-prompt h2 { margin-top: 0; color: var(--text-main); }
-        #email-verification-prompt .user-email { font-weight: bold; }
-        .cta-button { padding: 12px 25px; font-size: 1.1em; font-weight: bold; border: none; border-radius: 8px; background-color: var(--ko-primary); color: white; cursor: pointer; }
-        #verification-logout-btn { background-color: #6c757d; }
 
         /* --- LOADER --- */
         .loader { width: 18px; height: 18px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; margin-right: 8px; }
@@ -134,35 +127,35 @@
         .footer-links { margin: 25px 0; }
         .footer-links a { color: #94a3b8; margin: 0 10px; text-decoration: none; }
         .footer-copyright { font-size: 0.9em; color: #64748b; }
-/* Add this CSS to your existing styles for the signup page */
-  .form-group-inline {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .form-group-inline input[type="checkbox"] {
-    width: 16px; /* Make checkbox a nice size */
-    height: 16px;
-    flex-shrink: 0; /* Prevents the checkbox from shrinking */
-  }
-  .form-group-inline label {
-    font-size: 0.95em;
-    color: var(--text-secondary);
-    margin: 0; /* Override default label margins */
-  }
-  .form-group-inline a {
-    color: var(--ko-primary); /* Your brand's blue */
-    text-decoration: underline;
-    font-weight: 600;
-  }
-  /* Style for the new terms error message */
-  #terms-error {
-    margin-bottom: 15px;
-  }
+
+        /* --- TERMS CHECKBOX STYLING --- */
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group-inline input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        .form-group-inline label {
+            font-size: 0.95em;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        .form-group-inline a {
+            color: var(--ko-primary);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        #terms-error {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
-<body>
+<body class="light-mode">
     <script src="/theme.js"></script>
 
     <header class="sticky-header">
@@ -211,59 +204,56 @@
             <div class="login-card">
                 <h1 class="auth-title">Join Kabale Online</h1>
                 <p class="auth-subtitle">Create an account to start selling.</p>
-                <p id="auth-success" class="success-message" style="display: none;"></p>
+                
+                <p id="auth-success" class="success-message"></p>
+                
                 <form id="signup-form">
-  <h2>Create your Account</h2>
-  
-  <div class="form-group">
-    <label for="signup-email">Email Address</label>
-    <input type="email" id="signup-email" required>
-  </div>
-  
-  <div class="form-group password-wrapper">
-    <label for="signup-password">Password</label>
-    <input type="password" id="signup-password" required>
-    <span class="toggle-password">👁️</span>
-  </div>
-  
-  <div class="form-group">
-    <label for="referral-code">Referral Code (Optional)</label>
-    <input type="text" id="referral-code" placeholder="e.g. ABC123">
-  </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" required>
+                    </div>
+                    
+                    <div class="form-group password-wrapper">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required>
+                        <span class="toggle-password">👁️</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="referral-code">Referral Code (Optional)</label>
+                        <input type="text" id="referral-code" placeholder="e.g. ABC123">
+                    </div>
 
-  <div id="signup-error" class="error-message"></div>
-  
-  <div id="terms-error" class="error-message"></div>
+                    <div id="signup-error" class="error-message"></div>
+                    <div id="terms-error" class.error-message"></div>
 
-  <div class="form-group-inline">
-    <input type="checkbox" id="signup-terms">
-    <label for="signup-terms">
-      I agree to the <a href="/terms.html" target="_blank">Terms & Conditions</a>
-    </label>
-  </div>
-  <button type="submit" class="btn-submit">Create Account</button>
-  
-  <p id="signup-patience-message" style="display:none; text-align:center; color: var(--text-secondary);">
-    Please wait... creating your account...
-  </p>
+                    <div class="form-group-inline">
+                        <input type="checkbox" id="signup-terms">
+                        <label for="signup-terms">
+                          I agree to the <a href="/terms.html" target="_blank">Terms & Conditions</a>
+                        </label>
+                    </div>
 
-  <p class="auth-toggle">
-    Already have an account? <a href="/login/">Sign In</a>
-  </p>
-</form>
+                    <button type="submit" class="auth-button">
+                        Create Account
+                    </button>
+                    
+                    <p id="signup-patience-message" style="display:none; text-align:center; color: var(--text-secondary); margin-top: 15px;">
+                        Please wait... creating your account...
+                    </p>
+                </form>
+                
                 <p style="text-align: center; margin-top: 20px;">Already have an account? <a href="/login/">Log In</a></p>
             </div>
-        </div>
-        <div id="email-verification-prompt" class="container" style="display: none;">
-            <h2>Please Verify Your Email</h2>
-            <p>We've sent a verification link to <span class="user-email">your email</span>.</p>
-            <p>Please check your inbox (and spam folder) and click the link to activate your seller dashboard.</p>
-            <div style="margin-top: 20px;">
-                <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
-                <button id="verification-logout-btn" class="auth-button" style="background-color: #6c757d; margin-top: 10px;">Logout</button>
             </div>
+
         </div>
-    </div>
 
     <footer>
         <div class="container">
