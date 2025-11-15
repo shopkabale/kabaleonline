@@ -12,19 +12,19 @@
             --ko-primary: #007aff;
             --ko-primary-rgb: 0, 122, 255;
             --ko-accent: #ffc107;
-            
+
             --bg-light: #f8f9fa;
             --bg-card-light: #ffffff;
             --text-main-light: #212529;
             --text-secondary-light: #6c757d;
             --border-color-light: #e9ecef;
-            
+
             --bg-dark: #0f172a;
             --bg-card-dark: #1e2b3b;
             --text-main-dark: #e2e8f0;
             --text-secondary-dark: #94a3b8;
             --border-color-dark: #334155;
-            
+
             --shadow: 0 10px 30px rgba(0,0,0,0.07);
             --border-radius: 12px;
         }
@@ -45,7 +45,7 @@
             --text-secondary: var(--text-secondary-dark);
             --border-color: var(--border-color-dark);
         }
-        
+
         /* --- GENERAL & HEADER STYLES --- */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -100,6 +100,23 @@
         .cta-button { background-color: var(--ko-primary); color: white; }
         .auth-button { background-color: #6c757d; color: white; margin-top: 10px; }
 
+        .cta-button:disabled {
+            background-color: #6c757d;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* --- Message Styles --- */
+        .error-message, .success-message { 
+            border-radius: 5px; padding: 10px; text-align: center; 
+            margin: 10px 0; font-weight: bold; font-size: 0.9em; 
+            display: none; /* Hidden by default */
+        }
+        .error-message { color: #D8000C; background-color: #FFD2D2; border: 1px solid #D8000C; }
+        .success-message { color: #270; background-color: #DFF2BF; border: 1px solid #4F8A10; }
+        .instruction-text { color: var(--text-secondary); font-size: 0.9em; }
+
+
         /* --- FOOTER STYLES (THEMED & CONSISTENT) --- */
         footer { background-color: #0f172a; color: #e2e8f0; padding: 40px 15px 20px; text-align: center; }
         .footer-logo { font-size: 1.8em; font-weight: bold; margin-bottom: 10px; }
@@ -109,7 +126,7 @@
         .footer-copyright { font-size: 0.9em; color: #64748b; }
     </style>
 </head>
-<body>
+<body class="light-mode">
     <script src="/theme.js"></script>
 
     <header class="sticky-header">
@@ -135,12 +152,16 @@
         <div class="verification-card">
             <h1>Please Verify Your Email</h1>
             <p>We've sent a verification link to <strong class="user-email">your email address</strong>.</p>
-            <p>If the email doesn't arrive within 10 seconds, please click the resend button below.</p>
-            <br>
             <p>Check your inbox (and spam folder) and click the link to activate your account. This page will redirect automatically once you are verified.</p>
+            
             <p id="message-area" style="display: none;"></p>
+
+            <p id="resend-timer-text" class="instruction-text" style="margin-top: 15px; font-size: 1em; display: none;">
+                You can resend the email in <strong id="countdown-timer" style="color: var(--text-main);">10</strong>s...
+            </p>
+            
             <div style="margin-top: 30px;">
-                <button id="resend-verification-btn" class="cta-button">Resend Verification Email</button>
+                <button id="resend-verification-btn" class="cta-button" disabled>Resend Verification Email</button>
                 <button id="verification-logout-btn" class="auth-button">Logout</button>
             </div>
         </div>
@@ -158,10 +179,6 @@
         </div>
     </footer>
 
-    <script>
-    // Since this page has no mobile nav, we don't need the toggle script here.
-    // The main functionality is in the script tag below.
-    </script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
