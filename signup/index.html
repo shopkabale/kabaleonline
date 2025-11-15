@@ -103,8 +103,32 @@
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9em; }
         .form-group input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-main); color: var(--text-main); font-size: 1em; box-sizing: border-box; }
         .form-group input:focus { outline: none; border-color: var(--ko-primary); box-shadow: 0 0 0 3px rgba(var(--ko-primary-rgb), 0.1); }
-        .password-wrapper { position: relative; }
-        .toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary); }
+        
+        /* --- THIS IS THE CORRECT, FINAL CSS FOR THE EYE --- */
+        .password-wrapper {
+            position: relative;
+        }
+        .form-group input[type="password"] {
+            /* Make space on the right for the icon */
+            padding-right: 45px; 
+        }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            /* Position from the bottom of the wrapper */
+            bottom: 14px; 
+            
+            /* Explicitly unset any conflicting rules */
+            top: unset;
+            transform: unset;
+            
+            /* Styling */
+            font-size: 1.2rem; 
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        /* --- END OF FIX --- */
+        
         .auth-button { width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold; border: none; border-radius: 8px; background-color: var(--ko-primary); color: white; cursor: pointer; transition: background-color 0.2s; }
         .login-card a { color: var(--ko-primary); text-decoration: none; font-weight: 600; }
         
@@ -153,36 +177,6 @@
         #terms-error {
             margin-bottom: 15px;
         }
-/* --- THIS IS THE FIX --- */
-
-/* 1. Make the wrapper a positioning context */
-.password-wrapper {
-  position: relative;
-}
-
-/* 2. Give the input space on the right for the eye.
-      This stops the text from typing *under* the icon.
-*/
-.form-group input[type="password"] {
-  padding-right: 45px; 
-}
-
-/* 3. Position the eye from the BOTTOM, not the middle.
-      This ignores the label and anchors the eye inside the input.
-*/
-.toggle-password {
-  position: absolute;
-  /* This value is based on your input's padding (12px).
-    13px or 14px will center it vertically.
-  */
-  bottom: 14px; 
-  right: 15px;
-  
-  /* We remove the 'top' and 'transform' rules */
-  font-size: 1.2rem; 
-  cursor: pointer;
-  color: var(--text-secondary);
-}
     </style>
 </head>
 <body class="light-mode">
@@ -261,7 +255,7 @@
                     </div>
 
                     <div id="signup-error" class="error-message"></div>
-                    <div id="terms-error" class.error-message"></div>
+                    <div id="terms-error" class="error-message"></div>
 
                     <div class="form-group-inline">
                         <input type="checkbox" id="signup-terms">
@@ -281,9 +275,8 @@
                 
                 <p style="text-align: center; margin-top: 20px;">Already have an account? <a href="/login/">Log In</a></p>
             </div>
-            </div>
-
         </div>
+    </div>
 
     <footer>
         <div class="container">
@@ -350,6 +343,6 @@
     </script>
     
     <script type="module" src="/js/auth.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type.module" src="script.js"></script>
 </body>
 </html>
