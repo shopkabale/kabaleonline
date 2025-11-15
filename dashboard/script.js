@@ -1,8 +1,8 @@
 import { auth, db } from '../js/auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
-    doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot, 
-    query, collection, where, getDocs, limit 
+    doc, updateDoc, serverTimestamp, onSnapshot, 
+    query, collection, where, getDocs, limit, getDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // DOM elements
@@ -14,7 +14,7 @@ const userProfilePhoto = document.getElementById('user-profile-photo');
 const userDisplayName = document.getElementById('user-display-name');
 const logoutBtn = document.getElementById('logout-btn');
 
-// --- NEW GAMIFICATION DOM ELEMENTS ---
+// --- Gamification DOM Elements ---
 const adminNotificationBanner = document.getElementById('admin-notification-banner');
 const promoBannerEl = document.getElementById('promo-banner');
 const userWalletBalance = document.getElementById('user-wallet-balance');
@@ -22,9 +22,9 @@ const userBadgesDisplay = document.getElementById('user-badges-display');
 const referralCountStat = document.getElementById('referral-count-stat');
 
 let userDocRef = null;
+let userListener = null; // To hold our snapshot listener
 
-// --- NEW: Function to check for promos ---
-// Runs once for every user
+// --- Function to check for promos ---
 async function displayActivePromo() {
   try {
     const promoRef = doc(db, "siteConfig", "promotions");
@@ -33,7 +33,7 @@ async function displayActivePromo() {
     if (promoSnap.exists()) {
       const promo = promoSnap.data();
       const expires = promo.expires?.toDate();
-      
+
       if (promo.active && expires && expires > new Date()) {
         if (promoBannerEl) {
           promoBannerEl.innerHTML = `<div class="promo-banner">${promo.message || 'Special promotion active!'}</div>`;
@@ -46,26 +46,22 @@ async function displayActivePromo() {
   }
 }
 
-// --- NEW: Function to check for admin tasks ---
-// This function will NOW only be called if the user is an admin.
+// --- Function to check for admin tasks ---
 async function checkAdminStatus() {
     try {
-        // Query for just ONE pending referral to see if the queue is empty
         const q = query(
             collection(db, 'referral_log'), 
             where('status', '==', 'pending'), 
             limit(1)
         );
         const pendingSnap = await getDocs(q);
-        
+
         if (!pendingSnap.empty) {
-            // If there are pending items, show the banner
             if (adminNotificationBanner) {
                 adminNotificationBanner.style.display = 'block';
             }
         }
     } catch (err) {
-        // This will now only show for admins if their query fails
         console.warn("Admin check for pending referrals failed:", err);
     }
 }
@@ -75,141 +71,109 @@ async function checkAdminStatus() {
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         userDocRef = doc(db, 'users', user.uid);
-        await initializeDashboard(user);
         
-        // --- NEW: Check for promos on page load ---
+        // Clean up any old listeners before starting a new one
+        if (userListener) userListener(); 
+        
+        initializeDashboard(user);
         displayActivePromo(); 
     } else {
+        if (userListener) userListener(); // Stop listening
         window.location.href = "/login/";
     }
 });
 
 // Initialize dashboard
 async function initializeDashboard(user) {
-    try {
-        // Check if user document exists
-        let userDoc = await getDoc(userDocRef);
-        let isNewUser = false;
+    
+    // --- *** THIS IS THE FIX *** ---
+    // We REMOVE the old getDoc/setDoc logic that caused the race condition.
+    // The dashboard's ONLY job is to listen for changes.
+    // The 'onSnapshot' listener is "patient" and will wait
+    // for signup.js to finish writing the document.
+    
+    userListener = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
 
-        // This is your original, correct logic
-        if (!userDoc.exists()) {
-            // Create new user document
-            const newUserProfile = {
-                email: user.email,
-                fullName: 'New User',
-                role: 'seller', // Your default role
-                isSeller: true, // From your DB screenshot
-                createdAt: serverTimestamp(),
-                referralCode: user.uid.substring(0, 6).toUpperCase(),
-                referralCount: 0,
-                referralBalance: 0, // Use 'referralBalance' from your DB
-                badges: [],
-                hasSeenWelcomeModal: false,
-                photoURL: null
-            };
-            await setDoc(userDocRef, newUserProfile);
-            isNewUser = true;
-        } else {
-            const userDataCheck = userDoc.data();
-            if (!userDataCheck.fullName || userDataCheck.fullName === 'New User') {
-                isNewUser = true;
+            // 1. Update basic profile info
+            // This will now show the REAL name from signup, not "New User"
+            userProfilePhoto.src = data.photoURL || data.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
+            userDisplayName.textContent = data.fullName || data.name || 'Valued Seller';
+
+            // 2. Update Gamification Module
+            if (userWalletBalance) {
+                const balance = data.referralBalance || 0;
+                userWalletBalance.textContent = `UGX ${balance.toLocaleString()}`;
+            }
+            if (userBadgesDisplay) {
+                const badges = data.badges || [];
+                if (badges.length > 0) {
+                    userBadgesDisplay.innerHTML = badges.map(badge => 
+                        `<span class="badge-item">${badge}</span>`
+                    ).join('');
+                } else {
+                    userBadgesDisplay.innerHTML = `<span style="color:var(--text-secondary); font-style:italic; font-size: 0.9em;">Refer friends to earn badges!</span>`;
+                }
+            }
+            if (referralCountStat) {
+                const count = data.referralCount || 0;
+                referralCountStat.textContent = `${count} Approved`;
             }
 
-            // --- *** THIS IS THE NEW AUTOMATIC FIX *** ---
-            // If the user exists but is missing a referralCode, create one.
-            // This "patches" all your old users automatically.
-            if (!userDataCheck.referralCode) {
+            // 3. Check for admin status
+            if (data.role === 'admin') {
+                checkAdminStatus();
+            }
+
+            // 4. Auto-patch old users who are missing a referral code
+            if (!data.referralCode) {
                 console.log(`Patching user ${user.uid}: adding referralCode.`);
                 const newCode = user.uid.substring(0, 6).toUpperCase();
-                // We run this update but don't wait for it,
-                // so the dashboard can load faster.
                 updateDoc(userDocRef, { 
                     referralCode: newCode 
                 }).catch(err => {
                     console.error("Failed to auto-patch referral code:", err);
                 });
             }
-            // --- *** END OF AUTOMATIC FIX *** ---
+
+            // 5. Show welcome modal if needed
+            // This will trigger for new users because signup.js
+            // sets 'hasSeenWelcomeModal: false'
+            if (!data.hasSeenWelcomeModal) {
+                newUserNotification.style.display = 'flex';
+                content.style.pointerEvents = 'none';
+            }
+            
+            // 6. Show the page
+            loader.style.display = 'none';
+            content.style.display = 'block';
+
+        } else {
+            // This case now means the signup.js hasn't finished.
+            // We just show the loader and wait. onSnapshot will
+            // fire again as soon as the doc is created.
+            console.log("Waiting for user document to be created...");
+            loader.style.display = 'block';
+            content.style.display = 'none';
         }
+    }, (error) => {
+        console.error("Error in dashboard snapshot listener:", error);
+        loader.innerHTML = "<p style='text-align:center;color:red;'>A database error occurred. Please refresh.</p>";
+    });
+    // --- *** END OF FIX *** ---
 
-        // Listen to changes in user document in real-time
-        onSnapshot(userDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                
-                // Update basic profile info
-                userProfilePhoto.src = data.photoURL || data.profilePhotoUrl || 'https://placehold.co/100x100/e0e0e0/777?text=U';
-                userDisplayName.textContent = data.fullName || data.name || 'Valued Seller';
 
-                // --- NEW: Update Gamification Module ---
-                
-                // 1. Update Wallet
-                if (userWalletBalance) {
-                    const balance = data.referralBalance || 0;
-                    userWalletBalance.textContent = `UGX ${balance.toLocaleString()}`;
-                }
-
-                // 2. Update Badges
-                if (userBadgesDisplay) {
-                    const badges = data.badges || [];
-                    if (badges.length > 0) {
-                        userBadgesDisplay.innerHTML = badges.map(badge => 
-                            `<span class="badge-item">${badge}</span>`
-                        ).join('');
-                    } else {
-                        userBadgesDisplay.innerHTML = `<span style="color:var(--text-secondary); font-style:italic; font-size: 0.9em;">Refer friends to earn badges!</span>`;
-                    }
-                }
-
-                // 3. Update Referral Card Stat
-                if (referralCountStat) {
-                    const count = data.referralCount || 0;
-                    referralCountStat.textContent = `${count} Approved`;
-                }
-
-                // --- THIS IS THE FIX FROM BEFORE (STILL NEEDED) ---
-                // Only run the admin check if the user's role is 'admin'
-                if (data.role === 'admin') {
-                    checkAdminStatus();
-                }
-                // --- END OF FIX ---
-
-                // Show welcome modal if needed (Your original logic)
-                if (isNewUser && !data.hasSeenWelcomeModal) {
-                    newUserNotification.style.display = 'flex';
-                    content.style.pointerEvents = 'none';
-                }
-            } else {
-                // This might happen if the doc is deleted while they are logged in
-                console.error("User document does not exist.");
-                auth.signOut();
-            }
-        }, (error) => {
-            // --- NEW: Added an error handler for the onSnapshot listener ---
-            console.error("Error in dashboard snapshot listener:", error);
-            loader.innerHTML = "<p style='text-align:center;color:red;'>A database error occurred. Please refresh.</p>";
-        });
-
-        // Hide loader and show dashboard content
-        loader.style.display = 'none';
-        content.style.display = 'block';
-
-        // Handle Okay button click
-        notificationOkBtn.addEventListener('click', async () => {
-            newUserNotification.style.display = 'none';
-            content.style.pointerEvents = 'auto';
-            try {
-                await updateDoc(userDocRef, { hasSeenWelcomeModal: true });
-            } catch (err) {
-                console.error("Failed to update modal status:", err);
-            }
-        });
-
-    } catch (error) {
-        // This is the error message you are seeing
-        console.error("Error initializing dashboard:", error);
-        loader.innerHTML = "<p style='text-align:center;color:red;'>Failed to load dashboard. Please refresh.</p>";
-    }
+    // Handle Okay button click for the welcome modal
+    notificationOkBtn.addEventListener('click', async () => {
+        newUserNotification.style.display = 'none';
+        content.style.pointerEvents = 'auto';
+        try {
+            await updateDoc(userDocRef, { hasSeenWelcomeModal: true });
+        } catch (err) {
+            console.error("Failed to update modal status:", err);
+        }
+    });
 }
 
 // Handle logout
