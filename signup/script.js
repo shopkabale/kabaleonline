@@ -41,7 +41,6 @@ async function getCurrentBaseReward() {
   return DEFAULT_REWARD;
 }
 
-
 // =======================================================
 // MAIN SIGNUP LOGIC (HYBRID)
 // =======================================================
@@ -49,7 +48,7 @@ signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     // --- 1. Get All Form Values ---
-    const name = document.getElementById('signup-name').value; // <-- WE ARE GETTING NAME
+    const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     const referralCode = document.getElementById('referral-code').value.trim().toUpperCase();
@@ -60,7 +59,7 @@ signupForm.addEventListener('submit', async (e) => {
     showMessage(termsErrorElement, "");
 
     // --- 2. VALIDATION CHECKS ---
-    if (!name || !email || !password) { // <-- ADDED NAME CHECK
+    if (!name || !email || !password) {
         return showMessage(signupErrorElement, "Please fill out all required fields.");
     }
     if (password.length < 6) {
@@ -69,7 +68,6 @@ signupForm.addEventListener('submit', async (e) => {
     if (!termsCheckbox.checked) {
         return showMessage(termsErrorElement, "You must agree to the Terms & Conditions.");
     }
-    // --- END OF CHECKS ---
 
     toggleLoading(signupButton, true, 'Creating Account...');
     signupPatienceMessage.style.display = 'block';
@@ -110,27 +108,21 @@ signupForm.addEventListener('submit', async (e) => {
         
         const batch = writeBatch(db);
         
-        // --- THIS IS THE NEW USER DOCUMENT ---
+        // Create the user document
         const userRef = doc(db, "users", user.uid);
         batch.set(userRef, {
             email: email,
-            name: name, // <-- SAVING THE NAME
-            fullName: name, // <-- SAVING THE FULLNAME
-            
-            // These are now null, user will add them in "Edit Profile"
+            name: name, 
+            fullName: name, 
             whatsapp: null,
             location: null,
             institution: null,
             phone: null,
-            
-            // Default account settings
             role: 'seller',
             isSeller: true,
             isVerified: false,
             createdAt: serverTimestamp(),
             hasSeenWelcomeModal: false, 
-            
-            // Referral system fields
             referralCode: newUserReferralCode, 
             referrerId: referrerId,
             badges: [], 
@@ -138,7 +130,7 @@ signupForm.addEventListener('submit', async (e) => {
             referralCount: 0  
         });
 
-        // Document 2: The public lookup doc
+        // Create the public lookup doc
         const codeRef = doc(db, "referralCodes", newUserReferralCode);
         batch.set(codeRef, {
             userId: user.uid,
@@ -154,7 +146,7 @@ signupForm.addEventListener('submit', async (e) => {
                 referrerId: referrerId,
                 referrerEmail: referrerEmail,
                 referredUserId: user.uid,
-                referredUserName: name, // <-- USING THEIR REAL NAME
+                referredUserName: name, 
                 status: "pending",
                 baseReward: currentReward, 
                 createdAt: serverTimestamp()
@@ -176,7 +168,9 @@ signupForm.addEventListener('submit', async (e) => {
         
         // --- 6. Final Steps ---
         await sendEmailVerification(user);
-        window.location.href = '/dashboard/'; // Redirect to dashboard
+
+        // --- THIS IS THE CORRECT REDIRECT ---
+        window.location.href = '/verify-email/'; 
 
     } catch (error) {
         let msg = 'An error occurred. Please try again.';
